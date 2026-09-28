@@ -212,7 +212,7 @@
 
 <script setup lang="ts">
 import { Avatar, BrandedButton, MarkdownViewer, OrganizationCard, Pagination, ReuseCard } from '@datagouv/components-next'
-import type { DatasetV2, Reuse, User } from '@datagouv/components-next'
+import type { DatasetV2, ReuseV2, User } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 import { DatasetCardLg } from '#components'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -231,11 +231,9 @@ useSeoMeta({
   robots: 'noindex, nofollow',
   title,
 })
-// Workaround: encode the dot before file extension to prevent nuxt-og-image from stripping `.png` in prop values
-// See https://github.com/nuxt-modules/og-image/pull/493
 defineOgImage('ObjectPage.takumi', {
   ownerName: user.value ? `${user.value.first_name} ${user.value.last_name}` : null,
-  ownerAvatar: user.value?.avatar_thumbnail?.replace(/\.(\w+)$/, '%2E$1') ?? null,
+  ownerAvatar: user.value?.avatar_thumbnail ?? null,
   datasets: user.value?.metrics?.datasets ?? 0,
   dataservices: user.value?.metrics?.dataservices ?? 0,
   reuses: user.value?.metrics?.reuses ?? 0,
@@ -259,7 +257,7 @@ const reusesParams = computed(() => {
     owner: user.value?.id,
   }
 })
-const { data: reuses } = await useAPI<PaginatedArray<Reuse>>(`/api/1/reuses`, { query: reusesParams })
+const { data: reuses } = await useAPI<PaginatedArray<ReuseV2>>(`/api/2/reuses`, { query: reusesParams })
 
 const followedDatasetsPage = ref(1)
 const followedDatasetsParams = computed(() => {

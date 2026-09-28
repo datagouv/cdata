@@ -1,7 +1,7 @@
 import type { User } from './users'
 
 export type ReportSubject = {
-  class: 'Discussion' | 'Dataservice' | 'Dataset' | 'Organization' | 'Reuse'
+  class: 'Discussion' | 'Dataservice' | 'Dataset' | 'Organization' | 'Reuse' | 'User'
   id: string
 }
 
@@ -26,4 +26,5 @@ export type Report = {
   subject_label: string | null
   dismissed_at: string | null
   dismissed_by: User | null
+  callbacks_count: number
 }

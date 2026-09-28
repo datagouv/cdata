@@ -54,6 +54,7 @@
       class="fr-input"
       :class="{ 'fr-input--error': hasError, 'fr-input--valid': isValid, '!pl-14': showLabelInside }"
       :aria-describedby="ariaDescribedBy"
+      :aria-label="hideLabel ? label : undefined"
       :autocomplete
       :disabled
       :type

@@ -5,7 +5,10 @@ async function getOgImageBuffer(page: import('@playwright/test').Page) {
   expect(ogImageUrl).toBeTruthy()
 
   const response = await page.request.get(ogImageUrl!)
-  expect(response.ok()).toBe(true)
+  if (!response.ok()) {
+    const body = await response.text()
+    throw new Error(`OG image fetch failed for ${ogImageUrl}: ${response.status()} ${response.statusText()}\n${body}`)
+  }
 
   return response.body()
 }

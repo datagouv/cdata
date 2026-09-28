@@ -1,0 +1,497 @@
+import type { Page, Response } from '@playwright/test'
+import { test, expect } from './base'
+
+// The CADA explore runs against the real Tabular API, so no assertion pins an
+// absolute row count: a filtered count is always compared to the unfiltered one.
+async function readRowCount(page: Page): Promise<{ shown: number, total: number }> {
+  const text = await page.getByTestId('row-count').first().innerText()
+  const [shown, total] = text.split('/').map(part => Number(part.replace(/\D/g, '')))
+  return { shown, total }
+}
+
+/** Resolves once the table asked the Tabular API for `query`. */
+function dataResponse(page: Page, query: string): Promise<Response> {
+  // `+` before `decodeURIComponent`: the query serializer writes spaces as `+`,
+  // which percent-decoding alone leaves as-is.
+  const readable = (url: string) => decodeURIComponent(url.replace(/\+/g, ' '))
+  return page.waitForResponse(
+    response => response.url().includes('/data/') && readable(response.url()).includes(query),
+    { timeout: 30000 },
+  )
+}
+
+/**
+ * The data table, never any other. Column filter panels stay mounted while closed
+ * and are teleported ahead of the page, and a date one renders a calendar — which
+ * is a `<table>` of its own, with seven headers and rows of seven cells.
+ */
+function dataTable(page: Page) {
+  return page.getByTestId('data-table')
+}
+
+/** Index of `column` in the table header, to reach its cells in a row. */
+async function columnIndex(page: Page, column: string): Promise<number> {
+  const headers = await dataTable(page).locator('thead th').allInnerTexts()
+  const index = headers.findIndex(header => header.includes(column))
+  expect(index, `column ${column} is displayed`).toBeGreaterThanOrEqual(0)
+  return index
+}
+
+async function gotoExplore(page: Page, path = '/explore/cada') {
+  await page.goto(path)
+  await expect(page.getByTestId('row-count')).toBeVisible({ timeout: 30000 })
+}
+
+test('CADA homepage loads with search bar and table', async ({ page }) => {
+  await page.goto('/explore/cada')
+  await page.waitForLoadState('networkidle')
+
+  // Page title
+  await expect(page).toHaveTitle(/CADA/)
+
+  // Search bar is visible
+  await expect(page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')).toBeVisible()
+
+  // TabularExplorer renders with column selector and row count after data loads
+  await expect(page.getByRole('button', { name: /Colonnes/ })).toBeVisible({ timeout: 30000 })
+  await expect(page.getByText('Lignes').first()).toBeVisible({ timeout: 30000 })
+})
+
+test('CADA detail page shows advice content', async ({ page }) => {
+  await page.goto('/explore/cada/20237028')
+  await page.waitForLoadState('networkidle')
+
+  // Detail page shows the advice number
+  await expect(page.getByRole('heading', { name: /20237028/ })).toBeVisible({ timeout: 30000 })
+  // Breadcrumb is present
+  await expect(page.getByText('Avis et conseils de la CADA')).toBeVisible()
+})
+
+test('CADA detail page renders the values derived from the raw columns', async ({ page }) => {
+  await page.goto('/explore/cada/20237028')
+  await page.waitForLoadState('networkidle')
+
+  await expect(page.getByRole('heading', { name: /20237028/ })).toBeVisible({ timeout: 30000 })
+
+  // `Partie: III` is shown as its label, not as the raw roman numeral
+  await expect(page.getByRole('link', { name: 'Affaire courante' })).toBeVisible()
+  // `Sens et motivation` packs several comma-separated values, one badge each
+  await expect(page.getByRole('link', { name: 'Favorable / Sauf vie privée' })).toBeVisible()
+  await expect(page.getByRole('link', { name: 'Favorable / Sauf secret des affaires' })).toBeVisible()
+})
+
+test('CADA detail page answers a 404 for an advice that does not exist', async ({ page }) => {
+  const response = await page.goto('/explore/cada/1')
+
+  expect(response?.status()).toBe(404)
+})
+
+test('CADA detail page answers a 404 for an id that is not a dossier number', async ({ page }) => {
+  // A word would reach the API as `NaN`, a suffixed or zero-padded number would
+  // serve advice 20237028 under a second URL. Plain requests rather than
+  // navigations: only the status code is under test, and chaining `goto` cuts
+  // the module loading of the page being left.
+  for (const path of ['/explore/cada/abc', '/explore/cada/20237028-mon-titre', '/explore/cada/0020237028']) {
+    const response = await page.request.get(path)
+    expect(response.status(), path).toBe(404)
+  }
+})
+
+test('CADA about section exists on index page', async ({ page }) => {
+  await page.goto('/explore/cada')
+  await page.waitForLoadState('networkidle')
+
+  await expect(page.getByText('Codifiées dans le')).toBeVisible()
+})
+
+test('clicking the Numéro de dossier link navigates to the CADA detail page', async ({ page }) => {
+  await page.goto('/explore/cada')
+  await page.waitForLoadState('networkidle')
+
+  // Wait for rows to load
+  await expect(page.getByText('Lignes').first()).toBeVisible({ timeout: 30000 })
+
+  // Click the first Numéro de dossier link (rendered as an <a> by rowHref)
+  const dossierLink = dataTable(page).locator('a.link').first()
+  await dossierLink.waitFor({ timeout: 30000 })
+  await dossierLink.click()
+
+  // Should navigate to /explore/cada/<numero>
+  await page.waitForURL(/\/explore\/cada\/\d+/, { timeout: 30000 })
+
+  // Confirm detail page content loaded
+  await expect(page.locator('h1').first()).toBeVisible()
+})
+
+test('the Numéro de dossier column keeps its digits unformatted', async ({ page }) => {
+  await gotoExplore(page)
+
+  // It is an int column, but an identifier: it must not be grouped in thousands
+  // the way a quantity would be (20 112 327).
+  const dossier = await dataTable(page).locator('a.link').first().innerText()
+  expect(dossier).toMatch(/^\d+$/)
+})
+
+test('a year column keeps its digits unformatted too', async ({ page }) => {
+  await gotoExplore(page)
+
+  // Same as above but driven by the column type rather than by a prop: any
+  // resource with a `year` column gets 2011, never 2 011.
+  const index = await columnIndex(page, 'Année')
+  const year = await dataTable(page).locator('tbody tr').first().locator('td').nth(index).innerText()
+  expect(year).toMatch(/^\d{4}$/)
+})
+
+test('the advices are listed with the most recent hearing first', async ({ page }) => {
+  await gotoExplore(page)
+
+  const index = await columnIndex(page, 'Séance')
+  const cells = await dataTable(page).locator('tbody tr').locator(`td:nth-child(${index + 1})`).allInnerTexts()
+  expect(cells.length).toBeGreaterThan(1)
+
+  // Cells are rendered as `dd/mm/yyyy`, which does not sort as a string.
+  const dates = cells.map((cell) => {
+    const [day, month, year] = cell.trim().split('/')
+    expect(year, `${cell} is a formatted date`).toBeDefined()
+    return `${year}-${month}-${day}`
+  })
+  expect(dates).toEqual([...dates].sort().reverse())
+})
+
+test('clicking a row link navigates instead of opening the cell popover', async ({ page }) => {
+  await gotoExplore(page)
+
+  // A cell holding a link belongs to the link: ctrl+click opens the advice in a
+  // background tab, and the popover must not pile up on the page we leave.
+  await dataTable(page).locator('a.link').first().click({ modifiers: ['ControlOrMeta'] })
+  await expect(page.getByText('Valeur brute')).toBeHidden()
+
+  // Control: any other cell does open it, so the assertion above is not vacuous.
+  await dataTable(page).locator('tbody tr').first().locator('td').nth(await columnIndex(page, 'Objet')).click()
+  await expect(page.getByText('Valeur brute')).toBeVisible()
+})
+
+test.describe('rows that fail to load', () => {
+  // The 500 below is the point of the test, not an accident.
+  test.use({ allowedConsoleMessages: ['the server responded with a status of 500'] })
+
+  test('the search input stays reachable', async ({ page }) => {
+    await page.route(/\/data\//, route => route.fulfill({
+      status: 500,
+      contentType: 'application/json',
+      headers: { 'access-control-allow-origin': '*' },
+      body: '{"detail":"boom"}',
+    }))
+    await page.goto('/explore/cada')
+
+    // Without the search input, a failed query would be a dead end.
+    await expect(page.getByText('L\'aperçu de ce fichier n\'a pas pu être chargé.')).toBeVisible({ timeout: 30000 })
+    await expect(page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')).toBeVisible()
+  })
+})
+
+test.describe('global search', () => {
+  test('searching by exact dossier number narrows the rows to a strict subset', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+
+    const searchInput = page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')
+    await searchInput.fill('20112327')
+
+    const response = dataResponse(page, 'or=(')
+    await searchInput.press('Enter')
+    expect((await response).ok()).toBe(true)
+
+    // The searched dossier is among the results…
+    await expect(dataTable(page).getByText('20112327').first()).toBeVisible()
+    // …and the search really did narrow the base
+    await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
+  })
+
+  test('searching by a non-numeric term does not make the API reject the query', async ({ page }) => {
+    await gotoExplore(page)
+
+    // A word must not be sent as `__exact` on the number columns: the Tabular API
+    // answers an error for the whole `or(...)` expression when it is.
+    const searchInput = page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')
+    await searchInput.fill('cheval')
+
+    const response = dataResponse(page, 'or=(')
+    await searchInput.press('Enter')
+    expect((await response).ok()).toBe(true)
+
+    await expect(dataTable(page).locator('a.link').first()).toBeVisible({ timeout: 30000 })
+  })
+
+  // `.` `(` `)` are the operator separator and the delimiters of the API's
+  // `or(...)` grammar: sent raw they make it reject the whole query with a 400,
+  // and quoted they are searched literally and match nothing. Both terms below
+  // occur in nearly every advice, so a row count of zero means the encoding
+  // reached the API as part of the searched string.
+  for (const term of ['.', '(']) {
+    test(`searching "${term}" keeps the query valid and still matches rows`, async ({ page }) => {
+      await gotoExplore(page)
+
+      const searchInput = page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')
+      await searchInput.fill(term)
+
+      const response = dataResponse(page, 'or=(')
+      await searchInput.press('Enter')
+      expect((await response).ok()).toBe(true)
+
+      await expect.poll(async () => (await readRowCount(page)).shown).toBeGreaterThan(0)
+    })
+  }
+})
+
+test.describe('mobile', () => {
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  test('scrolling to the bottom of the card list loads the next page', async ({ page }) => {
+    await gotoExplore(page)
+
+    // Below `md` the table is replaced by a list of cards, which has to page the
+    // same way the table does.
+    const cards = page.getByTestId('mobile-row')
+    await expect(cards.first()).toBeVisible({ timeout: 30000 })
+    const firstPage = await cards.count()
+    expect(firstPage).toBeGreaterThan(0)
+
+    await cards.last().scrollIntoViewIfNeeded()
+
+    await expect.poll(() => cards.count(), { timeout: 30000 }).toBeGreaterThan(firstPage)
+  })
+})
+
+test.describe('column filter', () => {
+  test('date column filter shows a calendar, not a text search', async ({ page }) => {
+    await gotoExplore(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+
+    await expect(panel.getByLabel('Condition du filtre')).toBeVisible({ timeout: 3000 })
+    // A day cell proves the calendar rendered; days carry their ISO date
+    await expect(panel.locator('[data-value]').first()).toBeVisible()
+    await expect(panel.getByPlaceholder('Rechercher...')).toHaveCount(0)
+  })
+
+  test('picking a day in the calendar filters on that single day', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+
+    await panel.getByLabel('Année').selectOption('2015')
+    await panel.getByLabel('Mois', { exact: true }).selectOption('6')
+    await panel.locator('[data-value="2015-06-18"]').click()
+
+    // A single day is a half-open interval, so the same query works whether the
+    // column holds plain dates or timestamps
+    const response = dataResponse(page, 'Séance__greater=2015-06-18')
+    await panel.getByRole('button', { name: 'Appliquer' }).click()
+    const url = decodeURIComponent((await response).url())
+    expect(url).toContain('Séance__strictly_less=2015-06-19')
+
+    await expect(page.getByTestId('active-filter-Séance')).toContainText('= 18/06/2015')
+    // 18 June 2015 is the only sitting day of that month, so rows coming back is
+    // what proves the lower bound includes the day it names
+    await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
+    expect((await readRowCount(page)).shown).toBeGreaterThan(0)
+  })
+
+  test('the "is after" operator excludes the day it names', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+
+    await panel.getByLabel('Condition du filtre').selectOption('after')
+    await panel.getByLabel('Année').selectOption('2015')
+    await panel.getByLabel('Mois', { exact: true }).selectOption('6')
+    await panel.locator('[data-value="2015-06-18"]').click()
+
+    // The named day is the only sitting day of the month, so excluding it is
+    // visible in the count rather than free of consequence
+    const response = dataResponse(page, 'Séance__greater=2015-06-19')
+    await panel.getByRole('button', { name: 'Appliquer' }).click()
+    expect((await response).ok()).toBe(true)
+
+    await expect(page.getByTestId('active-filter-Séance')).toContainText('après le 18/06/2015')
+    await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
+    expect((await readRowCount(page)).shown).toBeGreaterThan(0)
+  })
+
+  test('"filter by this value" on a date cell selects that day in the calendar', async ({ page }) => {
+    await gotoExplore(page)
+
+    const index = await columnIndex(page, 'Séance')
+    await dataTable(page).locator('tbody tr').first().locator('td').nth(index).click()
+    // `Séance` holds bare days, so the raw value the popover shows is already the
+    // key the calendar gives its cells. A timestamp column would need its day
+    // extracted, which `toIsoDay` covers in the unit tests.
+    const isoDay = (await page.getByTestId('cell-raw-value').innerText()).trim()
+    await page.getByRole('button', { name: 'Filtrer par cette valeur' }).click()
+
+    // One filter, not two: the cell writes the same `date` filter the panel does,
+    // so the chip shows the formatted day only, never the raw value on its side
+    await expect(page.getByTestId('active-filter-Séance')).not.toContainText(isoDay)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+    await expect(panel.locator(`[data-value="${isoDay}"]`)).toHaveAttribute('data-selected', 'true')
+    await expect(panel.locator('[data-selected]')).toHaveCount(1)
+  })
+
+  test('"filter by this value" on an empty cell filters on the missing values', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+
+    // An empty cell carries no value to match: sent as an empty `__in`, the query
+    // is rejected by the Tabular API with a 400 that reaches the browser as a
+    // network error, and the whole preview is replaced by its error state.
+    const index = await columnIndex(page, 'Mots clés')
+    await dataTable(page).locator('tbody tr').locator(`td:nth-child(${index + 1})`)
+      .filter({ hasText: /^null$/ }).first().click()
+    await expect(page.getByTestId('cell-raw-value')).toHaveText('–')
+
+    const response = dataResponse(page, 'Mots clés__isnull')
+    await page.getByRole('button', { name: 'Filtrer par cette valeur' }).click()
+    expect((await response).ok()).toBe(true)
+
+    await expect(page.getByTestId('active-filter-Mots clés')).toContainText('null uniquement')
+    await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
+    expect((await readRowCount(page)).shown).toBeGreaterThan(0)
+  })
+
+  test('a date range filters between both days, ends included', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+
+    await panel.getByLabel('Condition du filtre').selectOption('between')
+    await panel.getByLabel('Année').selectOption('2015')
+    await panel.getByLabel('Mois', { exact: true }).selectOption('6')
+    await panel.locator('[data-value="2015-06-11"]').click()
+    await panel.locator('[data-value="2015-06-18"]').click()
+
+    const response = dataResponse(page, 'Séance__greater=2015-06-11')
+    await panel.getByRole('button', { name: 'Appliquer' }).click()
+    const url = decodeURIComponent((await response).url())
+    expect(url).toContain('Séance__strictly_less=2015-06-19')
+
+    await expect(page.getByTestId('active-filter-Séance')).toContainText('11/06/2015 – 18/06/2015')
+    // The range ends on the only sitting day of the month, so rows coming back is
+    // what proves the last day is inside the interval
+    await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
+    expect((await readRowCount(page)).shown).toBeGreaterThan(0)
+  })
+
+  test('clearing the date filter releases the rows it was holding back', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+
+    await panel.getByLabel('Année').selectOption('2015')
+    await panel.getByLabel('Mois', { exact: true }).selectOption('6')
+    await panel.locator('[data-value="2015-06-18"]').click()
+    await panel.getByRole('button', { name: 'Appliquer' }).click()
+    await expect(page.getByTestId('active-filter-Séance')).toBeVisible()
+
+    // The panel header carries an "Effacer" of its own, hence the test id
+    await panel.getByTestId('clear-date-filter').click()
+
+    await expect(page.getByTestId('active-filter-Séance')).toHaveCount(0)
+    await expect.poll(async () => (await readRowCount(page)).shown).toBe(unfiltered.shown)
+  })
+
+  test('removing the filter from its chip empties the calendar behind it', async ({ page }) => {
+    await gotoExplore(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+
+    await panel.getByLabel('Année').selectOption('2015')
+    await panel.getByLabel('Mois', { exact: true }).selectOption('6')
+    await panel.locator('[data-value="2015-06-18"]').click()
+    await panel.getByRole('button', { name: 'Appliquer' }).click()
+
+    // The panel stays mounted between openings, so dropping the filter from the
+    // chip has to reach back into it
+    await page.getByTestId('active-filter-Séance')
+      .getByRole('button', { name: 'Supprimer ce filtre' })
+      .click()
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    await expect(panel.locator('[data-selected]')).toHaveCount(0)
+  })
+
+  test('year column filter shows a number input', async ({ page }) => {
+    await gotoExplore(page)
+
+    await page.getByRole('button', { name: 'Filtrer Année' }).click()
+
+    await expect(
+      page.getByTestId('column-filter-Année').getByPlaceholder('Rechercher...'),
+    ).toHaveAttribute('type', 'number', { timeout: 3000 })
+  })
+
+  test('filtering a year column narrows the rows and shows the raw value in the chip', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+
+    await page.getByRole('button', { name: 'Filtrer Année' }).click()
+
+    // A year filters with `__exact`: `__contains` is not supported for numbers
+    const response = dataResponse(page, 'Année__exact=2011')
+    await page.getByTestId('column-filter-Année').getByPlaceholder('Rechercher...').fill('2011')
+    expect((await response).ok()).toBe(true)
+
+    // A non-boolean `exact` filter shows its own value, not Vrai/Faux
+    await expect(page.getByTestId('active-filter-Année')).toContainText('= 2011')
+    await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
+  })
+})
+
+test.describe('legacy filter params', () => {
+  test('?part= filters exactly, so I does not match II, III and IV', async ({ page }) => {
+    const response = dataResponse(page, 'Partie__exact=II')
+    await gotoExplore(page, '/explore/cada?part=II')
+    expect((await response).ok()).toBe(true)
+
+    await expect(page.getByTestId('active-filter-Partie')).toContainText('= II')
+
+    const { shown, total } = await readRowCount(page)
+    expect(shown).toBeGreaterThan(0)
+    expect(shown).toBeLessThan(total)
+  })
+
+  test('?administration= filters on a substring', async ({ page }) => {
+    const response = dataResponse(page, 'Administration__contains=Mairie de Paris')
+    await gotoExplore(page, '/explore/cada?administration=Mairie+de+Paris')
+    expect((await response).ok()).toBe(true)
+
+    await expect(page.getByTestId('active-filter-Administration')).toContainText('contient "Mairie de Paris"')
+
+    const { shown, total } = await readRowCount(page)
+    expect(shown).toBeGreaterThan(0)
+    expect(shown).toBeLessThan(total)
+  })
+
+  test('a badge of the detail page lands on the filtered explore', async ({ page }) => {
+    await page.goto('/explore/cada/20237028')
+    await page.waitForLoadState('networkidle')
+
+    await page.getByRole('link', { name: 'Subvention' }).click()
+
+    await page.waitForURL(/\/explore\/cada\?tag=Subvention/, { timeout: 30000 })
+    await expect(page.getByTestId('active-filter-Mots clés'))
+      .toContainText('contient "Subvention"', { timeout: 30000 })
+  })
+})

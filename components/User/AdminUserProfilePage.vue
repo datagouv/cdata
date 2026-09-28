@@ -167,6 +167,36 @@
         </BannerAction>
       </div>
       <BannerAction
+        v-if="isMeAdmin() && user.id !== me.id"
+        type="warning"
+        :title="$t('Forcer la rotation du mot de passe')"
+        class="mt-4"
+      >
+        <template v-if="rotationPending">
+          <TranslationT keypath="Rotation demandée {date}, en attente du changement de mot de passe par l'utilisateur.">
+            <template #date>
+              <FormattedDate
+                :date="user.password_rotation_demanded"
+                format="from-now"
+              />
+            </template>
+          </TranslationT>
+        </template>
+        <template v-else>
+          {{ $t("L'utilisateur sera déconnecté et devra définir un nouveau mot de passe à sa prochaine connexion.") }}
+        </template>
+
+        <template
+          v-if="!rotationPending"
+          #button
+        >
+          <RotatePasswordModal
+            :user
+            @rotated="emits('refresh')"
+          />
+        </template>
+      </BannerAction>
+      <BannerAction
         type="danger"
         :title="$t('Supprimer le compte')"
         class="mt-4"
@@ -190,12 +220,13 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, PaddedContainer, toast, SearchableSelect } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, FormattedDate, PaddedContainer, toast, SearchableSelect, TranslationT } from '@datagouv/components-next'
 import type { User } from '@datagouv/components-next'
 import { RiEditLine, RiSaveLine } from '@remixicon/vue'
 import DeleteUserModal from './DeleteUserModal.vue'
 import ChangePasswordModal from './ChangePasswordModal.vue'
 import ChangeEmailModal from './ChangeEmailModal.vue'
+import RotatePasswordModal from './RotatePasswordModal.vue'
 import TwoFactorSetupModal from './TwoFactorSetupModal.vue'
 import ApiTokensSection from './ApiTokensSection.vue'
 import { uploadProfilePicture } from '~/api/users'
@@ -218,9 +249,15 @@ const passwordId = useId()
 
 const loading = ref(false)
 
+const rotationPending = computed(() => {
+  if (!props.user.password_rotation_demanded) return false
+  if (!props.user.password_rotation_performed) return true
+  return new Date(props.user.password_rotation_performed) < new Date(props.user.password_rotation_demanded)
+})
+
 const profilePicture = ref<File | null>(null)
 
-const { data: allRoles } = await useAPI<Array<{ name: string }>>('/api/1/users/roles')
+const { data: allRoles } = await useAPI<Array<{ name: string }>>('/api/1/users/roles/')
 const allRolesAsString = computed(() => (allRoles.value || []).map(r => r.name))
 
 const { form } = useForm(props.user, {}, {})

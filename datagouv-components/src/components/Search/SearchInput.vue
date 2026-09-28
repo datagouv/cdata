@@ -12,9 +12,9 @@
       v-model="q"
       type="search"
       name="q"
-      class="input max-h-12 m-0 rounded-tl shadow-input-blue"
-      :aria-label="placeholder || t('Rechercher...')"
-      :placeholder="placeholder || t('Rechercher...')"
+      class="input flex-1 max-h-12 m-0 rounded-tl shadow-input-blue"
+      :aria-label="placeholder === null ? t('Rechercher...') : placeholder ?? t('Rechercher...')"
+      :placeholder="placeholder === null ? undefined : placeholder ?? t('Rechercher...')"
     >
     <BrandedButton
       class="rounded-l-none rounded-br-none rounded-tr min-h-12"
@@ -37,8 +37,8 @@ import BrandedButton from '../BrandedButton.vue'
 
 const q = defineModel<string>({ required: true })
 
-withDefaults(defineProps<{
-  placeholder?: string
+const props = withDefaults(defineProps<{
+  placeholder?: string | null
   autoFocus?: boolean
 }>(), {
   autoFocus: true,
@@ -57,6 +57,7 @@ const focus = () => {
 }
 
 onMounted(async () => {
+  if (!props.autoFocus) return
   await nextTick()
   focus()
 })

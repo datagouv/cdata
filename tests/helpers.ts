@@ -1,5 +1,152 @@
-import type { Page } from '@playwright/test'
-import { test } from '@playwright/test'
+import type { APIRequestContext, Page } from '@playwright/test'
+import { expect, test } from '@playwright/test'
+
+export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
+
+export type ApiDataset = { id: string, title: string, slug: string }
+export type ApiResource = { id: string, title: string, latest: string, url: string }
+export type ApiHarvestSource = { id: string, name: string, backend: string, schedule: string | null, config: Record<string, unknown> }
+export type ApiOrganization = { id: string, name: string }
+export type ApiContactPoint = { id: string, name: string, email: string | null, contact_form: string | null, role: string }
+export type ApiReuse = { id: string, title: string, slug: string }
+
+export async function createHarvestSource(request: APIRequestContext, name: string, backend: string, config: Record<string, unknown> = {}): Promise<ApiHarvestSource> {
+  const response = await request.post(`${API_BASE}/api/1/harvest/sources/`, {
+    data: {
+      name,
+      backend,
+      url: 'https://example.com/csw',
+      config,
+    },
+  })
+  if (!response.ok()) {
+    throw new Error(`Failed to create harvest source "${name}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+  return await response.json()
+}
+
+export async function deleteHarvestSources(request: APIRequestContext, ids: Array<string>): Promise<void> {
+  for (const id of ids.splice(0)) {
+    await request.delete(`${API_BASE}/api/1/harvest/source/${id}/`)
+  }
+}
+
+export async function createDataset(request: APIRequestContext, title: string, description: string, owned: { organization?: string, contactPoints?: Array<string> } = {}): Promise<ApiDataset> {
+  const response = await request.post(`${API_BASE}/api/1/datasets/`, {
+    data: {
+      title,
+      description,
+      frequency: 'unknown',
+      organization: owned.organization,
+      contact_points: owned.contactPoints,
+    },
+  })
+  if (!response.ok()) {
+    throw new Error(`Failed to create dataset "${title}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+  return await response.json()
+}
+
+export async function createRemoteResource(request: APIRequestContext, datasetId: string, title: string): Promise<ApiResource> {
+  const response = await request.post(`${API_BASE}/api/1/datasets/${datasetId}/resources/`, {
+    data: {
+      title,
+      type: 'main',
+      filetype: 'remote',
+      url: `https://example.com/${datasetId}/${encodeURIComponent(title)}.csv`,
+      format: 'csv',
+    },
+  })
+  return await response.json()
+}
+
+export async function createDatasetWithRemoteResources(request: APIRequestContext, title: string, resourceTitles: Array<string>): Promise<{ dataset: ApiDataset, resources: Array<ApiResource> }> {
+  const dataset = await createDataset(request, title, 'Dataset de test E2E')
+
+  const resources: Array<ApiResource> = []
+  for (const resourceTitle of resourceTitles) {
+    resources.push(await createRemoteResource(request, dataset.id, resourceTitle))
+  }
+
+  return { dataset, resources }
+}
+
+// The banner is the only way into the new explorer, and it only lives on the resources
+// tab: opt in from there, then navigate wherever the test needs to go.
+export async function enableNewExplorer(page: Page, url: string): Promise<void> {
+  await page.goto(url)
+  await page.getByRole('button', { name: 'Tester la nouvelle navigation' }).click()
+  await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
+}
+
+export async function deleteDatasets(request: APIRequestContext, ids: Array<string>): Promise<void> {
+  for (const id of ids.splice(0)) {
+    await request.delete(`${API_BASE}/api/1/datasets/${id}/`)
+  }
+}
+
+// `url` has to differ between reuses: udata hashes it into a unique `urlhash`.
+export async function createReuse(request: APIRequestContext, title: string, url: string): Promise<ApiReuse> {
+  const response = await request.post(`${API_BASE}/api/1/reuses/`, {
+    data: {
+      title,
+      url,
+      description: 'Réutilisation créée par les tests end to end',
+      type: 'application',
+      topic: 'transport_and_mobility',
+    },
+  })
+  if (!response.ok()) {
+    throw new Error(`Failed to create reuse "${title}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+  return await response.json()
+}
+
+export async function deleteReuses(request: APIRequestContext, ids: Array<string>): Promise<void> {
+  for (const id of ids.splice(0)) {
+    await request.delete(`${API_BASE}/api/1/reuses/${id}/`)
+  }
+}
+
+export async function createOrganization(request: APIRequestContext, name: string): Promise<ApiOrganization> {
+  const response = await request.post(`${API_BASE}/api/1/organizations/`, {
+    data: { name, description: 'Organisation créée par les tests end to end' },
+  })
+  if (!response.ok()) {
+    throw new Error(`Failed to create organization "${name}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+  return await response.json()
+}
+
+export async function createContactPoint(request: APIRequestContext, organizationId: string, contactPoint: { name: string, email: string, role: string }): Promise<ApiContactPoint> {
+  const response = await request.post(`${API_BASE}/api/1/contacts/`, {
+    data: { ...contactPoint, organization: organizationId },
+  })
+  if (!response.ok()) {
+    throw new Error(`Failed to create contact point "${contactPoint.name}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+  return await response.json()
+}
+
+// Contact points created through the UI have no id to collect, so they are cleaned up
+// from their organization rather than from a list built by the test.
+export async function deleteContactPointsOf(request: APIRequestContext, organizationIds: Array<string>): Promise<void> {
+  for (const organizationId of organizationIds) {
+    const response = await request.get(`${API_BASE}/api/1/organizations/${organizationId}/contacts/`)
+    if (!response.ok()) continue
+
+    const { data } = await response.json() as { data: Array<ApiContactPoint> }
+    for (const contactPoint of data) {
+      await request.delete(`${API_BASE}/api/1/contacts/${contactPoint.id}/`)
+    }
+  }
+}
+
+export async function deleteOrganizations(request: APIRequestContext, ids: Array<string>): Promise<void> {
+  for (const id of ids.splice(0)) {
+    await request.delete(`${API_BASE}/api/1/organizations/${id}/`)
+  }
+}
 
 // When clicking "Suivant" we execute the validation of the frequency input
 // because we blur outside the select. This validation create a warning (because

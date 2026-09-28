@@ -66,6 +66,7 @@ import type {
   DatasetSuggest,
   ReuseForm,
 } from '~/types/types'
+import { goToStep } from '~/utils/scroll'
 
 const { t } = useTranslation()
 const route = useRoute()
@@ -145,7 +146,7 @@ const isCurrentStepValid = computed(() => {
 })
 
 function moveToStep(step: number) {
-  return navigateTo({ path: route.path, query: { ...route.query, step } })
+  return goToStep(route, { ...route.query, step })
 }
 
 function reuseNext() {
@@ -171,10 +172,12 @@ async function save() {
     if (reuseForm.value.image && typeof reuseForm.value.image !== 'string') {
       const formData = new FormData()
       formData.set('file', reuseForm.value.image)
-      await $fileApi(`/api/1/reuses/${newReuse.value.id}/image/`, {
+      const resp = await $fileApi<{ image: string, success: boolean }>(`/api/1/reuses/${newReuse.value.id}/image/`, {
         method: 'POST',
         body: formData,
       })
+      // The reuse was created without its image (uploaded separately), refresh it so step 3 shows the image
+      newReuse.value.image = resp.image
     }
 
     await moveToStep(3)

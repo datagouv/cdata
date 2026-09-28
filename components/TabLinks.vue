@@ -6,10 +6,10 @@
         :key="link.label"
       >
         <CdataLink
-          v-if="show(link.href)"
+          v-if="link.show === undefined ? true : link.show"
           :to="link.href"
           class="whitespace-nowrap md:whitespace-normal group block rounded bg-none bg-transparent border border-transparent -m-px no-underline outline-none aria-current-page:border aria-current-page:border-new-primary aria-current-page:text-new-primary p-1"
-          :aria-current="isCurrentUrl(link.href) ? 'page': false"
+          :aria-current="isCurrentTab(link.href) ? 'page': false"
         >
           <span class="rounded px-2">
             {{ link.label }}
@@ -21,21 +21,11 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
-  links: Array<{ href: string, label: string }>
+const props = defineProps<{
+  links: Array<{ href: string, label: string, show?: boolean }>
 }>()
 
-const isCurrentUrl = useIsCurrentUrl()
-
-function show(href: string) {
-  const router = useRouter()
-  const route = router.resolve(href)
-  const me = useMaybeMe()
-  if (route.meta.requiredRole) {
-    return me.value?.roles?.includes(route.meta.requiredRole as string) ?? false
-  }
-  return true
-}
+const isCurrentTab = useIsCurrentTab(() => props.links)
 </script>
 
 <style scoped>

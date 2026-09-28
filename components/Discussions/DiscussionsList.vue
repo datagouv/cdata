@@ -14,11 +14,11 @@
           {{ $t('Vous consultez une discussion spécifique sur {subject}.', {
             subject: {
               Dataservice: $t('cette API'),
-              Dataset: $t('ce jeu de donnée'),
+              Dataset: $t('ce jeu de données'),
               Reuse: $t('cette réutilisation'),
               Post: $t('cet article'),
               Topic: $t('ce bouquet'),
-              Organization: $t('cette organization'),
+              Organization: $t('cette organisation'),
             }[type],
           }) }}
         </p>
@@ -129,10 +129,11 @@
         v-if="status != 'pending' && pageData && !pageData.total"
         class="flex flex-col items-center fr-my-3v"
       >
-        <nuxt-img
+        <img
           src="/illustrations/discussion.svg"
           class="h-20"
-        />
+          alt=""
+        >
 
         <template v-if="q">
           <p class="fr-text--bold fr-my-3v">

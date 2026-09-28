@@ -122,7 +122,7 @@
                         >
                           <li>
                             <BrandedButton
-                              :href="{ path: '/login', query: { next: route.fullPath } }"
+                              :href="{ path: '/login', query: { next: nextAfterAuth } }"
                               color="tertiary"
                               size="lg"
                               :icon="RiLockLine"
@@ -136,7 +136,7 @@
                             <BrandedButton
                               color="tertiary"
                               size="lg"
-                              :href="{ path: '/register', query: { next: route.fullPath } }"
+                              :href="{ path: '/register', query: { next: nextAfterAuth } }"
                               class="w-full"
                               :icon="RiAccountCircleLine"
                               @click="close"
@@ -307,11 +307,11 @@
                         />
                         <template v-else>
                           <div class="py-5 px-16 flex flex-col items-center text-center">
-                            <NuxtImg
+                            <img
                               class="w-6"
                               src="/illustrations/coffee.svg"
                               alt=""
-                            />
+                            >
                             <p class="m-0 font-bold text-xs">
                               {{ $t(`Vous n'avez pas encore de notifications`) }}
                             </p>
@@ -320,23 +320,35 @@
                             </p>
                           </div>
                         </template>
-                        <button
-                          v-if="nextPage"
-                          type="button"
-                          class="w-full bg-datagouv hover:bg-datagouv-dark text-white p-2 flex items-center justify-center"
-                          :disabled="isLoading"
-                          @click="loadMoreNotifications"
+                        <div
+                          v-if="nextPage || notificationsToRead.length > 0"
+                          class="px-2 py-2 space-y-2 border-t border-gray-default"
                         >
-                          <AnimatedLoader
-                            v-if="isLoading"
-                            class="size-5"
-                          />
-                          <RiAddLine
-                            v-else
-                            class="size-5"
-                          />
-                          {{ t('Charger plus de notifications') }}
-                        </button>
+                          <BrandedButton
+                            v-if="nextPage"
+                            type="button"
+                            color="primary"
+                            size="xs"
+                            :icon="RiAddLine"
+                            :loading="isLoading"
+                            class="w-full rounded-full"
+                            @click="loadMoreNotifications"
+                          >
+                            {{ t('Charger plus de notifications') }}
+                          </BrandedButton>
+                          <BrandedButton
+                            v-if="notificationsToRead.length > 0"
+                            type="button"
+                            color="secondary"
+                            size="xs"
+                            :icon="RiCheckLine"
+                            :loading="loading"
+                            class="w-full rounded-full"
+                            @click="() => markWithoutActionAsRead(notificationsCombinedList)"
+                          >
+                            {{ t('Marquer comme lues') }}
+                          </BrandedButton>
+                        </div>
                       </template>
                     </Toggletip>
                   </li>
@@ -368,7 +380,7 @@
                 <li>
                   <BrandedButton
                     color="tertiary"
-                    :href="{ path: '/login', query: { next: route.fullPath } }"
+                    :href="{ path: '/login', query: { next: nextAfterAuth } }"
                     :icon="RiLockLine"
                   >
                     {{ $t("Se connecter") }}
@@ -377,7 +389,7 @@
                 <li>
                   <BrandedButton
                     color="tertiary"
-                    :href="{ path: '/register', query: { next: route.fullPath } }"
+                    :href="{ path: '/register', query: { next: nextAfterAuth } }"
                     :icon="RiAccountCircleLine"
                   >
                     {{ $t("S'enregistrer") }}
@@ -508,12 +520,13 @@
 <script setup lang="ts">
 import { NuxtImg as _NuxtImg } from '#components'
 import type { Component } from 'vue'
-import { AnimatedLoader, BrandedButton, Toggletip, useGetUserAvatar, toast } from '@datagouv/components-next'
-import { RiAccountCircleLine, RiAddLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiTerminalLine, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
+import { BrandedButton, Toggletip, useGetUserAvatar, toast } from '@datagouv/components-next'
+import { RiAccountCircleLine, RiAddLine, RiCheckLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiTerminalLine, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
 import LogoAsText from '../LogoAsText.vue'
 import LogoImage from '../LogoImage.vue'
+import { useMarkAsRead } from '~/composables/useMarkAsRead'
 import { useNotifications } from '~/composables/useNotifications.client'
 import { useLogout, useMaybeMe } from '~/utils/auth'
 
@@ -529,11 +542,22 @@ const { t } = useTranslation()
 const config = useRuntimeConfig()
 const appConfig = useAppConfig()
 const me = useMaybeMe()
-const currentRoute = useRoute()
 const router = useRouter()
 const route = useRoute()
 const { isLoading } = useLoadingIndicator()
-const { refreshNotifications, loadMoreNotifications, pendingNotifications, nextPage, notificationsCombinedList } = useNotifications()
+const { refreshNotifications, loadMoreNotifications, pendingNotifications, nextPage, notificationsCombinedList, notificationsToRead } = useNotifications()
+const { markWithoutActionAsRead, loading } = useMarkAsRead()
+
+// On an auth page, `next` must keep pointing at the original destination instead of the
+// current page: a self-referencing `next` makes the login and register links generate a
+// new URL on every hop (/login?next=/register?next=/login?next=…), an infinite URL space
+// that crawlers walk endlessly, each hop being a full SSR render.
+const nextAfterAuth = computed(() => {
+  if (!isUnloggedSecurityRoute(route.path)) return route.fullPath
+
+  const next = Array.isArray(route.query.next) ? route.query.next[0] : route.query.next
+  return next || undefined
+})
 
 const menu = [
   { label: t('Données'), link: '/datasets' },
@@ -563,10 +587,10 @@ const publishMenu = [
 const filteredPublishMenu = computed(() => publishMenu.filter(item => !('show' in item) || item.show))
 
 function getAriaCurrent(link: string) {
-  if (currentRoute.path === link) {
+  if (route.path === link) {
     return 'page'
   }
-  const routesInPath = router.getRoutes().map(route => route.path).filter(path => currentRoute.path.startsWith(path))
+  const routesInPath = router.getRoutes().map(({ path }) => path).filter(path => route.path.startsWith(path))
   return routesInPath.includes(link)
 }
 

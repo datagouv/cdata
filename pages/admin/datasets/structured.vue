@@ -69,6 +69,7 @@ import type { DatasetForm, EnrichedLicense, ResourceForm, SpatialGranularity, Ta
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import type { AssociateSchemaForm } from '~/types/schema'
+import { goToStep } from '~/utils/scroll'
 
 const { t } = useTranslation()
 const config = useRuntimeConfig()
@@ -133,12 +134,24 @@ const currentStepNumber = computed(() => {
   return step
 })
 
+// Every step of the wizard lives under the same path, so without this they would all
+// share one title in the tab bar and in the history
+useSeoMeta({
+  title: () => `${steps.value[currentStepNumber.value - 1] ?? ''} - ${t('Publication structurée')}`,
+  robots: 'noindex',
+})
+
 const isCurrentStepValid = computed(() => {
   const step = currentStepNumber.value
 
   if (step < 1) return false
   if (step > steps.value.length) return false
   if (step === 4 && !newDataset.value) return false
+  // The form only lives in `useState`, so a page reload past the first step lands on a
+  // screen missing its schema and producer instead of a working one. The last step is
+  // left out: `save()` empties the form once published, and that screen only reads
+  // `newDataset`.
+  if (step > 1 && step < 4 && !(associateSchemaForm.value.selectedSchema && associateSchemaForm.value.owned)) return false
 
   return true
 })
@@ -147,7 +160,7 @@ function moveToStep(step: '2-sheet' | 1 | 2 | 3 | 4) {
   if (step !== '2-sheet') {
     file.value = null
   }
-  return navigateTo({ path: route.path, query: { ...route.query, step } })
+  return goToStep(route, { ...route.query, step })
 }
 
 function dataNext() {
@@ -259,6 +272,18 @@ async function updateDataset(asPrivate: boolean) {
 
   await navigateTo(`/datasets/${newDataset.value.slug}`)
 }
+
+// A fresh wizard entry must not reuse the dataset created during a previous
+// publication flow. Otherwise the `||` reuse in `save()` keeps the old dataset
+// and every new resource gets attached to it instead of a brand new dataset.
+// The page remounts on every step navigation, so we only clear on a genuine
+// fresh start (step 1, where no dataset of the current flow exists yet) to
+// avoid wiping the dataset created for the current flow on later steps.
+onMounted(() => {
+  if (currentStep.value === 1) {
+    clearNuxtState(NEW_DATASET_STATE)
+  }
+})
 
 watchEffect(() => {
   if (!isCurrentStepValid.value) {

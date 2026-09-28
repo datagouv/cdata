@@ -130,8 +130,10 @@ const config = useRuntimeConfig()
 const { t } = useTranslation()
 
 useSeoMeta({
-  title: t('Producteurs de données - {site}', { site: config.public.title }),
+  title: t('Publier des jeux de données publics - data.gouv.fr'),
+  description: t('Administrations, collectivités, entreprises : rejoignez plus de 5 000 organisations, publiez vos données simplement et gratuitement, tout en respectant vos obligations légales et en les valorisant auprès de milliers d\'utilisateurs.'),
 })
+
 defineOgImage('MainPage.takumi', {
   title: 'Producteurs',
   uri: '/producteurs',

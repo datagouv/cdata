@@ -59,7 +59,7 @@
                   {{ topic.name }}
                 </CdataLink>
               </td>
-              <td>{{ formatDate(topic.created_at) }}</td>
+              <td><FormattedDate :date="topic.created_at" /></td>
               <td>{{ elementsCounts[topic.id]?.['Dataset'] ?? "..." }}</td>
               <td>{{ elementsCounts[topic.id]?.['Reuse'] ?? "..." }}</td>
             </tr>
@@ -78,10 +78,11 @@
       v-if="status != 'pending' && pageData && !pageData.total"
       class="flex flex-col items-center"
     >
-      <nuxt-img
+      <img
         src="/illustrations/users.svg"
         class="h-20"
-      />
+        alt=""
+      >
       <template v-if="q">
         <p class="fr-text--bold fr-my-3v">
           {{ t(`Pas de résultats pour « {q} »`, { q }) }}
@@ -105,7 +106,7 @@
 
 <script setup lang="ts">
 import type { TopicV2, TopicElement, TopicElementClass } from '@datagouv/components-next'
-import { useFormatDate, LoadingBlock, Pagination, BrandedButton } from '@datagouv/components-next'
+import { FormattedDate, LoadingBlock, Pagination, BrandedButton } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { RiSearchLine } from '@remixicon/vue'
@@ -118,7 +119,6 @@ import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import AdminInput from '~/components/AdminInput.vue'
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 
 const config = useRuntimeConfig()
 const page = ref(1)
@@ -141,6 +141,10 @@ const query = computed(() => {
 })
 
 const { data: pageData, status } = await useAPI<PaginatedArray<TopicV2>>('/api/2/topics/', { query, lazy: true })
+
+watch(qDebounced, () => {
+  page.value = 1
+})
 
 const countElements = async (topic: TopicV2, _class: 'Dataset' | 'Reuse') => {
   const data = await $fetch<PaginatedArray<TopicElement>>(topic.elements.href, {

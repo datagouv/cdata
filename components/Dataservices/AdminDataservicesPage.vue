@@ -33,6 +33,7 @@
           v-if="organization"
           :href="pageData.total ? `${config.public.apiBase}/api/1/organizations/${organization.id}/dataservices.csv` : undefined"
           size="xs"
+          external
           :icon="RiDownloadLine"
         >
           {{ t('Télécharger le catalogue') }}
@@ -66,10 +67,11 @@
       v-if="status != 'pending' && pageData && !pageData.total"
       class="flex flex-col items-center"
     >
-      <nuxt-img
+      <img
         src="/illustrations/dataservice.svg"
         class="h-20"
-      />
+        alt=""
+      >
       <template v-if="q">
         <p class="fr-text--bold fr-my-3v">
           {{ t(`Pas de résultats pour « {q} »`, { q }) }}
@@ -139,6 +141,10 @@ const params = computed(() => {
 })
 
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Dataservice>>('/api/1/dataservices/', { lazy: true, query: params })
+
+watch(qDebounced, () => {
+  page.value = 1
+})
 
 watchEffect(async () => {
   if (pageData.value) {

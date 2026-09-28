@@ -2,11 +2,11 @@ import type { OrganizationReference, User } from '@datagouv/components-next'
 import type { NuxtApp, UseFetchOptions } from 'nuxt/app'
 import type { ApiFetch, PaginatedArray } from '~/types/types'
 /*
-  Example : const { data: datasets } = await useAPI<PaginatedArray<Dataset>>('/api/1/datasets')
+  Example : const { data: datasets } = await useAPI<PaginatedArray<Dataset>>('/api/1/datasets/')
 */
 export async function useAPI<T, U = T>(
   url: MaybeRefOrGetter<string>,
-  options?: UseFetchOptions<T, U> & { redirectOn404?: boolean, redirectOnSlug?: string },
+  options?: UseFetchOptions<T, U> & { redirectOn404?: boolean, redirectOnSlug?: string, raw?: boolean },
 ) {
   const { setCurrentOrganization, setCurrentUser } = useCurrentOwned()
   const isAdmin = isMeAdmin()
@@ -18,29 +18,33 @@ export async function useAPI<T, U = T>(
 
   const redirectOn404 = options && 'redirectOn404' in options && options.redirectOn404
   const redirectOnSlug = options && 'redirectOnSlug' in options && options.redirectOnSlug
-  const response = await useFetch(url, {
-    ...options,
-    $fetch: redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api,
-  })
-
-  const data = toValue(response.data) || {}
-
-  if (redirectOnSlug && redirectOnSlug in route.params && 'slug' in data && route.params[redirectOnSlug] !== data.slug) {
-    const newParams = { ...route.params }
-    newParams[redirectOnSlug] = data.slug as string
-
-    await nuxtApp.runWithContext(() => navigateTo({ name: route.name, params: newParams, query: route.query, hash: route.hash }, { redirectCode: 301 }))
+  const isRaw = options?.raw
+  const fetchOptions = { ...options }
+  if (!isRaw) {
+    fetchOptions.$fetch = redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api
   }
+  const response = await useFetch(url, fetchOptions)
 
-  if (isAdmin) {
-    // Check the response to see if an `organization` or an `owner` is present
-    // to add this organization/user to the menu.
-    if ('organization' in data && data.organization) {
-      setCurrentOrganization(data.organization as OrganizationReference)
+  if (!isRaw) {
+    const data = toValue(response.data) || {}
+
+    if (redirectOnSlug && redirectOnSlug in route.params && 'slug' in data && route.params[redirectOnSlug] !== data.slug) {
+      const newParams = { ...route.params }
+      newParams[redirectOnSlug] = data.slug as string
+
+      await nuxtApp.runWithContext(() => navigateTo({ name: route.name, params: newParams, query: route.query, hash: route.hash }, { redirectCode: 301 }))
     }
 
-    if ('owner' in data && data.owner) {
-      setCurrentUser(data.owner as User)
+    if (isAdmin) {
+      // Check the response to see if an `organization` or an `owner` is present
+      // to add this organization/user to the menu.
+      if ('organization' in data && data.organization) {
+        setCurrentOrganization(data.organization as OrganizationReference)
+      }
+
+      if ('owner' in data && data.owner) {
+        setCurrentUser(data.owner as User)
+      }
     }
   }
 
@@ -56,6 +60,45 @@ export function getUserBasedKey(route: string) {
 
 export function getDataFromSSRPayload(key: string, nuxtApp: NuxtApp) {
   return nuxtApp.payload.data[key] ? nuxtApp.payload.data[key] : undefined
+}
+
+/**
+ * Extract a human-readable error message from an API error response body.
+ * Handles non-JSON responses (e.g. HTML error pages) gracefully.
+ */
+export function getApiErrorMessage(data: unknown): string {
+  if (!data || typeof data !== 'object') {
+    if (typeof data === 'string' && data.length) {
+      console.warn('[API] Non-JSON error response:', data.slice(0, 200))
+    }
+    return ''
+  }
+
+  const record = data as Record<string, unknown>
+
+  if ('error' in record && typeof record.error === 'string') {
+    return record.error
+  }
+
+  if ('message' in record && typeof record.message === 'string') {
+    return record.message
+  }
+
+  if ('errors' in record && typeof record.errors === 'object' && record.errors !== null) {
+    return Object.entries(record.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
+  }
+
+  if (
+    'response' in record
+    && record.response
+    && typeof record.response === 'object'
+    && 'errors' in record.response
+    && Array.isArray((record.response as Record<string, unknown>).errors)
+  ) {
+    return ((record.response as Record<string, unknown>).errors as string[]).join(' ; ')
+  }
+
+  return ''
 }
 
 export function usePostApiWithCsrf() {
@@ -92,12 +135,11 @@ export async function apiFetchAll<T>(
      */
 
   const results: T[] = []
-  let nextPage: string | null = null
 
   // Initial query
   let response = await api<PaginatedArray<T>>(baseUrl)
   results.push(...response.data)
-  nextPage = response.next_page
+  let nextPage: string | null = response.next_page
 
   // Pagination
   while (nextPage) {

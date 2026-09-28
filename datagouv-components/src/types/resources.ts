@@ -46,7 +46,6 @@ export type OgcLayerInfo = { name: string, default_crs: string | null }
 
 export type WfsMetadata = {
   format: string
-  layers: Array<OgcLayerInfo>
   version: string
   detected_layer: OgcLayerInfo | null
   output_formats: Array<string>

@@ -107,12 +107,12 @@
           type="primary"
           class="mb-4 flex items-center space-x-5"
         >
-          <NuxtImg
+          <img
             src="/illustrations/reuse.svg"
             loading="lazy"
             class="size-14 shrink-0"
             alt=""
-          />
+          >
           <div class="w-full">
             <p class="font-bold mb-1">
               {{ t(`Qu'est-ce qu'une réutilisation ?`) }}
@@ -436,8 +436,8 @@ const addDescriptionAccordionId = useId()
 const addTagsAccordionId = useId()
 const addImageAccordionId = useId()
 
-const { data: types } = await useAPI<Array<ReuseType>>('/api/1/reuses/types', { lazy: true })
-const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics', { lazy: true })
+const { data: types } = await useAPI<Array<ReuseType>>('/api/1/reuses/types/', { lazy: true })
+const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/', { lazy: true })
 
 const MAX_TAGS_NB = 5
 

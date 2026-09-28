@@ -38,7 +38,7 @@ export type AccordionState = DSFRFormDefaultState | AccordionFunctionalState | D
 
 export type AdminBadgeState = DSFRFormDefaultState | FormFunctionalState | DSFRInfoState
 
-export type AdminBadgeType = 'primary' | 'secondary' | 'warning' | 'danger' | 'success' | 'default' | 'pink'
+export type AdminBadgeType = 'primary' | 'secondary' | 'warning' | 'danger' | 'success' | 'default' | 'pink' | 'teal'
 
 export type DatasetSortedBy = 'title' | 'created' | 'last_update' | 'reuses' | 'followers' | 'views'
 
@@ -330,13 +330,16 @@ export type NewContactPoint = Omit<ContactPoint, 'id'>
 export type ContactPointInForm = ContactPoint | NewContactPoint
 
 export type LinkToSubjectFallback = { customTitle: string, customUrl: string | undefined }
-export type LinkToSubject = Dataset | DatasetV2 | DatasetV2WithFullObject | Omit<Dataset, 'resources' | 'community_resources'> | Reuse | Dataservice | Organization | Thread | LinkToSubjectFallback
+export type LinkToSubject = Dataset | DatasetV2 | DatasetV2WithFullObject | Omit<Dataset, 'resources' | 'community_resources'> | Reuse | Dataservice | Organization | Thread | User | LinkToSubjectFallback
+
+export type TransferParty = (User & { class: 'User' }) | (Organization & { class: 'Organization' })
 
 export type TransferRequest = {
   id: string
-  user: User
-  owner: (User & { class: 'User' }) | (Organization & { class: 'Organization' })
-  recipient: (User & { class: 'User' }) | (Organization & { class: 'Organization' })
+  // Transfers created before December 2024 did not record who requested them
+  user: User | null
+  owner: TransferParty
+  recipient: TransferParty
   subject: (Dataset & { class: 'Dataset' }) | (Reuse & { class: 'Reuse' }) | (Dataservice & { class: 'Dataservice' })
   comment: string
   created: string

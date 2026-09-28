@@ -2,7 +2,6 @@ import { resolve } from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import toml from './rollup-plugin-smol-toml'
 
-const nbSitemapsDatasets = 10
 const isFrenchGovernment = true
 // const swrDuration = process.env.NUXT_TEMPLATE_CACHE_DURATION ? parseInt(process.env.NUXT_TEMPLATE_CACHE_DURATION) : 60
 // https://nuxt.com/docs/api/configuration/nuxt-config
@@ -15,6 +14,10 @@ export default defineNuxtConfig({
     '@nuxtjs/sitemap',
     '@nuxt/fonts',
     'nuxt-og-image',
+  ],
+
+  plugins: [
+    '~/plugins/logger.ts',
   ],
   devtools: { enabled: true, componentInspector: false },
 
@@ -46,6 +49,13 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // Names of the udata cookies that can carry an authenticated session. When the
+    // incoming request has none of them, the visitor is anonymous and `/api/1/me`
+    // can only answer 401, so we skip the call. Both names are configurable in
+    // udata (`SESSION_COOKIE_NAME`, `REMEMBER_COOKIE_NAME`) and must be kept in
+    // sync here.
+    sessionCookieName: 'session',
+    rememberCookieName: 'remember_token',
     crispIdentifier: '',
     crispKey: '',
     crispWebsiteId: '',
@@ -61,16 +71,22 @@ export default defineNuxtConfig({
       title: 'data.gouv.fr',
       description: 'Plateforme des données publiques françaises : télécharger, partager et réutiliser les données de l\'État et des collectivités',
       apiBase: 'http://dev.local:7000',
+      chartsApiBase: 'http://dev.local:7000',
       metricsApi: 'https://metric-api.data.gouv.fr',
       metricsSince: '2022-07-01',
       devApiKey: undefined,
       staticUrl: 'https://static.data.gouv.fr/static/',
       maxJsonPreviewCharSize: 1000000, // (~1MB)
       maxPdfPreviewByteSize: 10000000, // (10 MB)
+      maxImagePreviewByteSize: 10000000, // (10 MB)
       maxXmlPreviewCharSize: 100000, // (~100KB)
       schemaValidataUrl: 'https://validata.fr',
       tabularApiUrl: 'https://tabular-api.data.gouv.fr',
       tabularApiDataserviceId: undefined,
+      tabularApiPreviewResourcesId: undefined,
+      tabularApiPreviewStatsId: undefined,
+      cadaResourceId: undefined,
+      cadaDatasetUrl: 'https://www.data.gouv.fr/datasets/avis-et-conseils-de-la-cada',
 
       qualityDescriptionLength: 100,
       searchDebounce: 300,
@@ -90,25 +106,48 @@ export default defineNuxtConfig({
         url: 'https://schema.data.gouv.fr/',
         name: 'schema.data.gouv.fr',
       },
-      apiDocExternalLink: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/api/reference',
+      apiDocExternalLink: 'https://guides.data.gouv.fr/api-de-data.gouv.fr/reference',
       guidesUrl: 'https://guides.data.gouv.fr/',
-      guidesCreateAccount: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/creer-un-compte-utilisateur-et-rejoindre-une-organisation',
-      guidesHarvestingUrl: 'https://guides.data.gouv.fr/guide-data.gouv.fr/moissonnage',
+      guidesCreateAccount: 'https://guides.data.gouv.fr/compte-utilisateur/creer-un-compte-utilisateur',
+      guidesHarvestingUrl: 'https://guides.data.gouv.fr/moissonnage',
       guidesLabelsUrl: undefined, // TODO: add guide when created
-      guidesCommunityResources: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/ressource-communautaire',
+      guidesCommunityResources: 'https://guides.data.gouv.fr/jeux-de-donnees/ressource-communautaire',
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
 
-      guideDatasets: 'https://guides.data.gouv.fr/guide-data.gouv.fr/jeux-de-donnees',
-      guideReuses: 'https://guides.data.gouv.fr/guide-data.gouv.fr/reutilisations',
-      guideDataservices: 'https://guides.data.gouv.fr/guide-data.gouv.fr/api',
+      // Feedback form for the new resource explorer. Empty by default (set via
+      // NUXT_PUBLIC_EXPLORER_FEEDBACK_URL) — the banner's "Donner votre avis" link
+      // only shows when it is set.
+      explorerFeedbackUrl: '',
+
+      // Grist endpoint for the "Suivi des ouvertures" table on /suivi-de-publication/engagements-et-demandes.
+      // Provided through NUXT_PUBLIC_OUVERTURES_GRIST_BASE_URL / NUXT_PUBLIC_OUVERTURES_GRIST_TABLE
+      // (see .env) so the Grist document URL is not committed.
+      ouverturesGristBaseUrl: '',
+      ouverturesGristTable: '',
+      // Grist endpoint for the "Hvd" table on /suivi-de-publication/donnees-de-forte-valeur.
+      // Provided through NUXT_PUBLIC_HVD_GRIST_BASE_URL / NUXT_PUBLIC_HVD_GRIST_TABLE
+      // (see .env) so the Grist document URL is not committed.
+      hvdGristBaseUrl: '',
+      hvdGristTable: '',
+      ouverturesHvdUrl: '/suivi-de-publication/donnees-de-forte-valeur',
+
+      guideDatasets: 'https://guides.data.gouv.fr/jeux-de-donnees',
+      guideReuses: 'https://guides.data.gouv.fr/reutilisations',
+      guideDataservices: 'https://guides.data.gouv.fr/api',
       reusesOnboardingUsecases: 'https://www.data.gouv.fr/pages/onboarding/liste_cas_usage/',
-      dataservicesOnboarding: 'https://guides.data.gouv.fr/guide-data.gouv.fr/api/outils-pour-les-administrations',
+      dataservicesOnboarding: 'https://guides.data.gouv.fr/autres/outils-pour-les-administrations',
 
       homepagePublishDatasetOnboarding: '/producteurs',
       homepagePublishReuseOnboarding: '/reutilisateurs',
       homepageAboutUs: '/a-propos',
       homepageExplore: 'https://explore.data.gouv.fr',
+      // Featured resources shown on the /explore page. Override via env var:
+      // NUXT_PUBLIC_FEATURED_RESOURCE_IDS='["resource-id-1","resource-id-2"]'
+      featuredResourceIds: [
+        '1c5075ec-7ce1-49cb-ab89-94f507812daf', // Visas d'exploitations cinématographiques (CNC)
+        'df2cbcb3-da0a-4265-a24e-c36f2c787db2', // Indices de position sociale dans les lycées
+      ],
       homepageRightNow: {
         title: 'Données relatives aux Énergies',
         url: '/pages/donnees-energie',
@@ -124,7 +163,7 @@ export default defineNuxtConfig({
       },
 
       datasetPublishingGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
-      datasetQualityGuideUrl: 'https://guides.data.gouv.fr/guides-open-data/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
+      datasetQualityGuideUrl: 'https://guides.data.gouv.fr/guides/guide-qualite/ameliorer-la-qualite-dun-jeu-de-donnees-en-continu/ameliorer-le-score-de-qualite-des-metadonnees',
       datasetRestrictedGuideUrl: 'https://guides.data.gouv.fr/guides/guide-juridique/producteurs-de-donnees/quelles-sont-les-obligations',
       dataSearchFeedbackFormUrl: 'https://tally.so/r/mDKv1N',
       forumUrl: 'https://forum.data.gouv.fr/',
@@ -134,7 +173,7 @@ export default defineNuxtConfig({
       publishingDataserviceFeedbackUrl: 'https://tally.so/r/w2J7lL',
       publishingReuseFeedbackUrl: 'https://tally.so/r/mV98y6',
       publishingHarvesterFeedbackUrl: 'https://tally.so/r/3NMLOQ',
-      reuseGuideUrl: 'https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/reutilisations',
+      reuseGuideUrl: 'https://guides.data.gouv.fr/reutilisations/publier-une-reutilisation',
       harvesterRequestValidationUrl: 'https://support.data.gouv.fr/help/datagouv/moissonnage#support-tree',
       harvesterPreviewMaxItems: 20, // Should be the same as `HARVEST_PREVIEW_MAX_ITEMS` in udata
       harvestEnableManualRun: false,
@@ -143,7 +182,7 @@ export default defineNuxtConfig({
       newsletterSubscriptionUrl: 'https://qvo970cr.sibpages.com/',
 
       maxNumberOfResourcesToUploadInParallel: 3,
-      resourceFileUploadChunk: 2 * 1000 * 1000,
+      resourceFileUploadChunk: 20 * 1000 * 1000,
       maxSortableFiles: 50,
 
       maxNumberOfDatasetsForDataserviceUpdate: 200,
@@ -174,6 +213,19 @@ export default defineNuxtConfig({
           { value: 'notspecified' },
         ],
       },
+
+      // Shown first in the update frequency selects, in this (temporal) order.
+      // Every other frequency of the API vocabulary follows, in its own group.
+      commonFrequencies: [
+        'continuous',
+        'daily',
+        'weekly',
+        'monthly',
+        'quarterly',
+        'annual',
+        'punctual',
+        'irregular',
+      ],
 
       // A corresponding SVG at `datagouv-components/assets/labels` will be shown before the badge label
       datasetBadges: ['spd', 'inspire', 'hvd', 'sl', 'sr'],
@@ -209,11 +261,19 @@ export default defineNuxtConfig({
     '/*/admin/**': { ssr: true },
   },
 
-  sourcemap: { client: 'hidden' },
+  // Server sourcemaps disabled: Nuxt 4.4 OOMs the Nitro bundle when generating them
+  // (>4GB heap usage). Our Sentry release workflow only uploads client sourcemaps
+  // (.output/public/_nuxt) anyway, so this has no impact on observability today.
+  sourcemap: { client: 'hidden', server: false },
 
   devServer: {
     port: 3000,
-    host: 'dev.local',
+    // Bind to the IPv6/IPv4 "any" wildcard rather than resolving the 'dev.local'
+    // hostname at listen-time: Node's dns.lookup() for a hostname follows live
+    // OS network-state ordering (RFC 6724) since Node 17, so binding to only
+    // whichever family the OS prefers *right now* silently flips between IPv4
+    // and IPv6 across sleep/wake or network changes, breaking dev.local access.
+    host: '::',
   },
 
   features: {
@@ -236,18 +296,21 @@ export default defineNuxtConfig({
       // It must optimized them to be able to handle commonjs dependencies.
       // See https://vite.dev/guide/dep-pre-bundling.html#customizing-the-behavior
       include: [
-        'debug',
-        'extend',
+        'debug', // CJS
+        'extend', // CJS
         'highlight.js',
         'rehype-highlight',
-        'unist-util-find',
-        'unist-util-find-all-between',
+        'unist-util-find', // CJS
+        'unist-util-find-all-between', // CJS
         'vue',
         'vue-router',
-        'maplibre-gl',
+        'maplibre-gl', // CJS
         'geopf-extensions-openlayers',
-        'vue3-xml-viewer',
+        'vue3-xml-viewer', // CJS
         'uqr',
+        'pdfjs-dist',
+        '@vue/devtools-core',
+        '@vue/devtools-kit',
       ],
       // `@datagouv/components-next` shouldn't be optimize otherwise its vue instance is not the same
       // as the one used in udata-front-kit. This cause errors with the `provide` / `inject` functions
@@ -345,14 +408,6 @@ export default defineNuxtConfig({
       xl: 1248,
     },
   },
-  ogImage: {
-    defaults: {
-      takumi: {
-        devicePixelRatio: 2,
-      },
-    },
-  },
-
   sentry: {
     sourceMapsUploadOptions: {
       // disable sourcemaps upload from build, it's done later during the release with sentry-cli
@@ -363,45 +418,18 @@ export default defineNuxtConfig({
   sitemap: {
     cacheMaxAgeSeconds: 3600, // 1 hour
     sitemaps: {
-      content: {
+      static: {
         includeAppSources: true,
         exclude: ['/admin/**'],
       },
-      dataservices: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=dataservice',
-        ],
-      },
-      organizations: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=organization',
-        ],
-      },
-      posts: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=post',
-        ],
-      },
-      reuses: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=reuse',
-        ],
-      },
-      // split datasets between nbSitemapsDatasets sections
-      ...Array.from({ length: nbSitemapsDatasets }, (_, i) => i + 1).map(section => ({
-        [`datasets_${section}`]: {
-          sources: [
-            `/nuxt-api/sitemaps/urls?type=dataset&section=${section}&nbSitemapSections=${nbSitemapsDatasets}`,
-          ],
-        },
-      })).reduce((acc, obj) => ({ ...acc, ...obj }), {}),
       pages: {
         sources: [
           '/nuxt-api/sitemaps/pages',
         ],
       },
-      // TODO: add support
     },
+
+    // TODO: add /support pages
   },
   // TODO: add sentry config for stack traces based on source maps
   // https://docs.sentry.io/platforms/javascript/guides/nuxt/#add-readable-stack-traces-to-errors

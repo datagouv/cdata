@@ -47,7 +47,7 @@
           <CopyButton
             :label="t('Copier le lien')"
             :copied-label="t('Lien copié !')"
-            :text="resourceExternalUrl"
+            :text="externalUrl"
             class="z-2"
           />
         </div>
@@ -56,11 +56,21 @@
             :resource
           />
           <RiSubtractLine
-            v-if="resource.schema"
+            v-if="resource.schema?.name || resource.schema?.url"
             aria-hidden="true"
             class="size-3 fill-gray-medium"
           />
-          <span class="text-xs mb-0">{{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(lastUpdate) }) }}</span>
+          <TranslationT
+            class="text-xs mb-0"
+            keypath="Mis à jour {date}"
+          >
+            <template #date>
+              <FormattedDate
+                :date="lastUpdate"
+                format="relative"
+              />
+            </template>
+          </TranslationT>
           <RiSubtractLine
             aria-hidden="true"
             class="size-3 fill-gray-medium"
@@ -197,7 +207,10 @@
             :key="tab.key"
             class="px-4"
           >
-            <div v-if="tab.key === 'map'">
+            <div
+              v-if="tab.key === 'map'"
+              class="-mx-4 h-[600px]"
+            >
               <Pmtiles
                 v-if="hasPmtiles"
                 :resource="resource"
@@ -222,6 +235,10 @@
               <!-- Show XML viewer for XML files -->
               <XmlPreview
                 v-else-if="resource.format && resource.format.toLowerCase() === 'xml'"
+                :resource="resource"
+              />
+              <ImagePreview
+                v-else-if="isImagePreviewFormat(resource.format)"
                 :resource="resource"
               />
               <!-- Show Datafair embedded preview (koumoul) -->
@@ -265,91 +282,13 @@
             <div
               v-if="tab.key === 'downloads'"
             >
-              <dl class="fr-pl-0">
-                <dt
-                  v-if="resource.format === 'url'"
-                  class="font-bold fr-text--sm fr-mb-0"
-                >
-                  {{ t("URL d'origine") }}
-                </dt>
-                <dt
-                  v-else
-                  class="font-bold fr-text--sm fr-mb-0"
-                >
-                  {{ t('Format original') }}
-                </dt>
-                <dd class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
-                  <span v-if="resource.format === 'url'">
-                    <a
-                      :href="resource.latest"
-                      class="fr-link no-icon-after"
-                      rel="ugc nofollow noopener"
-                      target="_blank"
-                      @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
-                    >
-                      <component
-                        :is="config.textClamp"
-                        v-if="config && config.textClamp"
-                        :auto-resize="true"
-                        :max-lines="1"
-                        :text="resource.url"
-                      >
-                        <template #after>
-                          <span class="fr-ml-1v fr-icon-external-link-line fr-icon--sm" />
-                        </template>
-                      </component>
-                    </a>
-                  </span>
-                  <span v-else>
-                    <span class="text-datagouv fr-icon-download-line fr-icon--sm fr-mr-1v fr-mt-1v" />
-                    <a
-                      :href="resource.latest"
-                      class="fr-link"
-                      rel="ugc nofollow noopener"
-                      @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${resource.format}`)"
-                    >
-                      <span>{{ t('Format {format}', { format: resource.format }) }}<span v-if="resourceFilesize"> - {{ filesize(resourceFilesize) }}</span></span>
-                    </a>
-                  </span>
-                  <CopyButton
-                    :label="t('Copier le lien')"
-                    :copied-label="t('Lien copié !')"
-                    :text="resource.latest"
-                    class="relative"
-                  />
-                </dd>
-                <template v-if="generatedFormats.length">
-                  <dt class="font-bold fr-text--sm fr-mb-0">
-                    {{ t('Formats générés automatiquement par {platform} (dernière mise à jour {date})', { platform: config.name, date: conversionsLastUpdate }) }}
-                  </dt>
-                  <dd
-                    v-for="generatedFormat in generatedFormats"
-                    :key="generatedFormat.format"
-                    class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center"
-                  >
-                    <span>
-                      <span class="text-datagouv fr-icon-download-line fr-icon--sm fr-mr-1v fr-mt-1v" />
-                      <a
-                        :href="generatedFormat.url"
-                        class="fr-link"
-                        rel="ugc nofollow noopener"
-                        @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${generatedFormat.format}`)"
-                      >
-                        <span>{{ t('Format {format}', { format: generatedFormat.format }) }}<span v-if="generatedFormat.size"> - {{ filesize(generatedFormat.size) }}</span></span>
-                      </a>
-                    </span>
-                    <CopyButton
-                      :label="t('Copier le lien')"
-                      :copied-label="t('Lien copié !')"
-                      :text="generatedFormat.url"
-                      class="relative"
-                    />
-                  </dd>
-                </template>
-              </dl>
+              <Downloads
+                :resource="resource"
+                :dataset="dataset"
+              />
             </div>
             <div
-              v-if="tab.key === 'swagger'"
+              v-if="tab.key === 'api'"
             >
               <div class="fr-mb-4w">
                 <p>{{ t("Cette API est générée automatiquement par {platform} à partir du fichier.", { platform: config.name }) }}</p>
@@ -374,7 +313,8 @@ import { ref, computed, defineAsyncComponent } from 'vue'
 import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiSubtractLine } from '@remixicon/vue'
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
 import { filesize, summarize } from '../../functions/helpers'
-import { useFormatDate } from '../../functions/dates'
+import FormattedDate from '../FormattedDate.vue'
+import TranslationT from '../TranslationT.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
 import type { CommunityResource, Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
@@ -387,7 +327,7 @@ import { trackEvent } from '../../functions/matomo'
 import CopyButton from '../CopyButton.vue'
 import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
-import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
+import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceFilesize, isImagePreviewFormat, resolveResourceExternalUrl } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useHasTabularData } from '../../composables/useHasTabularData'
@@ -396,11 +336,11 @@ import SchemaBadge from './SchemaBadge.vue'
 import ResourceIcon from './ResourceIcon.vue'
 import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
+import Downloads from './Downloads.vue'
 import Preview from './Preview.vue'
 import { isOrganizationCertified } from '../../functions/organizations'
 import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
 
-const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 const URL_FORMATS = ['url', 'doi', 'www:link', ' www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
 
 const props = withDefaults(defineProps<{
@@ -409,6 +349,8 @@ const props = withDefaults(defineProps<{
   isCommunityResource?: boolean
   resource: Resource | CommunityResource
   canEdit?: boolean
+  // Overrides the "Copier le lien" target.
+  resourceExternalUrl?: (resource: Resource | CommunityResource) => string
 }>(), {
   expandedOnMount: false,
   isCommunityResource: false,
@@ -422,18 +364,18 @@ const Pmtiles = defineAsyncComponent(() => import('./Pmtiles.client.vue'))
 const JsonPreview = defineAsyncComponent(() => import('./JsonPreview.client.vue'))
 const PdfPreview = defineAsyncComponent(() => import('./PdfPreview.client.vue'))
 const XmlPreview = defineAsyncComponent(() => import('./XmlPreview.client.vue'))
+const ImagePreview = defineAsyncComponent(() => import('./ImagePreview.client.vue'))
 const DatafairPreview = defineAsyncComponent(() => import('./Datafair.client.vue'))
 
 const { t } = useTranslation()
-const { formatRelativeIfRecentDate } = useFormatDate()
 const checkTabularData = useHasTabularData()
 
 const hasPreview = computed(() => {
-  // For JSON, PDF, and XML files, show preview.
+  // For JSON, PDF, XML, and image files, show preview.
   // We cannot check for CORS issues here because we cannot use an async component here.
   // If there is a CORS issue when fetching the file for preview, it will be managed and displayed as an error banner by the preview component.
   const format = props.resource.format?.toLowerCase()
-  return format === 'json' || format === 'pdf' || format === 'xml'
+  return format === 'json' || format === 'pdf' || format === 'xml' || isImagePreviewFormat(format)
 })
 
 const hasTabularData = computed(() => checkTabularData(props.resource))
@@ -459,24 +401,6 @@ const format = computed(() => getResourceFormatIcon(props.resource.format) ? pro
 const ogcService = computed(() => detectOgcService(props.resource))
 
 const ogcWms = computed(() => ogcService.value === 'wms')
-
-const generatedFormats = computed(() => {
-  const formats = GENERATED_FORMATS
-    .filter(format => `analysis:parsing:${format}_url` in props.resource.extras)
-    .map(format => ({
-      url: props.resource.extras[`analysis:parsing:${format}_url`] as string,
-      size: props.resource.extras[`analysis:parsing:${format}_size`] as number | undefined,
-      format: format,
-    }))
-  if ('analysis:parsing:parsing_table' in props.resource.extras) {
-    formats.push({
-      url: `${config.tabularApiUrl}/api/resources/${props.resource.id}/data/json/`,
-      size: undefined,
-      format: 'json',
-    })
-  }
-  return formats
-})
 
 const open = ref(props.expandedOnMount)
 const toggle = () => {
@@ -513,7 +437,7 @@ const tabsOptions = computed(() => {
   options.push({ key: 'downloads', label: t('Téléchargements') })
 
   if (hasTabularData.value) {
-    options.push({ key: 'swagger', label: t('Swagger') })
+    options.push({ key: 'api', label: t('API') })
   }
 
   return options
@@ -540,14 +464,13 @@ const communityResource = computed<CommunityResource | null>(() => {
 const owner = computed(() => communityResource.value ? getOwnerName(communityResource.value) : null)
 
 const lastUpdate = props.resource.last_modified
-const conversionsLastUpdate = computed(() => formatRelativeIfRecentDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined))
 const availabilityChecked = props.resource.extras && 'check:available' in props.resource.extras
 const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 
 const unavailable = availabilityChecked && props.resource.extras['check:available'] === false
 const downloadButtonTitle = unavailable ? t(`Le robot de {certifier} n'a pas pu accéder à ce fichier - Télécharger le fichier en {format}`, { certifier: config.name, format: format.value }) : t(`Télécharger le fichier en {format}`, { format: format.value })
 
-const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset, props.resource))
+const externalUrl = computed(() => resolveResourceExternalUrl(props.dataset, props.resource, props.resourceExternalUrl))
 
 const resourceContentId = 'resource-' + props.resource.id
 const resourceHeaderId = 'resource-' + props.resource.id + '-header'

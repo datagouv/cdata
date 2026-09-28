@@ -78,7 +78,10 @@
           &mdash;
           <span>{{ getActivityTranslation(activities.data[0]) }}</span>
           &mdash;
-          <span class="text-gray-medium">{{ formatDate(activities.data[0].created_at) }}</span>
+          <FormattedDate
+            class="text-gray-medium"
+            :date="activities.data[0].created_at"
+          />
         </p>
       </div>
 
@@ -89,7 +92,7 @@
           { href: `${getReuseAdminUrl(reuse)}/datasets`, label: t('Jeux de données') },
           { href: `${getReuseAdminUrl(reuse)}/dataservices`, label: t('API') },
           { href: `${getReuseAdminUrl(reuse)}/discussions`, label: t('Discussions') },
-          { href: `${getReuseAdminUrl(reuse)}/activities`, label: t('Activités') },
+          { href: `${getReuseAdminUrl(reuse)}/activities`, label: t('Activités'), show: reuse.permissions.edit },
         ]"
       />
 
@@ -102,7 +105,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, summarize, useFormatDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
+import { BrandedButton, summarize, FormattedDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
 import type { Activity, Reuse } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiEyeLine, RiStarLine } from '@remixicon/vue'
 import ReuseBadge from '~/components/AdminBadge/ReuseBadge.vue'
@@ -110,16 +113,16 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 import type { PaginatedArray } from '~/types/types'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const { t } = useTranslation()
 
 const me = useMe()
 const route = useRoute()
-const { formatDate } = useFormatDate()
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
 const { data: reuse } = await useAPI<Reuse>(url, { redirectOn404: true })
 const { data: activities } = await useAPI<PaginatedArray<Activity>>('/api/1/activity/', {

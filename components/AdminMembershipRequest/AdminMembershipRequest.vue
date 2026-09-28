@@ -71,7 +71,10 @@
           </div>
         </div>
         <div class="text-sm/6 text-gray-medium">
-          {{ formatDate(new Date(request.created), { dateStyle: 'long', timeStyle: 'short' }) }}
+          <FormattedDate
+            :date="request.created"
+            :options="{ dateStyle: 'long', timeStyle: 'short' }"
+          />
         </div>
       </div>
       <div
@@ -96,10 +99,17 @@
     type="primary"
     :icon="RiUserAddLine"
     :badge="$t(`Demande de rattachement`)"
-    :user="request.user!"
     :date="new Date(request.created)"
   >
+    <template #avatar>
+      <Avatar
+        :user="request.user!"
+        rounded
+        :size="24"
+      />
+    </template>
     <template #title>
+      <span class="font-bold">{{ request.user!.first_name }} {{ request.user!.last_name }}</span>
       <code
         v-if="request.user?.email"
         class="text-gray-medium bg-gray-lower px-1 text-sm rounded-sm break-all"
@@ -117,6 +127,7 @@
         color="primary"
         size="xs"
         :icon="RiCheckLine"
+        :loading="loading"
         @click="accept"
       >
         {{ $t('Accepter la demande') }}
@@ -187,7 +198,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, useFormatDate } from '@datagouv/components-next'
+import { Avatar, BrandedButton, FormattedDate } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiCheckLine, RiMailLine, RiMailSendLine, RiUserAddLine } from '@remixicon/vue'
 import InputGroup from '../InputGroup/InputGroup.vue'
@@ -207,7 +218,6 @@ const emits = defineEmits<{
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { formatDate } = useFormatDate()
 const loading = ref(false)
 
 const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })

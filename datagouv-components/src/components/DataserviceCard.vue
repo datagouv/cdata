@@ -53,6 +53,7 @@
     <ObjectCardHeader
       :icon="isTabularApi ? RiSparklingLine : RiTerminalLine"
       :url="dataserviceUrl || dataservice.self_web_url"
+      :title-tag="titleTag"
     >
       {{ dataservice.title }}
     </ObjectCardHeader>
@@ -70,9 +71,19 @@
         class="size-4 flex-none fill-gray-medium"
       />
       <!-- https://github.com/datagouv/cdata/issues/653 -->
-      <p class="text-sm whitespace-nowrap mb-0 text-gray-medium">
-        {{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(dataservice.metadata_modified_at, { dateStyle: 'medium' }) }) }}
-      </p>
+      <TranslationT
+        tag="p"
+        class="text-sm whitespace-nowrap mb-0 text-gray-medium"
+        keypath="Mis à jour {date}"
+      >
+        <template #date>
+          <FormattedDate
+            :date="dataservice.metadata_modified_at"
+            format="relative"
+            :options="{ dateStyle: 'medium' }"
+          />
+        </template>
+      </TranslationT>
       <RiSubtractLine
         aria-hidden="true"
         class="size-4 flex-none fill-gray-medium"
@@ -98,6 +109,11 @@
         </p>
       </div>
     </div>
+    <DataserviceQualityInline
+      v-if="dataservice.quality"
+      :quality="dataservice.quality"
+    />
+
     <ObjectCardShortDescription
       v-if="showDescription"
       :text="dataservice.description"
@@ -112,9 +128,9 @@ import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import { RiArchiveLine, RiEyeLine, RiLockLine, RiPassValidLine, RiSparklingLine, RiStarLine, RiSubtractLine, RiTerminalLine } from '@remixicon/vue'
 import { useComponentsConfig } from '../config'
-import { useFormatDate } from '../functions/dates'
 import { summarize } from '../functions/helpers'
 import type { Dataservice } from '../types/dataservices'
+import type { TitleTag } from '../types/ui'
 import { useTranslation } from '../composables/useTranslation'
 import OrganizationLogo from './OrganizationLogo.vue'
 import Avatar from './Avatar.vue'
@@ -124,12 +140,17 @@ import ObjectCardBadge from './ObjectCardBadge.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
+import DataserviceQualityInline from './DataserviceQualityInline.vue'
+import FormattedDate from './FormattedDate.vue'
+import TranslationT from './TranslationT.vue'
 
 type Props = {
   dataservice: Dataservice
   dataserviceUrl?: RouteLocationRaw
-  organizationUrl?: RouteLocationRaw
+  // undefined falls back to the organization's data.gouv.fr page; pass null to render plain, non-linked text
+  organizationUrl?: RouteLocationRaw | null
   showDescription?: boolean
+  titleTag?: TitleTag
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -137,7 +158,6 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { t } = useTranslation()
-const { formatRelativeIfRecentDate } = useFormatDate()
 
 const config = useComponentsConfig()
 const isTabularApi = computed(() => {

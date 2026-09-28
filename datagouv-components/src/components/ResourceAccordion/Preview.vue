@@ -48,7 +48,7 @@
               >
                 <BrandedButton
                   color="tertiary"
-                  :icon="isSortedBy(col) && sortConfig && sortConfig.type == 'asc' ? RiArrowUpLine : RiArrowDownLine"
+                  :icon="isSortedBy(col) && sortConfig && sortConfig.direction === 'asc' ? RiArrowUpLine : RiArrowDownLine"
                   icon-right
                   size="xs"
                   @click="sortByField(col)"
@@ -56,7 +56,7 @@
                   <!-- There is a weird bug with `sr-only`, I needed to add a relative parent to avoid full page x scrolling into the void…  -->
                   <span class="relative">
                     {{ col }}
-                    <span class="sr-only">{{ sortConfig && sortConfig.type == 'desc' ? t("Trier par ordre croissant") : t("Trier par ordre décroissant") }}</span>
+                    <span class="sr-only">{{ sortConfig && sortConfig.direction === 'desc' ? t("Trier par ordre croissant") : t("Trier par ordre décroissant") }}</span>
                   </span>
                 </BrandedButton>
               </th>
@@ -90,7 +90,11 @@
         @change="changePage"
       />
       <div class="fr-px-5v">
-        {{ t("Dernière mise à jour de la prévisualisation : {date}", { date: lastUpdate }) }} —
+        <TranslationT keypath="Dernière mise à jour de la prévisualisation : {date}">
+          <template #date>
+            <FormattedDate :date="parsingFinishedAt" />
+          </template>
+        </TranslationT> —
         {{ t('{count} colonnes', columns.length) }} —
         {{ t('Lignes {count}', rowCount) }}
       </div>
@@ -103,7 +107,8 @@ import { computed, onMounted, ref } from 'vue'
 import { RiArrowDownLine, RiArrowUpLine, RiExternalLinkFill } from '@remixicon/vue'
 import Pagination from '../Pagination.vue'
 import { getData, type SortConfig } from '../../functions/tabularApi'
-import { useFormatDate } from '../../functions/dates'
+import FormattedDate from '../FormattedDate.vue'
+import TranslationT from '../TranslationT.vue'
 import { trackEvent } from '../../functions/matomo'
 import type { Resource } from '../../types/resources'
 import { useComponentsConfig } from '../../config'
@@ -116,13 +121,12 @@ import PreviewLoader from './PreviewLoader.vue'
 const props = defineProps<{ resource: Resource }>()
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 
 const rows = ref<Array<Record<string, unknown>>>([])
 const columns = ref<Array<string>>([])
 const loading = ref(true)
 const hasError = ref(false)
-const sortConfig = ref<SortConfig>(null)
+const sortConfig = ref<SortConfig | null>(null)
 const rowCount = ref(0)
 const config = useComponentsConfig()
 const pageSize = computed(() => config.tabularApiPageSize || 15)
@@ -138,11 +142,11 @@ function isSortedBy(col: string) {
 /**
  * Retrieve preview necessary infos
  */
-async function getTableInfos(page: number, sortConfig?: SortConfig) {
+async function getTableInfos(page: number, sortConfig?: SortConfig | null) {
   try {
     // Check that this function return wanted data
     const response = await getData(config, props.resource.id, page, sortConfig)
-    if ('data' in response && response.data && response.data.length > 0) {
+    if ('data' in response && response.data && 0 in response.data) {
       // Update existing rows
       rows.value = response.data
       columns.value = Object.keys(response.data[0]).filter(item => item !== '__id')
@@ -172,31 +176,31 @@ function changePage(page: number) {
  * Sort by a specific column
  */
 function sortByField(col: string) {
-  if (sortConfig.value && sortConfig.value.column == col) {
-    if (sortConfig.value.type == 'asc') {
-      sortConfig.value.type = 'desc'
+  if (sortConfig.value && sortConfig.value.column === col) {
+    if (sortConfig.value.direction === 'asc') {
+      sortConfig.value.direction = 'desc'
     }
     else {
-      sortConfig.value.type = 'asc'
+      sortConfig.value.direction = 'asc'
     }
   }
   else {
     if (!sortConfig.value) {
       sortConfig.value = {
         column: col,
-        type: 'asc',
+        direction: 'asc',
       }
     }
     else {
       sortConfig.value.column = col
-      sortConfig.value.type = 'asc'
+      sortConfig.value.direction = 'asc'
     }
   }
   currentPage.value = 1
   getTableInfos(currentPage.value, sortConfig.value)
 };
 
-const lastUpdate = computed(() => formatDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined))
+const parsingFinishedAt = computed(() => props.resource.extras['analysis:parsing:finished_at'] as string | undefined)
 
 onMounted(() => {
   getTableInfos(currentPage.value)

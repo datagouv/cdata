@@ -66,11 +66,12 @@
       <div class="px-6 flex justify-center py-8 sm:py-24">
         <div class="w-full max-w-lg space-y-8">
           <div class="space-y-2">
-            <nuxt-img
+            <img
               aria-hidden="true"
               src="/illustrations/dataset.svg"
               class="h-16 grayscale"
-            />
+              alt=""
+            >
             <h2 class="text-3xl text-gray-title font-extrabold">
               {{ $t('Le catalogue des données françaises') }}
             </h2>
@@ -158,11 +159,12 @@
       <div class="px-6 flex justify-center py-8 sm:py-24">
         <div class="w-full max-w-lg space-y-8">
           <div class="space-y-2">
-            <nuxt-img
+            <img
               src="/illustrations/discussion.svg"
               class="h-16 grayscale"
               aria-hidden="true"
-            />
+              alt=""
+            >
             <h2 class="text-3xl text-gray-title font-extrabold">
               {{ $t('Une communauté dynamique et engagée') }}
             </h2>
@@ -345,7 +347,7 @@
                 v-for="platform in [
                   { name: 'ecologie', url: 'https://ecologie.data.gouv.fr' },
                   { name: 'transport', url: 'https://transport.data.gouv.fr' },
-                  { name: 'météo', url: 'https://meteo.data.gouv.fr' },
+                  { name: 'meteo', url: 'https://meteo.data.gouv.fr' },
                   { name: 'culture', url: 'https://culture.data.gouv.fr' },
                   { name: 'logistique', url: 'https://logistique.data.gouv.fr' },
                   { name: 'simplifions', url: 'https://simplifions.data.gouv.fr' },
@@ -384,7 +386,7 @@
                   </template>
                 </TranslationT>
                 <TranslationT
-                  v-if="platform.name === 'météo'"
+                  v-if="platform.name === 'meteo'"
                   tag="p"
                   class="mb-0 text-gray-silver"
                   keypath="Les données publiques relatives à la météorologie et à la climatologie produites par {name}."
@@ -446,9 +448,15 @@
               <h3 class="text-gray-title font-extrabold text-3xl">
                 {{ lastPost.name }}
               </h3>
-              <p class="text-mention-grey text-sm">
-                {{ $t('Publié le {date}', { date: formatDate(lastPost.published) }) }}
-              </p>
+              <TranslationT
+                tag="p"
+                class="text-mention-grey text-sm"
+                keypath="Publié le {date}"
+              >
+                <template #date>
+                  <FormattedDate :date="lastPost.published" />
+                </template>
+              </TranslationT>
               <p class="text-gray-plain mb-0">
                 {{ lastPost.headline }}
               </p>
@@ -476,16 +484,13 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, summarize, useFormatDate, type Site } from '@datagouv/components-next'
+import { BrandedButton, summarize, FormattedDate, TranslationT } from '@datagouv/components-next'
 import { RiArrowRightLine, RiBardLine, RiLineChartLine, RiNewspaperLine, RiSearchLine, RiVipDiamondLine } from '@remixicon/vue'
-import { TranslationT } from '@datagouv/components-next'
 import type { Post } from '~/types/posts'
 import type { PaginatedArray } from '~/types/types'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
-
-const { formatDate } = useFormatDate()
 
 const title = t('{site} : Plateforme ouverte des données publiques françaises', { site: config.public.title })
 
@@ -497,7 +502,7 @@ useSeoMeta({
 })
 
 const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts/', { params: { kind: 'news' } })
-const { data: site } = await useAPI<Site>('/api/1/site/')
+const { data: site } = await useSite()
 
 const lastPost = computed(() => {
   if (!posts.value || !posts.value.data.length) return null

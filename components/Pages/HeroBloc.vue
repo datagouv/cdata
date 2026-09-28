@@ -1,9 +1,6 @@
 <template>
-  <div
-    class="py-16"
-    :class="heroBgColor(bloc.color)"
-  >
-    <div class="container space-y-5">
+  <HeroBanner :color="bloc.color">
+    <div class="space-y-5">
       <EditableText
         v-if="edit"
         v-model="bloc.title"
@@ -64,12 +61,14 @@
         />
       </div>
     </div>
-  </div>
+  </HeroBanner>
 </template>
 
 <script setup lang="ts">
 import EditableText from './EditableText.vue'
 import BrandedButtonEditor from './BrandedButtonEditor.vue'
+import HeroBanner from '~/components/HeroBanner.vue'
+import { heroBgColor } from '~/utils/hero'
 import type { HeroBloc } from '~/types/pages'
 
 defineProps<{
@@ -85,12 +84,4 @@ const heroColors = [
   { label: t('Vert'), value: 'green' as const },
   { label: t('Violet'), value: 'purple' as const },
 ]
-
-function heroBgColor(color: 'primary' | 'green' | 'purple') {
-  return {
-    primary: 'bg-new-blue-illustration',
-    green: 'bg-new-green-illustration',
-    purple: 'bg-new-brown-illustration',
-  }[color]
-}
 </script>

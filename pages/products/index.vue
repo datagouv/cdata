@@ -35,7 +35,7 @@
           :theme="card.phase"
           :description="card.description"
           :cta-url="`/products/${card.slug}`"
-          cta-label="Voir le produit"
+          :cta-label="`Découvrir ${card.product}`"
           :tagline="card.tagline"
           :show-title-logo="true"
           type="brand"
@@ -93,7 +93,8 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Produits',
+  title: 'Les produits de l\'écosystème - data.gouv.fr',
+  description: 'Des produits pour faciliter l\'accès, organiser la circulation et faciliter les usages des données publiques.',
 })
 defineOgImage('MainPage.takumi', {
   title: 'Produits',

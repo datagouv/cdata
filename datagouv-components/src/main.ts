@@ -15,7 +15,7 @@ import type { Owned, OwnedWithFullObject, OwnedWithId } from './types/owned'
 import type { Comment, Thread } from './types/discussions'
 import type { PageBloc, ContentBloc, BlocWithTitle, DatasetsListBloc, DataservicesListBloc, ReusesListBloc, LinkInBloc, LinksListBloc, MarkdownBloc, AccordionItemBloc, AccordionListBloc, HeroBloc } from './types/pages'
 import type { Post } from './types/posts'
-import type { ReuseReference, NewReuse, Reuse, ReuseTopic, ReuseType } from './types/reuses'
+import type { ReuseReference, NewReuse, Reuse, ReuseV2, ReuseTopic, ReuseType } from './types/reuses'
 import type { RegisteredSchema, Schema, SchemaDetails, SchemaField, SchemaPath, SchemaPublicationMode, SchemaResponseData, SchemaVersion, ValidataError } from './types/schemas'
 import type { TopicV2, TopicElement, TopicElementClass, TopicElementRel } from './types/topics'
 import type { CommunityResource, FileResourceFileType, RemoteResourceFileType, ResourceFileType, ResourceGroup, ResourceType, Resource } from './types/resources'
@@ -23,7 +23,9 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
-import type { GlobalSearchConfig, SearchType, SortOption } from './types/search'
+import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm, CombinedSort, ColumnDefinition, ColumnsDefinition } from './types/visualizations'
+import type { ColumnFilters, ColumnType, TabularRow } from './components/TabularExplorer/types'
+import type { GlobalSearchConfig, SearchType, SearchTypeConfig, SortOption, HiddenFilter, BuiltInFilterKey, DatasetSearchConfig, DatasetSearchFilters, DataserviceSearchConfig, DataserviceSearchFilters, ReuseSearchConfig, ReuseSearchFilters, OrganizationSearchConfig, OrganizationSearchFilters, TopicSearchConfig, TopicSearchFilters } from './types/search'
 import { SearchFilterAliases, getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 import { useSearchFilter } from './composables/useSearchFilter'
 import type { UseSearchFilterOptions } from './composables/useSearchFilter'
@@ -36,21 +38,29 @@ import Avatar from './components/Avatar.vue'
 import AvatarWithName from './components/AvatarWithName.vue'
 import BannerAction from './components/BannerAction.vue'
 import BrandedButton from './components/BrandedButton.vue'
+import ChartCard from './components/ChartCard.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
+import DataserviceQuality from './components/DataserviceQuality.vue'
+import DataserviceQualityInline from './components/DataserviceQualityInline.vue'
+import DataserviceQualityTooltipContent from './components/DataserviceQualityTooltipContent.vue'
 import DatasetCard from './components/DatasetCard.vue'
+import DataStructure from './components/ResourceAccordion/DataStructure.vue'
+import Downloads from './components/ResourceAccordion/Downloads.vue'
+import Metadata from './components/ResourceAccordion/Metadata.vue'
 import DescriptionListTerm from './components/DescriptionListTerm.vue'
 import DescriptionListDetails from './components/DescriptionListDetails.vue'
 import DiscussionMessageCard from './components/DiscussionMessageCard.vue'
 import DateRangeDetails from './components/DateRangeDetails.vue'
+import FormattedDate from './components/FormattedDate.vue'
 import { DatasetInformationSection, DatasetTemporalitySection, DatasetSpatialSection, DatasetSchemaSection, DatasetEmbedSection } from './components/DatasetInformation'
 import LeafletMap from './components/LeafletMap.vue'
 import LicenseBadge from './components/LicenseBadge.vue'
 import Tag from './components/Tag.vue'
 import DatasetQuality from './components/DatasetQuality.vue'
 import DatasetQualityInline from './components/DatasetQualityInline.vue'
-import DatasetQualityItem from './components/DatasetQualityItem.vue'
-import DatasetQualityScore from './components/DatasetQualityScore.vue'
+import QualityItem from './components/QualityItem.vue'
+import QualityScore from './components/QualityScore.vue'
 import ProgressBar from './components/ProgressBar.vue'
 import DatasetQualityTooltipContent from './components/DatasetQualityTooltipContent.vue'
 import ExtraAccordion from './components/ExtraAccordion.vue'
@@ -59,6 +69,7 @@ import LoadingBlock from './components/LoadingBlock.vue'
 import MarkdownViewer from './components/MarkdownViewer.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
 import OrganizationHorizontalCard from './components/OrganizationHorizontalCard.vue'
+import ObjectCardOwner from './components/ObjectCardOwner.vue'
 import OrganizationLogo from './components/OrganizationLogo.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
 import OwnerType from './components/OwnerType.vue'
@@ -72,6 +83,7 @@ import PostCard from './components/PostCard.vue'
 import ReadMore from './components/ReadMore.vue'
 import ResourceAccordion from './components/ResourceAccordion/ResourceAccordion.vue'
 import ResourceIcon from './components/ResourceAccordion/ResourceIcon.vue'
+import ResourceSelector from './components/ResourceExplorer/ResourceSelector.vue'
 import ResourceExplorer from './components/ResourceExplorer/ResourceExplorer.vue'
 import ResourceExplorerSidebar from './components/ResourceExplorer/ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './components/ResourceExplorer/ResourceExplorerViewer.vue'
@@ -81,7 +93,6 @@ import ReuseHorizontalCard from './components/ReuseHorizontalCard.vue'
 import ReuseDetails from './components/ReuseDetails.vue'
 import SchemaCard from './components/SchemaCard.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
-import SmallChart from './components/SmallChart.vue'
 import StatBox from './components/StatBox.vue'
 import Tab from './components/Tabs/Tab.vue'
 import TabGroup from './components/Tabs/TabGroup.vue'
@@ -96,16 +107,29 @@ import GlobalSearch from './components/Search/GlobalSearch.vue'
 import SearchInput from './components/Search/SearchInput.vue'
 import SearchableSelect from './components/Form/SearchableSelect.vue'
 import SelectGroup from './components/Form/SelectGroup.vue'
+import Listbox from './components/Form/Listbox.vue'
+import InfiniteLoader from './components/InfiniteLoader.vue'
+import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
+import TabularMobileFilters from './components/TabularExplorer/TabularMobileFilters.vue'
+import TabularTable from './components/TabularExplorer/TabularTable.vue'
+import TabularToolbar from './components/TabularExplorer/TabularToolbar.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
+import { ofetch } from 'ofetch'
+import { useTranslation } from './composables/useTranslation'
 
 export { Toaster, toast } from 'vue-sonner'
 
 export * from './composables/useActiveDescendant'
+export * from './composables/useDebouncedRef'
 export * from './composables/useMetrics'
 export * from './composables/useReuseType'
 export * from './composables/useTranslation'
 export * from './composables/useHasTabularData'
+export * from './composables/useResourceCapabilities'
+export * from './composables/useTabularProfile'
+export * from './composables/useDatasetResources'
+export * from './composables/useResizable'
 
 export * from './functions/activities'
 export * from './functions/datasets'
@@ -121,13 +145,29 @@ export * from './functions/owned'
 export * from './functions/resources'
 export * from './functions/reuses'
 export * from './functions/schemas'
+export * from './functions/tabular'
 export * from './functions/users'
+export * from './functions/tabularApi'
+export * from './functions/charts'
 export * from './types/access_types'
 
 export type {
   GlobalSearchConfig,
   SearchType,
+  SearchTypeConfig,
   SortOption,
+  HiddenFilter,
+  BuiltInFilterKey,
+  DatasetSearchConfig,
+  DatasetSearchFilters,
+  DataserviceSearchConfig,
+  DataserviceSearchFilters,
+  ReuseSearchConfig,
+  ReuseSearchFilters,
+  OrganizationSearchConfig,
+  OrganizationSearchFilters,
+  TopicSearchConfig,
+  TopicSearchFilters,
   UseSearchFilterOptions,
   UseFetchFunction,
   AccessType,
@@ -198,6 +238,7 @@ export type {
   ResourceType,
   ReuseReference,
   Reuse,
+  ReuseV2,
   ReuseTopic,
   ReuseType,
   Schema,
@@ -219,6 +260,29 @@ export type {
   ValidataError,
   Weight,
   WellType,
+  Chart,
+  ChartForm,
+  ChartForApi,
+  CombinedSort,
+  ColumnDefinition,
+  ColumnFilters,
+  ColumnType,
+  ColumnsDefinition,
+  TabularRow,
+  FilterCondition,
+  Filter,
+  AndFilters,
+  GenericFilter,
+  XAxisType,
+  XAxisSortBy,
+  SortDirection,
+  XAxis,
+  XAxisForm,
+  UnitPosition,
+  YAxis,
+  DataSeriesType,
+  DataSeries,
+  DataSeriesForm,
 }
 
 export {
@@ -239,6 +303,31 @@ export {
 // Vue Plugin
 const datagouv: Plugin<PluginConfig> = {
   async install(app: App, options) {
+    // Default `$fetch` to an ofetch instance carrying the datagouv API specifics + the consumer's
+    // auth hooks, so everything downstream (the default `useFetch`, imperative helpers) can rely on
+    // a single configured fetch. A consumer that provides its own `$fetch` keeps full control.
+    if (!options.$fetch) {
+      options.$fetch = ofetch.create({
+        baseURL: options.apiBase,
+        onRequest(context) {
+          if (options.onRequest) {
+            if (Array.isArray(options.onRequest)) options.onRequest.forEach(hook => hook(context))
+            else options.onRequest(context)
+          }
+          context.options.headers.set('Content-Type', 'application/json')
+          context.options.headers.set('Accept', 'application/json')
+          if (options.devApiKey) context.options.headers.set('X-API-KEY', options.devApiKey)
+          const { locale } = useTranslation()
+          if (locale) {
+            context.options.params ??= {}
+            context.options.params['lang'] = locale
+          }
+        },
+        onRequestError: options.onRequestError,
+        onResponse: options.onResponse,
+        onResponseError: options.onResponseError,
+      })
+    }
     app.provide(configKey, options)
     if (!options.textClamp) {
       const textClamp = await import('vue3-text-clamp')
@@ -257,9 +346,16 @@ export {
   AvatarWithName,
   BannerAction,
   BrandedButton,
+  ChartCard,
   CopyButton,
   DataserviceCard,
+  DataserviceQuality,
+  DataserviceQualityInline,
+  DataserviceQualityTooltipContent,
   DatasetCard,
+  DataStructure,
+  Downloads,
+  Metadata,
   DatasetInformationSection,
   DatasetTemporalitySection,
   DatasetSpatialSection,
@@ -270,10 +366,11 @@ export {
   DiscussionMessageCard,
   DatasetQuality,
   DatasetQualityInline,
-  DatasetQualityItem,
-  DatasetQualityScore,
+  QualityItem,
+  QualityScore,
   DatasetQualityTooltipContent,
   DateRangeDetails,
+  FormattedDate,
   ExtraAccordion,
   LabelTag,
   LeafletMap,
@@ -299,13 +396,14 @@ export {
   ResourceExplorer,
   ResourceExplorerSidebar,
   ResourceExplorerViewer,
+  ObjectCardOwner,
   ResourceIcon,
+  ResourceSelector,
   ReuseCard,
   ReuseDetails,
   ReuseHorizontalCard,
   SchemaCard,
   SimpleBanner,
-  SmallChart,
   StatBox,
   OpenApiViewer,
   Tab,
@@ -322,4 +420,10 @@ export {
   SearchInput,
   SearchableSelect,
   SelectGroup,
+  Listbox,
+  InfiniteLoader,
+  TabularExplorer,
+  TabularMobileFilters,
+  TabularTable,
+  TabularToolbar,
 }

@@ -20,6 +20,7 @@ export type UseFetchOptions<DataT> = {
   transform?: (input: DataT) => DataT | Promise<DataT>
   pick?: string[]
   watch?: WatchSource[] | false
+  raw?: boolean
 }
 
 export type AsyncData<DataT, ErrorT> = {

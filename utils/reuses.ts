@@ -1,9 +1,7 @@
-import type { Dataservice, Dataset, DatasetV2, Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
+import type { Dataservice, Dataset, DatasetV2, Reuse, ReuseTopic, ReuseType, ReuseV2 } from '@datagouv/components-next'
 import type { DatasetSuggest, NewReuseForApi, ReuseForm } from '~/types/types'
 
-export const reusesXFields = 'data{archived,deleted,featured,id,owner,organization,metrics,created_at,last_modified,title,slug,page,description,type,url,image,image_thumbnail},page,page_size,total'
-
-export function getReuseAdminUrl(reuse: Reuse): string {
+export function getReuseAdminUrl(reuse: Reuse | ReuseV2): string {
   return `/admin/reuses/${reuse.id}`
 }
 
@@ -38,31 +36,5 @@ export function reuseToApi(form: ReuseForm, overrides: { datasets?: Array<Datase
     type: form.type?.id || '',
     topic: form.topic?.id || '',
     tags: form.tags.map(t => t.text),
-  }
-}
-
-export async function getReuseMetrics(rid: string) {
-  const config = useRuntimeConfig()
-
-  // Fetching last 12 months
-  const response = await fetch(`${config.public.metricsApi}/api/reuses/data/?reuse_id__exact=${rid}&metric_month__sort=desc&page_size=12`)
-  const page = await response.json()
-
-  const reuseViews: Record<string, number> = {}
-
-  for (const { metric_month, monthly_visit } of page.data) {
-    reuseViews[metric_month] = monthly_visit
-  }
-  // Fetching totals
-  const totalResponse = await fetch(`${config.public.metricsApi}/api/reuses_total/data/?reuse_id__exact=${rid}`)
-  const totalPage = await totalResponse.json()
-
-  let reuseViewsTotal = 0
-  if (page.data[0]) {
-    reuseViewsTotal = totalPage.data[0].visit
-  }
-  return {
-    reuseViews,
-    reuseViewsTotal,
   }
 }

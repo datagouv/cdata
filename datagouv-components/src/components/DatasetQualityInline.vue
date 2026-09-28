@@ -7,7 +7,7 @@
     >
       <RiInformationLine class="size-3.5 shrink-0" />
       <span class="text-gray-medium text-sm group-hover/quality:underline">{{ t('Métadonnées :') }}</span>
-      <DatasetQualityScore :score="quality.score" />
+      <QualityScore :score="quality.score" />
       <template #toggletip>
         <DatasetQualityTooltipContent :quality />
       </template>
@@ -18,7 +18,7 @@
 <script setup lang="ts">
 import { RiInformationLine } from '@remixicon/vue'
 import type { Quality } from '../types/datasets'
-import DatasetQualityScore from './DatasetQualityScore.vue'
+import QualityScore from './QualityScore.vue'
 import DatasetQualityTooltipContent from './DatasetQualityTooltipContent.vue'
 import Toggletip from './Toggletip.vue'
 import { useTranslation } from '../composables/useTranslation'

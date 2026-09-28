@@ -39,6 +39,13 @@ export function useCurrentOwned() {
       return organizations.value[route.params.oid] || null
     }
 
+    // Route explicitly identifies a user context, so no organization. Reading
+    // currentOwnedId here would couple this getter to mutations performed by
+    // the currentUser getter below, causing SSR-vs-hydration mismatches on
+    // routes like /admin/me/datasets where a fetch had populated currentOwnedId
+    // before render but currentUser then resets it.
+    if (route.params.uid || route.fullPath.includes('/admin/me/')) return null
+
     if (!currentOwnedId.value) return null
     if (!('organization' in currentOwnedId.value)) return null
 
@@ -57,6 +64,9 @@ export function useCurrentOwned() {
       currentOwnedId.value = null // fallback to route
       return me.value
     }
+
+    // Symmetrical to currentOrganization: route identifies an organization, no user
+    if (route.params.oid) return null
 
     if (!currentOwnedId.value) return null
     if (!('user' in currentOwnedId.value)) return null

@@ -14,6 +14,7 @@
       v-else
       class="fr-breadcrumb__link"
       :to
+      aria-current-value="false"
     >
       <slot />
     </CdataLink>

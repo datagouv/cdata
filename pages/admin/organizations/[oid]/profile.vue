@@ -58,7 +58,7 @@
       :links="[
         { href: organizationUrl, label: t('Profil') },
         { href: `${organizationUrl}/contacts/`, label: t('Points de contact') },
-        { href: `${organizationUrl}/activities/`, label: t('Activités') },
+        { href: `${organizationUrl}/activities/`, label: t('Activités'), show: organization.permissions.edit },
       ]"
     />
 
@@ -75,17 +75,18 @@ import { BrandedButton, isOrganizationCertified, OrganizationLogo, PaddedContain
 import { RiEyeLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-
-const props = defineProps<{
-  organization: Organization
-}>()
-
-definePageMeta({
-  keepScroll: true,
-})
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 defineEmits<{
   refresh: []
+}>()
+
+definePageMeta({
+  scrollToTop: keepScrollWithinPage,
+})
+
+const props = defineProps<{
+  organization: Organization
 }>()
 
 const { t } = useTranslation()

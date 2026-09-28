@@ -26,10 +26,11 @@
       v-if="dataservices && !dataservices.total"
       class="flex flex-col items-center mb-4"
     >
-      <nuxt-img
+      <img
         src="/illustrations/dataservice.svg"
         class="h-20"
-      />
+        alt=""
+      >
       <p class="font-bold my-3">
         {{ $t(`Il n'y a pas encore d'API associées`) }}
       </p>
@@ -70,10 +71,11 @@
       v-if="reuses && !reuses.total"
       class="flex flex-col items-center"
     >
-      <nuxt-img
+      <img
         src="/illustrations/reuse.svg"
         class="h-20"
-      />
+        alt=""
+      >
       <p class="font-bold my-3">
         {{ $t(`Il n'y a pas encore de réutilisations associées`) }}
       </p>
@@ -88,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, DataserviceCard, Pagination, type Dataservice, type DatasetV2, type Reuse } from '@datagouv/components-next'
+import { BrandedButton, DataserviceCard, Pagination, type Dataservice, type DatasetV2, type ReuseV2 } from '@datagouv/components-next'
 import type { PaginatedArray } from '~/types/types'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 
@@ -102,7 +104,7 @@ const dataservicesQuery = computed(() => ({
   page: dataservicesPage.value,
   page_size: 5,
 }))
-const { data: dataservices } = await useAPI<PaginatedArray<Dataservice>>('/api/1/dataservices', { query: dataservicesQuery })
+const { data: dataservices } = await useAPI<PaginatedArray<Dataservice>>('/api/1/dataservices/', { query: dataservicesQuery })
 
 const reusesPage = ref(1)
 const reusesQuery = computed(() => ({
@@ -110,5 +112,8 @@ const reusesQuery = computed(() => ({
   page: reusesPage.value,
   page_size: 6,
 }))
-const { data: reuses } = await useAPI<PaginatedArray<Reuse>>('/api/1/reuses', { query: reusesQuery })
+
+const { data: reuses } = await useAPI<PaginatedArray<ReuseV2>>('/api/2/reuses/', {
+  query: reusesQuery,
+})
 </script>

@@ -83,7 +83,7 @@
                   </AdminContentWithTooltip>
                 </div>
               </td>
-              <td>{{ formatDate(organization.created_at) }}</td>
+              <td><FormattedDate :date="organization.created_at" /></td>
               <td>
                 <CdataLink :to="`/admin/organizations/${organization.id}/datasets`">
                   {{ organization.metrics.datasets || 0 }}
@@ -140,10 +140,11 @@
       v-if="status != 'pending' && pageData && !pageData.total"
       class="flex flex-col items-center"
     >
-      <nuxt-img
+      <img
         src="/illustrations/organization.svg"
         class="h-20"
-      />
+        alt=""
+      >
       <template v-if="q">
         <p class="fr-text--bold fr-my-3v">
           {{ t(`Pas de résultats pour « {q} »`, { q }) }}
@@ -166,7 +167,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, LoadingBlock, OrganizationLogo, useFormatDate } from '@datagouv/components-next'
+import { BrandedButton, FormattedDate, LoadingBlock, OrganizationLogo } from '@datagouv/components-next'
 import { Pagination, type Organization } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
@@ -180,7 +181,6 @@ import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import AdminInput from '~/components/AdminInput.vue'
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 const config = useRuntimeConfig()
 
 const page = ref(1)
@@ -204,4 +204,8 @@ const url = computed(() => {
 })
 
 const { data: pageData, status } = await useAPI<PaginatedArray<Organization>>(url, { lazy: true })
+
+watch(qDebounced, () => {
+  page.value = 1
+})
 </script>

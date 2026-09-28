@@ -176,10 +176,10 @@
               {{ resource.format }}
             </td>
             <td>
-              {{ formatDate(resource.created_at) }}
+              <FormattedDate :date="resource.created_at" />
             </td>
             <td>
-              {{ formatDate(resource.last_modified) }}
+              <FormattedDate :date="resource.last_modified" />
             </td>
             <td v-if="canEdit">
               <FileEditModal
@@ -205,7 +205,7 @@
 </template>
 
 <script setup lang="ts">
-import { getResourceLabel, BrandedButton, LoadingBlock, Pagination, Tooltip, useFormatDate, type DatasetV2, type Resource, type SchemaResponseData, toast } from '@datagouv/components-next'
+import { getResourceLabel, BrandedButton, FormattedDate, LoadingBlock, Pagination, Tooltip, type DatasetV2, type Resource, type SchemaResponseData, toast } from '@datagouv/components-next'
 import { RiArrowDownLine, RiArrowUpLine, RiCheckLine, RiDraggable } from '@remixicon/vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { useTemplateRef } from 'vue'
@@ -218,7 +218,6 @@ import type { AdminBadgeType, CommunityResourceForm, PaginatedArray, ResourceFor
 
 const route = useRoute()
 const { $api } = useNuxtApp()
-const { formatDate } = useFormatDate()
 
 const { data: schemas } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/')
 const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extensions/')

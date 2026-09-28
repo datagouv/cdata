@@ -5,13 +5,14 @@
     @submit.prevent
   >
     <div
-      ref="search"
+      v-if="!hideSearchInput"
       class="flex flex-wrap items-center justify-between"
       data-cy="search"
     >
       <SearchInput
         v-model="q"
-        :placeholder="placeholder || typesMeta[currentType].placeholder"
+        :placeholder="resolvedPlaceholder"
+        :auto-focus
       />
     </div>
     <div class="grid grid-cols-12 mt-2 md:mt-5">
@@ -30,23 +31,27 @@
             >
               <RadioInput
                 v-for="typeConfig in config"
-                :key="typeConfig.class"
-                :value="typeConfig.class"
-                :count="typesMeta[typeConfig.class].results.value?.total"
-                :loading="typesMeta[typeConfig.class].status.value === 'pending' || typesMeta[typeConfig.class].status.value === 'idle'"
-                :icon="typesMeta[typeConfig.class].icon"
+                :key="configKey(typeConfig)"
+                :value="configKey(typeConfig)"
+                :count="resultsMap[configKey(typeConfig)]?.data.value?.total"
+                :loading="resultsMap[configKey(typeConfig)]?.status.value === 'pending' || resultsMap[configKey(typeConfig)]?.status.value === 'idle'"
+                :icon="typeConfig.icon ?? strategies[typeConfig.class].icon"
               >
-                {{ typeConfig.name || typesMeta[typeConfig.class].name }}
+                {{ typeConfig.name || strategies[typeConfig.class].name }}
               </RadioInput>
             </RadioGroup>
           </Sidemenu>
         </div>
 
-        <div v-if="activeFilters.length > 0 || $slots['custom-filters']">
+        <div v-if="activeFilters.length > 0 || $slots['custom-filters-top'] || $slots['custom-filters-bottom']">
           <Sidemenu :button-text="t('Filtres')">
             <template #title>
               {{ t('Filtres') }}
             </template>
+            <slot
+              name="custom-filters-top"
+              :current-type="currentType"
+            />
             <BasicAndAdvancedFilters
               v-slot="{ isEnabled, getOrder }"
               :basic-filters="activeBasicFilters"
@@ -123,7 +128,7 @@
                 v-model="producerType"
                 :facets="getFacets('producer_type')"
                 :loading="searchResultsStatus === 'pending'"
-                :exclude="currentType === 'organizations' ? ['user'] : []"
+                :exclude="currentTypeConfig?.class === 'organizations' ? ['user'] : []"
                 :style="{ order: getOrder('producer_type') }"
               />
               <DatasetBadgeFilter
@@ -154,7 +159,7 @@
               />
             </BasicAndAdvancedFilters>
             <slot
-              name="custom-filters"
+              name="custom-filters-bottom"
               :current-type="currentType"
             />
             <div
@@ -186,6 +191,7 @@
           <p
             class="fr-col-auto my-0"
             role="status"
+            data-testid="search-result-count"
           >
             {{ t("{count} résultats | {count} résultat | {count} résultats", searchResults.total) }}
           </p>
@@ -200,10 +206,13 @@
               <div class="fr-col">
                 <select
                   id="sort-search"
-                  v-model="sort"
+                  v-model="effectiveSort"
                   class="fr-select text-sm shadow-input-blue!"
                 >
-                  <option :value="undefined">
+                  <option
+                    v-if="!currentTypeConfig?.defaultSort"
+                    :value="undefined"
+                  >
                     {{ t('Pertinence') }}
                   </option>
                   <option
@@ -225,6 +234,7 @@
               size="sm"
               :icon="RiRssLine"
               icon-only
+              external
               target="_blank"
             />
           </div>
@@ -232,7 +242,7 @@
         <transition mode="out-in">
           <LoadingBlock
             v-slot="{ data: results }"
-            :status="searchResultsStatus"
+            :status="searchResultsStatus!"
             :data="searchResults"
           >
             <div v-if="results && results.data.length">
@@ -242,7 +252,7 @@
                   :key="result.id"
                   class="p-0"
                 >
-                  <template v-if="currentType === 'datasets'">
+                  <template v-if="currentTypeConfig?.class === 'datasets'">
                     <slot
                       name="dataset"
                       :dataset="result"
@@ -250,7 +260,7 @@
                       <DatasetCard :dataset="(result as Dataset)" />
                     </slot>
                   </template>
-                  <template v-else-if="currentType === 'dataservices'">
+                  <template v-else-if="currentTypeConfig?.class === 'dataservices'">
                     <slot
                       name="dataservice"
                       :dataservice="result"
@@ -258,15 +268,15 @@
                       <DataserviceCard :dataservice="(result as Dataservice)" />
                     </slot>
                   </template>
-                  <template v-else-if="currentType === 'reuses'">
+                  <template v-else-if="currentTypeConfig?.class === 'reuses'">
                     <slot
                       name="reuse"
                       :reuse="result"
                     >
-                      <ReuseHorizontalCard :reuse="(result as Reuse)" />
+                      <ReuseHorizontalCard :reuse="(result as ReuseV2)" />
                     </slot>
                   </template>
-                  <template v-else-if="currentType === 'organizations'">
+                  <template v-else-if="currentTypeConfig?.class === 'organizations'">
                     <slot
                       name="organization"
                       :organization="result"
@@ -274,7 +284,7 @@
                       <OrganizationHorizontalCard :organization="(result as Organization)" />
                     </slot>
                   </template>
-                  <template v-else-if="currentType === 'topics'">
+                  <template v-else-if="currentTypeConfig?.class === 'topics'">
                     <slot
                       name="topic"
                       :topic="result"
@@ -351,22 +361,25 @@
 </template>
 
 <script setup lang="ts">
-import { computed, provide, shallowReactive, useSlots, watch, useTemplateRef, type Ref } from 'vue'
+import { computed, provide, shallowReactive, useSlots, watch, useTemplateRef, type Component, type Ref } from 'vue'
 import { useRouteQuery } from '@vueuse/router'
+import { useRoute } from 'vue-router'
 import { RiBookShelfLine, RiBuilding2Line, RiCloseCircleLine, RiDatabase2Line, RiLightbulbLine, RiLineChartLine, RiRssLine, RiTerminalLine } from '@remixicon/vue'
 import magnifyingGlassSrc from '../../../assets/illustrations/magnifying_glass.svg?url'
 import { useTranslation } from '../../composables/useTranslation'
 import { useDebouncedRef } from '../../composables/useDebouncedRef'
-import { searchFilterContextKey, type CustomFilterEntry } from '../../composables/useSearchFilter'
+import { configKey, forEachActiveCustomFilter, isCustomFilterActive, searchFilterContextKey, type CustomFilterEntry } from '../../composables/useSearchFilter'
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
+import { scrollToBlockTop } from '../../functions/scroll'
+import type { AsyncDataRequestStatus } from '../../functions/api.types'
 import type { Dataset } from '../../types/datasets'
 import type { Dataservice } from '../../types/dataservices'
 import type { Organization } from '../../types/organizations'
-import type { Reuse } from '../../types/reuses'
+import type { ReuseV2 } from '../../types/reuses'
 import type { TopicV2 } from '../../types/topics'
-import type { GlobalSearchConfig, SearchType, SortOption, DatasetSearchResponse, DataserviceSearchResponse, ReuseSearchResponse, OrganizationSearchResponse, TopicSearchResponse, FacetItem } from '../../types/search'
+import type { GlobalSearchConfig, SearchResponseByClass, SearchType, SortOption, FacetItem } from '../../types/search'
 import { getDefaultGlobalSearchConfig } from '../../types/search'
 import BrandedButton from '../BrandedButton.vue'
 import LoadingBlock from '../LoadingBlock.vue'
@@ -400,36 +413,49 @@ import OrganizationFacetFilter from './Filter/OrganizationFacetFilter.vue'
 
 const props = withDefaults(defineProps<{
   config?: GlobalSearchConfig
-  placeholder?: string
+  placeholder?: string | null
+  hideSearchInput?: boolean
+  autoFocus?: boolean
 }>(), {
   config: getDefaultGlobalSearchConfig,
+  hideSearchInput: false,
+  autoFocus: true,
 })
 
+const emit = defineEmits<{
+  resultsCount: [total: number]
+}>()
+
 // defineModel's default is static and can't depend on props, so we cast and initialize manually
-const currentType = defineModel<SearchType>('type') as Ref<SearchType>
-if (!currentType.value) currentType.value = props.config[0]?.class ?? 'datasets'
+const currentType = defineModel<string>('type') as Ref<string>
+if (!currentType.value) currentType.value = configKey(props.config[0] ?? { class: 'datasets' })
 
 const { t } = useTranslation()
 const componentsConfig = useComponentsConfig()
+const route = useRoute()
 
 // Custom filter registry for useSearchFilter composable
 const customFilterRegistry = shallowReactive(new Map<string, CustomFilterEntry>())
-
-provide(searchFilterContextKey, {
-  register(urlParam, entry) {
-    customFilterRegistry.set(urlParam, entry)
-  },
-  unregister(urlParam) {
-    customFilterRegistry.delete(urlParam)
-  },
-})
+// Per-filter watch stoppers: each registered filter gets its own watcher so a
+// value change resets page to 1, but registration itself does not (the value
+// came from the URL, not from a user action).
+const customFilterStops = new Map<string, () => void>()
 
 // Initial type is used to determine which fetch should be SSR (non-lazy)
 const initialType = currentType.value
 
 const currentTypeConfig = computed(() =>
-  props.config.find(c => c.class === currentType.value),
+  props.config.find(c => configKey(c) === currentType.value),
 )
+
+// Precedence: prop → per-type config → strategy default.
+// null at any level means "no placeholder".
+const resolvedPlaceholder = computed(() => {
+  if (props.placeholder !== undefined) return props.placeholder ?? ''
+  const cfg = currentTypeConfig.value
+  if (cfg && 'placeholder' in cfg) return cfg.placeholder ?? ''
+  return strategies[cfg?.class ?? 'datasets'].placeholder
+})
 
 const activeBasicFilters = computed(() =>
   (currentTypeConfig.value?.basicFilters ?? []) as string[],
@@ -465,13 +491,34 @@ const activeFilters = computed(() => [
 ] as string[])
 
 const slots = useSlots()
-const showSidebar = computed(() => props.config.length > 1 || activeFilters.value.length > 0 || !!slots['custom-filters'])
+const showSidebar = computed(() => props.config.length > 1 || activeFilters.value.length > 0 || !!slots['custom-filters-top'] || !!slots['custom-filters-bottom'])
 
 // URL query params
 const q = useRouteQuery<string>('q', '')
 const { debounced: qDebounced, flush: flushQ } = useDebouncedRef(q, componentsConfig.searchDebounce ?? 300)
+// When the search input is hidden, the parent owns the input and is expected
+// to debounce user typing itself (otherwise typing would land in the URL
+// instantly via v-model and stack two debounces). Bypass the internal debounce
+// so URL-driven q changes hit the fetch params immediately.
+const qForParams = computed(() => props.hideSearchInput ? q.value : qDebounced.value)
 const page = useRouteQuery('page', 1, { transform: Number })
 const sort = useRouteQuery<string | undefined>('sort')
+const effectiveSort = computed({
+  get: () => sort.value ?? currentTypeConfig.value?.defaultSort,
+  set: (value) => { sort.value = value },
+})
+
+provide(searchFilterContextKey, {
+  register(urlParam, entry) {
+    customFilterRegistry.set(urlParam, entry)
+    customFilterStops.set(urlParam, watch(entry.ref, () => page.value = 1))
+  },
+  unregister(urlParam) {
+    customFilterStops.get(urlParam)?.()
+    customFilterStops.delete(urlParam)
+    customFilterRegistry.delete(urlParam)
+  },
+})
 
 // Filter values
 const organizationId = useRouteQuery<string | undefined>('organization')
@@ -514,92 +561,150 @@ const allFilters: Record<string, Ref<unknown>> = {
   type: reuseType,
 }
 
-// Reset sort and filters when changing type if they're not valid for the new type
+// Reset page, sort and filters when changing type. Every reset below goes
+// through useRouteQuery, so VueUse coalesces them into a single router.replace
+// (its shared _queriesQueue flushes once on nextTick). Custom filters are cleared
+// here too, rather than in useSearchFilter's onunmount, so their URL change joins
+// that same batch instead of racing it with a separate router.replace.
 watch(currentType, () => {
+  // page=1 is the default and is dropped from the URL, so only reset when needed.
+  if (page.value !== 1) page.value = 1
+
   // Reset sort if not valid
   const validSortValues = activeSortOptions.value.map(o => o.value as string)
   if (sort.value && !validSortValues.includes(sort.value)) {
     sort.value = undefined
   }
 
-  // Reset filters that are not enabled for the new type
+  // Reset built-in filters that are not enabled for the new type
   for (const [filterName, filterRef] of Object.entries(allFilters)) {
     if (filterRef.value !== undefined && !activeFilters.value.includes(filterName)) {
       filterRef.value = undefined
     }
   }
-})
 
-// Check which types are enabled
-const datasetsEnabled = computed(() => props.config.some(c => c.class === 'datasets'))
-const dataservicesEnabled = computed(() => props.config.some(c => c.class === 'dataservices'))
-const reusesEnabled = computed(() => props.config.some(c => c.class === 'reuses'))
-const organizationsEnabled = computed(() => props.config.some(c => c.class === 'organizations'))
-const topicsEnabled = computed(() => props.config.some(c => c.class === 'topics'))
+  // Reset type-scoped custom filters that don't apply to the new type
+  for (const entry of customFilterRegistry.values()) {
+    if (entry.typeKeys && !entry.typeKeys.includes(currentType.value) && isCustomFilterActive(entry)) {
+      entry.ref.value = entry.defaultValue
+    }
+  }
+})
 
 // Create stable params for each type
 const stableParamsOptions = {
   allFilters,
   customFilterRegistry,
-  q: qDebounced,
+  q: qForParams,
   sort,
   page,
   pageSize,
 }
 
-const datasetsParams = useStableQueryParams({
-  ...stableParamsOptions,
-  typeConfig: props.config.find(c => c.class === 'datasets'),
-})
-const dataservicesParams = useStableQueryParams({
-  ...stableParamsOptions,
-  typeConfig: props.config.find(c => c.class === 'dataservices'),
-})
-const reusesParams = useStableQueryParams({
-  ...stableParamsOptions,
-  typeConfig: props.config.find(c => c.class === 'reuses'),
-})
-const organizationsParams = useStableQueryParams({
-  ...stableParamsOptions,
-  typeConfig: props.config.find(c => c.class === 'organizations'),
-})
-const topicsParams = useStableQueryParams({
-  ...stableParamsOptions,
-  typeConfig: props.config.find(c => c.class === 'topics'),
-})
-
-// URLs that return null when type is not enabled
-const datasetsUrl = computed(() => datasetsEnabled.value ? '/api/2/datasets/search/' : null)
-const dataservicesUrl = computed(() => dataservicesEnabled.value ? '/api/2/dataservices/search/' : null)
-const reusesUrl = computed(() => reusesEnabled.value ? '/api/2/reuses/search/' : null)
-const organizationsUrl = computed(() => organizationsEnabled.value ? '/api/2/organizations/search/' : null)
-const topicsUrl = computed(() => topicsEnabled.value ? '/api/2/topics/search/' : null)
-
-// Reset page on filter/sort change
-const filtersForReset = computed(() => {
-  const filters: Record<string, unknown> = {
-    q: qDebounced.value,
-    organization: organizationId.value,
-    organization_badge: organizationType.value,
-    tag: tag.value,
-    format: format.value,
-    license: license.value,
-    schema: schema.value,
-    geozone: geozone.value,
-    granularity: granularity.value,
-    badge: badge.value,
-    topic: topic.value,
-    format_family: formatFamily.value,
-    access_type: accessType.value,
-    last_update_range: lastUpdateRange.value,
-    producer_type: producerType.value,
-    type: reuseType.value,
+// Discriminated union: each variant carries its own response type so a `class`
+// narrow gives the precise shape of `data.value` (no cast needed).
+type SearchEntry = {
+  [K in SearchType]: {
+    class: K
+    data: Ref<SearchResponseByClass[K] | null>
+    status: Ref<AsyncDataRequestStatus>
   }
-  for (const [urlParam, entry] of customFilterRegistry) {
-    filters[urlParam] = entry.ref.value
+}[SearchType]
+
+// One strategy per class consolidates everything that varies by class:
+// metadata (icon/name/placeholder), endpoint, and a typed fetch factory.
+type SearchStrategy<C extends SearchType> = {
+  url: string
+  icon: Component
+  name: string
+  placeholder: string
+  fetch: (
+    params: Ref<Record<string, unknown>>,
+    server: boolean,
+  ) => Promise<Extract<SearchEntry, { class: C }>>
+}
+
+function makeStrategy<C extends SearchType>(
+  cls: C,
+  meta: Omit<SearchStrategy<C>, 'fetch'>,
+): SearchStrategy<C> {
+  return {
+    ...meta,
+    fetch: async (params, server) => {
+      const { data, status } = await useFetch<SearchResponseByClass[C]>(
+        meta.url,
+        { params, lazy: true, server },
+      )
+      // Tautologically equivalent to Extract<SearchEntry, { class: C }>, but TS
+      // cannot prove it on a generic C, so we assert.
+      return { class: cls, data, status } as Extract<SearchEntry, { class: C }>
+    },
   }
-  return filters
-})
+}
+
+const strategies: { [K in SearchType]: SearchStrategy<K> } = {
+  datasets: makeStrategy('datasets', {
+    url: '/api/2/datasets/search/',
+    icon: RiDatabase2Line,
+    name: t('Jeux de données'),
+    placeholder: t('ex. élections présidentielles'),
+  }),
+  dataservices: makeStrategy('dataservices', {
+    url: '/api/2/dataservices/search/',
+    icon: RiTerminalLine,
+    name: t('API'),
+    placeholder: t('ex: SIRENE'),
+  }),
+  reuses: makeStrategy('reuses', {
+    url: '/api/2/reuses/search/',
+    icon: RiLineChartLine,
+    name: t('Réutilisations'),
+    placeholder: t('Rechercher une réutilisation de données'),
+  }),
+  organizations: makeStrategy('organizations', {
+    url: '/api/2/organizations/search/',
+    icon: RiBuilding2Line,
+    name: t('Organisations'),
+    placeholder: t('Rechercher une organisation'),
+  }),
+  topics: makeStrategy('topics', {
+    url: '/api/2/topics/search/',
+    icon: RiBookShelfLine,
+    name: t('Thématiques'),
+    placeholder: t('Rechercher une thématique'),
+  }),
+}
+
+// One params + fetch per config entry, keyed by configKey
+const resultsMap: Record<string, SearchEntry> = {}
+for (const c of props.config) {
+  const key = configKey(c)
+  const params = useStableQueryParams({ ...stableParamsOptions, typeConfig: c })
+  resultsMap[key] = await strategies[c.class].fetch(params, initialType === key)
+}
+
+// Reset page on filter/sort change. Custom filters (registered via
+// useSearchFilter) have their own watchers set up in `provide`, so they're
+// intentionally excluded here to avoid resetting the page when a filter
+// registers with its URL-derived value.
+const filtersForReset = computed(() => ({
+  q: qForParams.value,
+  organization: organizationId.value,
+  organization_badge: organizationType.value,
+  tag: tag.value,
+  format: format.value,
+  license: license.value,
+  schema: schema.value,
+  geozone: geozone.value,
+  granularity: granularity.value,
+  badge: badge.value,
+  topic: topic.value,
+  format_family: formatFamily.value,
+  access_type: accessType.value,
+  last_update_range: lastUpdateRange.value,
+  producer_type: producerType.value,
+  type: reuseType.value,
+}))
 
 watch(filtersForReset, () => page.value = 1)
 watch(sort, () => page.value = 1)
@@ -621,9 +726,7 @@ const hasFilters = computed(() => {
     || lastUpdateRange.value
     || producerType.value
     || reuseType.value
-    || Array.from(customFilterRegistry.values()).some(
-      entry => entry.ref.value !== undefined && entry.ref.value !== entry.defaultValue,
-    )
+    || Array.from(customFilterRegistry.values()).some(isCustomFilterActive)
 })
 
 const showForumLink = computed(() => (currentType.value === 'datasets' || currentType.value === 'dataservices') && !!componentsConfig.forumUrl)
@@ -651,86 +754,28 @@ function resetFilters() {
   flushQ()
 }
 
-// API calls only for enabled types (useFetch skips when URL is null)
-// Only the initial type is fetched during SSR, others are client-side only
-const { data: datasetsResults, status: datasetsStatus } = await useFetch<DatasetSearchResponse<Dataset>>(
-  datasetsUrl,
-  { params: datasetsParams, lazy: true, server: initialType === 'datasets' },
-)
-const { data: dataservicesResults, status: dataservicesStatus } = await useFetch<DataserviceSearchResponse<Dataservice>>(
-  dataservicesUrl,
-  { params: dataservicesParams, lazy: true, server: initialType === 'dataservices' },
-)
-const { data: reusesResults, status: reusesStatus } = await useFetch<ReuseSearchResponse<Reuse>>(
-  reusesUrl,
-  { params: reusesParams, lazy: true, server: initialType === 'reuses' },
-)
-const { data: organizationsResults, status: organizationsStatus } = await useFetch<OrganizationSearchResponse<Organization>>(
-  organizationsUrl,
-  { params: organizationsParams, lazy: true, server: initialType === 'organizations' },
-)
-const { data: topicsResults, status: topicsStatus } = await useFetch<TopicSearchResponse<TopicV2>>(
-  topicsUrl,
-  { params: topicsParams, lazy: true, server: initialType === 'topics' },
-)
+const searchResults = computed(() => resultsMap[currentType.value]?.data.value)
+const searchResultsStatus = computed(() => resultsMap[currentType.value]?.status.value)
 
-const typesMeta = {
-  datasets: {
-    icon: RiDatabase2Line,
-    name: t('Jeux de données'),
-    placeholder: t('ex. élections présidentielles'),
-    results: datasetsResults,
-    status: datasetsStatus,
-  },
-  dataservices: {
-    icon: RiTerminalLine,
-    name: t('API'),
-    placeholder: t('ex: SIRENE'),
-    results: dataservicesResults,
-    status: dataservicesStatus,
-  },
-  reuses: {
-    icon: RiLineChartLine,
-    name: t('Réutilisations'),
-    placeholder: t('Rechercher une réutilisation de données'),
-    results: reusesResults,
-    status: reusesStatus,
-  },
-  organizations: {
-    icon: RiBuilding2Line,
-    name: t('Organisations'),
-    placeholder: t('Rechercher une organisation'),
-    results: organizationsResults,
-    status: organizationsStatus,
-  },
-  topics: {
-    icon: RiBookShelfLine,
-    name: t('Thématiques'),
-    placeholder: t('Rechercher une thématique'),
-    results: topicsResults,
-    status: topicsStatus,
-  },
-} as const
-
-const searchResults = computed(() => typesMeta[currentType.value].results.value)
-const searchResultsStatus = computed(() => typesMeta[currentType.value].status.value)
+watch(searchResults, (results) => {
+  if (results) emit('resultsCount', results.total)
+}, { immediate: true })
 
 // RSS feed URL for datasets
 const rssUrl = computed(() => {
-  if (currentType.value !== 'datasets') return null
+  if (currentTypeConfig.value?.class !== 'datasets') return null
 
   const params = new URLSearchParams()
-  const datasetsConfig = props.config.find(c => c.class === 'datasets')
 
   // Add hidden filters first
-  if (datasetsConfig?.hiddenFilters) {
-    for (const hf of datasetsConfig.hiddenFilters) {
+  if (currentTypeConfig.value?.hiddenFilters) {
+    for (const hf of currentTypeConfig.value.hiddenFilters) {
       if (hf?.value) params.set(hf.key as string, String(hf.value))
     }
   }
 
   // Add active filters
-  if (qDebounced.value) params.set('q', qDebounced.value)
+  if (qForParams.value) params.set('q', qForParams.value)
   if (organizationId.value) params.set('organization', organizationId.value)
   if (organizationType.value) params.set('organization_badge', organizationType.value)
   if (tag.value) params.set('tag', tag.value)
@@ -742,15 +787,12 @@ const rssUrl = computed(() => {
   if (badge.value) params.set('badge', badge.value)
   if (topic.value) params.set('topic', topic.value)
 
-  // Add custom filter values
-  for (const [, entry] of customFilterRegistry) {
-    if (entry.ref.value !== undefined && entry.ref.value !== entry.defaultValue) {
-      params.set(entry.apiParam, String(entry.ref.value))
-    }
-  }
+  forEachActiveCustomFilter(customFilterRegistry, (apiParam, value) => {
+    params.set(apiParam, value)
+  }, currentTypeConfig.value ? configKey(currentTypeConfig.value) : undefined)
 
   // Add sort if set
-  if (sort.value) params.set('sort', sort.value)
+  if (effectiveSort.value) params.set('sort', effectiveSort.value)
 
   const queryString = params.toString()
   const basePath = '/api/1/datasets/recent.atom'
@@ -766,14 +808,15 @@ function getFacets(key: string): FacetItem[] | undefined {
 }
 
 // Scroll handling
-const searchRef = useTemplateRef('search')
+const resultsRef = useTemplateRef('results')
 
-function scrollToTop() {
-  searchRef.value?.scrollIntoView({ behavior: 'smooth' })
-}
+// Every criteria lives in the URL, custom filters included, so watching the
+// query covers them all: whenever the result list is replaced, bring its top
+// back into view rather than leaving the reader in the middle of a list they
+// have not seen yet.
+watch(() => route.query, () => scrollToBlockTop(resultsRef.value))
 
 function changePage(newPage: number) {
   page.value = newPage
-  scrollToTop()
 }
 </script>

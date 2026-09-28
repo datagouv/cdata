@@ -9,7 +9,7 @@
         {{ $t('Les données relatives aux élections') }}
       </template>
       <template #subtitle>
-        {{ $t('Cette rubrique rassemble les principaux jeux de données par type de scrutin : municipales, législatives, présidentielles, etc.') }}
+        {{ subtitle }}
       </template>
     </OnboardingHero>
 
@@ -55,8 +55,11 @@ import ElectionCard from '~/components/Elections/ElectionCard.vue'
 const config = useRuntimeConfig()
 const { t } = useTranslation()
 
+const subtitle = t('Cette rubrique rassemble les principaux jeux de données par type de scrutin : municipales, législatives, présidentielles, etc.')
+
 useSeoMeta({
   title: t('Données élections - {site}', { site: config.public.title }),
+  description: subtitle,
 })
 defineOgImage('MainPage.takumi', {
   title: 'Élections',
@@ -86,9 +89,16 @@ const elections = [
     image: '/nuxt_images/presidentielles.png',
   },
   {
+    slug: 'senatoriales',
+    title: t('Données des élections sénatoriales'),
+    description: t('Cette page rassemble toutes les données relatives aux élections sénatoriales : résultats depuis 1992, comptes des campagnes, ainsi que toutes les données permettant d\'éclairer les enjeux du Sénat.'),
+    to: '/posts/jeux-de-donnees-des-elections-senatoriales',
+    image: '/nuxt_images/senatoriales.png',
+  },
+  {
     slug: 'autres',
     title: t('Autres données électorales et démocratiques'),
-    description: t('Cette page rassemble les données des autres scrutins (élections sénatoriales, élections européennes...) des référendums et des consultations.'),
+    description: t('Cette page rassemble les données des autres scrutins (élections régionales, élections européennes...) des référendums et des consultations.'),
     to: '/posts/autres-donnees-relatives-aux-elections',
     image: '/nuxt_images/autres.png',
   },

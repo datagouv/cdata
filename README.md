@@ -2,7 +2,7 @@
 
 # cdata
 
-[![GitHub Actions](https://img.shields.io/github/actions/workflow/status/datagouv/cdata/create-deploy-release.yml?branch=main)](https://github.com/datagouv/cdata/actions)
+[![GitHub Actions](https://img.shields.io/github/actions/workflow/status/datagouv/cdata/ci.yml?branch=main)](https://github.com/datagouv/cdata/actions)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 **cdata** is the frontend application for [data.gouv.fr](https://www.data.gouv.fr), France's Open Data platform.
@@ -58,6 +58,8 @@ Start the development server on `http://localhost:3000`:
 pnpm run dev
 ```
 
+You might need to add dev.local to your /etc/hosts file: `sudo sh -c 'echo "127.0.0.1 dev.local" >> /etc/hosts'`
+
 ### Common Commands
 ```bash
 pnpm run dev          # Start development server
@@ -69,7 +71,7 @@ pnpm run lint:fix     # Automatically fix ESLint issues and format code
 
 ## 🛠️ Technology Stack
 
-- **Framework**: [Nuxt 3](https://nuxt.com/) (Vue 3)
+- **Framework**: [Nuxt 4](https://nuxt.com/) (Vue 3)
 - **Language**: [TypeScript](https://www.typescriptlang.org/)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/) + [DSFR](https://www.systeme-de-design.gouv.fr/)
 - **State Management**: Vue 3 Composition API
@@ -96,6 +98,7 @@ This project uses [pnpm](https://pnpm.io/) instead of npm mostly for security re
 - `NUXT_PUBLIC_SENTRY_DSN`: Sentry DSN for error tracking
 - `NUXT_TEMPLATE_CACHE_DURATION`: Duration for template caching
 - `NUXT_SITE_URL`: Site URL (used for OG tags, sitemap, etc.)
+- `NUXT_SESSION_COOKIE_NAME` / `NUXT_REMEMBER_COOKIE_NAME`: names of the udata session cookies (`SESSION_COOKIE_NAME` and `REMEMBER_COOKIE_NAME` on the backend, defaults `session` and `remember_token`). A request carrying none of them is anonymous and skips the `/api/1/me` call, so a mismatch logs every visitor out.
 
 You can work on `cdata` without a local `udata` backend by pointing to https://demo.data.gouv.fr directly. Create a `.env` file at the root of the project:
 
@@ -224,7 +227,7 @@ The project includes some test data and test IDs for component testing, but form
 
 ## 📚 Additional Resources
 
-- [Nuxt 3 Documentation](https://nuxt.com/docs/getting-started/introduction)
+- [Nuxt 4 Documentation](https://nuxt.com/docs/getting-started/introduction)
 - [Vue 3 Documentation](https://vuejs.org/)
 - [DSFR Documentation](https://www.systeme-de-design.gouv.fr/)
 - [data.gouv.fr API Documentation](https://guides.data.gouv.fr/publier-des-donnees/guide-data.gouv.fr/api/reference)

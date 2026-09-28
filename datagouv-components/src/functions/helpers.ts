@@ -38,6 +38,21 @@ export const summarize = (val: number, fractionDigits = 0) => {
   return `${toFixedIfNotZero(val)}Y`
 }
 
+// Guards any value that ends up in an `href`: only absolute http(s) URLs are allowed.
+// Some of these URLs come from resource extras, which are freely writable by the
+// resource owner, so an unguarded value could carry a `javascript:` or `data:` scheme
+// and execute in the platform origin when a visitor clicks the link.
+export const isSafeHttpUrl = (value: unknown): value is string => {
+  if (typeof value !== 'string') return false
+  try {
+    const { protocol } = new URL(value)
+    return protocol === 'http:' || protocol === 'https:'
+  }
+  catch {
+    return false
+  }
+}
+
 export const escapeCsvValue = (value: string | number | null | undefined): string => {
   if (value === null || value === undefined || value === '') {
     return ''

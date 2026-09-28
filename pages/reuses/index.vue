@@ -1,32 +1,44 @@
 <template>
   <div>
-    <EditoHeader
-      color="green"
-      :title="$t('Rechercher une réutilisation')"
-      :subtitle="$t('parmi les {count} réutilisations sur {site}', {
-        count: site?.metrics.reuses ?? 0,
-        site: config.public.title,
-      })"
-      :placeholder="$t('Rechercher une réutilisation de données')"
-      search-url="/reuses/search"
-      :link-label="$t(`Qu'est-ce qu'une réutilisation ?`)"
-      :link-url="config.public.guideReuses"
-    >
-      <ul class="flex flex-nowrap md:flex-wrap overflow-auto gap-3 list-none pl-0">
-        <li
-          v-for="topic in topics"
-          :key="topic.id"
-          class="flex-none"
-        >
-          <CdataLink
-            class="bg-white/10 text-white rounded-md px-2 py-1 text-lg fr-raw-link"
-            :href="`/reuses/search?topic=${topic.id}`"
+    <HeroBanner color="green">
+      <template #breadcrumb>
+        <Breadcrumb>
+          <BreadcrumbItem to="/">
+            {{ $t('Accueil') }}
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            {{ $t('Réutilisations') }}
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </template>
+      <EditoSearchForm
+        color="green"
+        :title="$t('Rechercher une réutilisation')"
+        :subtitle="$t('parmi les {count} réutilisations sur {site}', {
+          count: site?.metrics.reuses ?? 0,
+          site: config.public.title,
+        })"
+        :placeholder="$t('Rechercher une réutilisation de données')"
+        search-url="/reuses/search"
+        :link-label="$t(`Qu'est-ce qu'une réutilisation ?`)"
+        :link-url="config.public.guideReuses"
+      >
+        <ul class="flex flex-nowrap md:flex-wrap overflow-auto gap-3 list-none pl-0">
+          <li
+            v-for="topic in topics"
+            :key="topic.id"
+            class="flex-none"
           >
-            {{ topic.label }}
-          </CdataLink>
-        </li>
-      </ul>
-    </EditoHeader>
+            <CdataLink
+              class="bg-white/10 text-white rounded-md px-2 py-1 text-lg fr-raw-link"
+              :href="`/reuses/search?topic=${topic.id}`"
+            >
+              {{ topic.label }}
+            </CdataLink>
+          </li>
+        </ul>
+      </EditoSearchForm>
+    </HeroBanner>
     <EditoBlocs
       v-if="siteBlocs.length > 0 || isEditing"
       :blocs="siteBlocs"
@@ -57,11 +69,11 @@
         <div class="flex flex-col space-y-3 justify-center">
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/bikelane.svg"
                 class="w-12"
                 alt=""
-              />
+              >
             </div>
             <p class="font-extrabold text-gray-title text-center mb-0">
               {{ $t(`Connaître le patrimoine arboré des communes`) }}
@@ -69,11 +81,11 @@
           </div>
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/house.svg"
                 class="w-12"
                 alt=""
-              />
+              >
             </div>
             <p class="font-extrabold text-gray-title text-center mb-0">
               {{ $t(`Connaître le prix de vente des biens immobiliers`) }}
@@ -83,11 +95,11 @@
         <div class="flex flex-col space-y-3 justify-center">
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/business.svg"
                 class="w-12"
                 alt=""
-              />
+              >
             </div>
             <p class="font-extrabold text-gray-title text-center mb-0">
               {{ $t(`Identifier les entreprises en difficulté`) }}
@@ -95,11 +107,11 @@
           </div>
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/heart.svg"
                 class="w-12"
                 alt=""
-              />
+              >
             </div>
             <p class="font-extrabold text-gray-title text-center mb-0">
               {{ $t(`Localiser précisément les interventions`) }}
@@ -107,11 +119,11 @@
           </div>
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/briefcase.svg"
                 class="w-12"
                 alt=""
-              />
+              >
             </div>
             <p class="font-extrabold text-gray-title text-center mb-0">
               {{ $t(`Proposer un parcours d'orientation`) }}
@@ -121,11 +133,11 @@
         <div class="flex flex-col space-y-3 justify-center">
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/pin.svg"
                 class="w-12"
                 alt=""
-              />
+              >
             </div>
             <p class="font-extrabold text-gray-title text-center mb-0">
               {{ $t(`Réaliser l'état des risques d'un bien immobilier`) }}
@@ -133,11 +145,11 @@
           </div>
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/truck.svg"
                 class="w-12"
                 alt=""
-              />
+              >
             </div>
             <p class="font-extrabold text-gray-title text-center mb-0">
               {{ $t(`Gérer simplement une exploitation agricole`) }}
@@ -158,7 +170,10 @@
 import { BrandedButton, type ReuseTopic } from '@datagouv/components-next'
 import CdataLink from '~/components/CdataLink.vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
-import EditoHeader from '~/components/Pages/EditoHeader.vue'
+import HeroBanner from '~/components/HeroBanner.vue'
+import EditoSearchForm from '~/components/Pages/EditoSearchForm.vue'
+import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 
 const config = useRuntimeConfig()
@@ -179,16 +194,6 @@ defineOgImage('MainPage.takumi', {
 })
 
 const route = useRoute()
-
-onMounted(async () => {
-  const hasFacets = Object.keys(route.query).some(key =>
-    ['q', 'sort', 'tag', 'topic', 'page'].includes(key),
-  )
-
-  if (hasFacets) {
-    await navigateTo({ path: '/reuses/search', query: route.query })
-  }
-})
 
 const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
 

@@ -8,12 +8,12 @@
       :class="{ 'text-datagouv': isPrimary }"
     >
       <div class="flex-none">
-        <NuxtImg
+        <img
           class="w-20"
           :src="icon"
           loading="lazy"
           alt=""
-        />
+        >
       </div>
       <div class="fr-col-12 fr-col-sm flex flex-col justify-between">
         <div class="mb-2">

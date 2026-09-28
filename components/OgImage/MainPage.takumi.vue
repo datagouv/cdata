@@ -4,7 +4,7 @@ const props = defineProps<{
   uri: string
 }>()
 
-const uri = computed(() => props.uri.replace(/^\/+/, ''))
+const path = computed(() => props.uri.replace(/^\/+/, ''))
 const { isProduction } = useRuntimeConfig().public
 </script>
 
@@ -28,7 +28,7 @@ const { isProduction } = useRuntimeConfig().public
       <h1
         :class="title.length > 16 ? 'text-[80px]' : 'text-[120px]'"
         class="font-extrabold text-[#161616]"
-        style="font-family: 'MarianneExtraBold'; line-clamp: 2; text-overflow: ellipsis;"
+        style="font-family: 'Marianne'; line-clamp: 2; text-overflow: ellipsis;"
       >
         {{ title }}
       </h1>
@@ -36,7 +36,7 @@ const { isProduction } = useRuntimeConfig().public
         style="font-family: 'Inconsolata'"
         class="font-light text-6xl"
       >
-        <span class="text-[#000091]">data.gouv.fr/</span><span class="text-[#272747]">{{ uri }}</span>
+        <span class="text-[#000091]">data.gouv.fr/</span><span class="text-[#272747]">{{ path }}</span>
       </div>
     </div>
   </div>

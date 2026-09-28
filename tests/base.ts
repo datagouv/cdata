@@ -1,9 +1,16 @@
-import { test as base } from '@playwright/test'
+import { test as base, type ConsoleMessage } from '@playwright/test'
+import { fakeMetricsApi } from './metricsApi'
+
+// `msg.text()` flattens an `Error` argument to its bare message (e.g. "Error"),
+// dropping the stack on Firefox. Resolve the args to recover `error.stack`.
+const fullText = (msg: ConsoleMessage) =>
+  Promise.all(msg.args().map(arg => arg.evaluate(v => (v instanceof Error ? v.stack : v)).catch(() => null)))
+    .then(parts => parts.filter(p => p != null).join(' ') || msg.text())
 
 const IGNORED_MESSAGES = [
   // Cookie secure flag doesn't work in dev (HTTP)
   'non-HTTPS cookie',
-  // TODO: find a way to only ignore this in redirect tests (e.g. a per-test option)
+  // TODO: move this to the `allowedConsoleMessages` option of the redirect tests
   // instead of globally silencing 404 errors. Example test that needs this:
   //   test('/datasets/slug/ → /datasets/slug', async ({ page }) => {
   //     await page.goto('/datasets/slug/')
@@ -20,39 +27,50 @@ const IGNORED_MESSAGES = [
 ]
 
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-export const test = base.extend<{ assertNoConsoleErrors: void }>({
-  assertNoConsoleErrors: [async ({ page }, use) => {
-    const warnings: string[] = []
-    const errors: string[] = []
+export const test = base.extend<{ allowedConsoleMessages: Array<string>, assertNoConsoleErrors: void, metricsApi: void }>({
+  // A test that provokes an error on purpose declares the message it expects,
+  // rather than adding it to the list above and silencing it for every test.
+  allowedConsoleMessages: [[], { option: true }],
+  metricsApi: [async ({ context }, use) => {
+    await fakeMetricsApi(context)
+    await use()
+  }, { auto: true }],
+  assertNoConsoleErrors: [async ({ page, allowedConsoleMessages }, use) => {
+    const warnings: Array<Promise<string>> = []
+    const errors: Array<Promise<string>> = []
+    const ignoredMessages = [...IGNORED_MESSAGES, ...allowedConsoleMessages]
 
     page.on('console', (msg) => {
       const text = msg.text()
-      if (IGNORED_MESSAGES.some(ignored => text.includes(ignored))) return
+      if (ignoredMessages.some(ignored => text.includes(ignored))) return
 
       const type = msg.type()
       if (type === 'warning') {
-        warnings.push(text)
+        warnings.push(fullText(msg))
       }
       if (type === 'error') {
-        errors.push(text)
+        errors.push(fullText(msg))
       }
     })
 
     page.on('pageerror', (error) => {
-      if (IGNORED_MESSAGES.some(ignored => error.message.includes(ignored))) return
-      errors.push(error.message)
+      if (ignoredMessages.some(ignored => error.message.includes(ignored))) return
+      errors.push(Promise.resolve(error.stack ?? error.message))
     })
 
     await use()
 
-    for (const w of warnings) {
+    const resolvedWarnings = await Promise.all(warnings)
+    const resolvedErrors = await Promise.all(errors)
+
+    for (const w of resolvedWarnings) {
       base.info().annotations.push({ type: 'warning', description: w })
     }
-    for (const e of errors) {
+    for (const e of resolvedErrors) {
       base.info().annotations.push({ type: 'error', description: e })
     }
 
-    const all = [...errors, ...warnings]
+    const all = [...resolvedErrors, ...resolvedWarnings]
     if (all.length > 0) {
       throw new Error(`Console errors/warnings:\n${all.join('\n')}`)
     }

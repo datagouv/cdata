@@ -19,10 +19,10 @@ export function useTwoFactorSetup() {
 
     loading.value = true
     try {
-      const { response } = await postApiWithCsrf<{ response: { tf_authr_issuer: string, tf_authr_username: string, tf_authr_key: string } }>('/tf-setup', {
+      const { response } = await postApiWithCsrf<{ response: { tf_authr_issuer: string, tf_authr_uri: string, tf_authr_username: string, tf_authr_key: string } }>('/tf-setup', {
         setup: 'authenticator',
       })
-      qrcode.value = renderSVG(`otpauth://totp/${response.tf_authr_issuer}:${response.tf_authr_username}?secret=${response.tf_authr_key}&issuer=${response.tf_authr_issuer}`)
+      qrcode.value = renderSVG(response.tf_authr_uri)
       totpKey.value = response.tf_authr_key
     }
     catch {

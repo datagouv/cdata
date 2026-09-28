@@ -1,0 +1,106 @@
+<template>
+  <Popover
+    ref="anchor"
+    v-slot="{ open }"
+    class="relative shrink-0"
+  >
+    <PopoverButton
+      class="flex size-5 items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-new-primary"
+      :class="open ? 'bg-new-primary/10' : 'hover:bg-gray-100'"
+    >
+      <RiFilterLine
+        class="size-4"
+        :class="open || hasColumnFilter ? 'text-new-primary' : 'text-gray-low'"
+        aria-hidden="true"
+      />
+      <span class="sr-only">{{ t('Filtrer') }} {{ column }}</span>
+    </PopoverButton>
+
+    <ClientOnly>
+      <Teleport to="#tooltips">
+        <PopoverPanel
+          v-show="open"
+          ref="panel"
+          static
+          class="bg-white border border-black/10 rounded-lg shadow-md w-80 absolute z-[800]"
+          :style="floatingStyles"
+          :data-testid="`column-filter-${column}`"
+        >
+          <!-- Title -->
+          <div class="flex items-center justify-between px-3 py-2 border-b border-black/10">
+            <p class="text-sm font-medium mb-0">
+              {{ t('Filtrer') }} : {{ column }}
+            </p>
+            <BrandedButton
+              v-if="hasColumnFilter"
+              color="tertiary"
+              size="2xs"
+              :icon="RiCloseLine"
+              @click="clearColumnFilter"
+            >
+              {{ t('Effacer') }}
+            </BrandedButton>
+          </div>
+
+          <TabularFilterContent
+            v-model:sort="sort"
+            v-model:filters="filters"
+            :column="column"
+            :column-type="columnType"
+            :column-profile="columnProfile"
+            :null-percent="nullPercent"
+            :total-lines="totalLines"
+            :boolean-counts="booleanCounts"
+          />
+        </PopoverPanel>
+      </Teleport>
+    </ClientOnly>
+  </Popover>
+</template>
+
+<script setup lang="ts">
+import { computed, useTemplateRef } from 'vue'
+import { flip, shift, autoUpdate, useFloating } from '@floating-ui/vue'
+import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
+import { RiFilterLine, RiCloseLine } from '@remixicon/vue'
+import { useTranslation } from '../../composables/useTranslation'
+import { hasFilterForColumn as _hasFilterForColumn } from '../../functions/tabular'
+import BrandedButton from '../BrandedButton.vue'
+import ClientOnly from '../ClientOnly.vue'
+import TabularFilterContent from './TabularFilterContent.vue'
+import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig } from './types'
+
+const props = defineProps<{
+  column: string
+  columnType: ColumnType
+  columnProfile: TabularColumnProfile | null
+  nullPercent: string
+  totalLines: number
+  booleanCounts?: { trueCount: number, falseCount: number }
+}>()
+
+const sort = defineModel<SortConfig | null>('sort')
+const filters = defineModel<Record<string, ColumnFilters>>('filters', { default: () => ({}) })
+
+const { t } = useTranslation()
+
+// Headless UI Popover manages open state, Escape-to-close, outside-click,
+// focus handling and ARIA. floating-ui only positions the teleported panel.
+const anchorComponent = useTemplateRef<InstanceType<typeof Popover>>('anchor')
+const panelComponent = useTemplateRef<InstanceType<typeof PopoverPanel>>('panel')
+const anchorEl = computed(() => anchorComponent.value?.$el as HTMLElement | undefined)
+const panelEl = computed(() => panelComponent.value?.$el as HTMLElement | undefined)
+
+const hasColumnFilter = computed(() => _hasFilterForColumn(filters.value, props.column))
+
+function clearColumnFilter() {
+  const { [props.column]: _, ...rest } = filters.value
+  filters.value = rest
+}
+
+const { floatingStyles } = useFloating(anchorEl, panelEl, {
+  placement: 'bottom-start',
+  middleware: [flip(), shift()],
+  whileElementsMounted: autoUpdate,
+})
+</script>

@@ -7,8 +7,7 @@ test('search launch without params', async ({ page }) => {
     'Moteur de recherche des jeux de données - data.gouv.fr',
   )
 
-  // Result count is displayed with role="status"
-  await expect(page.getByRole('status')).toBeVisible()
+  await expect(page.getByTestId('search-result-count')).toBeVisible()
 
   // Results are displayed in a list
   const results = page.locator('.search-results ul')
@@ -44,7 +43,7 @@ test('search results update when badge filter is applied', async ({ page }) => {
   await page.goto('/datasets/search/')
 
   // Wait for initial results to load
-  await expect(page.getByRole('status')).toBeVisible()
+  await expect(page.getByTestId('search-result-count')).toBeVisible()
 
   // Badge filter is now a RadioGroup
   const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
@@ -57,7 +56,7 @@ test('search results update when badge filter is applied', async ({ page }) => {
   await page.waitForURL(/badge=/)
 
   // Either results are shown with a count, or "no results" message is displayed
-  const hasResults = await page.getByRole('status').isVisible().catch(() => false)
+  const hasResults = await page.getByTestId('search-result-count').isVisible().catch(() => false)
   const hasNoResultsMessage = await page.getByText('Vous n\'avez pas trouvé ce que vous cherchez').isVisible().catch(() => false)
 
   expect(hasResults || hasNoResultsMessage).toBeTruthy()
@@ -160,6 +159,33 @@ test('custom theme filter is hidden on non-dataset types', async ({ page }) => {
   await expect(page.locator('#theme-filter')).not.toBeVisible()
 })
 
+test('custom theme filter URL param is cleared when switching to a type that hides it', async ({ page }) => {
+  await page.goto('/design/dataset-search?theme=transport')
+
+  await expect(page.locator('#theme-filter')).toHaveValue('transport')
+
+  const reusesRadio = page.getByRole('radio', { name: 'Réutilisations' })
+  await reusesRadio.click({ force: true })
+
+  await page.waitForURL(url => !url.searchParams.has('theme'))
+  const url = new URL(page.url())
+  expect(url.searchParams.has('theme')).toBeFalsy()
+})
+
+test('custom theme filter URL param persists when switching between types that both show it', async ({ page }) => {
+  await page.goto('/design/dataset-search?theme=transport')
+
+  await expect(page.locator('#theme-filter')).toHaveValue('transport')
+
+  const inspireRadio = page.getByRole('radio', { name: 'Données INSPIRE' })
+  await inspireRadio.click({ force: true })
+
+  await page.waitForLoadState('networkidle')
+  const url = new URL(page.url())
+  expect(url.searchParams.get('theme')).toBe('transport')
+  await expect(page.locator('#theme-filter')).toHaveValue('transport')
+})
+
 test('custom theme filter resets page to 1 on change', async ({ page }) => {
   await page.goto('/design/dataset-search?page=2')
 
@@ -170,6 +196,136 @@ test('custom theme filter resets page to 1 on change', async ({ page }) => {
   await page.waitForURL(/theme=education/)
   const url = new URL(page.url())
   expect(url.searchParams.get('page')).toBeNull()
+})
+
+test('custom theme filter preserves page param on initial load', async ({ page }) => {
+  await page.goto('/design/dataset-search?theme=transport&page=2')
+
+  await expect(page.locator('#theme-filter')).toHaveValue('transport')
+
+  // Give the client a chance to hydrate and any stray watchers to fire.
+  await page.waitForLoadState('networkidle')
+
+  const url = new URL(page.url())
+  expect(url.searchParams.get('theme')).toBe('transport')
+  expect(url.searchParams.get('page')).toBe('2')
+})
+
+test('custom theme filter applies its apiParam mapping to the results', async ({ page }) => {
+  await page.goto('/design/dataset-search')
+
+  const results = page.locator('.search-results ul')
+  await expect(results.locator('li')).not.toHaveCount(0)
+
+  // The UI param is `theme` but useSearchFilter maps it to `tag` for the API.
+  // Assert both: the outgoing request uses `tag`, and the results reflect it.
+  const themeSelect = page.locator('#theme-filter')
+  await themeSelect.scrollIntoViewIfNeeded()
+
+  const apiRequest = page.waitForRequest(req =>
+    req.url().includes('/api/2/datasets/search/')
+    && new URL(req.url()).searchParams.get('tag') === 'transport',
+  )
+  await themeSelect.selectOption('transport')
+  await apiRequest
+
+  await expect(
+    results.getByText('Réseau de transport en commun Trans\'Agglo de DLVA'),
+  ).toBeVisible()
+})
+
+test('custom filter scoped to dataset types never appears in the parallel dataservices search', async ({ page }) => {
+  // Collect tag values from every dataservices request (initial + any re-fetches)
+  const dataservicesTags: (string | null)[] = []
+  page.on('request', (req) => {
+    if (req.url().includes('/api/2/dataservices/search/')) {
+      dataservicesTags.push(new URL(req.url()).searchParams.get('tag'))
+    }
+  })
+
+  await page.goto('/design/dataset-search')
+  await page.waitForLoadState('networkidle')
+
+  // Change the theme filter and wait for the all-datasets search to re-fetch with tag=transport
+  // (confirms the filter change was processed before we check dataservices)
+  const datasetsWithTagPromise = page.waitForRequest(
+    req =>
+      req.url().includes('/api/2/datasets/search/')
+      && new URL(req.url()).searchParams.get('tag') === 'transport'
+      && !new URL(req.url()).searchParams.has('badge'),
+  )
+
+  const themeSelect = page.locator('#theme-filter')
+  await themeSelect.scrollIntoViewIfNeeded()
+  await themeSelect.selectOption('transport')
+  await datasetsWithTagPromise
+
+  // tag=transport must never have appeared in any dataservices request
+  expect(dataservicesTags.every(tag => tag !== 'transport')).toBe(true)
+})
+
+test('switching search type resets page to 1', async ({ page }) => {
+  // Reproduces the bug: deep into datasets results (page 18), switching to the
+  // organizations type used to carry the stale page over to /organizations.
+  await page.goto('/datasets/search/?q=biblioth%C3%A8que&page=18')
+  await page.waitForLoadState('networkidle')
+
+  const organizationsRadio = page.getByRole('radio', { name: 'Organisations' })
+  await organizationsRadio.click({ force: true })
+
+  await page.waitForURL(/\/organizations/)
+  const url = new URL(page.url())
+  expect(url.searchParams.has('page')).toBeFalsy()
+})
+
+test('switching type in-component resets page to 1', async ({ page }) => {
+  // Same reset, but exercised through GlobalSearch's internal type model (no
+  // navigation) as used on the design search page.
+  await page.goto('/design/dataset-search?page=2')
+  await page.waitForLoadState('networkidle')
+
+  const reusesRadio = page.getByRole('radio', { name: 'Réutilisations' })
+  await reusesRadio.click({ force: true })
+
+  await page.waitForURL(url => !url.searchParams.has('page'))
+  const url = new URL(page.url())
+  expect(url.searchParams.has('page')).toBeFalsy()
+})
+
+test('switching type resets page and clears a type-scoped custom filter in one go', async ({ page }) => {
+  // Combined case: a deep page AND an active custom filter the target type hides.
+  // Both URL updates must batch into a single navigation without clobbering each
+  // other (page reset via useRouteQuery vs. the custom filter being cleared).
+  await page.goto('/design/dataset-search?theme=transport&page=18')
+  await expect(page.locator('#theme-filter')).toHaveValue('transport')
+  await page.waitForLoadState('networkidle')
+
+  const reusesRadio = page.getByRole('radio', { name: 'Réutilisations' })
+  await reusesRadio.click({ force: true })
+
+  await page.waitForURL(url => !url.searchParams.has('theme'))
+  const url = new URL(page.url())
+  expect(url.searchParams.has('theme')).toBeFalsy()
+  expect(url.searchParams.has('page')).toBeFalsy()
+})
+
+test.describe('mobile', () => {
+  test.use({ viewport: { width: 390, height: 844 } })
+
+  test('the collapsed filter panel does not break hydration', async ({ page }) => {
+    // The server has no viewport and always renders the panel expanded. When the
+    // panel was collapsed from a JS media query, a narrow client dropped it from
+    // its vdom and Vue tore the subtree down mid-hydration. The console fixture in
+    // tests/base.ts turns the resulting mismatch into a failure.
+    await page.goto('/datasets/search/?badge=hvd')
+    await page.waitForLoadState('networkidle')
+
+    const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
+    await expect(badgeFieldset).toBeHidden()
+
+    await page.getByRole('button', { name: 'Filtres' }).click()
+    await expect(badgeFieldset).toBeVisible()
+  })
 })
 
 test('clicking dataset navigates to detail', async ({ page }) => {

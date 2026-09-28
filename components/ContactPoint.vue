@@ -10,8 +10,7 @@
         :rel="link ? 'ugc nofollow noopener' : undefined"
         :target="link ? '_blank' : undefined"
         :title="label"
-        class="text-gray-title"
-        :class="{ truncate: link }"
+        :class="link ? 'link truncate' : 'text-gray-title'"
       >
         {{ label }}
       </component>

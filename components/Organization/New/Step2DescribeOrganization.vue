@@ -8,12 +8,12 @@
       type="primary"
       class="mb-4 flex items-center space-x-5"
     >
-      <NuxtImg
+      <img
         src="/illustrations/organization.svg"
         loading="lazy"
         class="size-14 shrink-0"
         alt=""
-      />
+      >
       <div class="w-full">
         <p class="font-bold mb-1">
           {{ t(`Qu'est-ce qu'une organisation ?`) }}

@@ -1,29 +1,34 @@
 <template>
-  <div class="text-xs">
+  <div
+    class="text-xs"
+    :class="fill ? 'flex min-h-0 flex-1 flex-col' : ''"
+  >
     <slot
       v-if="data !== null"
       :data="data"
     />
-    <div
+    <slot
       v-else-if="loading"
-      class="text-gray-medium"
+      name="loading"
     >
-      {{ t("Chargement de l'aperçu {fileType}...", { fileType }) }}
-    </div>
+      <div class="text-gray-medium">
+        {{ t("Chargement de l'aperçu {fileType}...", { fileType }) }}
+      </div>
+    </slot>
     <PreviewUnavailable v-else-if="!isSizeAllowed">
       {{ fileSizeBytes
-        ? t("Le fichier {fileType} est trop volumineux pour être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.", { fileType })
-        : t("La taille du fichier est inconnue, l'aperçu n'est pas disponible. Téléchargez-le depuis l'onglet Téléchargements.")
+        ? t("Le fichier {fileType} est trop volumineux pour être prévisualisé. Téléchargez-le pour le consulter.", { fileType })
+        : t("La taille du fichier est inconnue, l'aperçu n'est pas disponible. Téléchargez-le pour le consulter.")
       }}
     </PreviewUnavailable>
     <PreviewUnavailable v-else-if="corsStatus === 'blocked'">
-      {{ t("Ce fichier {fileType} ne peut pas être prévisualisé car il est hébergé sur un site distant qui restreint l'accès (CORS). Téléchargez-le depuis l'onglet Téléchargements.", { fileType }) }}
+      {{ t("Ce fichier {fileType} ne peut pas être prévisualisé car il est hébergé sur un site distant qui restreint l'accès (CORS). Téléchargez-le pour le consulter.", { fileType }) }}
     </PreviewUnavailable>
     <PreviewUnavailable v-else-if="error === 'network'">
-      {{ t("Ce fichier est hébergé sur un site externe qui ne permet pas la prévisualisation. Téléchargez-le depuis l'onglet Téléchargements.") }}
+      {{ t("Ce fichier est hébergé sur un site externe qui ne permet pas la prévisualisation. Téléchargez-le pour le consulter.") }}
     </PreviewUnavailable>
     <PreviewUnavailable v-else-if="error">
-      {{ t("L'aperçu de ce fichier n'a pas pu être chargé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+      {{ t("L'aperçu de ce fichier n'a pas pu être chargé. Téléchargez-le pour le consulter.") }}
     </PreviewUnavailable>
   </div>
 </template>
@@ -40,6 +45,8 @@ const props = defineProps<{
   resource: Resource
   maxSize: number | undefined
   load: () => Promise<unknown>
+  // Fill the available height (fullscreen) instead of sizing to content.
+  fill?: boolean
 }>()
 
 const emit = defineEmits<{

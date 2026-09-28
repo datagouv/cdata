@@ -1,15 +1,18 @@
 import type { UserNotification } from '~/types/notifications'
 import type { PaginatedArray } from '~/types/types'
+import { toast } from '@datagouv/components-next'
 
 const page = ref(1)
 const PAGE_SIZE = 10
 const nextPage = ref<string | null>(null)
 const pendingNotifications = ref<PaginatedArray<UserNotification> | null>(null)
 const notificationsCombinedList = ref<Array<UserNotification>>([])
+const notificationsToRead = computed(() => notificationsCombinedList.value.filter(n => canMarkAsRead(n)))
 
 export function useNotifications() {
   const { start, finish } = useLoadingIndicator()
   const { $api } = useNuxtApp()
+  const { t } = useTranslation()
 
   async function loadNotifications() {
     start()
@@ -23,30 +26,37 @@ export function useNotifications() {
       notificationsCombinedList.value.push(...notifications.data)
       nextPage.value = notifications.next_page
     }
+    catch {
+      toast.error(t('Erreur lors du chargement des notifications'))
+    }
     finally {
       finish()
     }
   }
 
   async function refreshNotifications() {
+    const toPage = page.value
+    notificationsCombinedList.value = []
+    for (let p = 1; p <= toPage; p++) {
+      page.value = p
+      await loadNotifications()
+    }
+    await refreshPendingNotifications()
+  }
+
+  async function refreshPendingNotifications() {
     start()
     try {
-      page.value = 1
-      const notifications = await $api<PaginatedArray<UserNotification>>('/api/1/notifications/', {
-        params: {
-          page_size: PAGE_SIZE,
-          page: page.value,
-        },
-      })
-      notificationsCombinedList.value = notifications.data
-      nextPage.value = notifications.next_page
       pendingNotifications.value = await $api<PaginatedArray<UserNotification>>('/api/1/notifications/', {
         params: {
           page_size: 1,
-          page: page.value,
+          page: 1,
           handled: false,
         },
       })
+    }
+    catch {
+      toast.error(t('Erreur lors du chargement des notifications'))
     }
     finally {
       finish()
@@ -58,11 +68,13 @@ export function useNotifications() {
     return loadNotifications()
   }
   return {
-    pendingNotifications: readonly(pendingNotifications),
-    nextPage: readonly(nextPage),
-    notificationsCombinedList: readonly(notificationsCombinedList),
+    pendingNotifications: pendingNotifications,
+    nextPage: nextPage,
+    notificationsCombinedList: notificationsCombinedList,
+    notificationsToRead,
     loadNotifications,
     loadMoreNotifications,
     refreshNotifications,
+    refreshPendingNotifications,
   }
 }

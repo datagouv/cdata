@@ -42,7 +42,7 @@ export function useContentBlocsTypes() {
     },
     MarkdownBloc: {
       icon: RiMarkdownLine,
-      name: t('Bloc Markdown'),
+      name: t('Texte'),
       description: t('Ajouter du contenu texte riche'),
       component: MarkdownBlocComponent,
       default: (): Omit<MarkdownBloc, 'id'> => ({ class: 'MarkdownBloc', title: 'Titre', subtitle: null, content: '' }),

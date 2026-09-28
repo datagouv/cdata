@@ -6,13 +6,13 @@ Ce document explique comment les tests E2E sont configurés pour tester l'intég
 
 ### GitHub Actions
 
-Voir **e2e.yml**.
+Voir **.github/workflows/ci.yml**.
 
 ### Architecture des tests
 
 Les tests E2E simulent un environnement complet avec :
 - **Base de données** : MongoDB (via Docker)
-- **Cache/Queue** : Redis (via Docker)  
+- **Cache/Queue** : Redis (via Docker)
 - **Backend API** : udata (Flask) qui fournit l'API
 - **Frontend** : cdata (Nuxt.js) qui consomme l'API
 
@@ -51,6 +51,8 @@ Pour tester localement :
 ```
 NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES="hero_15.png"  #  to avoid homepage image randomness
 UDATA_WORKING_DIR="/path/to/udata/"  # to allow for udata commands execution (ex: in 2FA flow tests cleanup)
+NUXT_PUBLIC_TABULAR_API_PREVIEW_RESOURCES_ID="982d9dd0-365a-4c4b-8a83-75dec40c36bb"  # preview dashboard E2E tests
+NUXT_PUBLIC_TABULAR_API_PREVIEW_STATS_ID="33cf9a65-3f77-4d88-acd1-bca420d83e60"  # preview dashboard E2E tests
 ```
 3. **Lancer les tests** :
 ```bash
@@ -62,3 +64,7 @@ pnpm run test:e2e
 - `pnpm run test:e2e` : Lance les tests E2E en mode headless
 - `pnpm run test:e2e:ui` : Lance les tests avec l'interface Playwright
 - `pnpm run test:e2e:headed` : Lance les tests en mode visible
+
+## Paramètres fréquemment utilisés
+- `--project firefox`: Lance uniquement les tests pour firefox (existe aussi avec `--project chromium`)
+- `--only-changed`: Lance uniquement les tests modifiés depuis le dernier commit, et les tests qui importent un fichier modifié

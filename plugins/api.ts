@@ -1,4 +1,5 @@
 import { toast } from '@datagouv/components-next'
+import { getApiErrorMessage } from '~/utils/api'
 
 export default defineNuxtPlugin({
   async setup(nuxtApp) {
@@ -16,9 +17,11 @@ export default defineNuxtPlugin({
             options.headers.set('Content-Type', 'application/json')
           }
           options.headers.set('Accept', 'application/json')
-          options.credentials = 'include'
           if (config.public.devApiKey) {
             options.headers.set('X-API-KEY', config.public.devApiKey)
+          }
+          else {
+            options.credentials = 'include'
           }
           if (token.value) {
             options.headers.set('Authentication-Token', token.value)
@@ -36,7 +39,7 @@ export default defineNuxtPlugin({
         async onResponseError({ response, options }) {
           if (response.status === 404) {
             if (apiOptions.redirectOn404) {
-              await nuxtApp.runWithContext(() => showError({ statusCode: 404, statusMessage: 'Page Not Found', fatal: true }))
+              await nuxtApp.runWithContext(() => showError({ statusCode: 404, statusMessage: 'Page Not Found' }))
             }
             else {
               // We don't want to show the toast for default 404 Flask response
@@ -45,11 +48,15 @@ export default defineNuxtPlugin({
           }
 
           if (response.status === 401) {
-            if (response._data?.response && typeof response._data.response === 'object' && response._data.response?.reauth_required === true) {
-              await nuxtApp.runWithContext(() => navigateTo({ path: '/verify', query: { next: route.fullPath } }))
-            }
-            else {
-              await nuxtApp.runWithContext(() => navigateTo({ path: '/login', query: { next: route.fullPath } }))
+            const reauthRequired = response._data?.response && typeof response._data.response === 'object' && response._data.response?.reauth_required === true
+            const path = reauthRequired ? '/verify' : '/login'
+
+            // Coming from the very page we would send the user to, the 401 is the expected
+            // answer to wrong credentials rather than a sign they must authenticate.
+            // Redirecting would nest `next` into itself on every attempt
+            // (/login?next=/login?next=…) and lose the actual destination.
+            if (route.path !== path) {
+              await nuxtApp.runWithContext(() => navigateTo({ path, query: { next: route.fullPath } }))
             }
           }
 
@@ -63,26 +70,7 @@ export default defineNuxtPlugin({
             return
           }
 
-          let message = ''
-          if (response._data) {
-            try {
-              if ('error' in response._data) {
-                message = response._data.error
-              }
-              else if ('message' in response._data) {
-                message = response._data.message
-              }
-              else if ('errors' in response._data && typeof response._data.errors === 'object') {
-                message = Object.entries(response._data.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
-              }
-              else if ('response' in response._data && 'errors' in response._data.response && Array.isArray(response._data.response.errors)) {
-                message = response._data.response.errors.join(' ; ')
-              }
-            }
-            catch (e) {
-              console.error(e)
-            }
-          }
+          const message = getApiErrorMessage(response._data)
 
           if (options?.method && ['POST', 'PUT', 'PATCH'].includes(options.method) && response.status === 400) {
             toast.error(t(`Le formulaire contient des erreurs. ${message}`))

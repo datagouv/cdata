@@ -95,8 +95,11 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { v4 as uuidv4 } from 'uuid'
 import type { PageBloc } from '~/types/pages'
 
-defineProps<{
+const props = defineProps<{
   contentOnly?: boolean
+  // Organization presentation pages use a trimmed set: no Hero bloc, and the
+  // Markdown bloc lives in the layout group instead of its own "Texte" group.
+  forOrganization?: boolean
 }>()
 
 defineEmits<{
@@ -108,9 +111,18 @@ const blocsTypes = useBlocsTypes()
 const contentBlocsTypes = useContentBlocsTypes()
 const contentBlocKeys = Object.keys(contentBlocsTypes) as Array<keyof typeof contentBlocsTypes>
 
-const newBlocsTypes: Array<{ name: string, blocsTypes: Array<keyof typeof blocsTypes> }> = [
-  { name: t('Mise en page'), blocsTypes: ['HeroBloc', 'AccordionListBloc'] },
-  { name: t('Contenus à la une'), blocsTypes: ['DatasetsListBloc', 'ReusesListBloc', 'DataservicesListBloc', 'LinksListBloc'] },
-  { name: t('Texte'), blocsTypes: ['MarkdownBloc'] },
-]
+const newBlocsTypes = computed<Array<{ name: string, blocsTypes: Array<keyof typeof blocsTypes> }>>(() => {
+  if (props.forOrganization) {
+    return [
+      { name: t('Mise en page'), blocsTypes: ['AccordionListBloc', 'MarkdownBloc'] },
+      { name: t('Contenus à la une'), blocsTypes: ['DatasetsListBloc', 'ReusesListBloc', 'DataservicesListBloc', 'LinksListBloc'] },
+    ]
+  }
+
+  return [
+    { name: t('Mise en page'), blocsTypes: ['HeroBloc', 'AccordionListBloc'] },
+    { name: t('Contenus à la une'), blocsTypes: ['DatasetsListBloc', 'ReusesListBloc', 'DataservicesListBloc', 'LinksListBloc'] },
+    { name: t('Texte'), blocsTypes: ['MarkdownBloc'] },
+  ]
+})
 </script>

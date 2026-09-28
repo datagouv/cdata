@@ -1,21 +1,26 @@
 <template>
   <div>
-    <Teleport
-      v-if="downloadStatsUrl"
-      to="#metrics-actions"
-    >
-      <BrandedButton
-        color="secondary"
-        :disabled="!downloadStatsUrl"
-        :href="downloadStatsUrl || ''"
-        :title="$t('Télécharger le fichier')"
-        download="stats.csv"
-        :icon="RiDownloadLine"
-        size="xs"
+    <!-- ClientOnly required: Nuxt only injects SSR teleports targeting `body` or
+         `#teleports` into the HTML, so an SSR-rendered teleport to #metrics-actions
+         is dropped and causes a hydration mismatch. -->
+    <ClientOnly>
+      <Teleport
+        v-if="downloadStatsUrl"
+        to="#metrics-actions"
       >
-        {{ $t('Télécharger les statistiques agrégées') }}
-      </BrandedButton>
-    </Teleport>
+        <BrandedButton
+          color="secondary"
+          :disabled="!downloadStatsUrl"
+          :href="downloadStatsUrl || ''"
+          :title="$t('Télécharger le fichier')"
+          download="stats.csv"
+          :icon="RiDownloadLine"
+          size="xs"
+        >
+          {{ $t('Télécharger les statistiques agrégées') }}
+        </BrandedButton>
+      </Teleport>
+    </ClientOnly>
     <PaddedContainer class="mb-5">
       <section
         class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 pb-4"
@@ -58,7 +63,7 @@
           />
         </ClientOnly>
       </section>
-      <template v-if="organization">
+      <template v-if="organization && !metricsError">
         <Divider
           color="bg-gray-default"
           class="mb-6 pr-24"
@@ -67,29 +72,31 @@
           class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 px-4 pb-4"
         >
           <ClientOnly>
+            <!-- `?? null`: StatBox shows its loading skeletons on a strict `null`, and
+                 `metrics` is `undefined` until the request answers. -->
             <StatBox
               :title="$t('Visites des jeux de données')"
-              :data="metrics?.datasetsViews"
+              :data="metrics?.datasetsViews ?? null"
               type="line"
-              :summary="metrics?.datasetsViewsTotal"
+              :summary="metrics?.datasetsViewsTotal ?? null"
             />
             <StatBox
               :title="$t('Téléchargements des données')"
-              :data="metrics?.downloads"
+              :data="metrics?.downloads ?? null"
               type="line"
-              :summary="metrics?.downloadsTotal"
+              :summary="metrics?.downloadsTotal ?? null"
             />
             <StatBox
               :title="$t('Visites des API')"
-              :data="metrics?.dataservicesViews"
+              :data="metrics?.dataservicesViews ?? null"
               type="line"
-              :summary="metrics?.dataservicesViewsTotal"
+              :summary="metrics?.dataservicesViewsTotal ?? null"
             />
             <StatBox
               :title="$t('Visites des réutilisations')"
-              :data="metrics?.reusesViews"
+              :data="metrics?.reusesViews ?? null"
               type="line"
-              :summary="metrics?.reusesViewsTotal"
+              :summary="metrics?.reusesViewsTotal ?? null"
             />
           </ClientOnly>
         </section>
@@ -99,7 +106,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, PaddedContainer, StatBox, useMetrics, createOrganizationMetricsUrl, type Organization, type User, type OrganizationMetrics } from '@datagouv/components-next'
+import { BrandedButton, PaddedContainer, StatBox, type Organization, type User } from '@datagouv/components-next'
 import { RiDownloadLine } from '@remixicon/vue'
 
 const props = defineProps<{
@@ -107,17 +114,5 @@ const props = defineProps<{
   user?: User | null
 }>()
 
-const { getOrganizationMetrics } = useMetrics()
-const metrics = ref<OrganizationMetrics | null>(null)
-
-watchEffect(async () => {
-  if (!props.organization) return
-  metrics.value = await getOrganizationMetrics(props.organization.id)
-})
-
-const downloadStatsUrl = computed(() => {
-  if (!metrics.value) return null
-
-  return createOrganizationMetricsUrl(metrics.value.datasetsViews, metrics.value.downloads, metrics.value.dataservicesViews, metrics.value.reusesViews)
-})
+const { metrics, error: metricsError, downloadStatsUrl } = useOrganizationMetrics(() => props.organization)
 </script>

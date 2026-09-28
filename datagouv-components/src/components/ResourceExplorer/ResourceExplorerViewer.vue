@@ -1,95 +1,24 @@
 <template>
-  <div class="border border-gray-default">
-    <header class="p-4 flex flex-wrap md:flex-nowrap gap-4 items-center justify-between">
-      <div>
-        <div class="flex items-center mb-1">
-          <h3 class="m-0 flex items-baseline text-base font-bold leading-tight">
-            <ResourceIcon
-              :resource
-              class="size-3.5 mr-1"
-            />
-            <span class="line-clamp-2">{{ resource.title || t('Fichier sans nom') }}</span>
-          </h3>
-          <CopyButton
-            :label="t('Copier le lien')"
-            :copied-label="t('Lien copié !')"
-            :text="resourceExternalUrl"
-          />
-        </div>
-        <div class="text-gray-medium text-xs flex items-center gap-1">
-          <SchemaBadge :resource />
-          <RiSubtractLine
-            v-if="resource.schema"
-            aria-hidden="true"
-            class="size-3 fill-gray-medium"
-          />
-          <span>{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
-          <RiSubtractLine
-            aria-hidden="true"
-            class="size-3 fill-gray-medium"
-          />
-          <template v-if="resource.format">
-            <span>
-              {{ resource.format.trim().toLowerCase() }}
-              <span v-if="resourceFilesize">({{ filesize(resourceFilesize) }})</span>
-            </span>
-            <RiSubtractLine
-              aria-hidden="true"
-              class="size-3 fill-gray-medium"
-            />
-          </template>
-          <span class="inline-flex items-center">
-            <RiDownloadLine class="size-3 mr-0.5" />
-            {{ summarize(resource.metrics.views) }}
-          </span>
-        </div>
-      </div>
-      <div class="flex items-center gap-2">
-        <BrandedButton
-          v-if="isResourceUrl"
-          :href="resource.latest"
-          :title="t('Lien du fichier - ouvre une nouvelle fenêtre')"
-          rel="ugc nofollow noopener"
-          new-tab
-          size="xs"
-          external
-          @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
-        >
-          {{ t('Visiter') }}
-        </BrandedButton>
-        <BrandedButton
-          v-else-if="ogcService"
-          :icon="RiFileCopyLine"
-          color="primary"
-          size="xs"
-          @click="copyResourceUrl"
-        >
-          {{ t('Copier le lien') }}
-        </BrandedButton>
-        <BrandedButton
-          v-else
-          :href="resource.latest"
-          rel="ugc nofollow noopener"
-          :title="downloadButtonTitle"
-          download
-          class="matomo_download"
-          :icon="unavailable ? RiFileWarningLine : RiDownloadLine"
-          size="xs"
-          color="primary"
-          external
-          @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
-        >
-          {{ t('Télécharger') }}
-        </BrandedButton>
-      </div>
-    </header>
+  <div :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''">
+    <ResourceViewerHeader
+      :dataset
+      :resource
+      :resources
+      :resource-to
+      :explore-to="exploreTo"
+      :resource-external-url="resourceExternalUrl"
+      :replace
+      :fullscreen
+    />
 
-    <section class="pb-4">
+    <section :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''">
       <TabGroup
         size="sm"
+        :default-index="defaultTabIndex"
+        :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''"
         @change="switchTab"
       >
-        <div class="pl-4 pr-4 pb-4">
+        <div class="flex shrink-0 items-center border-b border-gray-default p-2">
           <TabList class="max-w-full overflow-x-auto">
             <Tab
               v-for="tab in tabsOptions"
@@ -99,13 +28,16 @@
             </Tab>
           </TabList>
         </div>
-        <TabPanels>
+        <TabPanels :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''">
           <TabPanel
             v-for="tab in tabsOptions"
             :key="tab.key"
-            class="px-4"
+            :class="[tab.key === 'data' || tab.key === 'map' ? '' : 'p-4', fullscreen ? 'flex min-h-0 flex-1 flex-col' : '']"
           >
-            <div v-if="tab.key === 'map'">
+            <div
+              v-if="tab.key === 'map'"
+              :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : 'h-[600px]'"
+            >
               <Pmtiles
                 v-if="hasPmtiles"
                 :resource="resource"
@@ -115,47 +47,81 @@
                 v-if="ogcWms"
                 :resource="resource"
               />
-            </div>
-            <div v-if="tab.key === 'data'">
-              <JsonPreview
-                v-if="resource.format && resource.format.toLowerCase() === 'json'"
-                :resource="resource"
-              />
-              <PdfPreview
-                v-else-if="resource.format && resource.format.toLowerCase() === 'pdf'"
-                :resource="resource"
-              />
-              <XmlPreview
-                v-else-if="resource.format && resource.format.toLowerCase() === 'xml'"
-                :resource="resource"
-              />
-              <DatafairPreview
-                v-else-if="hasDatafairPreview"
-                :resource="resource"
-                :dataset="dataset"
-              />
-              <OpenApiViewer
-                v-else-if="hasOpenAPIPreview"
-                :url="resource.extras['apidocUrl'] as string"
-              />
-              <Preview
-                v-else-if="hasTabularData"
-                :resource="resource"
-              />
-              <PreviewUnavailable v-else>
-                <!-- "File too large to download" is the only analysis:error value from hydra for now -->
-                <template v-if="resource.extras['analysis:error'] === 'File too large to download'">
-                  {{ t("Ce fichier est trop volumineux pour être analysé et prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
-                </template>
-                <template v-else-if="resource.extras['analysis:parsing:error']">
-                  {{ t("L'analyse de ce fichier a rencontré une erreur, l'aperçu n'est pas disponible. Téléchargez-le depuis l'onglet Téléchargements.") }}
-                  <br>
-                  <span class="text-gray-medium text-xs">{{ resource.extras['analysis:parsing:error'] }}</span>
-                </template>
-                <template v-else>
-                  {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le depuis l'onglet Téléchargements.") }}
-                </template>
+              <PreviewUnavailable v-if="!hasPmtiles && !ogcWms && hasPmtilesError">
+                {{ t("La carte n'a pas pu être générée automatiquement pour ce fichier.") }}
+                <br>
+                <span class="text-gray-medium text-xs">{{ pmtilesError }}</span>
               </PreviewUnavailable>
+            </div>
+            <div
+              v-if="tab.key === 'data'"
+              :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''"
+            >
+              <!-- Wrapped in Suspense so switching to this tab (or loading its data) shows
+                   the table skeleton instead of a blank gap while TabularExplorer resolves. -->
+              <Suspense
+                v-if="previewKind === 'tabular'"
+                :timeout="200"
+              >
+                <TabularExplorer :resource-id="resource.id">
+                  <TabularToolbar class="shrink-0 border-b border-gray-default p-2" />
+                  <TabularTable :fill="fullscreen" />
+                  <TabularMobileFilters />
+                </TabularExplorer>
+                <template #fallback>
+                  <TabularSkeleton :fill="fullscreen" />
+                </template>
+              </Suspense>
+
+              <!-- PDF is a full-bleed visual preview like the table and the map: it
+                   owns its own reader backdrop, so it sits outside the padded wrapper. -->
+              <PdfPreview
+                v-else-if="previewKind === 'pdf'"
+                :resource="resource"
+                :fill="fullscreen"
+              />
+
+              <!-- Text previews stay padded inside the tab panel -->
+              <div
+                v-else
+                class="p-4"
+              >
+                <JsonPreview
+                  v-if="previewKind === 'json'"
+                  :resource="resource"
+                />
+                <XmlPreview
+                  v-else-if="previewKind === 'xml'"
+                  :resource="resource"
+                />
+                <ImagePreview
+                  v-else-if="previewKind === 'image'"
+                  :resource="resource"
+                />
+                <DatafairPreview
+                  v-else-if="previewKind === 'datafair'"
+                  :resource="resource"
+                  :dataset="dataset"
+                />
+                <OpenApiViewer
+                  v-else-if="previewKind === 'openapi'"
+                  :url="resource.extras['apidocUrl'] as string"
+                />
+                <PreviewUnavailable v-else>
+                  <!-- "File too large to download" is the only analysis:error value from hydra for now -->
+                  <template v-if="resource.extras['analysis:error'] === 'File too large to download'">
+                    {{ t("Ce fichier est trop volumineux pour être analysé et prévisualisé. Téléchargez-le avec le bouton Télécharger.") }}
+                  </template>
+                  <template v-else-if="resource.extras['analysis:parsing:error']">
+                    {{ t("L'analyse de ce fichier a rencontré une erreur, l'aperçu n'est pas disponible. Téléchargez-le avec le bouton Télécharger.") }}
+                    <br>
+                    <span class="text-gray-medium text-xs">{{ resource.extras['analysis:parsing:error'] }}</span>
+                  </template>
+                  <template v-else>
+                    {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le avec le bouton Télécharger.") }}
+                  </template>
+                </PreviewUnavailable>
+              </div>
             </div>
             <div v-if="tab.key === 'description'">
               <MarkdownViewer
@@ -172,136 +138,15 @@
             <div v-if="tab.key === 'metadata'">
               <Metadata :resource />
             </div>
-            <div v-if="tab.key === 'downloads'">
-              <dl class="fr-pl-0">
-                <dt
-                  v-if="resource.format === 'url'"
-                  class="font-bold fr-text--sm fr-mb-0"
-                >
-                  {{ t("URL d'origine") }}
-                </dt>
-                <dt
-                  v-else
-                  class="font-bold fr-text--sm fr-mb-0"
-                >
-                  {{ t('Format original') }}
-                </dt>
-                <dd class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center">
-                  <span
-                    v-if="resource.format === 'url'"
-                    class="inline-flex items-center max-w-full"
-                  >
-                    <a
-                      :href="resource.latest"
-                      class="fr-link no-icon-after truncate"
-                      rel="ugc nofollow noopener"
-                      target="_blank"
-                      @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
-                    >
-                      {{ resource.url }}
-                    </a>
-                    <span class="fr-ml-1v fr-icon-external-link-line fr-icon--sm shrink-0" />
-                  </span>
-                  <span v-else>
-                    <span class="text-datagouv fr-icon-download-line fr-icon--sm fr-mr-1v fr-mt-1v" />
-                    <a
-                      :href="resource.latest"
-                      class="fr-link"
-                      rel="ugc nofollow noopener"
-                      @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${resource.format}`)"
-                    >
-                      <span>{{ t('Format {format}', { format: resource.format }) }}<span v-if="resourceFilesize"> - {{ filesize(resourceFilesize) }}</span></span>
-                    </a>
-                  </span>
-                  <CopyButton
-                    :label="t('Copier le lien')"
-                    :copied-label="t('Lien copié !')"
-                    :text="resource.latest"
-                    class="relative"
-                  />
-                </dd>
-                <template v-if="generatedFormats.length">
-                  <dt class="font-bold fr-text--sm fr-mb-0">
-                    {{ t('Formats générés automatiquement par {platform} (dernière mise à jour {date})', { platform: config.name, date: conversionsLastUpdate }) }}
-                  </dt>
-                  <dd
-                    v-for="generatedFormat in generatedFormats"
-                    :key="generatedFormat.format"
-                    class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center"
-                  >
-                    <span>
-                      <span class="text-datagouv fr-icon-download-line fr-icon--sm fr-mr-1v fr-mt-1v" />
-                      <a
-                        :href="generatedFormat.url"
-                        class="fr-link"
-                        rel="ugc nofollow noopener"
-                        @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${generatedFormat.format}`)"
-                      >
-                        <span>{{ t('Format {format}', { format: generatedFormat.format }) }}<span v-if="generatedFormat.size"> - {{ filesize(generatedFormat.size) }}</span></span>
-                      </a>
-                    </span>
-                    <CopyButton
-                      :label="t('Copier le lien')"
-                      :copied-label="t('Lien copié !')"
-                      :text="generatedFormat.url"
-                      class="relative"
-                    />
-                  </dd>
-                </template>
-                <template v-if="wfsFormats.length">
-                  <dt class="font-bold fr-text--sm fr-mb-0">
-                    <div class="flex gap-1 items-center">
-                      {{ t('Formats exportés depuis le service WFS') }}
-                      <span v-if="defaultWfsProjection"> ({{ t('projection {crs}', { crs: defaultWfsProjection }) }})</span>
-                      <Tooltip>
-                        <RiInformationLine
-                          class="flex-none size-4"
-                          :aria-label="t(`Le lien de téléchargement interroge directement le flux WFS distant. Le nombre de features téléchargées peut être limité.`)"
-                          aria-hidden="true"
-                        />
-                        <template #tooltip>
-                          <p class="text-sm font-normal mb-0">
-                            {{ t(`Le lien de téléchargement interroge directement le flux WFS distant.`) }}
-                          </p>
-                          <p class="text-sm font-normal mb-0">
-                            {{ t(`Le nombre de features téléchargées peut être limité.`) }}
-                          </p>
-                        </template>
-                      </Tooltip>
-                    </div>
-                  </dt>
-                  <dd
-                    v-for="wfsFormat in wfsFormats"
-                    :key="wfsFormat.format"
-                    class="text-sm pl-0 mb-4 text-gray-medium h-8 flex flex-wrap items-center"
-                  >
-                    <span>
-                      <span class="text-datagouv fr-icon-download-line fr-icon--sm fr-mr-1v fr-mt-1v" />
-                      <a
-                        :href="wfsFormat.url"
-                        class="fr-link"
-                        rel="ugc nofollow noopener"
-                        @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${wfsFormat.format}`)"
-                      >
-                        <span>{{ t('Format {format}', { format: wfsFormat.format }) }}</span>
-                      </a>
-                    </span>
-                    <CopyButton
-                      :label="t('Copier le lien')"
-                      :copied-label="t('Lien copié !')"
-                      :text="wfsFormat.url"
-                      class="relative"
-                    />
-                  </dd>
-                </template>
-              </dl>
-            </div>
-            <div v-if="tab.key === 'swagger'">
+            <div v-if="tab.key === 'api'">
               <div class="fr-mb-4w">
                 <p>{{ t("Cette API est générée automatiquement par {platform} à partir du fichier.", { platform: config.name }) }}</p>
                 <p>{{ t("- Si le fichier est modifié, l'API sera mise à jour et sa structure pourra changer.") }}</p>
                 <p>{{ t("- Si le fichier est supprimé, l'API sera également supprimée.") }}</p>
                 <p>{{ t("Pour des usages pérennes, prévoyez que cette API dépend directement du fichier source.") }}</p>
+                <p v-if="config.tabularApiUrl">
+                  {{ t("L'URL de base de l'API est {url}", { url: config.tabularApiUrl }) }}
+                </p>
               </div>
               <OpenApiViewer
                 v-if="hasTabularData"
@@ -317,31 +162,29 @@
 
 <script setup lang="ts">
 import { computed, defineAsyncComponent } from 'vue'
-import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiInformationLine, RiSubtractLine } from '@remixicon/vue'
+import { useRoute, useRouter } from 'vue-router'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
-import { toast } from 'vue-sonner'
-import BrandedButton from '../BrandedButton.vue'
-import CopyButton from '../CopyButton.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
-import ResourceIcon from '../ResourceAccordion/ResourceIcon.vue'
 import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
 import TabGroup from '../Tabs/TabGroup.vue'
 import TabList from '../Tabs/TabList.vue'
 import Tab from '../Tabs/Tab.vue'
 import TabPanels from '../Tabs/TabPanels.vue'
 import TabPanel from '../Tabs/TabPanel.vue'
-import Tooltip from '../Tooltip.vue'
-import Preview from '../ResourceAccordion/Preview.vue'
+import TabularExplorer from '../TabularExplorer/TabularExplorer.vue'
+import TabularToolbar from '../TabularExplorer/TabularToolbar.vue'
+import TabularTable from '../TabularExplorer/TabularTable.vue'
+import TabularMobileFilters from '../TabularExplorer/TabularMobileFilters.vue'
+import TabularSkeleton from '../TabularExplorer/TabularSkeleton.vue'
 import DataStructure from '../ResourceAccordion/DataStructure.vue'
 import Metadata from '../ResourceAccordion/Metadata.vue'
-import SchemaBadge from '../ResourceAccordion/SchemaBadge.vue'
-import { filesize, summarize } from '../../functions/helpers'
-import { getResourceFormatIcon, getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
+import ResourceViewerHeader from './ResourceViewerHeader.vue'
 import { trackEvent } from '../../functions/matomo'
 import { useComponentsConfig } from '../../config'
-import { useFormatDate } from '../../functions/dates'
 import { useTranslation } from '../../composables/useTranslation'
 import { useResourceCapabilities } from '../../composables/useResourceCapabilities'
+import { provideTabularProfile } from '../../composables/useTabularProfile'
+import type { RouteLocationRaw } from 'vue-router'
 import type { Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 
@@ -354,6 +197,9 @@ const PdfPreview = defineAsyncComponent(() =>
 const XmlPreview = defineAsyncComponent(() =>
   import('../ResourceAccordion/XmlPreview.client.vue'),
 )
+const ImagePreview = defineAsyncComponent(() =>
+  import('../ResourceAccordion/ImagePreview.client.vue'),
+)
 const DatafairPreview = defineAsyncComponent(() =>
   import('../ResourceAccordion/Datafair.client.vue'),
 )
@@ -364,59 +210,61 @@ const Pmtiles = defineAsyncComponent(() =>
   import('../ResourceAccordion/Pmtiles.client.vue'),
 )
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   dataset: Dataset | DatasetV2
   resource: Resource
-}>()
+  resources?: Resource[]
+  resourceTo: (resource: Resource) => RouteLocationRaw
+  // When provided (inline mode), shows an "Explorer" button next to the download
+  // action that opens the fullscreen explorer on the current resource.
+  exploreTo?: (resource: Resource) => string
+  // Overrides the "Copier le lien" target.
+  resourceExternalUrl?: (resource: Resource) => string
+  replace?: boolean
+  // Fullscreen mode: make the viewer a flex column so the table fills down to the
+  // bottom, and hide the inline download/visit/copy actions — they're shown in the
+  // dataset context bar above. Inline mode (dataset page) shows them in the header.
+  fullscreen?: boolean
+}>(), {
+  fullscreen: false,
+})
 
 const { t } = useTranslation()
 const config = useComponentsConfig()
-const { formatRelativeIfRecentDate } = useFormatDate()
+const route = useRoute()
+const router = useRouter()
 
 const {
+  previewKind,
   hasTabularData,
   hasPmtiles,
-  hasDatafairPreview,
-  hasOpenAPIPreview,
-  ogcService,
+  hasPmtilesError,
+  pmtilesError,
   ogcWms,
-  generatedFormats,
-  wfsFormats,
-  defaultWfsProjection,
-  isResourceUrl,
   tabsOptions,
 } = useResourceCapabilities(() => props.resource, () => props.dataset)
 
-const resourceFilesize = computed(() => getResourceFilesize(props.resource))
-const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset, props.resource))
-
-const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : 'Fichier')
-const availabilityChecked = computed(() => props.resource.extras && 'check:available' in props.resource.extras)
-const unavailable = computed(() => availabilityChecked.value && props.resource.extras['check:available'] === false)
-const downloadButtonTitle = computed(() => {
-  if (unavailable.value) {
-    return t('Le robot de {platform} n\'a pas pu accéder à ce fichier - Télécharger le fichier en {format}', { platform: config.name, format: format.value })
-  }
-  return t('Télécharger le fichier en {format}', { format: format.value })
-})
-
-const conversionsLastUpdate = computed(() =>
-  formatRelativeIfRecentDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined),
-)
-
-const copyResourceUrl = async () => {
-  try {
-    await navigator.clipboard.writeText(props.resource.url)
-    toast.success(t('Lien copié !'))
-  }
-  catch {
-    toast.error(t('Impossible de copier dans le presse-papier'))
-  }
+// Share the tabular profile fetch between TabularExplorer and DataStructure tabs.
+// Only tabular resources have one: asking for the profile of a PDF or an image is a
+// request to the Tabular API that can only fail.
+if (hasTabularData.value) {
+  await provideTabularProfile(() => props.resource.id)
 }
+
+// The active tab lives in the URL so a shared link opens on the same one. Read once
+// at mount (TabGroup only takes an initial index), which is enough: switching resource
+// remounts the viewer, and the tab is preserved when the new resource also has it.
+const defaultTabIndex = computed(() => {
+  const index = tabsOptions.value.findIndex(option => option.key === route.query.tab)
+  return index === -1 ? 0 : index
+})
 
 const switchTab = (index: number) => {
   const option = tabsOptions.value[index]
   if (!option) return
+  // The first tab is the default: drop `tab` rather than writing it in the URL.
+  const { tab: _, ...query } = route.query
+  router.replace({ query: index === 0 ? query : { ...query, tab: option.key } })
   trackEvent('View resource tab', props.resource.id, option.label)
   if (option.key === 'data') {
     trackEvent('Show preview', props.resource.id)

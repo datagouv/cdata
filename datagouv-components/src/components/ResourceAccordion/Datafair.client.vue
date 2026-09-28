@@ -10,7 +10,7 @@
       />
     </div>
     <PreviewUnavailable v-else>
-      {{ t("L'aperçu de ce fichier n'a pas pu être chargé. Téléchargez-le depuis l'onglet Téléchargements.") }}
+      {{ t("L'aperçu de ce fichier n'a pas pu être chargé. Téléchargez-le pour le consulter.") }}
     </PreviewUnavailable>
   </div>
 </template>

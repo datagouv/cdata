@@ -5,13 +5,14 @@
         <div class="flex flex-wrap divide-y md:divide-y-0 md:divide-x divide-gray-default">
           <div class="w-full pb-6 md:pb-0 md:pr-[6%] md:w-2/3 flex flex-wrap">
             <div class="flex-none hidden sm:flex items-center mr-5">
-              <NuxtImg
+              <img
                 src="/illustrations/newspaper-black.svg"
                 aria-hidden="true"
                 loading="lazy"
                 width="71"
                 height="55"
-              />
+                alt=""
+              >
             </div>
             <div class="w-full !flex-none sm:!flex-1">
               <div class="mb-4">
@@ -189,7 +190,7 @@
                     {{ $t("API du portail") }}
                   </a>
                 </li>
-                <li>
+                <li data-testid="udata-version">
                   <a
                     href="https://github.com/opendatateam/udata/"
                     class="fr-footer__top-link"
@@ -198,12 +199,11 @@
                     {{ $t('Moteur open source : udata ({version})', { version: site?.version ?? '' }) }}
                   </a>
                 </li>
-                <li>
+                <li data-testid="commit-version">
                   <a
                     :href="appConfig.commitId ? `https://github.com/datagouv/cdata/commit/${appConfig.commitId}` : 'https://github.com/datagouv/cdata/'"
                     :title="appConfig.commitId ? $t('Version {version}', { version: appConfig.commitId }) : undefined"
                     class="fr-footer__top-link"
-                    data-testid="commit-version"
                   >
                     {{ $t('Interface utilisateur de data.gouv.fr : cdata ({version})', { version: appConfig.commitId }) }}
                   </a>
@@ -236,10 +236,16 @@
             </a>
           </div>
           <div class="fr-footer__content">
-            <p class="fr-footer__content-desc">
+            <div
+              v-if="appConfig.isFrenchGovernment"
+              class="w-full text-right mb-2"
+            >
+              <LogoNumeriqueGouv class="inline-block w-45" />
+            </div>
+            <p class="fr-footer__content-desc text-right">
               {{ $t("Un produit de la Direction Interministérielle du Numérique (DINUM).") }}
             </p>
-            <ul class="fr-footer__content-list">
+            <ul class="fr-footer__content-list w-full justify-end">
               <li
                 v-for="item in networkLinks"
                 :key="item.label"
@@ -289,7 +295,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type Site } from '@datagouv/components-next'
+import { BrandedButton } from '@datagouv/components-next'
 import { RiBlueskyLine, RiGithubLine, RiLinkedinBoxLine, RiMastodonLine, RiRssLine, RiYoutubeLine } from '@remixicon/vue'
 
 const config = useRuntimeConfig()
@@ -312,7 +318,7 @@ if (config.public.csvDatasetId) {
   openDataLinks.push({ label: t('Catalogue de données'), link: `/datasets/${config.public.csvDatasetId}` })
 }
 
-openDataLinks.push({ label: t(`Suivre l'ouverture des données`), link: 'https://ouverture.data.gouv.fr' })
+openDataLinks.push({ label: t(`Suivre les publications des données`), link: '/suivi-de-publication' })
 openDataLinks.push({ label: t('Portail des données européennes'), link: 'https://data.europa.eu' })
 openDataLinks.push({ label: config.public.schemasSite.name, link: config.public.schemasSite.url })
 
@@ -348,5 +354,5 @@ const networkLinks: Array<Link> = [
   { label: 'service-public.fr', link: 'https://www.service-public.fr' },
 ]
 
-const { data: site } = await useAPI<Site>('/api/1/site/')
+const { data: site } = await useSite()
 </script>

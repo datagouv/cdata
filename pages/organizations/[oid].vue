@@ -20,6 +20,15 @@
           </BreadcrumbItem>
         </Breadcrumb>
         <div class="flex gap-3 items-center">
+          <BrandedButton
+            v-if="isPresentationTab && canEditPresentation && !isEditingPresentation"
+            color="warning"
+            size="xs"
+            :icon="RiEdit2Line"
+            @click="editPresentation"
+          >
+            {{ hasPresentation ? $t('Modifier la présentation') : $t('Modifier ou publier la présentation') }}
+          </BrandedButton>
           <EditButton
             v-if="organization.permissions.edit"
             :id="organization.id"
@@ -38,49 +47,82 @@
       :status
       :data="organization"
     >
-      <div class="container pt-14">
-        <p
-          v-if="organization.deleted"
-          class="fr-badge mb-2 flex gap-1 items-center"
-        >
-          <RiDeleteBinLine class="size-3.5" />
-          {{ $t('Supprimée') }}
-        </p>
-        <div class="bg-white p-1 rounded-sm border border-gray-default object-contain mb-2.5 size-20">
+      <div class="container relative">
+        <div class="bg-white p-1 rounded-sm border border-gray-default object-contain size-20 -mb-10 mt-14 relative z-1">
           <OrganizationLogo
             :organization
             size-class="size-full"
           />
         </div>
-        <h1 class="text-2xl font-extrabold text-gray-title mb-2.5">
-          <OrganizationNameWithCertificate
-            :certifier="config.public.title"
-            :organization
-            :show-acronym="true"
-            :show-type="false"
-          />
-        </h1>
-        <OwnerType
-          :type
-          size="base"
-          color="gray"
-        />
       </div>
-      <FullPageTabs
-        class="mt-12"
-        :links="[
-          { label: $t('Présentation'), href: `/organizations/${route.params.oid}` },
-          { label: $t('Jeux de données'), href: `/organizations/${route.params.oid}/datasets`, count: organization.metrics.datasets },
-          { label: $t('API'), href: `/organizations/${route.params.oid}/dataservices`, count: organization.metrics.dataservices },
-          { label: $t('Réutilisations'), href: `/organizations/${route.params.oid}/reuses`, count: organization.metrics.reuses },
-          { label: $t('Informations'), href: `/organizations/${route.params.oid}/information` },
-        ]"
-      />
-      <div class="bg-white pt-5 pb-8 lg:pb-24">
+      <div class="bg-white">
+        <div class="container pt-14 pb-4 sm:pb-6">
+          <p
+            v-if="organization.deleted"
+            class="fr-badge mb-2 flex gap-1 items-center"
+          >
+            <RiDeleteBinLine class="size-3.5" />
+            {{ $t('Supprimée') }}
+          </p>
+          <h1 class="leading-[1.2] font-extrabold text-gray-title mb-2.5">
+            <OrganizationNameWithCertificate
+              :certifier="config.public.title"
+              :organization
+              :show-acronym="true"
+              :show-type="false"
+              color-class="text-gray-title"
+              size="xl"
+            />
+          </h1>
+          <OwnerType
+            :type
+            size="base"
+            color="gray"
+            class="text-sm sm:text-base text-gray-medium"
+          />
+          <ReadMore
+            v-if="organization.description"
+            class="mt-2.5 text-sm text-new-gray-medium leading-6"
+            :wanted-height="100"
+          >
+            <MarkdownViewer
+              :content="organization.description"
+              :min-heading="3"
+            />
+          </ReadMore>
+        </div>
+        <FullPageTabs
+          :links="tabLinks"
+        >
+          <form
+            class="flex items-center"
+            @submit.prevent="submitSearch"
+          >
+            <label
+              for="org-search"
+              class="sr-only"
+            >
+              {{ $t('Rechercher dans l\'organisation') }}
+            </label>
+            <div class="flex items-center h-10 w-60 sm:w-80">
+              <RiSearchLine class="ml-3 shrink-0 size-4 text-new-primary" />
+              <input
+                id="org-search"
+                v-model="searchQuery"
+                type="search"
+                class="bg-transparent flex-1 h-full pl-2 pr-6 text-sm sm:text-base placeholder:text-gray-medium outline-none"
+                :placeholder="$t('Rechercher dans l\'organisation')"
+              >
+            </div>
+          </form>
+        </FullPageTabs>
+      </div>
+      <div :class="{ 'bg-white pt-5 pb-8 lg:pb-24': !isPresentationTab }">
         <NuxtPage
           v-if="organization"
-          class="container"
+          :class="{ container: !isPresentationTab }"
           :organization
+          @organization-updated="onOrganizationUpdated"
         />
       </div>
     </LoadingBlock>
@@ -88,17 +130,60 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, LoadingBlock, OrganizationNameWithCertificate, OwnerType, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
-import { RiDeleteBinLine } from '@remixicon/vue'
+import { BrandedButton, isOrganizationCertified, LoadingBlock, MarkdownViewer, OrganizationNameWithCertificate, OwnerType, ReadMore, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
+import { RiDeleteBinLine, RiEdit2Line, RiSearchLine } from '@remixicon/vue'
+import { useTimeoutFn } from '@vueuse/core'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
+import { isUserOrgAdmin, useMaybeMe } from '~/utils/auth'
+import { keepScrollWithinPage } from '~/utils/scroll'
+
+definePageMeta({
+  scrollToTop: keepScrollWithinPage,
+})
 
 const config = useRuntimeConfig()
 const route = useRoute()
+const router = useRouter()
+const me = useMaybeMe()
+const { t } = useTranslation()
 
 const url = computed(() => `/api/1/organizations/${route.params.oid}/`)
 const { data: organization, status } = await useAPI<Organization>(url, { redirectOn404: true, redirectOnSlug: 'oid' })
+
+// A presentation is offered to the public only once published. The publication
+// date lives in the default mask, so we read it straight from the organization
+// instead of fetching the (heavy) blocs here — those are lazy-loaded on the
+// presentation page itself.
+const hasPresentation = computed(() => isOrganizationPresentationPublished(organization.value?.presentation_blocs_published_at))
+const canEditPresentation = computed(() => isUserOrgAdmin(me.value, organization.value))
+// Hidden from non-admins until configured; always available to org admins so they
+// can create it.
+const showPresentationTab = computed(() => hasPresentation.value || canEditPresentation.value)
+const isPresentationTab = computed(() => route.path.endsWith('/presentation'))
+const isEditingPresentation = computed(() => isPresentationTab.value && route.query.edit === 'true')
+
+function editPresentation() {
+  router.push({ query: { ...route.query, edit: 'true' } })
+}
+
+// The presentation page saves the org on its own fetch and hands back the saved
+// version; swap it in so the header CTA, tabs… update without a reload.
+function onOrganizationUpdated(updated: Organization) {
+  organization.value = updated
+}
+
+const tabLinks = computed(() => {
+  const oid = route.params.oid
+  return [
+    ...(showPresentationTab.value ? [{ label: t('Présentation'), href: `/organizations/${oid}/presentation` }] : []),
+    { label: t('Jeux de données'), href: `/organizations/${oid}/datasets`, count: organization.value?.metrics.datasets },
+    { label: t('API'), href: `/organizations/${oid}/dataservices`, count: organization.value?.metrics.dataservices },
+    { label: t('Réutilisations'), href: `/organizations/${oid}/reuses`, count: organization.value?.metrics.reuses },
+    { label: t('Informations'), href: `/organizations/${oid}/information` },
+  ]
+})
 
 const title = computed(() => `Organisation - ${organization.value?.name} | ${config.public.title}`)
 const robots = computed(() => organization.value && !organization.value.metrics.dataservices && !organization.value.metrics.datasets && !organization.value.metrics.reuses ? 'noindex, nofollow' : 'all')
@@ -107,11 +192,9 @@ useSeoMeta({
   title,
   robots,
 })
-// Workaround: encode the dot before file extension to prevent nuxt-og-image from stripping `.png` in prop values
-// See https://github.com/nuxt-modules/og-image/pull/493
 defineOgImage('ObjectPage.takumi', {
   orgName: organization.value?.name,
-  orgLogo: organization.value?.logo_thumbnail?.replace(/\.(\w+)$/, '%2E$1') ?? null,
+  orgLogo: organization.value?.logo_thumbnail ?? null,
   datasets: organization.value?.metrics?.datasets ?? 0,
   dataservices: organization.value?.metrics?.dataservices ?? 0,
   reuses: organization.value?.metrics?.reuses ?? 0,
@@ -119,4 +202,39 @@ defineOgImage('ObjectPage.takumi', {
 await useJsonLd('organization', route.params.oid as string)
 
 const type = computed(() => organization.value ? getOrganizationType(organization.value) : 'other')
+
+const searchQuery = ref((route.query.q as string) || '')
+const searchPath = computed(() => `/organizations/${route.params.oid}/search`)
+
+const currentSearchType = computed(() => {
+  const path = route.path
+  if (path.endsWith('/dataservices')) return 'dataservices'
+  if (path.endsWith('/reuses')) return 'reuses'
+  return 'datasets'
+})
+
+function submitSearch() {
+  const q = searchQuery.value.trim()
+  if (q) {
+    navigateTo({ path: searchPath.value, query: { q, type: currentSearchType.value } })
+  }
+}
+
+// Debounce typing-driven navigation to /search, but navigate immediately when
+// clearing — debouncing a clear adds perceived latency for nothing, and the
+// explicit cancel() avoids a latent bug where typing "foo" then clearing
+// within 300ms would still fire the search navigation after the clear.
+const { start: scheduleSearch, stop: cancelSearch } = useTimeoutFn(() => {
+  navigateTo({ path: searchPath.value, query: { q: searchQuery.value.trim(), type: currentSearchType.value } })
+}, 300, { immediate: false })
+
+watch(searchQuery, (value) => {
+  cancelSearch()
+  if (value.trim()) {
+    scheduleSearch()
+  }
+  else if (route.path.endsWith('/search')) {
+    navigateTo({ path: `/organizations/${route.params.oid}` })
+  }
+})
 </script>

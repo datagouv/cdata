@@ -1,5 +1,11 @@
+import type { Component } from 'vue'
 import type { PaginatedArray } from './api'
 import type { AccessType } from './access_types'
+import type { Dataset } from './datasets'
+import type { Dataservice } from './dataservices'
+import type { Organization } from './organizations'
+import type { ReuseV2 } from './reuses'
+import type { TopicV2 } from './topics'
 import type {
   CERTIFIED,
   PUBLIC_SERVICE,
@@ -296,54 +302,85 @@ export const SearchFilterAliases: Record<string, string> = {
 
 export type DatasetSearchConfig = {
   class: 'datasets'
+  key?: string
   name?: string
+  icon?: Component | string
+  placeholder?: string | null
   hiddenFilters?: HiddenFilter<DatasetSearchFilters>[]
   basicFilters?: (keyof DatasetSearchFilters | keyof typeof SearchFilterAliases)[]
   advancedFilters?: (keyof DatasetSearchFilters | keyof typeof SearchFilterAliases)[]
   sortOptions?: SortOption<DatasetSearchSort>[]
+  defaultSort?: DatasetSearchSort
 }
 
 export type DataserviceSearchConfig = {
   class: 'dataservices'
+  key?: string
   name?: string
+  icon?: Component | string
+  placeholder?: string | null
   hiddenFilters?: HiddenFilter<DataserviceSearchFilters>[]
   basicFilters?: (keyof DataserviceSearchFilters | keyof typeof SearchFilterAliases)[]
   advancedFilters?: (keyof DataserviceSearchFilters | keyof typeof SearchFilterAliases)[]
   sortOptions?: SortOption<DataserviceSearchSort>[]
+  defaultSort?: DataserviceSearchSort
 }
 
 export type ReuseSearchConfig = {
   class: 'reuses'
+  key?: string
   name?: string
+  icon?: Component | string
+  placeholder?: string | null
   hiddenFilters?: HiddenFilter<ReuseSearchFilters>[]
   basicFilters?: (keyof ReuseSearchFilters | keyof typeof SearchFilterAliases)[]
   advancedFilters?: (keyof ReuseSearchFilters | keyof typeof SearchFilterAliases)[]
   sortOptions?: SortOption<ReuseSearchSort>[]
+  defaultSort?: ReuseSearchSort
 }
 
 export type OrganizationSearchConfig = {
   class: 'organizations'
+  key?: string
   name?: string
+  icon?: Component | string
+  placeholder?: string | null
   hiddenFilters?: HiddenFilter<OrganizationSearchFilters>[]
   basicFilters?: (keyof OrganizationSearchFilters)[]
   advancedFilters?: (keyof OrganizationSearchFilters)[]
   sortOptions?: SortOption<OrganizationSearchSort>[]
+  defaultSort?: OrganizationSearchSort
 }
 
 export type TopicSearchConfig = {
   class: 'topics'
+  key?: string
   name?: string
+  icon?: Component | string
+  placeholder?: string | null
   hiddenFilters?: HiddenFilter<TopicSearchFilters>[]
   basicFilters?: (keyof TopicSearchFilters | keyof typeof SearchFilterAliases)[]
   advancedFilters?: (keyof TopicSearchFilters | keyof typeof SearchFilterAliases)[]
   sortOptions?: SortOption<TopicSearchSort>[]
+  defaultSort?: TopicSearchSort
 }
 
 export type SearchTypeConfig = DatasetSearchConfig | DataserviceSearchConfig | ReuseSearchConfig | OrganizationSearchConfig | TopicSearchConfig
 
+export type BuiltInFilterKey = keyof DatasetSearchFilters | keyof DataserviceSearchFilters | keyof ReuseSearchFilters | keyof OrganizationSearchFilters | keyof TopicSearchFilters
+
 export type SearchType = SearchTypeConfig['class']
 
 export type GlobalSearchConfig = SearchTypeConfig[]
+
+// Maps each search class to its concrete response shape.
+export type SearchResponseByClass = {
+  datasets: DatasetSearchResponse<Dataset>
+  dataservices: DataserviceSearchResponse<Dataservice>
+  reuses: ReuseSearchResponse<ReuseV2>
+  organizations: OrganizationSearchResponse<Organization>
+  topics: TopicSearchResponse<TopicV2>
+}
 
 // Helper functions for default configs
 

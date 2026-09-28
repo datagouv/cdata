@@ -113,6 +113,12 @@ title = "Votre question porte sur ?"
     answer = "api_api-acces-restreint"
 
     [[choices.choices.choices]]
+    label = "L'API tabulaire de data.gouv.fr"
+    id = "apitabulaire"
+    title = "Quelle est votre question sur l'API tabulaire ?"
+    segment = "api-tabulaire"
+
+    [[choices.choices.choices]]
     label = "Autre"
     id = "apiother"
     answer = "api_other"
@@ -131,7 +137,7 @@ title = "Votre question porte sur ?"
       [[choices.choices.choices]]
       label = "Faire certifier son organisation"
       id = "certification"
-      title = "Pensez à nous envoyer un lien vers votre organisation ?"
+      title = "Pensez à nous envoyer un lien vers votre organisation"
       segment = "certification"
 
       [[choices.choices.choices]]

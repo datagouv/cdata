@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { Reuse } from '@datagouv/components-next'
+import type { Reuse, ReuseV2 } from '@datagouv/components-next'
 import type { AdminBadgeType } from '~/types/types'
 
 const props = defineProps<{
-  reuse: Reuse
+  reuse: Reuse | ReuseV2
 }>()
 
 const { t } = useTranslation()

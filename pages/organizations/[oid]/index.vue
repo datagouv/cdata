@@ -1,19 +1,21 @@
 <template>
-  <div class="pb-14">
-    <h2 class="!text-sm !mb-2.5">
-      {{ $t(`Description de l'organisation`) }}
-    </h2>
-    <MarkdownViewer
-      :content="organization.description"
-      :min-heading="3"
-    />
-  </div>
+  <div />
 </template>
 
 <script setup lang="ts">
-import { MarkdownViewer, type Organization } from '@datagouv/components-next'
+import type { Organization } from '@datagouv/components-next'
 
-defineProps<{
+const props = defineProps<{
   organization: Organization
 }>()
+
+const route = useRoute()
+
+// Land on the editorial presentation when it is published, otherwise fall back to
+// the datasets tab. Admins follow the same rule: an unpublished draft is not a
+// landing page, they reach it through the always-visible "Présentation" tab. The
+// publication date is in the default mask, so this needs no extra API call and the
+// heavy blocs are only fetched on the presentation page itself.
+const target = isOrganizationPresentationPublished(props.organization.presentation_blocs_published_at) ? 'presentation' : 'datasets'
+await navigateTo(`/organizations/${route.params.oid}/${target}`, { replace: true })
 </script>

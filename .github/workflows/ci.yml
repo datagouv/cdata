@@ -2,11 +2,15 @@ name: CI
 
 on:
   push:
+    branches:
+      - main
+  pull_request:
   workflow_dispatch:
 
 env:
-  CONTAINER_REGISTRY_URL: ${{ vars.CONTAINER_REGISTRY_URL }}
-  APP_NAME: ${{ vars.APP_NAME }}
+  CONTAINER_REGISTRY_SERVER: ${{ vars.CONTAINER_REGISTRY_SERVER }}
+  CONTAINER_REGISTRY_NAMESPACE: ${{ vars.CONTAINER_REGISTRY_NAMESPACE }}
+  CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
   UDATA_WORKING_DIR: udata
 
 permissions:
@@ -55,9 +59,9 @@ jobs:
           include-hidden-files: true
 
   # ============================================
-  # JOB 2: Quality - lint + typecheck (runs in parallel with build)
+  # JOB 2: Quality & unit tests - lint + typecheck + vitest (runs in parallel with build)
   # ============================================
-  quality:
+  quality_and_test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -79,6 +83,9 @@ jobs:
 
       - name: Run typecheck
         run: pnpm run typecheck
+
+      - name: Run unit tests
+        run: pnpm run test:unit
 
       - name: Install datagouv-components dependencies
         working-directory: ./datagouv-components
@@ -103,13 +110,17 @@ jobs:
       fail-fast: false
       matrix:
         browser: [chromium, firefox]
+        # Each (browser, shard) pair runs in its own container with its own MongoDB/Redis/udata,
+        # so Playwright can keep workers=1 (shared backend state) while shards run in parallel.
+        # Keep the shard count in sync with the `--shard=.../N` value in the "Run E2E tests" step.
+        shard: [1, 2]
         include:
           - browser: chromium
-            projects: "--project=setup --project=setup-normal-user --project=chromium --project=chromium-normal-user --project=chromium-2fa-user"
+            projects: "--project=setup --project=setup-normal-user --project=chromium --project=chromium-normal-user --project=chromium-2fa-user --project=chromium-logged-out"
           - browser: firefox
             projects: "--project=setup --project=setup-normal-user --project=firefox"
     container:
-      image: mcr.microsoft.com/playwright:v1.58.2-noble
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
       options: --user 1001
 
     services:
@@ -177,7 +188,7 @@ jobs:
           SERVER_NAME = 'localhost:7000'
           CDATA_BASE_URL="http://localhost:3000"
 
-          CACHE_TYPE = 'null'
+          CACHE_TYPE = 'flask_caching.backends.NullCache'
           DEFAULT_LANGUAGE = 'fr'
 
           SCHEMA_CATALOG_URL='https://schema.data.gouv.fr/schemas/schemas.json'
@@ -189,6 +200,8 @@ jobs:
 
           PLUGINS = []
           FS_ROOT = 'fs'
+
+          HARVESTER_BACKENDS = ['dcat', 'csw*']
 
           SESSION_COOKIE_SECURE = False
 
@@ -233,6 +246,10 @@ jobs:
           NUXT_PUBLIC_API_BASE: http://localhost:7000
           NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "hero_15.png"
           NUXT_SITE_URL: http://localhost:3000
+          NUXT_PUBLIC_CHARTS_API_BASE: http://localhost:7000
+          NUXT_PUBLIC_CADA_RESOURCE_ID: 3a6d6fe3-8548-43ed-ad09-72052771447c
+          NUXT_PUBLIC_TABULAR_API_PREVIEW_RESOURCES_ID: 982d9dd0-365a-4c4b-8a83-75dec40c36bb
+          NUXT_PUBLIC_TABULAR_API_PREVIEW_STATS_ID: 33cf9a65-3f77-4d88-acd1-bca420d83e60
         run: |
           # Start cdata server in background using pre-built artifacts
           PORT=3000 node .output/server/index.mjs > cdata.log 2>&1 &
@@ -247,7 +264,11 @@ jobs:
           NUXT_PUBLIC_API_BASE: http://localhost:7000
           UDATA_WORKING_DIR: ${{ env.UDATA_WORKING_DIR }}
           CI: true
-        run: pnpm run test:e2e ${{ matrix.projects }}
+          # Unique blob name per (browser, shard): the default is report-<shard>.zip, which would
+          # collide between browsers (chromium 1/2 and firefox 1/2 both produce report-1.zip) when
+          # the merge job downloads everything into a single directory.
+          PLAYWRIGHT_BLOB_OUTPUT_NAME: report-${{ matrix.browser }}-${{ matrix.shard }}.zip
+        run: pnpm run test:e2e ${{ matrix.projects }} --shard=${{ matrix.shard }}/2
 
       - name: Kill udata server
         if: always()
@@ -269,15 +290,54 @@ jobs:
         uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: playwright-screenshots-${{ matrix.browser }}
+          name: playwright-screenshots-${{ matrix.browser }}-${{ matrix.shard }}
           path: tests/**/*-snapshots
           retention-days: 7
 
-      - name: Upload Playwright report
+      - name: Upload blob report
         uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: playwright-report-${{ matrix.browser }}
+          name: blob-report-${{ matrix.browser }}-${{ matrix.shard }}
+          path: blob-report/
+          retention-days: 7
+
+  # ============================================
+  # JOB 3b: Merge sharded Playwright reports into a single HTML report
+  # ============================================
+  e2e-report:
+    needs: e2e
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Download blob reports
+        uses: actions/download-artifact@v8
+        with:
+          path: all-blob-reports
+          pattern: blob-report-*
+          merge-multiple: true
+
+      - name: Merge reports into HTML
+        run: pnpm exec playwright merge-reports --reporter html ./all-blob-reports
+
+      - name: Upload merged HTML report
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
           path: playwright-report/
           retention-days: 7
 
@@ -285,7 +345,7 @@ jobs:
   # JOB 4: Docker - build & push Docker image (automatic on main, manual on any branch)
   # ============================================
   docker:
-    needs: [quality, e2e]
+    needs: [quality_and_test, e2e]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     permissions:
@@ -308,23 +368,24 @@ jobs:
           echo "short=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
           echo "long=$GITHUB_SHA" >> $GITHUB_OUTPUT
 
-      - name: Log in to GitLab Container Registry
+      - name: Log in to our Docker Container Registry
         uses: docker/login-action@v3
         with:
-          registry: ${{ env.CONTAINER_REGISTRY_URL }}
-          username: oauth2
-          password: ${{ secrets.GITLAB_API_TOKEN }}
+          registry: ${{ env.CONTAINER_REGISTRY_SERVER }}
+          username: ${{ secrets.CONTAINER_REGISTRY_USERNAME }}
+          password: ${{ secrets.CONTAINER_REGISTRY_PASSWORD }}
 
       - name: Extract metadata for Docker
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.CONTAINER_REGISTRY_URL }}/${{ env.APP_NAME }}
+          images: ${{ env.CONTAINER_REGISTRY_SERVER }}/${{ env.CONTAINER_REGISTRY_NAMESPACE }}/${{ env.CONTAINER_NAME }}
           tags: |
             type=sha,format=short,prefix=
             type=sha,format=long,prefix=
             type=ref,event=branch
             type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -338,7 +399,7 @@ jobs:
   # JOB 5: Sentry - upload source maps (automatic on main, manual on any branch)
   # ============================================
   sentry:
-    needs: [quality, e2e]
+    needs: [quality_and_test, e2e]
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
@@ -373,8 +434,14 @@ jobs:
   # JOB 6: Publish datagouv-components (automatic on main, manual on any branch)
   # ============================================
   publish-datagouv-components:
-    needs: [quality, e2e]
+    needs: [quality_and_test, e2e]
     runs-on: ubuntu-latest
+    # The version is read from the `dev` dist-tag then incremented, so two overlapping runs would
+    # compute the same number and the second would get a 403. `queue: max` serializes them FIFO
+    # (up to 100 pending) instead of cancelling the pending one like the default `queue: single`.
+    concurrency:
+      group: publish-datagouv-components
+      queue: max
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout repository

@@ -4,9 +4,10 @@
 
 <script setup lang="ts">
 import type { Organization } from '@datagouv/components-next'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 defineProps<{

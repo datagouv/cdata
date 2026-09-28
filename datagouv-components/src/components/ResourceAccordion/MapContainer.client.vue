@@ -4,8 +4,8 @@
   </PreviewUnavailable>
   <div
     v-else
-    id="map"
     ref="mapRef"
+    class="size-full"
   />
 </template>
 
@@ -89,10 +89,8 @@ async function displayMap() {
 
   const attributions = new GeoportalAttribution({
     position: 'bottom-right',
-    // collapsed option is ignored by the library, thus the override below
-    // see https://github.com/IGNF/geopf-extensions-openlayers/issues/497
+    collapsed: false,
   })
-  attributions.setCollapsed(false)
   map.addControl(attributions)
 
   const layerImport = new LayerImport({
@@ -130,10 +128,3 @@ onMounted(() => {
   displayMap()
 })
 </script>
-
-<style>
-  #map {
-    width: 100%;
-    height: 500px;
-  }
-</style>

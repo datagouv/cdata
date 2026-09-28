@@ -5,5 +5,7 @@ WORKDIR /app
 # Copy only .output (pre-built by CI)
 COPY .output/ .output/
 
+ENV NODE_ENV=production
+
 EXPOSE 3000
-CMD [ "node", ".output/server/index.mjs" ]
+CMD [ "node", "--import", "./.output/server/sentry.server.config.mjs", ".output/server/index.mjs" ]

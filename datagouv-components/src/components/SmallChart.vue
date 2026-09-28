@@ -11,10 +11,16 @@
       class="flex flex-wrap justify-between"
     >
       <p class="text-[0.625rem] m-0 text-gray-medium">
-        {{ startDate }}
+        <FormattedDate
+          :date="startDate"
+          :options="{ dateStyle: undefined, year: '2-digit', month: '2-digit' }"
+        />
       </p>
       <p class="text-[0.625rem] m-0 text-gray-medium">
-        {{ endDate }}
+        <FormattedDate
+          :date="endDate"
+          :options="{ dateStyle: undefined, year: '2-digit', month: '2-digit' }"
+        />
       </p>
     </div>
   </div>
@@ -24,6 +30,7 @@
 import type { ChartOptions, ScriptableLineSegmentContext } from 'chart.js'
 import Chart from 'chart.js/auto'
 import { computed, onMounted, ref, useTemplateRef, watchEffect } from 'vue'
+import FormattedDate from './FormattedDate.vue'
 
 const LIGHT_COLOR = '#B6CFFB'
 const COLOR = '#3558A2'
@@ -107,14 +114,8 @@ const additionalDatasetConfig = computed<{
   return {}
 })
 
-const getMonthYear = (dateAsString: string): string => {
-  const date = new Date(dateAsString)
-
-  return `${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)}`
-}
-
-const startDate = computed(() => months.value.length ? getMonthYear(months.value[0]!) : null)
-const endDate = computed(() => months.value.length ? getMonthYear(months.value[months.value.length - 1]!) : null)
+const startDate = computed(() => months.value[0] ?? null)
+const endDate = computed(() => months.value[months.value.length - 1] ?? null)
 
 const OPTIONS = {
   // @ts-expect-error animation can be `true` but the typing is not expecting it

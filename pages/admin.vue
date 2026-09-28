@@ -57,28 +57,27 @@ import type { OrganizationReference } from '@datagouv/components-next'
 
 definePageMeta({
   layout: 'fluid',
-  middleware: ['auth'],
+  middleware: [
+    'auth',
+    (to) => {
+      if (to.path !== '/admin' && to.path !== '/admin/') return
+      const me = useMaybeMe()
+      const target = me.value && me.value.organizations.length > 0
+        ? `/admin/organizations/${me.value.organizations[0].id}/datasets`
+        : '/admin/me/datasets'
+      return navigateTo(target, { replace: true })
+    },
+  ],
   matomoIgnore: true,
 })
 
 const { t } = useTranslation()
-const route = useRoute()
-const { resolve } = useRouter()
 const me = useMe()
 
 useSeoMeta({ title: 'Admin' })
 
 const { organizations, users } = useCurrentOwned()
 const isSiteAdmin = computed(() => me.value.roles?.includes('admin') || false)
-
-if (route.name === resolve('/admin')?.name) {
-  if (me.value.organizations.length > 0) {
-    await navigateTo(`/admin/organizations/${me.value.organizations[0].id}/datasets`, { replace: true })
-  }
-  else {
-    await navigateTo('/admin/me/datasets', { replace: true })
-  }
-}
 </script>
 
 <style>

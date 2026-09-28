@@ -44,7 +44,7 @@
             <RiPriceTag3Line class="inline size-3" />
             <span>{{ $t('Métadonnées:') }}</span>
             <Tooltip>
-              <DatasetQualityScore
+              <QualityScore
                 class="w-32"
                 :score="dataset.quality.score"
               />
@@ -110,7 +110,10 @@
             &mdash;
             <span>{{ getActivityTranslation(activities.data[0]) }}</span>
             &mdash;
-            <span class="text-gray-medium">{{ formatDate(activities.data[0].created_at) }}</span>
+            <FormattedDate
+              class="text-gray-medium"
+              :date="activities.data[0].created_at"
+            />
           </p>
         </div>
       </div>
@@ -121,7 +124,7 @@
           { href: getDatasetAdminUrl(dataset), label: t('Métadonnées') },
           { href: `${getDatasetAdminUrl(dataset)}/files`, label: t('Fichiers') },
           { href: `${getDatasetAdminUrl(dataset)}/discussions`, label: t('Discussions') },
-          { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activités') },
+          { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activités'), show: dataset.permissions.edit },
         ]"
       />
 
@@ -134,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, DatasetQualityTooltipContent, DatasetQualityScore, summarize, useFormatDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
+import { BrandedButton, DatasetQualityTooltipContent, QualityScore, summarize, FormattedDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
 import type { Activity, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiDownloadLine, RiEyeLine, RiLineChartLine, RiPriceTag3Line, RiStarLine } from '@remixicon/vue'
 import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
@@ -142,16 +145,16 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 import type { PaginatedArray } from '~/types/types'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const { t } = useTranslation()
 const me = useMe()
 
 const route = useRoute()
-const { formatDate } = useFormatDate()
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset } = await useAPI<DatasetV2WithFullObject>(url, {
   redirectOn404: true,

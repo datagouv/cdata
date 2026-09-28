@@ -27,6 +27,8 @@ export type User = {
   roles?: Array<string>
   organizations: Array<OrganizationReference>
   last_login_at: string | null
+  password_rotation_demanded: string | null
+  password_rotation_performed: string | null
   since: string | null
   metrics: {
     datasets: number

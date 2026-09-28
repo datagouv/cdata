@@ -1,0 +1,99 @@
+import type { Chart, ChartForm, ChartForApi, Filter, ColumnDefinition } from '../types/visualizations'
+import type { ColumnType, TabularProfile } from '../components/TabularExplorer/types'
+import { resolveColumnType } from './tabular'
+
+export function toChartForm(chart: Chart) {
+  const seriesFilter = chart.series[0]?.filters as Filter | null
+
+  return {
+    title: chart.title,
+    description: chart.description,
+    private: chart.private,
+    owned: chart.organization ? { organization: chart.organization.id, owner: null } : { owner: chart.owner.id, organization: null },
+    x_axis: {
+      column_x: chart.x_axis.column_x,
+      type: chart.x_axis.type,
+      sort_combined: chart.x_axis.sort_x_by && chart.x_axis.sort_x_direction
+        ? `${chart.x_axis.sort_x_by}-${chart.x_axis.sort_x_direction}`
+        : '',
+    },
+    y_axis: {
+      label: chart.y_axis.label || '',
+      min: chart.y_axis.min,
+      max: chart.y_axis.max,
+      unit: chart.y_axis.unit || '',
+      unit_position: chart.y_axis.unit_position || 'suffix',
+    },
+    series: chart.series.map(serie => ({
+      ...serie,
+      aggregate_y: serie.aggregate_y || '',
+    })),
+    extras: chart.extras,
+    chart_type: chart.series[0] ? chart.series[0].type : null,
+    filter: seriesFilter ?? null,
+  } satisfies ChartForm
+}
+
+export function toChartApi(chartForm: ChartForm): ChartForApi {
+  const xAxis = {
+    column_x: chartForm.x_axis.column_x,
+    type: chartForm.x_axis.type,
+    sort_x_by: chartForm.x_axis.sort_combined
+      ? (chartForm.x_axis.sort_combined.split('-')[0] as 'axis_x' | 'axis_y')
+      : null,
+    sort_x_direction: chartForm.x_axis.sort_combined
+      ? (chartForm.x_axis.sort_combined.split('-')[1] as 'asc' | 'desc')
+      : null,
+  }
+
+  return {
+    ...chartForm.owned,
+    title: chartForm.title,
+    description: chartForm.description,
+    private: chartForm.private,
+    x_axis: xAxis,
+    y_axis: {
+      label: chartForm.y_axis.label ?? null,
+      min: chartForm.y_axis.min ?? null,
+      max: chartForm.y_axis.max ?? null,
+      unit: chartForm.y_axis.unit ?? null,
+      unit_position: chartForm.y_axis.unit_position ?? null,
+    },
+    series: chartForm.series.map((serie, index) => ({
+      ...serie,
+      type: index === 0 && chartForm.chart_type ? chartForm.chart_type : serie.type,
+      aggregate_y: serie.aggregate_y || null,
+      filters: serie.filters || (index === 0 && chartForm.filter ? chartForm.filter : null),
+    })),
+    extras: chartForm.extras,
+  }
+}
+
+export function buildColumnsFromProfile(profile: { profile: TabularProfile }): Array<ColumnDefinition> {
+  return profile.profile.header.map((name) => {
+    const colInfo = profile.profile.columns[name]
+    const isCategorical = profile.profile.categorical?.includes(name) ?? false
+    // The chart stack only branches on 'number' and 'date' (continuous axis,
+    // aggregatable series, time formatting): it has no notion of a year column,
+    // and on an axis a year is a number.
+    const resolvedType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
+    const colType = resolvedType === 'year' ? 'number' : resolvedType
+    const colProfile = profile.profile.profile?.[name]
+    return {
+      name,
+      type: colType,
+      min: normalizeProfileNumber(colProfile?.min, colType),
+      max: normalizeProfileNumber(colProfile?.max, colType),
+    }
+  })
+}
+
+function normalizeProfileNumber(value: number | string | undefined, type: ColumnType): number | undefined {
+  if (value === undefined || value === null) return undefined
+  if (type === 'date' && typeof value === 'string') {
+    const timestamp = new Date(value).getTime()
+    return Number.isNaN(timestamp) ? undefined : timestamp
+  }
+  const parsed = Number(value)
+  return Number.isNaN(parsed) ? undefined : parsed
+}

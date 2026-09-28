@@ -59,6 +59,7 @@ import Stepper from '~/components/Stepper/Stepper.vue'
 import type { DatasetForm, EnrichedLicense, ResourceForm, SpatialGranularity, SpatialZone, Tag } from '~/types/types'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import { goToStep } from '~/utils/scroll'
 
 const { t } = useTranslation()
 const config = useRuntimeConfig()
@@ -97,6 +98,14 @@ const datasetForm = useState(DATASET_FORM_STATE, () => ({
 const resources = useState<Array<ResourceForm>>(DATASET_FILES_STATE, () => [])
 const newDataset = useState<Dataset | null>('new-dataset', () => null)
 const currentStep = computed(() => parseInt(route.query.step as string) || 1)
+
+// Every step of the wizard lives under the same path, so without this they would all
+// share one title in the tab bar and in the history
+useSeoMeta({
+  title: () => `${steps.value[currentStep.value - 1] ?? ''} - ${t('Formulaire de publication')}`,
+  robots: 'noindex',
+})
+
 const isCurrentStepValid = computed(() => {
   if (currentStep.value < 1) return false
   if (currentStep.value > steps.value.length) return false
@@ -106,7 +115,7 @@ const isCurrentStepValid = computed(() => {
 })
 
 const moveToStep = (step: number) => {
-  return navigateTo({ path: route.path, query: { ...route.query, step } })
+  return goToStep(route, { ...route.query, step })
 }
 
 const datasetNext = () => {
@@ -176,6 +185,18 @@ async function updateDataset(asPrivate: boolean) {
 
   await navigateTo(`/datasets/${newDataset.value.slug}`)
 }
+
+// A fresh wizard entry must not reuse the dataset created during a previous
+// publication flow. Otherwise the `||` reuse below keeps the old dataset and
+// every new resource gets attached to it instead of a brand new dataset.
+// The page remounts on every step navigation, so we only clear on a genuine
+// fresh start (step 1, where no dataset of the current flow exists yet) to
+// avoid wiping the dataset created for the current flow on later steps.
+onMounted(() => {
+  if (currentStep.value === 1) {
+    clearNuxtState('new-dataset')
+  }
+})
 
 watchEffect(() => {
   if (!isCurrentStepValid.value) {

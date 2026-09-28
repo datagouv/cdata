@@ -1,17 +1,29 @@
 <template>
   <div>
-    <EditoHeader
-      color="purple"
-      :title="$t('Rechercher une API')"
-      :subtitle="$t('parmi les {count} API sur {site}', {
-        count: site?.metrics.dataservices || 0,
-        site: config.public.title,
-      })"
-      :placeholder="$t('ex: SIRENE')"
-      search-url="/dataservices/search"
-      :link-label="$t(`Qu'est-ce qu'une API ?`)"
-      :link-url="config.public.guideDataservices"
-    />
+    <HeroBanner color="purple">
+      <template #breadcrumb>
+        <Breadcrumb>
+          <BreadcrumbItem to="/">
+            {{ $t('Accueil') }}
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            {{ $t('API') }}
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </template>
+      <EditoSearchForm
+        color="purple"
+        :title="$t('Rechercher une API')"
+        :subtitle="$t('parmi les {count} API sur {site}', {
+          count: site?.metrics.dataservices || 0,
+          site: config.public.title,
+        })"
+        :placeholder="$t('ex: SIRENE')"
+        search-url="/dataservices/search"
+        :link-label="$t(`Qu'est-ce qu'une API ?`)"
+        :link-url="config.public.guideDataservices"
+      />
+    </HeroBanner>
     <EditoBlocs
       v-if="siteBlocs.length > 0 || isEditing"
       :blocs="siteBlocs"
@@ -33,11 +45,11 @@
         <div class="flex flex-col space-y-3 justify-center">
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/book-2.svg"
                 class="w-18"
                 alt=""
-              />
+              >
             </div>
             <div class="font-extrabold text-center text-lg">
               {{ $t('La doctrine des API') }}
@@ -60,11 +72,11 @@
           </div>
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/_keyboard.svg"
                 class="w-16"
                 alt=""
-              />
+              >
             </div>
             <div class="font-extrabold text-center text-lg">
               {{ $t('Publier vos API') }}
@@ -90,11 +102,11 @@
         <div class="flex flex-col space-y-3 justify-center">
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/schema.svg"
                 class="w-18"
                 alt=""
-              />
+              >
             </div>
             <div class="font-extrabold text-center text-lg">
               {{ $t('Un accompagnement') }}<br>{{ $t('technique et métier') }}
@@ -117,11 +129,11 @@
           </div>
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/_keys.svg"
                 class="w-20"
                 alt=""
-              />
+              >
             </div>
             <div class="font-extrabold text-center text-lg">
               {{ $t('Datapass') }}<br>{{ $t('Habilitations juridiques') }}
@@ -147,11 +159,11 @@
         <div class="flex flex-col space-y-3 justify-center">
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/lightbulb.svg"
                 class="w-12"
                 alt=""
-              />
+              >
             </div>
             <div class="font-extrabold text-center text-lg">
               {{ $t('Simplifions.data.gouv.fr') }}
@@ -175,11 +187,11 @@
           </div>
           <div class="bg-gray-lowest-2 flex flex-col items-center px-5 py-12 space-y-4">
             <div class=" flex items-center justify-center size-20 bg-white rounded-full">
-              <nuxt-img
+              <img
                 src="/illustrations/_safe.svg"
                 class="w-20"
                 alt=""
-              />
+              >
             </div>
             <div class="font-extrabold text-center text-lg">
               {{ $t('API Entreprise') }}<br>
@@ -243,7 +255,10 @@
 import { BrandedButton } from '@datagouv/components-next'
 import { RiExternalLinkFill, RiArrowRightLine } from '@remixicon/vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
-import EditoHeader from '~/components/Pages/EditoHeader.vue'
+import HeroBanner from '~/components/HeroBanner.vue'
+import EditoSearchForm from '~/components/Pages/EditoSearchForm.vue'
+import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 
 const config = useRuntimeConfig()
@@ -264,16 +279,6 @@ defineOgImage('MainPage.takumi', {
 })
 
 const route = useRoute()
-
-onMounted(async () => {
-  const hasFacets = Object.keys(route.query).some(key =>
-    ['q', 'sort', 'is_restricted', 'organization', 'page'].includes(key),
-  )
-
-  if (hasFacets) {
-    await navigateTo({ path: '/dataservices/search', query: route.query })
-  }
-})
 
 const { site, blocs: siteBlocs, saveBlocs } = await useSiteBlocs('dataservices_blocs', ['metrics'])
 

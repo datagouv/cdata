@@ -1,5 +1,6 @@
 import type { User } from './users'
 import type { Badges } from './badges'
+import type { PageBloc } from './pages'
 
 export type MemberRole = 'admin' | 'editor' | 'partial_editor'
 
@@ -68,4 +69,13 @@ export type Organization = {
     reuses_by_months: Record<string, number>
     views: number
   }
+  // Editorial blocs powering the organization "Présentation" tab. Excluded from
+  // the default API read mask, so only present when requested with X-Fields.
+  // Read through the API's `public_presentation_blocs`: hidden from the public until
+  // published, but always returned to organization administrators.
+  presentation_blocs?: Array<PageBloc>
+  // Publication date of the blocs. `null` means draft (never public); a set date
+  // means published. Like `presentation_blocs`, only present when requested with
+  // X-Fields.
+  presentation_blocs_published_at?: string | null
 }

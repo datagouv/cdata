@@ -2,14 +2,17 @@
   <article class="fr-enlarge-link group/reuse-card bg-white border border-gray-default hover:bg-gray-some flex flex-col relative">
     <div class="flex flex-col h-full flex-1 order-2 px-8">
       <div class="order-1 flex flex-col px-4 py-1 h-full -mx-8">
-        <h3 class="font-bold text-base mt-1 mb-0 truncate">
+        <component
+          :is="titleTag"
+          class="font-bold text-base mt-1 mb-0 truncate"
+        >
           <AppLink
             class="text-gray-title overflow-hidden"
             :to="reuseUrl"
           >
             {{ reuse.title }}
           </AppLink>
-        </h3>
+        </component>
         <div class="order-3 text-sm m-0 text-gray-medium">
           <div class="text-sm mb-0 flex items-center">
             <ObjectCardOwner
@@ -18,7 +21,18 @@
               :organization-url="organizationUrl"
             />
             <RiSubtractLine class="size-4 flex-none fill-gray-medium" />
-            <span class="block flex-none">{{ t('publié {date}', { date: formatRelativeIfRecentDate(reuse.created_at, { dateStyle: 'medium' }) }) }}</span>
+            <TranslationT
+              class="block flex-none"
+              keypath="publié {date}"
+            >
+              <template #date>
+                <FormattedDate
+                  :date="reuse.created_at"
+                  format="relative"
+                  :options="{ dateStyle: 'medium' }"
+                />
+              </template>
+            </TranslationT>
           </div>
           <ReuseDetails :reuse />
         </div>
@@ -64,16 +78,18 @@
 import { RiLockLine, RiSubtractLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { useFormatDate } from '../functions/dates'
-import type { Reuse } from '../types/reuses'
+import type { Reuse, ReuseV2 } from '../types/reuses'
+import type { TitleTag } from '../types/ui'
 import { useTranslation } from '../composables/useTranslation'
 import AppLink from './AppLink.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
 import ReuseDetails from './ReuseDetails.vue'
 import Placeholder from './Placeholder.vue'
+import FormattedDate from './FormattedDate.vue'
+import TranslationT from './TranslationT.vue'
 
-const props = defineProps<{
-  reuse: Reuse
+const props = withDefaults(defineProps<{
+  reuse: Reuse | ReuseV2
 
   /**
   * The reuseUrl is a route location object to allow Vue Router to navigate to the details of a reuse.
@@ -84,12 +100,16 @@ const props = defineProps<{
   /**
   * The organizationUrl is an optional route location object to allow Vue Router to navigate to the details of the organization linked to tha reuse.
   * It is used as a separate prop to allow other sites using the package to define their own organization pages.
+  * Pass null instead of a route to render the organization name as plain, non-linked text.
   */
-  organizationUrl?: RouteLocationRaw
-}>()
+  organizationUrl?: RouteLocationRaw | null
+
+  titleTag?: TitleTag
+}>(), {
+  titleTag: 'h3',
+})
 
 const { t } = useTranslation()
-const { formatRelativeIfRecentDate } = useFormatDate()
 
 const reuseUrl = computed(() => props.reuseUrl || props.reuse.page)
 </script>

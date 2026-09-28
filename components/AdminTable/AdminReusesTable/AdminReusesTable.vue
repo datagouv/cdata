@@ -55,7 +55,7 @@
         </td>
         <td>
           <div v-if="reuse.id in activities">
-            <p>{{ formatDate(activities[reuse.id].created_at) }}</p>
+            <p><FormattedDate :date="activities[reuse.id].created_at" /></p>
             <p class="inline-flex items-center">
               {{ t('par ') }}
               <AvatarWithName
@@ -65,11 +65,11 @@
             </p>
           </div>
           <template v-else>
-            {{ formatDate(reuse.created_at) }}
+            <FormattedDate :date="reuse.created_at" />
           </template>
         </td>
         <td class="font-mono text-right">
-          {{ summarize(reuse.datasets.length) }}
+          {{ summarize(datasetsCount(reuse)) }}
         </td>
         <td>
           <BrandedButton
@@ -102,8 +102,8 @@
 </template>
 
 <script setup lang="ts">
-import { AvatarWithName, BrandedButton, summarize, useFormatDate } from '@datagouv/components-next'
-import type { Activity, Reuse } from '@datagouv/components-next'
+import { AvatarWithName, BrandedButton, summarize, FormattedDate } from '@datagouv/components-next'
+import type { Activity, Reuse, ReuseV2 } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
@@ -113,7 +113,7 @@ import ReuseBadge from '~/components/AdminBadge/ReuseBadge.vue'
 
 const props = withDefaults(defineProps<{
   activities?: Record<string, Activity>
-  reuses: Array<Reuse>
+  reuses: Array<Reuse | ReuseV2>
   sortedBy: ReuseSortedBy
   sortDirection: SortDirection
 }>(), {
@@ -125,7 +125,12 @@ defineEmits<{
 }>()
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
+
+// `datasets` is a full reference list on a v1 reuse but a lightweight link
+// (with a `total` counter) on a v2 reuse, depending on the endpoint feeding the table.
+function datasetsCount(reuse: Reuse | ReuseV2): number {
+  return Array.isArray(reuse.datasets) ? reuse.datasets.length : reuse.datasets.total
+}
 
 function sorted(column: ReuseSortedBy) {
   if (props.sortedBy === column) {

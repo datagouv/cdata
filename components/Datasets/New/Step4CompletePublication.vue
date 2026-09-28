@@ -3,15 +3,15 @@
     <SimpleBanner type="primary">
       <div class="fr-grid-row">
         <div class="fr-col-auto fr-mr-3v">
-          <NuxtImg
+          <img
             src="/illustrations/success.svg"
             loading="lazy"
             alt=""
-          />
+          >
         </div>
         <div class="fr-col">
           <p class="fr-m-0 fr-text--bold">
-            {{ $t('Your dataset is created!') }}
+            {{ $t('Votre jeu de données est maintenant créé !') }}
           </p>
           <p class="fr-m-0 fr-text--xs">
             {{ $t('Vous pouvez maintenant le publier ou le sauvegarder en brouillon.') }}

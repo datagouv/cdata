@@ -60,7 +60,7 @@
 <script setup lang="ts">
 import { RiArchiveLine, RiLineChartLine, RiLockLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
-import type { Reuse } from '../types/reuses'
+import type { Reuse, ReuseV2 } from '../types/reuses'
 import { useTranslation } from '../composables/useTranslation'
 import ReuseDetails from './ReuseDetails.vue'
 import Placeholder from './Placeholder.vue'
@@ -71,9 +71,10 @@ import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
 
 defineProps<{
-  reuse: Reuse
+  reuse: Reuse | ReuseV2
   reuseUrl?: RouteLocationRaw
-  organizationUrl?: RouteLocationRaw
+  // undefined falls back to the organization's data.gouv.fr page; pass null to render plain, non-linked text
+  organizationUrl?: RouteLocationRaw | null
 }>()
 
 const { t } = useTranslation()
