@@ -13,7 +13,10 @@
     </h1>
 
     <div class="bg-white py-4 px-4 -mx-4">
-      <GlobalSearch :config="searchConfig" />
+      <GlobalSearch
+        :config="searchConfig"
+        :track-searches="false"
+      />
     </div>
   </div>
 </template>

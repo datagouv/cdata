@@ -13,7 +13,10 @@
     </h1>
 
     <div class="bg-white py-4 px-4 -mx-4">
-      <GlobalSearch :config="searchConfig">
+      <GlobalSearch
+        :config="searchConfig"
+        :track-searches="false"
+      >
         <template #custom-filters-bottom="{ currentType }">
           <ThemeTagFilter v-if="currentType === 'all-datasets' || currentType === 'inspire-datasets'" />
         </template>

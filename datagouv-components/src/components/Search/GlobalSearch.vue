@@ -364,6 +364,7 @@ import { useDebouncedRef } from '../../composables/useDebouncedRef'
 import { configKey, forEachActiveCustomFilter, isCustomFilterActive, searchFilterContextKey, type CustomFilterEntry } from '../../composables/useSearchFilter'
 import { useStableQueryParams } from '../../composables/useStableQueryParams'
 import { useComponentsConfig } from '../../config'
+import { trackSiteSearch } from '../../functions/matomo'
 import { useFetch } from '../../functions/api'
 import { scrollToBlockTop } from '../../functions/scroll'
 import type { AsyncDataRequestStatus } from '../../functions/api.types'
@@ -408,15 +409,17 @@ const props = withDefaults(defineProps<{
   placeholder?: string | null
   hideSearchInput?: boolean
   autoFocus?: boolean
+  /** Report settled searches to the configured analytics tracker (default true). */
+  trackSearches?: boolean
 }>(), {
   config: getDefaultGlobalSearchConfig,
   hideSearchInput: false,
   autoFocus: true,
+  trackSearches: true,
 })
 
 const emit = defineEmits<{
   resultsCount: [total: number]
-  search: [keyword: string, type: string, total: number]
 }>()
 
 // defineModel's default is static and can't depend on props, so we cast and initialize manually
@@ -753,21 +756,27 @@ watch(searchResults, (results) => {
   if (results) emit('resultsCount', results.total)
 }, { immediate: true })
 
-// Site search tracking: emit once per settled search (keyword or type change)
-// with its result count, so hosts can forward it to their analytics (e.g.
-// Matomo trackSiteSearch). Immediate to cover landings with ?q= (initial fetch
-// is SSR). Pagination, sort and filter changes refetch results but re-emit
-// nothing: the keyword+type pair is unchanged.
-const lastEmittedSearch = ref<{ keyword: string, type: string } | null>(null)
+// Site search tracking: report once per settled search (keyword or type
+// change) with its result count, when the host configured an analytics
+// tracker (e.g. Matomo trackSiteSearch). Immediate to cover landings with
+// ?q= (initial fetch is SSR). Pagination, sort and filter changes refetch
+// results but track nothing new: the keyword+type pair is unchanged.
+const lastTrackedSearch = ref<{ keyword: string, type: string } | null>(null)
 
 watch([searchResultsStatus, currentType], () => {
+  if (!props.trackSearches) return
   if (searchResultsStatus.value !== 'success') return
   const keyword = qForParams.value.trim()
-  if (!keyword) return
+  if (!keyword) {
+    // Clearing the query starts a new search session: retyping the same
+    // keyword afterwards must track again.
+    lastTrackedSearch.value = null
+    return
+  }
   const type = currentType.value
-  if (lastEmittedSearch.value?.keyword === keyword && lastEmittedSearch.value.type === type) return
-  lastEmittedSearch.value = { keyword, type }
-  emit('search', keyword, type, searchResults.value?.total ?? 0)
+  if (lastTrackedSearch.value?.keyword === keyword && lastTrackedSearch.value.type === type) return
+  lastTrackedSearch.value = { keyword, type }
+  trackSiteSearch(keyword, type, searchResults.value?.total ?? 0)
 }, { immediate: true })
 
 // RSS feed URL for datasets

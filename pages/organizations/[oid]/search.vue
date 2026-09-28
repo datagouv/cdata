@@ -4,7 +4,6 @@
       v-model:type="searchType"
       :config="searchConfig"
       hide-search-input
-      @search="trackSearch"
     />
   </div>
 </template>
@@ -23,13 +22,6 @@ const props = defineProps<{
 
 const route = useRoute()
 const searchType = ref<SearchType>((route.query.type as SearchType) || 'datasets')
-
-const { $matomo } = useNuxtApp()
-
-function trackSearch(keyword: string, type: string, total: number) {
-  if (!import.meta.client) return
-  $matomo.trackSiteSearch(keyword, type, total)
-}
 
 const searchConfig: GlobalSearchConfig = [
   getDefaultDatasetConfig({

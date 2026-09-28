@@ -1,10 +1,11 @@
-import { getMatomo } from '@datagouv/components-next'
+import type { MatomoTracker } from '@datagouv/components-next'
 import type { RouteLocationNormalizedGeneric } from 'vue-router'
 import { shouldSkipMatomoPageView } from '~/utils/matomo'
 
 declare global {
   interface Window {
     _paq?: Array<unknown[]>
+    Matomo?: { getTracker(): MatomoTracker }
   }
 }
 
@@ -12,6 +13,11 @@ const noopMatomo = {
   trackPageView: () => {},
   trackEvent: () => {},
   trackSiteSearch: () => {},
+}
+
+// Raw accessor to the tracker created by matomo.js.
+function getMatomo(): MatomoTracker | undefined {
+  return window.Matomo?.getTracker()
 }
 
 export default defineNuxtPlugin({
