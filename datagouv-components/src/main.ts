@@ -114,7 +114,7 @@ import TabularMobileFilters from './components/TabularExplorer/TabularMobileFilt
 import TabularTable from './components/TabularExplorer/TabularTable.vue'
 import TabularToolbar from './components/TabularExplorer/TabularToolbar.vue'
 import type { UseFetchFunction } from './functions/api.types'
-import { configKey, setMatomoResolver, useComponentsConfig, type PluginConfig } from './config.js'
+import { configKey, setMatomoResolver, useComponentsConfig, type MatomoHandle, type PluginConfig } from './config.js'
 import { ofetch } from 'ofetch'
 import { useTranslation } from './composables/useTranslation'
 
@@ -152,6 +152,7 @@ export * from './functions/charts'
 export * from './types/access_types'
 
 export type {
+  MatomoHandle,
   GlobalSearchConfig,
   SearchType,
   SearchTypeConfig,
