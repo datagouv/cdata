@@ -1,9 +1,9 @@
-import type { Chart, ChartForm, ChartForApi, Filter, ColumnDefinition } from '../types/visualizations'
+import type { Chart, ChartForm, ChartForApi, GenericFilter, ColumnDefinition } from '../types/visualizations'
 import type { ColumnType, TabularProfile } from '../components/TabularExplorer/types'
 import { resolveColumnType } from './tabular'
 
 export function toChartForm(chart: Chart) {
-  const seriesFilter = chart.series[0]?.filters as Filter | null
+  const seriesFilter: GenericFilter | null = chart.series[0]?.filters ?? null
 
   return {
     title: chart.title,
