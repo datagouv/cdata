@@ -26,8 +26,7 @@
           class="fr-label"
           :for="`${inputPrefixId}-${index}`"
         >
-          {{ option.label }}
-          <span
+          {{ option.label }}<span
             v-if="option.description"
             class="fr-hint-text"
           >

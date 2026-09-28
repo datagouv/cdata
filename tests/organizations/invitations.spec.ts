@@ -8,7 +8,7 @@ test.describe('Organization member invitations', () => {
     await expect(page.getByRole('heading', { name: 'Inviter un membre' })).toBeVisible()
 
     await page.locator('input[type="email"]').fill('normal@example.com')
-    await page.locator('input[type="radio"][value="editor"]').check()
+    await page.locator('input[type="radio"][value="editor"] + label').click()
 
     await page.getByRole('button', { name: 'Envoyer l\'invitation' }).click()
     await expect(page.getByRole('heading', { name: 'Inviter un membre' })).not.toBeVisible({ timeout: 10000 })
@@ -30,7 +30,7 @@ test.describe('Organization member invitations', () => {
     await expect(page.getByRole('heading', { name: 'Inviter un membre' })).toBeVisible()
 
     await page.locator('input[type="email"]').fill(uniqueEmail)
-    await page.locator('input[type="radio"][value="editor"]').check()
+    await page.locator('input[type="radio"][value="editor"] + label').click()
 
     await page.getByRole('button', { name: 'Envoyer l\'invitation' }).click()
     await expect(page.getByRole('heading', { name: 'Inviter un membre' })).not.toBeVisible({ timeout: 10000 })

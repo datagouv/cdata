@@ -36,7 +36,7 @@ test.describe('Partial editor', () => {
       // Each role states what it allows
       await expect(page.getByText('Peut créer des contenus et modifier seulement certains contenus.')).toBeVisible()
 
-      await page.locator('input[type="radio"][value="partial_editor"]').check()
+      await page.locator('input[type="radio"][value="partial_editor"] + label').click()
 
       // The dataset selector should now be visible
       await expect(page.getByText('Choisir les jeux de données éditables par ce membre')).toBeVisible()
