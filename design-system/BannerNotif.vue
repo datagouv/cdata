@@ -10,10 +10,17 @@
       :icon="RiSendPlaneLine"
       class="mb-4"
       badge="Transfert en attente"
-      :user
       :date="new Date('2020-05-12T23:50:21.817Z')"
     >
+      <template #avatar>
+        <Avatar
+          :user
+          rounded
+          :size="24"
+        />
+      </template>
       <template #title>
+        <span class="font-bold">{{ user.first_name }} {{ user.last_name }}</span>
         <code class="text-gray-medium bg-gray-lower px-1 text-sm rounded-sm">antonin.garonne@data.gouv.fr</code> a effectué une demande de transfert
       </template>
       <template #subtitle>
@@ -54,7 +61,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type DatasetV2, type User } from '@datagouv/components-next'
+import { Avatar, BrandedButton, type DatasetV2, type User } from '@datagouv/components-next'
 import { RiCheckLine, RiCloseLine, RiSendPlaneLine } from '@remixicon/vue'
 
 const { data: user } = await useAPI<User>(`/api/1/users/antonin-garrone/`)

@@ -6,6 +6,7 @@
       :resources
       :resource-to
       :explore-to="exploreTo"
+      :resource-external-url="resourceExternalUrl"
       :replace
       :fullscreen
     />
@@ -217,6 +218,8 @@ const props = withDefaults(defineProps<{
   // When provided (inline mode), shows an "Explorer" button next to the download
   // action that opens the fullscreen explorer on the current resource.
   exploreTo?: (resource: Resource) => string
+  // Overrides the "Copier le lien" target.
+  resourceExternalUrl?: (resource: Resource) => string
   replace?: boolean
   // Fullscreen mode: make the viewer a flex column so the table fills down to the
   // bottom, and hide the inline download/visit/copy actions — they're shown in the

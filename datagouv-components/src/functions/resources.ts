@@ -1,7 +1,7 @@
 import { readonly, type Component } from 'vue'
 
 import { RiEarthLine, RiMap2Line } from '@remixicon/vue'
-import { useComponentsConfig, type PluginConfig } from '../config'
+import { useComponentsConfig } from '../config'
 import Archive from '../components/Icons/Archive.vue'
 import Code from '../components/Icons/Code.vue'
 import type { Dataset, DatasetV2 } from '../types/datasets'
@@ -175,14 +175,16 @@ export function isCommunityResource(resource: Resource | CommunityResource): boo
   return 'organization' in resource || 'owner' in resource
 }
 
-// `config` can be passed pre-resolved (via `useComponentsConfig()` in setup) when
-// the helper runs outside a component context — a computed, a watcher callback —
-// where `inject()` has no active instance and `useComponentsConfig()` would throw.
-export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource | CommunityResource, config?: Pick<PluginConfig, 'getResourceExternalUrl'>): string {
-  const resolvedConfig = config ?? useComponentsConfig()
-  if (resolvedConfig.getResourceExternalUrl) return resolvedConfig.getResourceExternalUrl(dataset, resource)
-
+export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource | CommunityResource): string {
   return `${dataset.page}${isCommunityResource(resource) ? '/community-resources' : ''}?resource_id=${resource.id}`
+}
+
+export function resolveResourceExternalUrl<R extends Resource | CommunityResource>(
+  dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>,
+  resource: R,
+  override?: (resource: R) => string,
+): string {
+  return override ? override(resource) : getResourceExternalUrl(dataset, resource)
 }
 
 export function getResourceFilesize(resource: Resource): null | number {
