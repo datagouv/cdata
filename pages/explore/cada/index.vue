@@ -37,11 +37,11 @@
     <ClientOnly>
       <TabularExplorer
         v-if="RESOURCE_ID"
-        :key="route.fullPath"
         :resource-id="RESOURCE_ID"
-        :global-search="currentSearch"
-        :initial-filters="filtersFromQuery"
+        :global-search="q"
         :initial-sort="{ column: 'Séance', direction: 'desc' }"
+        sync-url
+        :url-aliases="URL_ALIASES"
       >
         <TabularToolbar class="py-3" />
         <TabularTable
@@ -187,7 +187,8 @@
 
 <script setup lang="ts">
 import { SearchInput, TabularExplorer, TabularMobileFilters, TabularTable, TabularToolbar, TranslationT, provideTabularProfile } from '@datagouv/components-next'
-import type { ColumnFilters } from '@datagouv/components-next'
+import type { TabularUrlAlias } from '@datagouv/components-next'
+import { useRouteQuery } from '@vueuse/router'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
@@ -197,8 +198,6 @@ const CADA_DATASET_URL = config.public.cadaDatasetUrl
 
 const { t } = useTranslation()
 
-const route = useRoute()
-
 useNoindexWhenFiltered()
 
 useSeoMeta({
@@ -207,21 +206,22 @@ useSeoMeta({
     t('Recherchez parmi les avis et conseils rendus par la Commission d\'accès aux documents administratifs.'),
 })
 
-const searchQuery = ref('')
-const currentSearch = ref('')
+// The applied search lives in the URL, the input only holds what is being typed:
+// it is refilled when the URL changes, e.g. going back to a previous search.
+const q = useRouteQuery<string>('q', '')
+const searchQuery = ref(q.value)
+watch(q, (value) => {
+  searchQuery.value = value
+})
 
 function applySearch() {
-  currentSearch.value = searchQuery.value.trim()
+  q.value = searchQuery.value.trim()
 }
 
-type UrlFilterParam = {
-  column: string
-  // `contains` for free text, `exact` for closed vocabularies: a `contains` on
-  // the roman numerals of `Partie` would match I inside II, III and IV.
-  operator: 'contains' | 'exact'
-}
-
-const URL_PARAM_MAP: Record<string, UrlFilterParam> = {
+// The badges of an advice link here through these params.
+// `contains` for free text, `exact` for closed vocabularies: a `contains` on the
+// roman numerals of `Partie` would match I inside II, III and IV.
+const URL_ALIASES: Record<string, TabularUrlAlias> = {
   administration: { column: 'Administration', operator: 'contains' },
   topic: { column: 'Thème et sous thème', operator: 'contains' },
   tag: { column: 'Mots clés', operator: 'contains' },
@@ -229,17 +229,6 @@ const URL_PARAM_MAP: Record<string, UrlFilterParam> = {
   year: { column: 'Année', operator: 'exact' },
   part: { column: 'Partie', operator: 'exact' },
 }
-
-const filtersFromQuery = computed(() => {
-  const f: Record<string, ColumnFilters> = {}
-  for (const [param, { column, operator }] of Object.entries(URL_PARAM_MAP)) {
-    const val = route.query[param]
-    if (!val) continue
-    const value = Array.isArray(val) ? String(val[0]) : val
-    f[column] = operator === 'exact' ? { exact: value } : { contains: value }
-  }
-  return f
-})
 
 if (RESOURCE_ID) {
   provideTabularProfile(() => RESOURCE_ID)

@@ -1,5 +1,7 @@
+import type { APIRequestContext, Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { createDatasetWithRemoteResources, deleteDatasets, enableNewExplorer } from '../helpers'
+import { API_BASE, createDatasetWithRemoteResources, deleteDatasets, enableNewExplorer } from '../helpers'
+import { mockTabular, RESOURCE_ID as TABULAR_RESOURCE_ID } from '../visualizations/fixtures'
 
 const createdDatasets: Array<string> = []
 
@@ -131,6 +133,54 @@ test('switching resources does not pile up history entries', async ({ page, requ
   // stepping through the resources we just viewed.
   await page.goBack()
   await expect(page).toHaveURL(/\/explore$/)
+})
+
+test('switching resources drops the filters and sort of the previous one', async ({ page, request }) => {
+  const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore filters reset ${Date.now()}`, resourceTitles(2))
+  createdDatasets.push(dataset.id)
+  const [first, second] = [resources[1]!, resources[0]!]
+
+  const filters = encodeURIComponent(JSON.stringify({ Type: { in: ['Avis'] } }))
+  await page.goto(`/explore/${dataset.id}?resource_id=${first.id}&tab=metadata&sort=-Type&filters=${filters}`)
+  await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
+
+  await page.locator('aside').getByRole('link', { name: second.title }).click()
+
+  await expect(page).toHaveURL(new RegExp(`resource_id=${second.id}`))
+  const query = new URL(page.url()).searchParams
+  expect(query.has('sort')).toBe(false)
+  expect(query.has('filters')).toBe(false)
+  // Only the table params are dropped, not the rest of the explorer state
+  expect(query.get('tab')).toBe('metadata')
+})
+
+test.describe('table state in the URL', () => {
+  test.beforeEach(async ({ page }) => {
+    await mockTabular(page)
+  })
+
+  async function gotoFixtureResource(page: Page, request: APIRequestContext, query = '') {
+    const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
+    const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+    await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}${query}`)
+  }
+
+  test('a sort in the URL is applied to the table', async ({ page, request }) => {
+    const sorted = page.waitForResponse(response => response.url().includes('/data/') && response.url().includes('Construction__sort=desc'), { timeout: 30000 })
+    await gotoFixtureResource(page, request, '&sort=-Construction')
+    await sorted
+
+    await expect(page.getByRole('button', { name: 'Supprimer le tri' })).toBeVisible()
+  })
+
+  test('dropping the sort from its chip removes it from the URL', async ({ page, request }) => {
+    await gotoFixtureResource(page, request, '&sort=-Construction')
+
+    await page.getByRole('button', { name: 'Supprimer le tri' }).click()
+
+    await expect.poll(() => new URL(page.url()).searchParams.has('sort')).toBe(false)
+    expect(new URL(page.url()).searchParams.get('resource_id')).toBe(TABULAR_RESOURCE_ID)
+  })
 })
 
 test('the explorer answers a 404 for a dataset that does not exist', async ({ page }) => {

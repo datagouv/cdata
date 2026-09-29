@@ -23,7 +23,8 @@ import {
 } from '@remixicon/vue'
 import { useTranslation } from '../composables/useTranslation'
 import type { TranslationFunction } from '../composables/useTranslation'
-import type { ColumnFilters, ColumnType, DateFilter } from '../components/TabularExplorer/types'
+import type { LocationQueryValue } from 'vue-router'
+import type { ColumnFilters, ColumnType, DateFilter, DateFilterOperator, SortConfig, TabularUrlAlias } from '../components/TabularExplorer/types'
 import { parseDateValue } from './dates'
 
 export function hasFilterForColumn(filters: Record<string, ColumnFilters>, column: string): boolean {
@@ -124,6 +125,118 @@ export function buildCellValueFilter(columnType: ColumnType, value: unknown, exi
       return selected.includes(val) ? existing : { ...existing, in: [...selected, val] }
     }
   }
+}
+
+export const TABULAR_FILTERS_PARAM = 'filters'
+export const TABULAR_SORT_PARAM = 'sort'
+
+const DATE_FILTER_OPERATORS: readonly DateFilterOperator[] = ['is', 'before', 'after', 'between']
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function firstQueryValue(value: LocationQueryValue | LocationQueryValue[] | undefined): string | undefined {
+  const first = Array.isArray(value) ? value[0] : value
+  return first ?? undefined
+}
+
+/**
+ * The criteria of a column filter that actually filter something, read from any
+ * value: the ones from the URL can be anything a user typed. Empty criteria are
+ * dropped too, so that a column left with none of them has no key left.
+ */
+export function normalizeColumnFilters(value: unknown): ColumnFilters {
+  if (!isRecord(value)) return {}
+  const filter: ColumnFilters = {}
+  if (Array.isArray(value.in) && value.in.length && value.in.every(v => typeof v === 'string')) filter.in = value.in
+  if (typeof value.exact === 'string' && value.exact) filter.exact = value.exact
+  if (typeof value.min === 'number' && Number.isFinite(value.min)) filter.min = value.min
+  if (typeof value.max === 'number' && Number.isFinite(value.max)) filter.max = value.max
+  if (typeof value.contains === 'string' && value.contains) filter.contains = value.contains
+  if (value.null === 'only' || value.null === 'exclude') filter.null = value.null
+  const date = value.date
+  if (isRecord(date) && DATE_FILTER_OPERATORS.includes(date.operator as DateFilterOperator) && typeof date.start === 'string') {
+    filter.date = { operator: date.operator as DateFilterOperator, start: date.start }
+    if (typeof date.end === 'string') filter.date.end = date.end
+  }
+  return filter
+}
+
+/**
+ * The URL params holding `filters`. A column whose only criterion is the one of
+ * an alias is written under that alias; every other column goes, whole, into a
+ * single JSON param. Unused params are `undefined`, so that writing them all
+ * removes the stale ones.
+ */
+export function filtersToUrlQuery(
+  filters: Record<string, ColumnFilters>,
+  aliases: Record<string, TabularUrlAlias>,
+): Record<string, string | undefined> {
+  const query: Record<string, string | undefined> = { [TABULAR_FILTERS_PARAM]: undefined }
+  for (const param of Object.keys(aliases)) query[param] = undefined
+  const rest: Record<string, ColumnFilters> = {}
+  for (const [column, raw] of Object.entries(filters)) {
+    const filter = normalizeColumnFilters(raw)
+    const criteria = Object.keys(filter)
+    if (!criteria.length) continue
+    const alias = criteria.length === 1
+      ? Object.entries(aliases).find(([, a]) => a.column === column && a.operator === criteria[0])
+      : undefined
+    if (alias) query[alias[0]] = filter[alias[1].operator]
+    else rest[column] = filter
+  }
+  if (Object.keys(rest).length) query[TABULAR_FILTERS_PARAM] = JSON.stringify(rest)
+  return query
+}
+
+export function filtersFromUrlQuery(
+  query: Record<string, LocationQueryValue | LocationQueryValue[] | undefined>,
+  aliases: Record<string, TabularUrlAlias>,
+): Record<string, ColumnFilters> {
+  const filters: Record<string, ColumnFilters> = {}
+  for (const [param, { column, operator }] of Object.entries(aliases)) {
+    const value = firstQueryValue(query[param])
+    if (value) filters[column] = { [operator]: value }
+  }
+  const json = firstQueryValue(query[TABULAR_FILTERS_PARAM])
+  if (!json) return filters
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(json)
+  }
+  catch {
+    return filters
+  }
+  if (!isRecord(parsed)) return filters
+  for (const [column, raw] of Object.entries(parsed)) {
+    const filter = normalizeColumnFilters(raw)
+    if (Object.keys(filter).length) filters[column] = filter
+  }
+  return filters
+}
+
+/**
+ * The URL param holding `sort`, in the `-column` for descending convention of
+ * the udata API. The default sort stays out of the URL; dropping it is written as
+ * an empty value, since an absent param already means "the default sort".
+ */
+export function sortToUrlParam(sort: SortConfig | null, defaultSort: SortConfig | null): string | undefined {
+  if (sort?.column === defaultSort?.column && sort?.direction === defaultSort?.direction) return undefined
+  if (!sort) return ''
+  return sort.direction === 'desc' ? `-${sort.column}` : sort.column
+}
+
+export function sortFromUrlParam(
+  param: LocationQueryValue | LocationQueryValue[] | undefined,
+  defaultSort: SortConfig | null,
+): SortConfig | null {
+  const value = firstQueryValue(param)
+  if (value === undefined) return defaultSort
+  if (value === '') return null
+  return value.startsWith('-')
+    ? { column: value.slice(1), direction: 'desc' }
+    : { column: value, direction: 'asc' }
 }
 
 export type TypeDisplay = {

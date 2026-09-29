@@ -28,9 +28,10 @@ import { injectTabularProfile } from '../../composables/useTabularProfile'
 import { hasFilterForColumn as _hasFilterForColumn, buildDateFilterParams, buildGlobalSearchConditions, useFormatTabular } from '../../functions/tabular'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import TabularSkeleton from './TabularSkeleton.vue'
-import type { TabularDataResponse, TabularRow, SortConfig, ColumnFilters, DateFilter } from './types'
+import type { TabularDataResponse, TabularRow, SortConfig, ColumnFilters, DateFilter, TabularUrlAlias } from './types'
 import { provideTabularContext, type ActiveFilter } from './useTabularContext'
 import { useColumnMetadata } from './useColumnMetadata'
+import { useTabularUrlState } from './useTabularUrlState'
 
 const props = defineProps<{
   resourceId: string
@@ -44,11 +45,20 @@ const props = defineProps<{
   // Filters seeded on mount, e.g. { 'Administration': { contains: 'Ministère' } }.
   // The explorer owns them afterwards: later changes to this prop are ignored,
   // so pass a fresh instance (or remount) to reset them.
+  // Ignored with `syncUrl`: the filters come from the URL then.
   initialFilters?: Record<string, ColumnFilters>
   // Sort seeded on mount, e.g. { column: 'Séance', direction: 'desc' }.
   // Same ownership rule as `initialFilters`: the explorer owns it afterwards,
   // and the user can drop it from the active-sort chip.
+  // With `syncUrl`, it is the sort applied when the URL names none.
   initialSort?: SortConfig
+  // Keeps sort and filters in the URL, so that going back to the page restores
+  // them. Only for an explorer that owns its page: the params are not namespaced.
+  syncUrl?: boolean
+  // With `syncUrl`, readable params for the simple filters of some columns,
+  // e.g. { administration: { column: 'Administration', operator: 'contains' } }.
+  // Any other filter goes into a JSON `filters` param.
+  urlAliases?: Record<string, TabularUrlAlias>
 }>()
 
 const { t } = useTranslation()
@@ -80,8 +90,12 @@ const {
 } = useColumnMetadata(profileData, allColumns, t)
 
 // Sort & filter state
-const sort = ref<SortConfig | null>(props.initialSort ? { ...props.initialSort } : null)
-const filters = ref<Record<string, ColumnFilters>>({ ...props.initialFilters })
+const { sort, filters } = props.syncUrl
+  ? useTabularUrlState(props.urlAliases ?? {}, props.initialSort ?? null)
+  : {
+      sort: ref<SortConfig | null>(props.initialSort ? { ...props.initialSort } : null),
+      filters: ref<Record<string, ColumnFilters>>({ ...props.initialFilters }),
+    }
 
 const PAGE_SIZE = 50
 
@@ -275,8 +289,15 @@ function removeFilter(column: string) {
   filters.value = rest
 }
 
-function clearAllFilters() {
+// Resetting goes back to how the table opened: no filter, but the initial sort
+// — it is the table's default order, not a criterion the user added.
+const canReset = computed(() => activeFilters.value.length > 0
+  || sort.value?.column !== props.initialSort?.column
+  || sort.value?.direction !== props.initialSort?.direction)
+
+function reset() {
   filters.value = {}
+  sort.value = props.initialSort ? { ...props.initialSort } : null
 }
 
 function hasFilterForColumn(col: string): boolean {
@@ -299,7 +320,8 @@ provideTabularContext({
   filters,
   activeFilters,
   removeFilter,
-  clearAllFilters,
+  canReset,
+  reset,
   hasFilterForColumn,
   allColumns,
   visibleColumns,

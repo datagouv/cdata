@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
-import type { ColumnFilters, ColumnType, DateFilter } from '~/datagouv-components/src/components/TabularExplorer/types'
-import { buildCellValueFilter, buildDateFilterParams, hasFilterForColumn, resolveColumnType, buildGlobalSearchConditions, toIsoDay, useFormatTabular } from '~/datagouv-components/src/functions/tabular'
+import type { ColumnFilters, ColumnType, DateFilter, SortConfig, TabularUrlAlias } from '~/datagouv-components/src/components/TabularExplorer/types'
+import { buildCellValueFilter, buildDateFilterParams, filtersFromUrlQuery, filtersToUrlQuery, hasFilterForColumn, resolveColumnType, buildGlobalSearchConditions, sortFromUrlParam, sortToUrlParam, toIsoDay, useFormatTabular } from '~/datagouv-components/src/functions/tabular'
 
 const has = (filter?: ColumnFilters) => hasFilterForColumn(filter ? { price: filter } : {}, 'price')
 
@@ -163,6 +163,117 @@ describe('buildCellValueFilter', () => {
   it('matches a boolean cell exactly', () => {
     expect(buildCellValueFilter('boolean', true, {})).toEqual({ exact: 'true' })
     expect(buildCellValueFilter('boolean', false, {})).toEqual({ exact: 'false' })
+  })
+})
+
+describe('filters in the URL', () => {
+  const ALIASES: Record<string, TabularUrlAlias> = {
+    administration: { column: 'Administration', operator: 'contains' },
+    part: { column: 'Partie', operator: 'exact' },
+  }
+
+  const roundTrip = (filters: Record<string, ColumnFilters>) =>
+    filtersFromUrlQuery(filtersToUrlQuery(filters, ALIASES), ALIASES)
+
+  it('writes a filter matching an alias under that alias only', () => {
+    expect(filtersToUrlQuery({ Administration: { contains: 'Mairie' }, Partie: { exact: 'II' } }, ALIASES)).toEqual({
+      administration: 'Mairie',
+      part: 'II',
+      filters: undefined,
+    })
+  })
+
+  it('writes a column with more than its alias criterion into the JSON param', () => {
+    const query = filtersToUrlQuery({ Administration: { contains: 'Mairie', null: 'exclude' } }, ALIASES)
+    expect(query.administration).toBeUndefined()
+    expect(JSON.parse(query.filters!)).toEqual({ Administration: { contains: 'Mairie', null: 'exclude' } })
+  })
+
+  it('writes a criterion of another operator than the alias into the JSON param', () => {
+    const query = filtersToUrlQuery({ Partie: { contains: 'I' } }, ALIASES)
+    expect(query.part).toBeUndefined()
+    expect(JSON.parse(query.filters!)).toEqual({ Partie: { contains: 'I' } })
+  })
+
+  it('clears every param once the filters are gone', () => {
+    expect(filtersToUrlQuery({}, ALIASES)).toEqual({ administration: undefined, part: undefined, filters: undefined })
+  })
+
+  it('leaves out the columns without any criterion left', () => {
+    // Removing the last criterion of a column leaves `{}` or an empty `in` behind
+    expect(filtersToUrlQuery({ Administration: {}, Type: { in: [] }, Objet: { contains: '' } }, ALIASES).filters)
+      .toBeUndefined()
+  })
+
+  it('reads back every kind of filter it wrote', () => {
+    const filters: Record<string, ColumnFilters> = {
+      'Administration': { contains: 'Mairie' },
+      'Partie': { exact: 'II' },
+      'Type': { in: ['Avis', 'Conseil'] },
+      'Année': { min: 2010, max: 2015 },
+      'Mots clés': { null: 'only' },
+      'Séance': { date: { operator: 'between', start: '2015-06-11', end: '2015-06-18' } },
+      'Objet': { contains: 'cheval', null: 'exclude' },
+    }
+    expect(roundTrip(filters)).toEqual(filters)
+  })
+
+  it('reads the first value of a repeated param', () => {
+    expect(filtersFromUrlQuery({ part: ['II', 'III'] }, ALIASES)).toEqual({ Partie: { exact: 'II' } })
+  })
+
+  it('ignores a JSON param that is not JSON, or not an object of filters', () => {
+    expect(filtersFromUrlQuery({ filters: '{nope' }, ALIASES)).toEqual({})
+    expect(filtersFromUrlQuery({ filters: '["Type"]' }, ALIASES)).toEqual({})
+  })
+
+  it('drops the criteria of the wrong type a hand-edited URL can carry', () => {
+    // `in` is joined and `date` read as an object when the query is built:
+    // letting a string or a bare value through would throw there
+    const query = {
+      filters: JSON.stringify({
+        Type: { in: 'Avis', contains: 'ok' },
+        Séance: { date: '2015-06-18' },
+        Année: { min: '2010', null: 'sometimes' },
+      }),
+    }
+    expect(filtersFromUrlQuery(query, ALIASES)).toEqual({ Type: { contains: 'ok' } })
+  })
+
+  it('drops a date filter with an unknown operator', () => {
+    const query = { filters: JSON.stringify({ Séance: { date: { operator: 'around', start: '2015-06-18' } } }) }
+    expect(filtersFromUrlQuery(query, ALIASES)).toEqual({})
+  })
+})
+
+describe('sort in the URL', () => {
+  const DEFAULT: SortConfig = { column: 'Séance', direction: 'desc' }
+
+  it('keeps the default sort out of the URL', () => {
+    expect(sortToUrlParam(DEFAULT, DEFAULT)).toBeUndefined()
+    expect(sortFromUrlParam(undefined, DEFAULT)).toEqual(DEFAULT)
+  })
+
+  it('writes a descending sort with a leading dash', () => {
+    const sort: SortConfig = { column: 'Année', direction: 'desc' }
+    expect(sortToUrlParam(sort, DEFAULT)).toBe('-Année')
+    expect(sortFromUrlParam('-Année', DEFAULT)).toEqual(sort)
+  })
+
+  it('writes an ascending sort as the bare column', () => {
+    const sort: SortConfig = { column: 'Séance', direction: 'asc' }
+    expect(sortToUrlParam(sort, DEFAULT)).toBe('Séance')
+    expect(sortFromUrlParam('Séance', DEFAULT)).toEqual(sort)
+  })
+
+  it('writes a dropped default sort as an empty param, so it is not restored', () => {
+    expect(sortToUrlParam(null, DEFAULT)).toBe('')
+    expect(sortFromUrlParam('', DEFAULT)).toBeNull()
+  })
+
+  it('needs no param for the absence of sort when there is no default one', () => {
+    expect(sortToUrlParam(null, null)).toBeUndefined()
+    expect(sortFromUrlParam(undefined, null)).toBeNull()
   })
 })
 

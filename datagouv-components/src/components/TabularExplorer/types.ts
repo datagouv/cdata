@@ -87,6 +87,13 @@ export type ColumnFilters = {
   date?: DateFilter
 }
 
+// A short URL param standing for a single-operator filter on one column, e.g.
+// `?administration=Mairie` for `{ Administration: { contains: 'Mairie' } }`.
+export type TabularUrlAlias = {
+  column: string
+  operator: 'contains' | 'exact'
+}
+
 export type SortDirection = 'asc' | 'desc'
 
 export type SortConfig = {

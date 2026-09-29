@@ -459,6 +459,101 @@ test.describe('column filter', () => {
   })
 })
 
+test.describe('going back from an advice', () => {
+  async function openAdviceAndGoBack(page: Page, link = dataTable(page).locator('a.link').first()) {
+    await link.click()
+    await page.waitForURL(/\/explore\/cada\/\d+/, { timeout: 30000 })
+    await expect(page.locator('h1').first()).toBeVisible()
+    await page.goBack()
+  }
+
+  test('keeps the search applied and in the input', async ({ page }) => {
+    await gotoExplore(page)
+
+    const searchInput = page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')
+    await searchInput.fill('cheval')
+    const searched = dataResponse(page, 'cheval')
+    await searchInput.press('Enter')
+    expect((await searched).ok()).toBe(true)
+    await page.waitForURL(/[?&]q=cheval/)
+
+    const restored = dataResponse(page, 'cheval')
+    await openAdviceAndGoBack(page)
+    expect((await restored).ok()).toBe(true)
+    await expect(searchInput).toHaveValue('cheval')
+  })
+
+  test('keeps a column filter, written under its readable alias', async ({ page }) => {
+    await gotoExplore(page)
+
+    await page.getByRole('button', { name: 'Filtrer Administration' }).click()
+    await page.getByTestId('column-filter-Administration').getByPlaceholder('Rechercher...').fill('Mairie')
+    await page.waitForURL(/[?&]administration=Mairie/, { timeout: 30000 })
+    await page.keyboard.press('Escape')
+
+    const restored = dataResponse(page, 'Administration__contains=Mairie')
+    await openAdviceAndGoBack(page)
+    expect((await restored).ok()).toBe(true)
+    await expect(page.getByTestId('active-filter-Administration')).toContainText('contient "Mairie"')
+  })
+
+  test('keeps a filter that has no alias', async ({ page }) => {
+    await gotoExplore(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+    await panel.getByLabel('Condition du filtre').selectOption('after')
+    await panel.getByLabel('Année').selectOption('2015')
+    await panel.getByLabel('Mois', { exact: true }).selectOption('6')
+    await panel.locator('[data-value="2015-06-18"]').click()
+    await panel.getByRole('button', { name: 'Appliquer' }).click()
+    await expect(page.getByTestId('active-filter-Séance')).toContainText('après le 18/06/2015')
+    await page.keyboard.press('Escape')
+
+    const restored = dataResponse(page, 'Séance__greater=2015-06-19')
+    await openAdviceAndGoBack(page)
+    expect((await restored).ok()).toBe(true)
+    // The operator comes back too, not only the bounds sent to the API
+    await expect(page.getByTestId('active-filter-Séance')).toContainText('après le 18/06/2015')
+  })
+
+  test('does not bring back the default sort once dropped', async ({ page }) => {
+    await gotoExplore(page)
+
+    await page.getByRole('button', { name: 'Supprimer le tri' }).click()
+    await page.waitForURL(/[?&]sort=(&|$)/)
+
+    await openAdviceAndGoBack(page)
+    await expect(page.getByTestId('row-count')).toBeVisible({ timeout: 30000 })
+    await expect(page.getByRole('button', { name: 'Supprimer le tri' })).toHaveCount(0)
+  })
+
+  test('comes back to where the reader was in the list', async ({ page }) => {
+    await gotoExplore(page)
+
+    const link = dataTable(page).locator('a.link').nth(20)
+    await link.scrollIntoViewIfNeeded()
+    const before = await page.evaluate(() => window.scrollY)
+    expect(before).toBeGreaterThan(0)
+
+    await openAdviceAndGoBack(page, link)
+    await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 30000 }).toBe(before)
+  })
+})
+
+test('clearing everything goes back to the default sort, not to no sort at all', async ({ page }) => {
+  await gotoExplore(page, '/explore/cada?administration=Mairie+de+Paris')
+  await expect(page.getByTestId('active-filter-Administration')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Tout effacer' }).click()
+
+  await expect(page.getByTestId('active-filter-Administration')).toHaveCount(0)
+  await expect.poll(() => new URL(page.url()).search).toBe('')
+  await expect(page.getByRole('button', { name: 'Supprimer le tri' })).toBeVisible()
+  // Nothing left to reset: the button goes away rather than doing nothing
+  await expect(page.getByRole('button', { name: 'Tout effacer' })).toHaveCount(0)
+})
+
 test.describe('legacy filter params', () => {
   test('?part= filters exactly, so I does not match II, III and IV', async ({ page }) => {
     const response = dataResponse(page, 'Partie__exact=II')
