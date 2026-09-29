@@ -42,9 +42,7 @@ export function getDatasetAdminUrl(dataset: Dataset | DatasetV2 | DatasetV2WithF
 /**
  * Why this dataset cannot receive a DOI, or `null` when it can.
  *
- * Mirrors the conditions `create_doi` enforces in udata. Shared by the admin page, which
- * states the reason next to its disabled button, and by the public page, which offers no
- * request at all rather than sending the support a demand refused in advance.
+ * Mirrors the conditions `create_doi` enforces in udata.
  */
 export function useDoiBlockedReason() {
   const { t } = useTranslation()
