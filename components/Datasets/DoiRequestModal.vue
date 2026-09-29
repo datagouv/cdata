@@ -68,6 +68,7 @@ import { BrandedButton, toast } from '@datagouv/components-next'
 import type { DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiChatNewLine, RiMailSendLine } from '@remixicon/vue'
 import ModalWithButton from '~/components/Modal/ModalWithButton.vue'
+import type { SendMessageBody } from '~/types/support'
 
 const props = defineProps<{
   dataset: DatasetV2WithFullObject
@@ -96,7 +97,7 @@ async function submit(close: () => void) {
         segment: 'doi',
         subject: t('Demande de DOI pour « {title} »', { title: props.dataset.title }),
         body: `${props.dataset.page}\n\n${form.value.message}`,
-      },
+      } satisfies SendMessageBody,
     })
     toast.success(t('Votre demande de DOI a bien été envoyée.'))
     // The modal is never unmounted, so reopening it would otherwise show the message
