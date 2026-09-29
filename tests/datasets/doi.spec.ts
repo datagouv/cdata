@@ -80,6 +80,30 @@ test('the admin page refuses a DOI to a dataset without an organization', async 
   await expect(page.getByRole('button', { name: 'Créer un DOI' })).toBeDisabled()
 })
 
+test('cancelling the DOI confirmation mints nothing', async ({ page, request }) => {
+  const organization = await createOrganization(request, `Test DOI cancel org ${Date.now()}`)
+  createdOrganizations.push(organization.id)
+  const dataset = await createDataset(request, `Test DOI admin cancel ${Date.now()}`, 'Dataset de test E2E', { organization: organization.id })
+  createdDatasets.push(dataset.id)
+
+  const mintRequests: Array<string> = []
+  page.on('request', (sent) => {
+    if (sent.method() === 'POST' && sent.url().includes(`/api/1/datasets/${dataset.id}/doi`)) mintRequests.push(sent.url())
+  })
+
+  await page.goto(`/admin/datasets/${dataset.id}/`)
+  await page.waitForLoadState('networkidle')
+
+  await page.getByRole('button', { name: 'Créer un DOI' }).click()
+  const modal = page.getByRole('dialog')
+  await expect(modal.getByRole('button', { name: 'Créer le DOI' })).toBeVisible()
+  await modal.getByRole('button', { name: 'Annuler' }).click()
+
+  await expect(modal).not.toBeVisible()
+  await expect(page.getByRole('button', { name: 'Créer un DOI' })).toBeEnabled()
+  expect(mintRequests).toHaveLength(0)
+})
+
 test('the admin page refuses a DOI to a draft dataset', async ({ page, request }) => {
   const organization = await createOrganization(request, `Test DOI draft org ${Date.now()}`)
   createdOrganizations.push(organization.id)

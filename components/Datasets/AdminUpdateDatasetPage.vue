@@ -102,14 +102,39 @@
             {{ doiBlockedReason ?? $t("Un DOI est définitif : une fois créé, le jeu de données ne pourra plus être supprimé, seulement archivé.") }}
 
             <template #button>
-              <BrandedButton
-                :icon="RiFingerprintLine"
-                :loading="isLoading"
-                :disabled="!!doiBlockedReason"
-                @click="mintDoi"
-              >
-                {{ $t('Créer un DOI') }}
-              </BrandedButton>
+              <ModalWithButton :title="$t('Êtes-vous sûr de vouloir créer un DOI pour ce jeu de données ?')">
+                <template #button="{ attrs, listeners }">
+                  <BrandedButton
+                    :icon="RiFingerprintLine"
+                    :disabled="!!doiBlockedReason"
+                    v-bind="attrs"
+                    v-on="listeners"
+                  >
+                    {{ $t('Créer un DOI') }}
+                  </BrandedButton>
+                </template>
+                <p class="m-0">
+                  {{ $t("Un DOI est définitif : une fois créé, le jeu de données ne pourra plus être supprimé, seulement archivé.") }}
+                </p>
+                <template #footer="{ close }">
+                  <div class="flex-1 flex justify-end space-x-4">
+                    <BrandedButton
+                      color="secondary"
+                      :loading="isLoading"
+                      @click="close"
+                    >
+                      {{ $t('Annuler') }}
+                    </BrandedButton>
+                    <BrandedButton
+                      color="primary"
+                      :loading="isLoading"
+                      @click="mintDoi(close)"
+                    >
+                      {{ $t('Créer le DOI') }}
+                    </BrandedButton>
+                  </div>
+                </template>
+              </ModalWithButton>
             </template>
           </BannerAction>
           <BannerAction
@@ -173,6 +198,7 @@ import type { Badge, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line, RiFingerprintLine } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
+import ModalWithButton from '~/components/Modal/ModalWithButton.vue'
 import { updateBadges } from '~/api/badges'
 import type { DatasetForm } from '~/types/types'
 
@@ -200,10 +226,11 @@ watchEffect(() => {
 
 const doiBlockedReason = useDoiBlockedReason(dataset)
 
-async function mintDoi() {
+async function mintDoi(close: () => void) {
   isLoading.value = true
   try {
     await $api(`/api/1/datasets/${route.params.id}/doi`, { method: 'POST' })
+    close()
     await refresh()
     toast.success(t('DOI créé !'))
   }
