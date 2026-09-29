@@ -42,10 +42,14 @@
               <strong>{{ $t('public') }}</strong>
             </template>
           </TranslationT>
+          <template v-if="dataset.doi">
+            {{ $t("Un jeu de données porteur d'un DOI ne peut plus repasser en brouillon.") }}
+          </template>
 
           <template #button>
             <BrandedButton
               :loading="isLoading"
+              :disabled="!!dataset.doi"
               @click="switchDatasetPrivate"
             >
               {{ dataset.private ? $t('Publier le jeu de données') : $t('Passer en brouillon') }}
@@ -87,7 +91,7 @@
               {{ dataset.doi }}
             </p>
             <p class="m-0">
-              {{ $t("Un jeu de données porteur d'un DOI ne peut plus être supprimé, seulement archivé.") }}
+              {{ $t("Un jeu de données porteur d'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.") }}
             </p>
           </BannerAction>
           <BannerAction
