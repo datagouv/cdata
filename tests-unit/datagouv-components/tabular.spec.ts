@@ -172,14 +172,15 @@ describe('filters in the URL', () => {
     part: { column: 'Partie', operator: 'exact' },
   }
 
+  const COLUMNS = ['Administration', 'Partie', 'Type', 'Année', 'Mots clés', 'Séance', 'Objet']
+
   const roundTrip = (filters: Record<string, ColumnFilters>) =>
-    filtersFromUrlQuery(filtersToUrlQuery(filters, ALIASES), ALIASES)
+    filtersFromUrlQuery(filtersToUrlQuery(filters, ALIASES), ALIASES, COLUMNS)
 
   it('writes a filter matching an alias under that alias only', () => {
-    expect(filtersToUrlQuery({ Administration: { contains: 'Mairie' }, Partie: { exact: 'II' } }, ALIASES)).toEqual({
+    expect(filtersToUrlQuery({ Administration: { contains: 'Mairie' }, Partie: { exact: 'II' } }, ALIASES)).toStrictEqual({
       administration: 'Mairie',
       part: 'II',
-      filters: undefined,
     })
   })
 
@@ -195,8 +196,8 @@ describe('filters in the URL', () => {
     expect(JSON.parse(query.filters!)).toEqual({ Partie: { contains: 'I' } })
   })
 
-  it('clears every param once the filters are gone', () => {
-    expect(filtersToUrlQuery({}, ALIASES)).toEqual({ administration: undefined, part: undefined, filters: undefined })
+  it('writes no param once the filters are gone', () => {
+    expect(filtersToUrlQuery({}, ALIASES)).toStrictEqual({})
   })
 
   it('leaves out the columns without any criterion left', () => {
@@ -219,12 +220,21 @@ describe('filters in the URL', () => {
   })
 
   it('reads the first value of a repeated param', () => {
-    expect(filtersFromUrlQuery({ part: ['II', 'III'] }, ALIASES)).toEqual({ Partie: { exact: 'II' } })
+    expect(filtersFromUrlQuery({ part: ['II', 'III'] }, ALIASES, COLUMNS)).toEqual({ Partie: { exact: 'II' } })
   })
 
   it('ignores a JSON param that is not JSON, or not an object of filters', () => {
-    expect(filtersFromUrlQuery({ filters: '{nope' }, ALIASES)).toEqual({})
-    expect(filtersFromUrlQuery({ filters: '["Type"]' }, ALIASES)).toEqual({})
+    expect(filtersFromUrlQuery({ filters: '{nope' }, ALIASES, COLUMNS)).toEqual({})
+    expect(filtersFromUrlQuery({ filters: '["Type"]' }, ALIASES, COLUMNS)).toEqual({})
+  })
+
+  it('drops the filters on a column the resource does not have', () => {
+    // The Tabular API answers 400 to a query naming an unknown column
+    const query = {
+      administration: 'Mairie',
+      filters: JSON.stringify({ Type: { in: ['Avis'] }, Renamed: { contains: 'x' } }),
+    }
+    expect(filtersFromUrlQuery(query, ALIASES, ['Type'])).toEqual({ Type: { in: ['Avis'] } })
   })
 
   it('drops the criteria of the wrong type a hand-edited URL can carry', () => {
@@ -237,43 +247,50 @@ describe('filters in the URL', () => {
         Année: { min: '2010', null: 'sometimes' },
       }),
     }
-    expect(filtersFromUrlQuery(query, ALIASES)).toEqual({ Type: { contains: 'ok' } })
+    expect(filtersFromUrlQuery(query, ALIASES, COLUMNS)).toEqual({ Type: { contains: 'ok' } })
   })
 
   it('drops a date filter with an unknown operator', () => {
     const query = { filters: JSON.stringify({ Séance: { date: { operator: 'around', start: '2015-06-18' } } }) }
-    expect(filtersFromUrlQuery(query, ALIASES)).toEqual({})
+    expect(filtersFromUrlQuery(query, ALIASES, COLUMNS)).toEqual({})
   })
 })
 
 describe('sort in the URL', () => {
   const DEFAULT: SortConfig = { column: 'Séance', direction: 'desc' }
+  const COLUMNS = ['Séance', 'Année']
 
   it('keeps the default sort out of the URL', () => {
     expect(sortToUrlParam(DEFAULT, DEFAULT)).toBeUndefined()
-    expect(sortFromUrlParam(undefined, DEFAULT)).toEqual(DEFAULT)
+    expect(sortFromUrlParam(undefined, DEFAULT, COLUMNS)).toEqual(DEFAULT)
   })
 
   it('writes a descending sort with a leading dash', () => {
     const sort: SortConfig = { column: 'Année', direction: 'desc' }
     expect(sortToUrlParam(sort, DEFAULT)).toBe('-Année')
-    expect(sortFromUrlParam('-Année', DEFAULT)).toEqual(sort)
+    expect(sortFromUrlParam('-Année', DEFAULT, COLUMNS)).toEqual(sort)
   })
 
   it('writes an ascending sort as the bare column', () => {
     const sort: SortConfig = { column: 'Séance', direction: 'asc' }
     expect(sortToUrlParam(sort, DEFAULT)).toBe('Séance')
-    expect(sortFromUrlParam('Séance', DEFAULT)).toEqual(sort)
+    expect(sortFromUrlParam('Séance', DEFAULT, COLUMNS)).toEqual(sort)
   })
 
   it('writes a dropped default sort as an empty param, so it is not restored', () => {
     expect(sortToUrlParam(null, DEFAULT)).toBe('')
-    expect(sortFromUrlParam('', DEFAULT)).toBeNull()
+    expect(sortFromUrlParam('', DEFAULT, COLUMNS)).toBeNull()
   })
 
   it('needs no param for the absence of sort when there is no default one', () => {
     expect(sortToUrlParam(null, null)).toBeUndefined()
-    expect(sortFromUrlParam(undefined, null)).toBeNull()
+    expect(sortFromUrlParam(undefined, null, COLUMNS)).toBeNull()
+  })
+
+  it('falls back to the default sort on a column the resource does not have', () => {
+    expect(sortFromUrlParam('-Renamed', DEFAULT, COLUMNS)).toEqual(DEFAULT)
+    // A bare dash names the empty column
+    expect(sortFromUrlParam('-', DEFAULT, COLUMNS)).toEqual(DEFAULT)
   })
 })
 

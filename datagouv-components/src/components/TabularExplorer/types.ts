@@ -67,7 +67,8 @@ export type TabularTopValue = {
 
 export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean' | 'year'
 
-export type DateFilterOperator = 'is' | 'before' | 'after' | 'between'
+export const DATE_FILTER_OPERATORS = ['is', 'before', 'after', 'between'] as const
+export type DateFilterOperator = typeof DATE_FILTER_OPERATORS[number]
 
 export type DateFilter = {
   operator: DateFilterOperator

@@ -61,7 +61,7 @@
       :icon="RiCloseLine"
       @click="reset"
     >
-      {{ t('Tout effacer') }}
+      {{ t('Tout réinitialiser') }}
     </BrandedButton>
   </div>
 </template>

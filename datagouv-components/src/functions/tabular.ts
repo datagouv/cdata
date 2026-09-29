@@ -24,6 +24,7 @@ import {
 import { useTranslation } from '../composables/useTranslation'
 import type { TranslationFunction } from '../composables/useTranslation'
 import type { LocationQueryValue } from 'vue-router'
+import { DATE_FILTER_OPERATORS } from '../components/TabularExplorer/types'
 import type { ColumnFilters, ColumnType, DateFilter, DateFilterOperator, SortConfig, TabularUrlAlias } from '../components/TabularExplorer/types'
 import { parseDateValue } from './dates'
 
@@ -130,8 +131,6 @@ export function buildCellValueFilter(columnType: ColumnType, value: unknown, exi
 export const TABULAR_FILTERS_PARAM = 'filters'
 export const TABULAR_SORT_PARAM = 'sort'
 
-const DATE_FILTER_OPERATORS: readonly DateFilterOperator[] = ['is', 'before', 'after', 'between']
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
@@ -166,15 +165,13 @@ export function normalizeColumnFilters(value: unknown): ColumnFilters {
 /**
  * The URL params holding `filters`. A column whose only criterion is the one of
  * an alias is written under that alias; every other column goes, whole, into a
- * single JSON param. Unused params are `undefined`, so that writing them all
- * removes the stale ones.
+ * single JSON param.
  */
 export function filtersToUrlQuery(
   filters: Record<string, ColumnFilters>,
   aliases: Record<string, TabularUrlAlias>,
-): Record<string, string | undefined> {
-  const query: Record<string, string | undefined> = { [TABULAR_FILTERS_PARAM]: undefined }
-  for (const param of Object.keys(aliases)) query[param] = undefined
+): Record<string, string> {
+  const query: Record<string, string> = {}
   const rest: Record<string, ColumnFilters> = {}
   for (const [column, raw] of Object.entries(filters)) {
     const filter = normalizeColumnFilters(raw)
@@ -183,21 +180,29 @@ export function filtersToUrlQuery(
     const alias = criteria.length === 1
       ? Object.entries(aliases).find(([, a]) => a.column === column && a.operator === criteria[0])
       : undefined
-    if (alias) query[alias[0]] = filter[alias[1].operator]
+    const aliasValue = alias && filter[alias[1].operator]
+    if (alias && aliasValue) query[alias[0]] = aliasValue
     else rest[column] = filter
   }
   if (Object.keys(rest).length) query[TABULAR_FILTERS_PARAM] = JSON.stringify(rest)
   return query
 }
 
+/**
+ * The filters a URL holds, restricted to the `columns` of the resource: the
+ * Tabular API rejects a query naming any other column, and the explorer would be
+ * left without its controls to remove it. Such a column comes from a link to a
+ * resource since re-uploaded with other columns, or from a hand-edited URL.
+ */
 export function filtersFromUrlQuery(
   query: Record<string, LocationQueryValue | LocationQueryValue[] | undefined>,
   aliases: Record<string, TabularUrlAlias>,
+  columns: readonly string[],
 ): Record<string, ColumnFilters> {
   const filters: Record<string, ColumnFilters> = {}
   for (const [param, { column, operator }] of Object.entries(aliases)) {
     const value = firstQueryValue(query[param])
-    if (value) filters[column] = { [operator]: value }
+    if (value && columns.includes(column)) filters[column] = { [operator]: value }
   }
   const json = firstQueryValue(query[TABULAR_FILTERS_PARAM])
   if (!json) return filters
@@ -211,9 +216,13 @@ export function filtersFromUrlQuery(
   if (!isRecord(parsed)) return filters
   for (const [column, raw] of Object.entries(parsed)) {
     const filter = normalizeColumnFilters(raw)
-    if (Object.keys(filter).length) filters[column] = filter
+    if (Object.keys(filter).length && columns.includes(column)) filters[column] = filter
   }
   return filters
+}
+
+export function isSameSort(a: SortConfig | null | undefined, b: SortConfig | null | undefined): boolean {
+  return a?.column === b?.column && a?.direction === b?.direction
 }
 
 /**
@@ -222,21 +231,27 @@ export function filtersFromUrlQuery(
  * an empty value, since an absent param already means "the default sort".
  */
 export function sortToUrlParam(sort: SortConfig | null, defaultSort: SortConfig | null): string | undefined {
-  if (sort?.column === defaultSort?.column && sort?.direction === defaultSort?.direction) return undefined
+  if (isSameSort(sort, defaultSort)) return undefined
   if (!sort) return ''
   return sort.direction === 'desc' ? `-${sort.column}` : sort.column
 }
 
+/**
+ * The sort a URL holds. One on a column the resource does not have falls back to
+ * the default sort, for the same reason as in `filtersFromUrlQuery`.
+ */
 export function sortFromUrlParam(
   param: LocationQueryValue | LocationQueryValue[] | undefined,
   defaultSort: SortConfig | null,
+  columns: readonly string[],
 ): SortConfig | null {
   const value = firstQueryValue(param)
   if (value === undefined) return defaultSort
   if (value === '') return null
-  return value.startsWith('-')
+  const sort: SortConfig = value.startsWith('-')
     ? { column: value.slice(1), direction: 'desc' }
     : { column: value, direction: 'asc' }
+  return columns.includes(sort.column) ? sort : defaultSort
 }
 
 export type TypeDisplay = {

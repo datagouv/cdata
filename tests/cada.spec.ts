@@ -456,6 +456,8 @@ test.describe('column filter', () => {
     // A non-boolean `exact` filter shows its own value, not Vrai/Faux
     await expect(page.getByTestId('active-filter-Année')).toContainText('= 2011')
     await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
+    // The number input hands over a number: it still reaches the URL, under its alias
+    await page.waitForURL(/[?&]year=2011/)
   })
 })
 
@@ -545,13 +547,42 @@ test('clearing everything goes back to the default sort, not to no sort at all',
   await gotoExplore(page, '/explore/cada?administration=Mairie+de+Paris')
   await expect(page.getByTestId('active-filter-Administration')).toBeVisible()
 
-  await page.getByRole('button', { name: 'Tout effacer' }).click()
+  await page.getByRole('button', { name: 'Tout réinitialiser' }).click()
 
   await expect(page.getByTestId('active-filter-Administration')).toHaveCount(0)
   await expect.poll(() => new URL(page.url()).search).toBe('')
   await expect(page.getByRole('button', { name: 'Supprimer le tri' })).toBeVisible()
   // Nothing left to reset: the button goes away rather than doing nothing
-  await expect(page.getByRole('button', { name: 'Tout effacer' })).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Tout réinitialiser' })).toHaveCount(0)
+})
+
+test('searching and filtering do not pile up history entries', async ({ page }) => {
+  await page.goto('/explore')
+  await gotoExplore(page)
+
+  const searchInput = page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')
+  await searchInput.fill('cheval')
+  await searchInput.press('Enter')
+  await page.waitForURL(/[?&]q=cheval/)
+
+  await page.getByRole('button', { name: 'Filtrer Administration' }).click()
+  await page.getByTestId('column-filter-Administration').getByPlaceholder('Rechercher...').fill('Mairie')
+  await page.waitForURL(/[?&]administration=Mairie/, { timeout: 30000 })
+
+  // Each change replaces the entry, so going back leaves the page at once
+  await page.goBack()
+  await expect(page).toHaveURL(/\/explore$/)
+})
+
+test('a sort or filter on a column the resource does not have is ignored', async ({ page }) => {
+  // The Tabular API answers 400 to such a query, which would leave the table in
+  // its error state without any control to remove the culprit
+  const filters = encodeURIComponent(JSON.stringify({ NoSuchColumn: { contains: 'x' } }))
+  const response = dataResponse(page, 'Séance__sort=desc')
+  await gotoExplore(page, `/explore/cada?sort=-NoSuchColumn&filters=${filters}`)
+  expect((await response).ok()).toBe(true)
+
+  await expect(page.getByTestId('active-filter-NoSuchColumn')).toHaveCount(0)
 })
 
 test.describe('legacy filter params', () => {

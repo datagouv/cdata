@@ -25,7 +25,7 @@ import { useFetch } from '../../functions/api'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { injectTabularProfile } from '../../composables/useTabularProfile'
-import { hasFilterForColumn as _hasFilterForColumn, buildDateFilterParams, buildGlobalSearchConditions, useFormatTabular } from '../../functions/tabular'
+import { hasFilterForColumn as _hasFilterForColumn, buildDateFilterParams, buildGlobalSearchConditions, isSameSort, useFormatTabular } from '../../functions/tabular'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import TabularSkeleton from './TabularSkeleton.vue'
 import type { TabularDataResponse, TabularRow, SortConfig, ColumnFilters, DateFilter, TabularUrlAlias } from './types'
@@ -91,7 +91,7 @@ const {
 
 // Sort & filter state
 const { sort, filters } = props.syncUrl
-  ? useTabularUrlState(props.urlAliases ?? {}, props.initialSort ?? null)
+  ? useTabularUrlState(props.urlAliases ?? {}, props.initialSort ?? null, allColumns)
   : {
       sort: ref<SortConfig | null>(props.initialSort ? { ...props.initialSort } : null),
       filters: ref<Record<string, ColumnFilters>>({ ...props.initialFilters }),
@@ -291,9 +291,7 @@ function removeFilter(column: string) {
 
 // Resetting goes back to how the table opened: no filter, but the initial sort
 // — it is the table's default order, not a criterion the user added.
-const canReset = computed(() => activeFilters.value.length > 0
-  || sort.value?.column !== props.initialSort?.column
-  || sort.value?.direction !== props.initialSort?.direction)
+const canReset = computed(() => activeFilters.value.length > 0 || !isSameSort(sort.value, props.initialSort))
 
 function reset() {
   filters.value = {}

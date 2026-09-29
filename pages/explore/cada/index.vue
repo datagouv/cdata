@@ -206,13 +206,15 @@ useSeoMeta({
     t('Recherchez parmi les avis et conseils rendus par la Commission d\'accès aux documents administratifs.'),
 })
 
-// The applied search lives in the URL, the input only holds what is being typed:
-// it is refilled when the URL changes, e.g. going back to a previous search.
-const q = useRouteQuery<string>('q', '')
-const searchQuery = ref(q.value)
-watch(q, (value) => {
-  searchQuery.value = value
+// The applied search lives in the URL, the input only holds what is being typed.
+// Nuxt's page route, not vue-router's global one: while the next page loads, this
+// one is still mounted and would otherwise see its search vanish.
+const q = useRouteQuery('q', '', {
+  route: useRoute(),
+  // A repeated `?q=` comes as an array: only the first one is searched
+  transform: (value: string | string[] | null) => (Array.isArray(value) ? value[0] : value) ?? '',
 })
+const searchQuery = ref(q.value)
 
 function applySearch() {
   q.value = searchQuery.value.trim()

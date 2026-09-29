@@ -41,6 +41,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     textClamp: TextClamp,
     appLink: CdataLink,
     clientOnly: ClientOnly,
+    useRoute,
     forumUrl: runtimeConfig.public.forumUrl,
     searchDebounce: runtimeConfig.public.searchDebounce,
   })
