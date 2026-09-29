@@ -64,7 +64,7 @@ test('a dataset owned by a user offers no DOI request', async ({ page, request }
   await page.goto(`/datasets/${dataset.id}/informations`)
   await page.waitForLoadState('networkidle')
 
-  await expect(page.getByText('Identifiant')).toBeVisible()
+  await expect(page.getByText('Identifiant', { exact: true })).toBeVisible()
   await expect(page.getByText('Ce jeu de données n\'a pas de DOI.')).not.toBeVisible()
   await expect(page.getByRole('button', { name: 'Demander un DOI' })).not.toBeVisible()
 })
