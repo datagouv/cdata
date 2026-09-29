@@ -56,8 +56,8 @@ test('a DOI request carries the dataset and the motivation to the support', asyn
 })
 
 test('a dataset owned by a user offers no DOI request', async ({ page, request }) => {
-  // `createDataset` leaves the dataset to its owner: DataCite only mints DOIs for
-  // datasets published by an organization, so asking would be refused anyway.
+  // `createDataset` leaves the dataset to its owner: udata only mints DOIs for datasets
+  // published by an organization (it is the DataCite publisher), so asking would be refused anyway.
   const dataset = await createDataset(request, `Test DOI owned by user ${Date.now()}`, 'Dataset de test E2E')
   createdDatasets.push(dataset.id)
 
