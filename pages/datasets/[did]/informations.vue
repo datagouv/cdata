@@ -1,7 +1,7 @@
 <template>
   <div class="divide-y">
     <DatasetInformationSection :dataset="dataset">
-      <div v-if="dataset.doi || !doiBlockedReason">
+      <div v-if="dataset.doi || !doiBlockedReason(dataset)">
         <DescriptionListTerm>{{ $t('DOI') }}</DescriptionListTerm>
         <DescriptionListDetails
           v-if="dataset.doi"
@@ -81,9 +81,9 @@ import { BrandedButton, CopyButton, DatasetInformationSection, DatasetTemporalit
 import { RiServerLine } from '@remixicon/vue'
 import DoiRequestModal from '~/components/Datasets/DoiRequestModal.vue'
 
-const props = defineProps<{ dataset: DatasetV2WithFullObject }>()
+defineProps<{ dataset: DatasetV2WithFullObject }>()
 
-const doiBlockedReason = useDoiBlockedReason(() => props.dataset)
+const doiBlockedReason = useDoiBlockedReason()
 
 useSeoMeta({ robots: 'noindex' })
 </script>

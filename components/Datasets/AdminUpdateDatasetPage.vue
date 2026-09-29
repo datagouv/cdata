@@ -99,14 +99,14 @@
             type="primary"
             :title="$t('Créer un DOI')"
           >
-            {{ doiBlockedReason ?? $t("Un DOI est définitif : une fois créé, le jeu de données ne pourra plus être supprimé, seulement archivé.") }}
+            {{ doiBlockedReason(dataset) ??$t("Un DOI est définitif : une fois créé, le jeu de données ne pourra plus être supprimé, seulement archivé.") }}
 
             <template #button>
               <ModalWithButton :title="$t('Êtes-vous sûr de vouloir créer un DOI pour ce jeu de données ?')">
                 <template #button="{ attrs, listeners }">
                   <BrandedButton
                     :icon="RiFingerprintLine"
-                    :disabled="!!doiBlockedReason"
+                    :disabled="!!doiBlockedReason(dataset)"
                     v-bind="attrs"
                     v-on="listeners"
                   >
@@ -224,7 +224,7 @@ watchEffect(() => {
   }
 })
 
-const doiBlockedReason = useDoiBlockedReason(dataset)
+const doiBlockedReason = useDoiBlockedReason()
 
 async function mintDoi(close: () => void) {
   isLoading.value = true

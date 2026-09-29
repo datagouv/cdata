@@ -46,16 +46,14 @@ export function getDatasetAdminUrl(dataset: Dataset | DatasetV2 | DatasetV2WithF
  * states the reason next to its disabled button, and by the public page, which offers no
  * request at all rather than sending the support a demand refused in advance.
  */
-export function useDoiBlockedReason(dataset: MaybeRefOrGetter<DatasetV2WithFullObject | null | undefined>) {
+export function useDoiBlockedReason() {
   const { t } = useTranslation()
 
-  return computed(() => {
-    const value = toValue(dataset)
-    if (!value) return null
-    if (!value.organization) return t('Seul un jeu de données publié par une organisation peut recevoir un DOI.')
-    if (value.private || value.deleted || value.archived) return t('Seul un jeu de données public peut recevoir un DOI.')
+  return (dataset: DatasetV2WithFullObject): string | null => {
+    if (!dataset.organization) return t('Seul un jeu de données publié par une organisation peut recevoir un DOI.')
+    if (dataset.private || dataset.deleted || dataset.archived) return t('Seul un jeu de données public peut recevoir un DOI.')
     return null
-  })
+  }
 }
 
 export function datasetToForm(dataset: DatasetV2WithFullObject): DatasetForm {
