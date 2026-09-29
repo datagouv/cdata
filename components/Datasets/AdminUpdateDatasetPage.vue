@@ -88,11 +88,26 @@
             :title="$t('DOI du jeu de données')"
           >
             <p class="m-0">
-              {{ dataset.doi }}
+              <a
+                :href="`https://doi.org/${dataset.doi}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="link"
+              >
+                {{ dataset.doi }}
+              </a>
             </p>
             <p class="m-0">
               {{ $t("Un jeu de données porteur d'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.") }}
             </p>
+
+            <template #button>
+              <CopyButton
+                :label="$t('Copier le DOI')"
+                :copied-label="$t('DOI copié !')"
+                :text="dataset.doi"
+              />
+            </template>
           </BannerAction>
           <BannerAction
             v-if="!dataset.doi && isMeAdmin()"
@@ -193,7 +208,7 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, CopyButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
 import type { Badge, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line, RiFingerprintLine } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
