@@ -53,6 +53,16 @@ export const isSafeHttpUrl = (value: unknown): value is string => {
   }
 }
 
+export const removeKeys = <T extends Record<string, unknown>>(object: T, keys: Array<string>): Partial<T> => {
+  return Object.fromEntries(
+    Object.entries(object).filter(([key]) => !keys.includes(key)),
+  ) as Partial<T>
+}
+
+export const isEqualExcept = <T extends Record<string, unknown>>(a: T, b: T, keys: Array<string>): boolean => {
+  return JSON.stringify(removeKeys(a, keys)) === JSON.stringify(removeKeys(b, keys))
+}
+
 export const escapeCsvValue = (value: string | number | null | undefined): string => {
   if (value === null || value === undefined || value === '') {
     return ''
