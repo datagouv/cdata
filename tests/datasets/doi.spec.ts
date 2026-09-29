@@ -46,7 +46,7 @@ test('a DOI request carries the dataset and the motivation to the support', asyn
   expect(sent.segment).toBe('doi')
   expect(sent.email).toBe('admin@example.com')
   expect(sent.subject).toContain(dataset.title)
-  // The permalink of the dataset, so the support knows which one is asked for.
+  // The dataset page URL, so the support knows which one is asked for.
   expect(sent.body).toContain(`/datasets/${dataset.slug}`)
   expect(sent.body).toContain('Je cite ce jeu de données dans un article.')
 
