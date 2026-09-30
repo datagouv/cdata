@@ -78,22 +78,34 @@
       </span>
     </div>
 
-    <!-- Clear all -->
-    <BrandedButton
-      v-if="withClear"
-      class="shrink-0"
-      color="tertiary"
-      size="2xs"
-      :icon="RiCloseLine"
-      @click="clearAllFilters(); sort = null"
-    >
-      {{ t('Tout effacer') }}
-    </BrandedButton>
+    <div class="flex shrink-0 items-center gap-1">
+      <!-- A sort alone narrows nothing: the file would be the whole resource, which
+           the resource's own download already gives. -->
+      <BrandedButton
+        v-if="activeFilters.length > 0 || globalSearch"
+        color="tertiary"
+        size="2xs"
+        :icon="RiDownloadLine"
+        :href="filteredDownloadUrl"
+      >
+        {{ t('Télécharger les données filtrées') }}
+      </BrandedButton>
+      <!-- Clear all -->
+      <BrandedButton
+        v-if="withClear"
+        color="tertiary"
+        size="2xs"
+        :icon="RiCloseLine"
+        @click="clearAllFilters(); sort = null"
+      >
+        {{ t('Tout effacer') }}
+      </BrandedButton>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { RiArrowDownLine, RiArrowUpLine, RiCloseLine, RiSearchLine } from '@remixicon/vue'
+import { RiArrowDownLine, RiArrowUpLine, RiCloseLine, RiDownloadLine, RiSearchLine } from '@remixicon/vue'
 import BrandedButton from '../BrandedButton.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useTabularContext } from './useTabularContext'
@@ -102,5 +114,5 @@ import { useTabularContext } from './useTabularContext'
 defineProps<{ withClear?: boolean }>()
 
 const { t } = useTranslation()
-const { activeFilters, sort, globalSearch, removeFilter, clearAllFilters, getColumnDisplay } = useTabularContext()
+const { activeFilters, sort, globalSearch, removeFilter, clearAllFilters, getColumnDisplay, filteredDownloadUrl } = useTabularContext()
 </script>

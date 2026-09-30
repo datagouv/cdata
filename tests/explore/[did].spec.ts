@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { test, expect } from '../base'
 import { API_BASE, createDataset, createDatasetWithRemoteResources, createRemoteResource, deleteDatasets, enableNewExplorer } from '../helpers'
 import { RESOURCE_ID as TABULAR_RESOURCE_ID } from '../visualizations/fixtures'
@@ -183,6 +184,33 @@ test('the search narrows the table and survives a trip to another tab', async ({
   await expect(page.getByRole('searchbox', { name: 'Rechercher une valeur' })).toHaveValue('')
   await expect(page.getByText('contient "zzqqxx-introuvable"')).toBeHidden()
   await expect(page.getByTestId('data-table').getByText('Aucun résultat trouvé.')).toBeHidden()
+})
+
+test('the filtered download holds the rows and columns the table shows', async ({ page, request }) => {
+  const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
+  const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+  const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
+  await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}`)
+  await loaded
+  const downloadLink = page.getByRole('link', { name: 'Télécharger les données filtrées' })
+  await expect(downloadLink).toHaveCount(0)
+
+  const searched = page.waitForResponse(response => response.url().includes('/data/') && response.url().includes('or='), { timeout: 30000 })
+  await page.getByRole('searchbox', { name: 'Rechercher une valeur' }).fill('zzqqxx-introuvable')
+  await searched
+  await expect(page.getByTestId('data-table').getByText('Aucun résultat trouvé.')).toBeVisible()
+
+  const downloading = page.waitForEvent('download')
+  await downloadLink.click()
+  const file = await (await downloading).path()
+  const lines = readFileSync(file, 'utf-8').trim().split('\n')
+
+  // Nothing matches the search, so the file is its header alone: the displayed
+  // columns, without the API's technical `__id`.
+  expect(lines).toHaveLength(1)
+  const header = lines[0]!.split(',')
+  expect(header).not.toContain('__id')
+  expect(header).toHaveLength(await page.getByTestId('data-table').locator('thead th').count())
 })
 
 test('a search the API rejects keeps the toolbar so it can be undone', async ({ page, request }) => {

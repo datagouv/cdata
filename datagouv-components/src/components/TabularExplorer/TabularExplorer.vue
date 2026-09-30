@@ -97,8 +97,10 @@ const filters = ref<Record<string, ColumnFilters>>({ ...props.initialFilters })
 
 const PAGE_SIZE = 50
 
-const dataQuery = computed(() => {
-  const q: Record<string, string | number> = { page: 1, page_size: PAGE_SIZE }
+// What the table shows (sort, filters, search), apart from its pagination: the
+// filtered download sends the very same params, so the file can't drift from the table.
+const tableQuery = computed(() => {
+  const q: Record<string, string | number> = {}
   if (sort.value) {
     q[`${sort.value.column}__sort`] = sort.value.direction
   }
@@ -134,6 +136,8 @@ const dataQuery = computed(() => {
   }
   return q
 })
+
+const dataQuery = computed(() => ({ page: 1, page_size: PAGE_SIZE, ...tableQuery.value }))
 
 const { data: tableData, error, status: dataStatus } = await useFetch<TabularDataResponse>(dataUrl, { raw: true, query: dataQuery })
 
@@ -297,6 +301,15 @@ function removeFilter(column: string) {
   filters.value = rest
 }
 
+// The Tabular API's CSV export takes the params of the data endpoint and ignores the
+// pagination: the file holds every filtered row, not just the pages loaded on screen.
+// `columns` keeps the file to what the table displays (and drops its `__id`).
+const filteredDownloadUrl = computed(() => {
+  const params = new URLSearchParams(Object.entries(tableQuery.value).map(([key, value]) => [key, String(value)]))
+  params.set('columns', displayedColumns.value.join(','))
+  return `${config.tabularApiUrl}/api/resources/${props.resourceId}/data/csv/?${params}`
+})
+
 function clearAllFilters() {
   filters.value = {}
   globalSearch.value = ''
@@ -326,6 +339,7 @@ provideTabularContext({
   globalSearch,
   searchInput: computed(() => props.searchInput),
   queryFailed,
+  filteredDownloadUrl,
   hasFilterForColumn,
   allColumns,
   visibleColumns,
