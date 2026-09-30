@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createHarvestSource, deleteHarvestSources } from '../helpers'
+import { API_BASE, createHarvestSource, deleteHarvestSources, gotoHydrated } from '../helpers'
 
 const createdSources: Array<string> = []
 
@@ -10,13 +10,6 @@ test.afterEach(async ({ request }) => {
 
 // The schedule shown above the tabs sits in the <span> following its "Planning :" label.
 const scheduleShownAboveTabs = (page: Page) => page.getByText('Planning :').locator('xpath=following-sibling::span')
-
-// Typing into the server-rendered form before Vue hydrates it is lost: hydration resets each
-// input to its `v-model`, so the save would silently send the source unchanged.
-const open = async (page: Page, url: string) => {
-  await page.goto(url)
-  await page.waitForLoadState('networkidle')
-}
 
 const savedToast = (page: Page) => page.getByText('Moissonneur mis à jour !')
 
@@ -38,7 +31,7 @@ test('a feature enabled on the source shows as enabled, even when reaching the t
 
   // Through a client-side navigation: the backends list is fetched lazily, so it resolves
   // after the source itself.
-  await open(page, `/admin/harvesters/${source.id}/`)
+  await gotoHydrated(page, `/admin/harvesters/${source.id}/`)
   // Exact match: the page also holds an "Aller à la configuration" call to action.
   await page.getByRole('link', { name: 'Configuration', exact: true }).click()
 
@@ -51,7 +44,7 @@ test('saving without touching anything keeps the features of the source', async 
   })
   createdSources.push(source.id)
 
-  await open(page, `/admin/harvesters/${source.id}/configuration/`)
+  await gotoHydrated(page, `/admin/harvesters/${source.id}/configuration/`)
   await expect(page.getByRole('switch', { name: 'GeoDCAT-AP' })).toBeChecked()
 
   await save(page)
@@ -69,7 +62,7 @@ test('disabling a feature is persisted', async ({ page, request }) => {
   })
   createdSources.push(source.id)
 
-  await open(page, `/admin/harvesters/${source.id}/configuration/`)
+  await gotoHydrated(page, `/admin/harvesters/${source.id}/configuration/`)
   await page.getByRole('switch', { name: 'GeoDCAT-AP' }).click()
   await save(page)
 
@@ -85,7 +78,7 @@ test('the source shown around the tabs is up to date right after a save', async 
   createdSources.push(source.id)
   const newName = `${source.name} renommé`
 
-  await open(page, `/admin/harvesters/${source.id}/configuration/`)
+  await gotoHydrated(page, `/admin/harvesters/${source.id}/configuration/`)
   await page.getByLabel('Nom *', { exact: true }).fill(newName)
   await save(page)
 
@@ -104,7 +97,7 @@ test('a schedule can be set then removed, and saving again leaves it alone', asy
     }
   })
 
-  await open(page, `/admin/harvesters/${source.id}/configuration/`)
+  await gotoHydrated(page, `/admin/harvesters/${source.id}/configuration/`)
   await expect(scheduleShownAboveTabs(page)).toHaveText('N/A')
 
   await page.getByLabel('Planning', { exact: true }).fill('0 0 * * *')
@@ -136,7 +129,7 @@ test('the schedule input follows the expression the API stored', async ({ page, 
     }
   })
 
-  await open(page, `/admin/harvesters/${source.id}/configuration/`)
+  await gotoHydrated(page, `/admin/harvesters/${source.id}/configuration/`)
 
   // The API rebuilds the cron from its parsed fields, so the extra space is dropped.
   await page.getByLabel('Planning', { exact: true }).fill('0  0 * * *')
@@ -165,7 +158,7 @@ test('changing the backend drops the configs the new one does not know about', a
   // imported the module first. The French one is what it answers once udata makes it lazy.
   const configLabel = page.getByText(/Préfixe d'URL distante|Remote URL prefix/)
 
-  await open(page, `/admin/harvesters/${source.id}/configuration/`)
+  await gotoHydrated(page, `/admin/harvesters/${source.id}/configuration/`)
   await expect(configLabel).toBeVisible()
   await expect(page.getByLabel('Type de configuration')).toHaveValue('https://example.com/prefix/')
 
