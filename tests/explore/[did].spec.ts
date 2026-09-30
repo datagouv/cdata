@@ -185,6 +185,30 @@ test('the search narrows the table and survives a trip to another tab', async ({
   await expect(page.getByTestId('data-table').getByText('Aucun résultat trouvé.')).toBeHidden()
 })
 
+test('a search the API rejects keeps the toolbar so it can be undone', async ({ page, request }) => {
+  const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
+  const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+  const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
+  await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}`)
+  await loaded
+  // Only the browser-side requests that carry the search fail: the first load
+  // (server-rendered, then hydrated) goes through untouched.
+  await page.route(url => url.pathname.includes('/data/') && url.searchParams.has('or'), route => route.fulfill({ status: 400, body: 'Bad request' }))
+
+  const searchbox = page.getByRole('searchbox', { name: 'Rechercher une valeur' })
+  await searchbox.fill('rejetee')
+
+  await expect(page.getByText('Les données n\'ont pas pu être chargées avec cette recherche ou ces filtres.')).toBeVisible()
+  await expect(page.getByText('L\'aperçu de ce fichier n\'a pas pu être chargé.')).toBeHidden()
+  await expect(searchbox).toBeVisible()
+
+  await page.getByRole('button', { name: 'Supprimer la recherche' }).click()
+
+  await expect(searchbox).toHaveValue('')
+  await expect(page.getByText('Les données n\'ont pas pu être chargées avec cette recherche ou ces filtres.')).toBeHidden()
+  await expect(page.getByTestId('data-table').getByText('Aucun résultat trouvé.')).toBeHidden()
+})
+
 test('leaving fullscreen lands back on the dataset page, on the same resource', async ({ page, request }) => {
   const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore exit ${Date.now()}`, resourceTitles(2))
   createdDatasets.push(dataset.id)

@@ -211,6 +211,8 @@ test.describe('global search', () => {
   test('clearing everything from the toolbar also empties the search', async ({ page }) => {
     await gotoExplore(page)
     const unfiltered = await readRowCount(page)
+    // The page's own search field drives the explorer: the toolbar doesn't add one.
+    await expect(page.getByRole('searchbox', { name: 'Rechercher une valeur' })).toHaveCount(0)
 
     const searchInput = page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')
     await searchInput.fill('20112327')

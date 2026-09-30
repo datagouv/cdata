@@ -38,11 +38,11 @@
       <TabularExplorer
         v-if="RESOURCE_ID"
         :key="route.fullPath"
+        v-model:global-search="currentSearch"
         :resource-id="RESOURCE_ID"
-        :global-search="currentSearch"
+        :search-input="false"
         :initial-filters="filtersFromQuery"
         :initial-sort="{ column: 'Séance', direction: 'desc' }"
-        @update:global-search="value => { searchQuery = value; currentSearch = value }"
       >
         <TabularToolbar class="py-3" />
         <div class="hidden md:block">
@@ -216,6 +216,11 @@ useSeoMeta({
 
 const searchQuery = ref('')
 const currentSearch = ref('')
+
+// Cleared from the explorer (its chip, "Tout effacer"): the field follows.
+watch(currentSearch, (value) => {
+  searchQuery.value = value
+})
 
 function applySearch() {
   currentSearch.value = searchQuery.value.trim()

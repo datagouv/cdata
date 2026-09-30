@@ -42,7 +42,7 @@
         <button
           :aria-label="t('Supprimer la recherche')"
           class="flex size-5 items-center justify-center rounded hover:bg-new-primary/15"
-          @click="clearGlobalSearch"
+          @click="globalSearch = ''"
         >
           <RiCloseLine
             class="size-3.5"
@@ -102,5 +102,5 @@ import { useTabularContext } from './useTabularContext'
 defineProps<{ withClear?: boolean }>()
 
 const { t } = useTranslation()
-const { activeFilters, sort, globalSearch, removeFilter, clearGlobalSearch, clearAllFilters, getColumnDisplay } = useTabularContext()
+const { activeFilters, sort, globalSearch, removeFilter, clearAllFilters, getColumnDisplay } = useTabularContext()
 </script>

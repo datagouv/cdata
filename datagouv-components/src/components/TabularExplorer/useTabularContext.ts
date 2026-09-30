@@ -42,11 +42,15 @@ export type TabularContext = {
   filters: Ref<Record<string, ColumnFilters>>
   activeFilters: ComputedRef<ActiveFilter[]>
   removeFilter: (column: string) => void
-  // Also empties the global search, which the parent owns.
+  // Also empties the global search.
   clearAllFilters: () => void
-  // The parent's search, and a way to ask the parent to empty it.
-  globalSearch: ComputedRef<string | undefined>
-  clearGlobalSearch: () => void
+
+  // Global search across all columns, and whether the toolbar shows its field
+  globalSearch: Ref<string>
+  searchInput: ComputedRef<boolean>
+  // The last request was rejected after a first successful load: the controls stay,
+  // the rows are replaced by the error.
+  queryFailed: ComputedRef<boolean>
   hasFilterForColumn: (col: string) => boolean
 
   // Columns visibility
