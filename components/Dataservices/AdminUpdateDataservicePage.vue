@@ -8,15 +8,31 @@
       v-if="dataserviceForm"
       v-model="dataserviceForm"
       type="update"
+      :can-edit="dataservice.permissions.edit"
       @feature="feature"
       @submit="save"
     >
-      <template
-        v-if="dataservice.permissions.edit"
-        #top
-      >
+      <template #top>
+        <SimpleBanner
+          v-if="!dataservice.permissions.edit"
+          class="mb-4"
+          type="primary"
+        >
+          <p
+            class="font-bold"
+            :class="dataservice.organization ? 'mb-1' : 'm-0'"
+          >
+            {{ $t("Vous ne pouvez pas modifier cette API") }}
+          </p>
+          <p
+            v-if="dataservice.organization"
+            class="m-0 text-xs/5"
+          >
+            {{ $t("Demandez à un administrateur de {org} de vous donner accès à cette API.", { org: dataservice.organization.name }) }}
+          </p>
+        </SimpleBanner>
         <BannerAction
-          v-if="!dataservice.deleted_at && !dataservice.archived_at"
+          v-if="dataservice.permissions.edit && !dataservice.deleted_at && !dataservice.archived_at"
           class="mb-4"
           type="primary"
           :title="$t(`Modifier la visibilité de l'API`)"
@@ -48,7 +64,7 @@
           </template>
         </BannerAction>
         <BannerAction
-          v-if="dataservice.deleted_at"
+          v-if="dataservice.permissions.edit && dataservice.deleted_at"
           class="mb-4"
           type="warning"
           :title="$t('Restaurer cette API')"
@@ -146,7 +162,7 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, LoadingBlock, SimpleBanner, TranslationT, toast } from '@datagouv/components-next'
 import type { Dataservice } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'

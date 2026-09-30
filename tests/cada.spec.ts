@@ -345,6 +345,27 @@ test.describe('column filter', () => {
     await expect(panel.locator('[data-selected]')).toHaveCount(1)
   })
 
+  test('"filter by this value" on an empty cell filters on the missing values', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+
+    // An empty cell carries no value to match: sent as an empty `__in`, the query
+    // is rejected by the Tabular API with a 400 that reaches the browser as a
+    // network error, and the whole preview is replaced by its error state.
+    const index = await columnIndex(page, 'Mots clés')
+    await dataTable(page).locator('tbody tr').locator(`td:nth-child(${index + 1})`)
+      .filter({ hasText: /^null$/ }).first().click()
+    await expect(page.getByTestId('cell-raw-value')).toHaveText('–')
+
+    const response = dataResponse(page, 'Mots clés__isnull')
+    await page.getByRole('button', { name: 'Filtrer par cette valeur' }).click()
+    expect((await response).ok()).toBe(true)
+
+    await expect(page.getByTestId('active-filter-Mots clés')).toContainText('null uniquement')
+    await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
+    expect((await readRowCount(page)).shown).toBeGreaterThan(0)
+  })
+
   test('a date range filters between both days, ends included', async ({ page }) => {
     await gotoExplore(page)
     const unfiltered = await readRowCount(page)

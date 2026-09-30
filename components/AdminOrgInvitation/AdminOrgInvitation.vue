@@ -92,7 +92,6 @@ import { BrandedButton, FormattedDate } from '@datagouv/components-next'
 import { ref } from 'vue'
 import { RiBuilding2Line, RiCheckLine, RiUserAddLine } from '@remixicon/vue'
 import AdminBadge from '../AdminBadge/AdminBadge.vue'
-import type { MemberRole } from '@datagouv/components-next'
 import type { OrgInvitation } from '~/types/types'
 
 const props = defineProps<{
@@ -106,7 +105,7 @@ const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const loading = ref(false)
 
-const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })
+const { data: roles } = await useOrganizationRoles()
 
 const roleLabel = computed(() => {
   if (!roles.value) return null

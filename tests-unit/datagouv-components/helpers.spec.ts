@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { escapeCsvValue, filesize, isSafeHttpUrl, summarize } from '~/datagouv-components/src/functions/helpers'
+import { escapeCsvValue, filesize, isEqualExcept, isSafeHttpUrl, removeKeys, summarize } from '~/datagouv-components/src/functions/helpers'
 
 describe('escapeCsvValue', () => {
   // Expected values come from RFC 4180, not from the implementation
@@ -63,6 +63,38 @@ describe('summarize', () => {
     expect(summarize(1000, 1)).toEqual('1K')
     expect(summarize(1500, 1)).toEqual('1.5K')
     expect(summarize(1500)).toEqual('2K')
+  })
+})
+
+describe('removeKeys', () => {
+  it('drops the listed keys and keeps the others in order', () => {
+    const params = { q: 'écoles', badge: 'hvd', sort: '-created', page: 3, page_size: 20 }
+
+    expect(removeKeys(params, ['sort', 'page', 'page_size'])).toEqual({ q: 'écoles', badge: 'hvd' })
+    expect(Object.keys(removeKeys(params, ['badge']))).toEqual(['q', 'sort', 'page', 'page_size'])
+  })
+
+  it('leaves the original object untouched and ignores absent keys', () => {
+    const params = { q: 'écoles' }
+
+    expect(removeKeys(params, ['page'])).toEqual({ q: 'écoles' })
+    expect(params).toEqual({ q: 'écoles' })
+  })
+})
+
+describe('isEqualExcept', () => {
+  const params = { q: 'écoles', badge: 'hvd', sort: '-created', page: 3, page_size: 20 }
+
+  it('ignores the listed keys', () => {
+    expect(isEqualExcept(params, { ...params, sort: '-title', page: 1 }, ['sort', 'page'])).toBe(true)
+  })
+
+  it('reports a difference on any other key', () => {
+    expect(isEqualExcept(params, { ...params, badge: 'spd' }, ['sort', 'page'])).toBe(false)
+  })
+
+  it('reports a difference when a key is added or removed', () => {
+    expect(isEqualExcept(params, removeKeys(params, ['badge']) as typeof params, ['sort', 'page'])).toBe(false)
   })
 })
 

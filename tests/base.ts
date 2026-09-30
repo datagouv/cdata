@@ -1,4 +1,5 @@
 import { test as base, type ConsoleMessage } from '@playwright/test'
+import { fakeMatomo } from './matomo'
 import { fakeMetricsApi } from './metricsApi'
 
 // `msg.text()` flattens an `Error` argument to its bare message (e.g. "Error"),
@@ -27,12 +28,16 @@ const IGNORED_MESSAGES = [
 ]
 
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-export const test = base.extend<{ allowedConsoleMessages: Array<string>, assertNoConsoleErrors: void, metricsApi: void }>({
+export const test = base.extend<{ allowedConsoleMessages: Array<string>, assertNoConsoleErrors: void, metricsApi: void, matomo: void }>({
   // A test that provokes an error on purpose declares the message it expects,
   // rather than adding it to the list above and silencing it for every test.
   allowedConsoleMessages: [[], { option: true }],
   metricsApi: [async ({ context }, use) => {
     await fakeMetricsApi(context)
+    await use()
+  }, { auto: true }],
+  matomo: [async ({ context }, use) => {
+    await fakeMatomo(context)
     await use()
   }, { auto: true }],
   assertNoConsoleErrors: [async ({ page, allowedConsoleMessages }, use) => {

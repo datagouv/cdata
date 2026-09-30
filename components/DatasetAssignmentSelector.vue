@@ -97,17 +97,24 @@
       </p>
     </LoadingBlock>
 
-    <p class="text-sm text-gray-medium mt-2">
-      {{ selectedIds.size === 0
-        ? t('Aucun jeu de données sélectionné')
-        : t('{n} jeu de données sélectionné | {n} jeu de données sélectionné | {n} jeux de données sélectionnés', { n: selectedIds.size })
-      }}
+    <SimpleBanner
+      v-if="selectedIds.size === 0"
+      type="primary"
+      class="mt-2 text-sm"
+    >
+      {{ t("Aucun jeu de données sélectionné : ce membre ne pourra modifier aucun jeu de données tant que vous ne lui en aurez pas assigné.") }}
+    </SimpleBanner>
+    <p
+      v-else
+      class="text-sm text-gray-medium mt-2"
+    >
+      {{ t('{n} jeu de données sélectionné | {n} jeu de données sélectionné | {n} jeux de données sélectionnés', { n: selectedIds.size }) }}
     </p>
   </div>
 </template>
 
 <script setup lang="ts">
-import { FormattedDate, LoadingBlock, Pagination } from '@datagouv/components-next'
+import { FormattedDate, LoadingBlock, Pagination, SimpleBanner } from '@datagouv/components-next'
 import type { DatasetV2 } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
