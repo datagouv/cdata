@@ -7,8 +7,8 @@
   >
     <template #button="{ attrs, listeners }">
       <BrandedButton
-        color="secondary"
-        size="xs"
+        color="tertiary"
+        size="2xs"
         :icon="RiChatNewLine"
         v-bind="attrs"
         v-on="listeners"

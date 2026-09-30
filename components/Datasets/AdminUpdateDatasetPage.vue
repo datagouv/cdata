@@ -57,9 +57,12 @@
               <strong>{{ $t('public') }}</strong>
             </template>
           </TranslationT>
-          <template v-if="dataset.doi">
+          <div
+            v-if="dataset.doi"
+            class="mt-1"
+          >
             {{ $t("Un jeu de données porteur d'un DOI ne peut plus repasser en brouillon.") }}
-          </template>
+          </div>
 
           <template #button>
             <BrandedButton
@@ -100,9 +103,9 @@
           <BannerAction
             v-if="dataset.doi"
             type="primary"
-            :title="$t('DOI du jeu de données')"
           >
-            <p class="m-0">
+            <template #title>
+              {{ $t('DOI du jeu de données :') }}
               <a
                 :href="`https://doi.org/${dataset.doi}`"
                 target="_blank"
@@ -111,17 +114,16 @@
               >
                 {{ dataset.doi }}
               </a>
-            </p>
-            <p class="m-0">
-              {{ $t("Un jeu de données porteur d'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.") }}
-            </p>
+            </template>
+            {{ $t("Un jeu de données porteur d'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.") }}
 
             <template #button>
-              <CopyButton
-                :label="$t('Copier le DOI')"
-                :copied-label="$t('DOI copié !')"
-                :text="dataset.doi"
-              />
+              <BrandedButton
+                :icon="doiCopied ? RiCheckLine : RiFileCopyLine"
+                @click="copyDoi(dataset.doi)"
+              >
+                {{ doiCopied ? $t('DOI copié !') : $t('Copier le DOI') }}
+              </BrandedButton>
             </template>
           </BannerAction>
           <BannerAction
@@ -129,7 +131,7 @@
             type="primary"
             :title="$t('Créer un DOI')"
           >
-            {{ doiBlockedReason(dataset) ??$t("Un DOI est définitif : une fois créé, le jeu de données ne pourra plus être supprimé, seulement archivé.") }}
+            {{ doiBlockedReason(dataset) ?? $t("Un DOI est définitif : une fois créé, le jeu de données ne pourra plus être supprimé, seulement archivé.") }}
 
             <template #button>
               <ModalWithButton :title="$t('Êtes-vous sûr de vouloir créer un DOI pour ce jeu de données ?')">
@@ -223,9 +225,10 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, CopyButton, LoadingBlock, SimpleBanner, TranslationT, toast } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, LoadingBlock, SimpleBanner, TranslationT, toast } from '@datagouv/components-next'
 import type { Badge, DatasetV2WithFullObject } from '@datagouv/components-next'
-import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line, RiFingerprintLine } from '@remixicon/vue'
+import { RiArchiveLine, RiArrowGoBackLine, RiCheckLine, RiDeleteBin6Line, RiFileCopyLine, RiFingerprintLine } from '@remixicon/vue'
+import { useClipboard } from '@vueuse/core'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import ModalWithButton from '~/components/Modal/ModalWithButton.vue'
@@ -255,6 +258,7 @@ watchEffect(() => {
 })
 
 const doiBlockedReason = useDoiBlockedReason()
+const { copy: copyDoi, copied: doiCopied } = useClipboard()
 
 async function mintDoi(close: () => void) {
   isLoading.value = true

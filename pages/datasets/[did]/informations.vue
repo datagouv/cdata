@@ -26,11 +26,9 @@
         </DescriptionListDetails>
         <DescriptionListDetails
           v-else
-          class="space-y-2"
+          class="flex flex-wrap items-center gap-x-3 gap-y-1"
         >
-          <p class="m-0">
-            {{ $t("Ce jeu de données n'a pas de DOI.") }}
-          </p>
+          <span>{{ $t("Ce jeu de données n'a pas de DOI.") }}</span>
           <DoiRequestModal :dataset="dataset" />
         </DescriptionListDetails>
       </div>
