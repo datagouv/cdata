@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import * as path from 'node:path'
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { createOrganization, deleteDatasets, deleteOrganizations, type ApiOrganization } from '../helpers'
+import { createOrganization, deleteDatasets, deleteOrganizations, gotoHydrated, type ApiOrganization } from '../helpers'
 
 // These tests replay the situation reported in datagouv/data.gouv.fr#2060 with the very
 // files it was reported with: a washing machine durability record, exported as CSV
@@ -143,7 +143,7 @@ async function selectProducer(page: Page) {
 }
 
 async function startWizard(page: Page, schema: SchemaKey) {
-  await page.goto('/admin/datasets/structured?step=1')
+  await gotoHydrated(page, '/admin/datasets/structured?step=1')
   await selectProducer(page)
   await selectSchema(page, schema)
   await page.getByRole('button', { name: 'Suivant' }).click()
@@ -157,7 +157,7 @@ async function uploadAndOpenSpreadsheet(page: Page, fileName: string) {
 test.describe('choix du schéma', () => {
   test('les résultats de recherche restent visibles après une sélection', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
 
     await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill('test')
     await expect(page.getByRole('option')).toHaveCount(3)
@@ -172,7 +172,7 @@ test.describe('choix du schéma', () => {
 
   test('on peut passer directement d’un schéma à un autre', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
 
     await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill('test')
     await page.getByRole('option', { name: SCHEMAS.durabilite.title }).click()
@@ -184,7 +184,7 @@ test.describe('choix du schéma', () => {
 
   test('sélectionner un schéma n’affiche jamais l’erreur « vous devez sélectionner un schéma »', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
 
     await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill('test')
     await page.getByRole('option', { name: SCHEMAS.durabilite.title }).click()
@@ -196,7 +196,7 @@ test.describe('choix du schéma', () => {
 
   test('la recherche ignore les accents et les séparateurs', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
 
     const search = page.getByRole('searchbox', { name: 'Rechercher un schéma' })
 
@@ -213,7 +213,7 @@ test.describe('choix du schéma', () => {
 
   test('la recherche accepte un identifiant technique collé', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
 
     // The identifier as it appears in the catalog, which the title alone never matched
     await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill(SCHEMAS.durabilite.name)
@@ -224,7 +224,7 @@ test.describe('choix du schéma', () => {
 
   test('une recherche sans rapport ne renvoie rien', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
 
     await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill('zzzz')
 
@@ -234,7 +234,7 @@ test.describe('choix du schéma', () => {
 
   test('la liste des schémas se parcourt au clavier', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
 
     await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill('test')
     const listbox = page.getByRole('listbox')
@@ -260,7 +260,7 @@ test.describe('choix du schéma', () => {
 
   test('le choix du mode de publication est exclusif', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
     await selectProducer(page)
 
     const nouveau = page.getByRole('radio', { name: 'Créer un nouveau jeu de données' })
@@ -329,6 +329,34 @@ test.describe('import de fichiers', () => {
     await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible()
     await expect(page.getByText('8690842902635', { exact: true })).toBeVisible()
     await expect(page.getByText('colonnes de votre fichier sont inconnues')).toHaveCount(0)
+  })
+
+  test('un CSV en Windows-1252 garde ses accents', async ({ page }) => {
+    await stubPublicationApis(page)
+
+    // The encoding spreadsheet tools export French data in, which is not UTF-8:
+    // read with the UTF-8 default, every accent turns into a �
+    await startWizard(page, 'durabilite')
+    await uploadAndOpenSpreadsheet(page, 'lave-linge-point-virgule-latin1.csv')
+
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible()
+    await expect(page.getByText('Générateurs de chaleurs').first()).toBeVisible()
+    await expect(page.getByText('�')).toHaveCount(0)
+  })
+
+  test('un CSV UTF-8 dont un caractère multi-octets chevauche 64 Ko garde ses accents', async ({ page }) => {
+    await stubPublicationApis(page)
+
+    // The é of the 17th row starts at byte 65535: a multibyte character at that
+    // spot must not change how the file is decoded
+    await startWizard(page, 'durabilite')
+    await uploadAndOpenSpreadsheet(page, 'lave-linge-utf8-64ko.csv')
+
+    // 17 rows on 228 columns is a lot of cells for the table to build in Firefox
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible({ timeout: 20_000 })
+    await expect(page.getByText('Générateurs').first()).toBeVisible()
+    await expect(page.getByText('Ã©')).toHaveCount(0)
+    await expect(page.getByText('�')).toHaveCount(0)
   })
 
   test('un XLSX garde ses identifiants longs et ses dates', async ({ page }) => {

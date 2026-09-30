@@ -12,18 +12,23 @@ interface StableQueryParamsOptions {
   sort: Ref<string | undefined>
   page: Ref<number>
   pageSize: number
+  currentType: Ref<string>
 }
 
 /**
  * Creates a stable ref for query params that only updates when content actually changes.
  * Applies hiddenFilters first, then user filters (which can override hiddenFilters).
+ * Sort and pagination are only sent for the displayed type, so changing them
+ * refetches that type alone.
  */
 export function useStableQueryParams(options: StableQueryParamsOptions) {
-  const { typeConfig, allFilters, customFilterRegistry, q, sort, page, pageSize } = options
+  const { typeConfig, allFilters, customFilterRegistry, q, sort, page, pageSize, currentType } = options
   const stableParams = ref<Record<string, unknown>>({})
 
   const buildParams = () => {
     const params: Record<string, unknown> = {}
+    const typeKey = typeConfig ? configKey(typeConfig) : undefined
+    const isDisplayedType = typeKey === undefined || typeKey === currentType.value
 
     // 1. Apply hiddenFilters first (can be overridden by user filters)
     if (typeConfig?.hiddenFilters) {
@@ -57,7 +62,6 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
     // combines with an existing built-in value instead of overwriting it.
     // Pass the current type key so filters scoped to specific types are excluded
     // from background fetches for other types.
-    const currentTypeKey = typeConfig ? configKey(typeConfig) : undefined
     forEachActiveCustomFilter(customFilterRegistry, (apiParam, value) => {
       const existing = params[apiParam]
       if (existing === undefined) {
@@ -66,24 +70,31 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
       else {
         params[apiParam] = Array.isArray(existing) ? [...existing, value] : [existing, value]
       }
-    }, currentTypeKey)
+    }, typeKey)
 
-    // 4. Always include q, sort (if valid for this type), page, page_size
+    // 4. Always include q
     if (q.value) {
       params.q = q.value
     }
-    const sortToUse = sort.value ?? typeConfig?.defaultSort
-    if (sortToUse) {
-      const validSortValues = typeConfig?.sortOptions?.map(o => o.value as string) ?? []
-      if (validSortValues.includes(sortToUse)) {
-        params.sort = sortToUse
+
+    // 5. Sort and pagination only apply to the displayed type. The other tabs
+    // are fetched for their `total` alone, which is invariant under sort and
+    // page, so sending those there would refetch every tab on each sort or
+    // page change. They ask for a single result for the same reason.
+    if (isDisplayedType) {
+      const sortToUse = sort.value ?? typeConfig?.defaultSort
+      if (sortToUse) {
+        const validSortValues = typeConfig?.sortOptions?.map(o => o.value as string) ?? []
+        if (validSortValues.includes(sortToUse)) {
+          params.sort = sortToUse
+        }
+        else if (import.meta.env.DEV && typeConfig?.defaultSort && typeConfig?.sortOptions && sortToUse === typeConfig.defaultSort) {
+          console.warn(`[GlobalSearch] defaultSort "${typeConfig.defaultSort}" is not in sortOptions for "${typeConfig.class}". Valid values: ${validSortValues.join(', ')}`)
+        }
       }
-      else if (import.meta.env.DEV && typeConfig?.defaultSort && typeConfig?.sortOptions && sortToUse === typeConfig.defaultSort) {
-        console.warn(`[GlobalSearch] defaultSort "${typeConfig.defaultSort}" is not in sortOptions for "${typeConfig.class}". Valid values: ${validSortValues.join(', ')}`)
-      }
+      params.page = page.value
     }
-    params.page = page.value
-    params.page_size = pageSize
+    params.page_size = isDisplayedType ? pageSize : 1
 
     return params
   }
@@ -100,7 +111,7 @@ export function useStableQueryParams(options: StableQueryParamsOptions) {
 
   // Watch all dependencies and update only if content changed
   watch(
-    [q, sort, page, ...Object.values(allFilters), customFilterValues],
+    [q, sort, page, currentType, ...Object.values(allFilters), customFilterValues],
     () => {
       const newParams = buildParams()
       // JSON.stringify comparison is safe here because buildParams() builds the object deterministically

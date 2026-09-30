@@ -99,10 +99,17 @@
     type="primary"
     :icon="RiUserAddLine"
     :badge="$t(`Demande de rattachement`)"
-    :user="request.user!"
     :date="new Date(request.created)"
   >
+    <template #avatar>
+      <Avatar
+        :user="request.user!"
+        rounded
+        :size="24"
+      />
+    </template>
     <template #title>
+      <span class="font-bold">{{ request.user!.first_name }} {{ request.user!.last_name }}</span>
       <code
         v-if="request.user?.email"
         class="text-gray-medium bg-gray-lower px-1 text-sm rounded-sm break-all"
@@ -197,7 +204,6 @@ import { RiCheckLine, RiMailLine, RiMailSendLine, RiUserAddLine } from '@remixic
 import InputGroup from '../InputGroup/InputGroup.vue'
 import ModalWithButton from '../Modal/ModalWithButton.vue'
 import AdminBadge from '../AdminBadge/AdminBadge.vue'
-import type { MemberRole } from '@datagouv/components-next'
 import type { PendingMembershipRequest } from '~/types/types'
 
 const props = defineProps<{
@@ -213,7 +219,7 @@ const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const loading = ref(false)
 
-const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })
+const { data: roles } = await useOrganizationRoles()
 
 const roleLabel = computed(() => {
   if (!roles.value || !props.request.role) return null
