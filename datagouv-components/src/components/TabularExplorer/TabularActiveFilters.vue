@@ -1,6 +1,6 @@
 <template>
   <div
-    v-if="activeFilters.length > 0 || sort"
+    v-if="activeFilters.length > 0 || sort || (withClear && hasGlobalSearch)"
     class="flex flex-wrap items-center gap-1.5"
   >
     <!-- Sort chip -->
@@ -75,5 +75,5 @@ import { useTabularContext } from './useTabularContext'
 defineProps<{ withClear?: boolean }>()
 
 const { t } = useTranslation()
-const { activeFilters, sort, removeFilter, clearAllFilters, getColumnDisplay } = useTabularContext()
+const { activeFilters, sort, removeFilter, clearAllFilters, hasGlobalSearch, getColumnDisplay } = useTabularContext()
 </script>

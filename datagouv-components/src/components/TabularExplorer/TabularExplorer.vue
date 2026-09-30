@@ -51,6 +51,12 @@ const props = defineProps<{
   initialSort?: SortConfig
 }>()
 
+// The search belongs to the parent, but the toolbar's reset clears it along with
+// the filters: the parent is asked to empty it.
+const emit = defineEmits<{
+  'update:globalSearch': [value: string]
+}>()
+
 const { t } = useTranslation()
 const config = useComponentsConfig()
 
@@ -275,8 +281,11 @@ function removeFilter(column: string) {
   filters.value = rest
 }
 
+const hasGlobalSearch = computed(() => !!props.globalSearch)
+
 function clearAllFilters() {
   filters.value = {}
+  if (hasGlobalSearch.value) emit('update:globalSearch', '')
 }
 
 function hasFilterForColumn(col: string): boolean {
@@ -300,6 +309,7 @@ provideTabularContext({
   activeFilters,
   removeFilter,
   clearAllFilters,
+  hasGlobalSearch,
   hasFilterForColumn,
   allColumns,
   visibleColumns,

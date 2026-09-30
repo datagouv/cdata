@@ -42,7 +42,9 @@ export type TabularContext = {
   filters: Ref<Record<string, ColumnFilters>>
   activeFilters: ComputedRef<ActiveFilter[]>
   removeFilter: (column: string) => void
+  // Also empties the global search, which the parent owns.
   clearAllFilters: () => void
+  hasGlobalSearch: ComputedRef<boolean>
   hasFilterForColumn: (col: string) => boolean
 
   // Columns visibility

@@ -42,6 +42,7 @@
         :global-search="currentSearch"
         :initial-filters="filtersFromQuery"
         :initial-sort="{ column: 'Séance', direction: 'desc' }"
+        @update:global-search="value => { searchQuery = value; currentSearch = value }"
       >
         <TabularToolbar class="py-3" />
         <TabularTable

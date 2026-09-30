@@ -66,6 +66,7 @@
                 <TabularExplorer
                   :resource-id="resource.id"
                   :global-search="appliedSearch"
+                  @update:global-search="replaceSearch"
                 >
                   <TabularToolbar class="shrink-0 border-b border-gray-default p-2">
                     <template #start>
@@ -81,18 +82,6 @@
                           :aria-label="t('Rechercher une valeur')"
                           :placeholder="t('Rechercher une valeur')"
                         >
-                        <button
-                          v-if="search"
-                          type="button"
-                          class="flex size-4 shrink-0 items-center justify-center rounded text-gray-medium hover:bg-gray-100"
-                          :aria-label="t('Effacer la recherche')"
-                          @click="clearSearch"
-                        >
-                          <RiCloseLine
-                            class="size-3.5"
-                            aria-hidden="true"
-                          />
-                        </button>
                       </label>
                     </template>
                   </TabularToolbar>
@@ -194,7 +183,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { RiCloseLine, RiSearchLine } from '@remixicon/vue'
+import { RiSearchLine } from '@remixicon/vue'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
 import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
@@ -291,9 +280,10 @@ const search = ref('')
 const { debounced: debouncedSearch, flush: flushSearch } = useDebouncedRef(search, config.searchDebounce ?? 300)
 const appliedSearch = computed(() => debouncedSearch.value.trim() || undefined)
 
-// Only typing is debounced: clearing brings the full table back right away.
-function clearSearch() {
-  search.value = ''
+// Only typing is debounced: a reset from the toolbar brings the full table back
+// right away.
+function replaceSearch(value: string) {
+  search.value = value
   flushSearch()
 }
 
