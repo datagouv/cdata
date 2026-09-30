@@ -142,7 +142,7 @@ defineEmits<{
 }>()
 
 const { width, resizing, startResize } = useResizable({
-  initialWidth: 300,
+  initialWidth: 340,
   minWidth: 260,
   maxWidth: 720,
 })
