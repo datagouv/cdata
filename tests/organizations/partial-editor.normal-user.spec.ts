@@ -32,7 +32,7 @@ test.describe('Partial editor without assignment', () => {
     try {
       await page.goto(`/admin/datasets/${dataset.id}/`)
 
-      await expect(page.getByText('Ce jeu de données est en lecture seule')).toBeVisible()
+      await expect(page.getByText('Vous ne pouvez pas modifier ce jeu de données')).toBeVisible()
       await expect(page.getByLabel('Titre *', { exact: true })).toBeDisabled()
       await expect(page.getByRole('button', { name: 'Sauvegarder' })).toBeDisabled()
 

@@ -18,13 +18,17 @@
           class="mb-4"
           type="primary"
         >
-          <p class="font-bold mb-1">
-            {{ $t("Cette réutilisation est en lecture seule") }}
+          <p
+            class="font-bold"
+            :class="reuse.organization ? 'mb-1' : 'm-0'"
+          >
+            {{ $t("Vous ne pouvez pas modifier cette réutilisation") }}
           </p>
-          <p class="m-0 text-xs/5">
-            {{ reuse.organization
-              ? $t("Vous n'avez pas la permission de la modifier. Demandez à un administrateur de {org} de vous donner accès à cette réutilisation.", { org: reuse.organization.name })
-              : $t("Vous n'avez pas la permission de la modifier.") }}
+          <p
+            v-if="reuse.organization"
+            class="m-0 text-xs/5"
+          >
+            {{ $t("Demandez à un administrateur de {org} de vous donner accès à cette réutilisation.", { org: reuse.organization.name }) }}
           </p>
         </SimpleBanner>
         <BannerAction

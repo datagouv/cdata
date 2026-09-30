@@ -22,13 +22,17 @@
           class="mb-4"
           type="primary"
         >
-          <p class="font-bold mb-1">
-            {{ $t("Ce jeu de données est en lecture seule") }}
+          <p
+            class="font-bold"
+            :class="dataset.organization ? 'mb-1' : 'm-0'"
+          >
+            {{ $t("Vous ne pouvez pas modifier ce jeu de données") }}
           </p>
-          <p class="m-0 text-xs/5">
-            {{ dataset.organization
-              ? $t("Vous n'avez pas la permission de le modifier. Demandez à un administrateur de {org} de vous donner accès à ce jeu de données.", { org: dataset.organization.name })
-              : $t("Vous n'avez pas la permission de le modifier.") }}
+          <p
+            v-if="dataset.organization"
+            class="m-0 text-xs/5"
+          >
+            {{ $t("Demandez à un administrateur de {org} de vous donner accès à ce jeu de données.", { org: dataset.organization.name }) }}
           </p>
         </SimpleBanner>
         <BannerAction

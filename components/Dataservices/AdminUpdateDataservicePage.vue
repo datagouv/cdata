@@ -18,13 +18,17 @@
           class="mb-4"
           type="primary"
         >
-          <p class="font-bold mb-1">
-            {{ $t("Cette API est en lecture seule") }}
+          <p
+            class="font-bold"
+            :class="dataservice.organization ? 'mb-1' : 'm-0'"
+          >
+            {{ $t("Vous ne pouvez pas modifier cette API") }}
           </p>
-          <p class="m-0 text-xs/5">
-            {{ dataservice.organization
-              ? $t("Vous n'avez pas la permission de la modifier. Demandez à un administrateur de {org} de vous donner accès à cette API.", { org: dataservice.organization.name })
-              : $t("Vous n'avez pas la permission de la modifier.") }}
+          <p
+            v-if="dataservice.organization"
+            class="m-0 text-xs/5"
+          >
+            {{ $t("Demandez à un administrateur de {org} de vous donner accès à cette API.", { org: dataservice.organization.name }) }}
           </p>
         </SimpleBanner>
         <BannerAction
