@@ -208,11 +208,10 @@ test('the filtered download holds every row matching the search', async ({ page,
   await page.getByRole('button', { name: 'Supprimer la recherche' }).click()
   await expect(table.getByText('Aucun résultat trouvé.')).toBeHidden()
 
-  // Search a value the table does hold: the region of its first row (`nom_region` is
-  // the third column of the fixture).
-  const region = (await table.locator('tbody tr').first().locator('td').nth(2).innerText()).trim()
+  // A value the resource does hold: one of the most frequent `nom_region` values in its
+  // profile (tests/visualizations/profile.json).
   const unfiltered = await rowCount.innerText()
-  await searchbox.fill(region)
+  await searchbox.fill('OCCITANIE')
   await expect(rowCount).not.toHaveText(unfiltered, { timeout: 30000 })
   const matching = Number((await rowCount.innerText()).split('/')[0]!.replace(/\D/g, ''))
   expect(matching).toBeGreaterThan(0)
