@@ -9,12 +9,12 @@
       // Expanded, each row is its own grid: fixed tracks keep the extra columns
       // aligned from one row to the next, where `auto` tracks would follow each
       // row's content.
-      expanded ? 'grid-cols-[auto_minmax(0,1fr)_13rem_5rem_6rem_4rem_1.25rem]' : 'grid-cols-[auto_minmax(0,1fr)_auto_1.25rem]',
+      expanded ? 'grid-cols-[auto_minmax(0,1fr)_13rem_5rem_6rem_4rem_6.5rem]' : 'grid-cols-[auto_minmax(0,1fr)_auto_1.25rem]',
     ]"
     class="grid h-8 w-full items-center gap-1 rounded px-1 py-1 text-left !bg-none !no-underline"
     @pointerenter="openOnHover"
     @pointerleave="closeTooltip"
-    @focus="show = true"
+    @focus="show = !expanded"
     @blur="closeTooltip"
   >
     <ResourceIconBadge :resource />
@@ -58,8 +58,22 @@
       />
       {{ summarize(resource.metrics.views) }}
     </span>
-    <!-- Labelled in the hover card, which already opens on this row. -->
-    <span class="flex items-center justify-center">
+    <!-- Compact, the eye is labelled in the hover card; expanded, the row has room
+         for the label and no hover card. -->
+    <span
+      v-if="expanded && hasPreview"
+      class="flex w-fit items-center gap-0.5 justify-self-end rounded bg-gray-lower px-1.5 py-0.5 text-[13px] leading-4 text-gray-medium"
+    >
+      <RiEyeLine
+        class="size-3.5"
+        aria-hidden="true"
+      />
+      {{ t('Explorable') }}
+    </span>
+    <span
+      v-else
+      class="flex items-center justify-center"
+    >
       <RiEyeLine
         v-if="hasPreview"
         class="size-4 text-gray-medium"
@@ -192,9 +206,10 @@ const { floatingStyles } = useFloating(rowEl, card, {
 
 // A tap fires a pointer enter too, so the card would flash on every touch selection
 // in the mobile resource picker. Only a real pointer opens it — keyboard focus still
-// does, through @focus.
+// does, through @focus. The expanded row already shows everything the card holds,
+// so it never opens there.
 function openOnHover(event: PointerEvent) {
-  if (event.pointerType === 'mouse') show.value = true
+  if (event.pointerType === 'mouse' && !props.expanded) show.value = true
 }
 
 function closeTooltip() {

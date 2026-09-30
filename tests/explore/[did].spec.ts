@@ -134,6 +134,24 @@ test('only resources with a preview are labelled explorable in the sidebar', asy
   await expect(hoverCard.getByText('Explorable')).toHaveCount(0)
 })
 
+test('the full-width list labels explorable resources on the row, without a hover card', async ({ page, request }) => {
+  const dataset = await createDataset(request, `Test explore expanded preview mark ${Date.now()}`, 'Dataset de test E2E')
+  createdDatasets.push(dataset.id)
+  const withoutPreview = await createRemoteResource(request, dataset.id, 'Fichier sans apercu')
+  const withPreview = await createRemoteResource(request, dataset.id, 'Fichier avec apercu', 'pdf')
+
+  await page.goto(`/explore/${dataset.id}`)
+  await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
+  await page.locator('aside').getByRole('button', { name: 'Tout afficher' }).click()
+
+  const withPreviewRow = page.locator('aside').getByRole('link', { name: withPreview.title })
+  await expect(withPreviewRow.getByText('Explorable')).toBeVisible()
+  await expect(page.locator('aside').getByRole('link', { name: withoutPreview.title }).getByText('Explorable')).toHaveCount(0)
+
+  await withPreviewRow.hover()
+  await expect(page.getByRole('tooltip')).toHaveCount(0)
+})
+
 test('leaving fullscreen lands back on the dataset page, on the same resource', async ({ page, request }) => {
   const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore exit ${Date.now()}`, resourceTitles(2))
   createdDatasets.push(dataset.id)
