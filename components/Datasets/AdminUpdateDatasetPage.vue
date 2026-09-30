@@ -228,7 +228,6 @@
 import { BannerAction, BrandedButton, LoadingBlock, SimpleBanner, TranslationT, toast } from '@datagouv/components-next'
 import type { Badge, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiCheckLine, RiDeleteBin6Line, RiFileCopyLine, RiFingerprintLine } from '@remixicon/vue'
-import { useClipboard } from '@vueuse/core'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import ModalWithButton from '~/components/Modal/ModalWithButton.vue'
@@ -258,7 +257,18 @@ watchEffect(() => {
 })
 
 const doiBlockedReason = useDoiBlockedReason()
-const { copy: copyDoi, copied: doiCopied } = useClipboard()
+
+const doiCopied = ref(false)
+async function copyDoi(doi: string) {
+  try {
+    await navigator.clipboard.writeText(doi)
+    doiCopied.value = true
+    setTimeout(() => doiCopied.value = false, 2000)
+  }
+  catch {
+    toast.error(t('Impossible de copier dans le presse-papier'))
+  }
+}
 
 async function mintDoi(close: () => void) {
   isLoading.value = true
