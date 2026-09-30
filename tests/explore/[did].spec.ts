@@ -53,6 +53,67 @@ test('clicking a resource in the sidebar updates resource_id and the viewer', as
   await expect(page.locator('header').getByText(other.title, { exact: true })).toBeVisible()
 })
 
+test('the full-width resource list replaces the viewer until a resource is picked', async ({ page, request }) => {
+  const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore expanded list ${Date.now()}`, resourceTitles(3))
+  createdDatasets.push(dataset.id)
+  const other = resources[0]!
+  const viewer = page.getByRole('region', { name: 'Détail de la ressource' })
+
+  await page.goto(`/explore/${dataset.id}`)
+  await expect(viewer).toBeVisible({ timeout: 30000 })
+
+  await page.locator('aside').getByRole('button', { name: 'Tout afficher' }).click()
+
+  await expect(viewer).toBeHidden()
+  await expect(page.locator('aside').getByText(/^Mis à jour le /)).toHaveCount(3)
+
+  await page.locator('aside').getByRole('link', { name: other.title }).click()
+
+  await expect(page).toHaveURL(new RegExp(`resource_id=${other.id}`))
+  await expect(viewer).toBeVisible()
+  await expect(page.locator('header').getByText(other.title, { exact: true })).toBeVisible()
+  await expect(page.locator('aside').getByRole('button', { name: 'Tout afficher' })).toBeVisible()
+})
+
+test('picking the resource already shown also closes the full-width list', async ({ page, request }) => {
+  const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore expanded same ${Date.now()}`, resourceTitles(2))
+  createdDatasets.push(dataset.id)
+  const target = resources[0]!
+  const viewer = page.getByRole('region', { name: 'Détail de la ressource' })
+
+  await page.goto(`/explore/${dataset.id}?resource_id=${target.id}`)
+  await expect(viewer).toBeVisible({ timeout: 30000 })
+
+  await page.locator('aside').getByRole('button', { name: 'Tout afficher' }).click()
+  await expect(viewer).toBeHidden()
+
+  // Same URL, so no navigation to react to: the click itself closes the list.
+  await page.locator('aside').getByRole('link', { name: target.title }).click()
+
+  await expect(viewer).toBeVisible()
+})
+
+test('the full-width resource list can be left without picking a resource', async ({ page, request }) => {
+  const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore expanded back ${Date.now()}`, resourceTitles(2))
+  createdDatasets.push(dataset.id)
+  const target = resources[1]!
+  const viewer = page.getByRole('region', { name: 'Détail de la ressource' })
+
+  await page.goto(`/explore/${dataset.id}?resource_id=${target.id}`)
+  await expect(viewer).toBeVisible({ timeout: 30000 })
+  await expect(page.locator('aside').getByTitle('Masquer le panneau')).toBeVisible()
+
+  await page.locator('aside').getByRole('button', { name: 'Tout afficher' }).click()
+  await expect(viewer).toBeHidden()
+  // The panel can't be folded from the full-width list, only left.
+  await expect(page.locator('aside').getByTitle('Masquer le panneau')).toBeHidden()
+
+  await page.locator('aside').getByRole('button', { name: 'Revenir à l’explorateur' }).click()
+
+  await expect(viewer).toBeVisible()
+  await expect(page).toHaveURL(new RegExp(`resource_id=${target.id}`))
+})
+
 test('leaving fullscreen lands back on the dataset page, on the same resource', async ({ page, request }) => {
   const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore exit ${Date.now()}`, resourceTitles(2))
   createdDatasets.push(dataset.id)

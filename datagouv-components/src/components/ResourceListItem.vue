@@ -4,8 +4,14 @@
     v-bind="$attrs"
     :to
     :replace
-    :class="selected ? '[&&]:!bg-gray-200' : '[&&]:hover:!bg-gray-100'"
-    class="grid h-8 w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded px-1 py-1 text-left !bg-none !no-underline"
+    :class="[
+      selected ? '[&&]:!bg-gray-200' : '[&&]:hover:!bg-gray-100',
+      // Expanded, each row is its own grid: fixed tracks keep the extra columns
+      // aligned from one row to the next, where `auto` tracks would follow each
+      // row's content.
+      expanded ? 'grid-cols-[auto_minmax(0,1fr)_13rem_5rem_6rem_4rem]' : 'grid-cols-[auto_minmax(0,1fr)_auto]',
+    ]"
+    class="grid h-8 w-full items-center gap-1 rounded px-1 py-1 text-left !bg-none !no-underline"
     @pointerenter="openOnHover"
     @pointerleave="closeTooltip"
     @focus="show = true"
@@ -17,19 +23,41 @@
         class="truncate text-[14px]"
         :class="selected ? 'font-extrabold text-gray-title' : 'font-medium text-gray-medium'"
       >{{ resource.title || t('Fichier sans nom') }}</span>
-      <template v-if="humanFilesize">
+      <template v-if="humanFilesize && !expanded">
         <span class="shrink-0 text-[14px] text-gray-medium">·</span>
         <span class="shrink-0 text-[13px] text-gray-medium">{{ humanFilesize }}</span>
       </template>
     </div>
+    <template v-if="expanded">
+      <span class="truncate text-[13px] text-gray-medium">
+        <TranslationT keypath="Mis à jour le {date}">
+          <template #date>
+            <FormattedDate :date="resource.last_modified" />
+          </template>
+        </TranslationT>
+      </span>
+      <span class="text-right text-[13px] tabular-nums text-gray-medium">{{ humanFilesize }}</span>
+    </template>
     <!-- Capped and truncated: an `auto` grid track floors at its content width, so an
          unusually long format (`www:link-1.0-http--samples`) would otherwise squeeze
          the title track to nothing and overflow the fixed-height row. -->
     <span
       v-if="resource.format"
-      class="max-w-24 truncate rounded bg-gray-lower px-1.5 py-0.5 text-[13px] uppercase leading-4 text-gray-medium"
+      class="max-w-24 justify-self-start truncate rounded bg-gray-lower px-1.5 py-0.5 text-[13px] uppercase leading-4 text-gray-medium"
       :title="resource.format"
     >{{ resource.format }}</span>
+    <!-- Holds the format track so the downloads stay in their column. -->
+    <span v-else-if="expanded" />
+    <span
+      v-if="expanded"
+      class="inline-flex items-center justify-end gap-1 text-[13px] tabular-nums text-gray-medium"
+    >
+      <RiDownloadLine
+        class="size-3"
+        aria-hidden="true"
+      />
+      {{ summarize(resource.metrics.views) }}
+    </span>
   </AppLink>
 
   <!-- Hover card: the row truncates the title, so surface the full name plus the
@@ -109,9 +137,12 @@ const props = withDefaults(defineProps<{
   to: RouteLocationRaw
   selected?: boolean
   replace?: boolean
+  // Full-width list: the row also shows the update date, size and downloads.
+  expanded?: boolean
 }>(), {
   selected: false,
   replace: false,
+  expanded: false,
 })
 
 const { t } = useTranslation()

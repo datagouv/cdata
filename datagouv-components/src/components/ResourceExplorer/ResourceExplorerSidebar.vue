@@ -1,11 +1,18 @@
 <template>
   <!-- The resize grip sits outside the aside: it straddles the border, and the
        aside's overflow-hidden would clip its outer half. -->
-  <div class="relative flex shrink-0">
+  <div
+    class="relative flex"
+    :class="expanded ? 'flex-1' : 'shrink-0'"
+  >
+    <!-- Expanded, the list takes the viewer's place (the explorer hides the viewer). -->
     <aside
-      class="flex shrink-0 flex-col overflow-hidden border-r border-gray-default bg-white"
-      :class="resizing ? '' : 'transition-[width] duration-200'"
-      :style="{ width: collapsed ? '48px' : `${width}px` }"
+      class="flex flex-col overflow-hidden bg-white"
+      :class="[
+        expanded ? 'flex-1' : 'shrink-0 border-r border-gray-default',
+        resizing ? '' : 'transition-[width] duration-200',
+      ]"
+      :style="expanded ? undefined : { width: collapsed ? '48px' : `${width}px` }"
       :aria-label="t('Ressources')"
     >
       <div
@@ -16,17 +23,37 @@
           v-if="!collapsed"
           class="text-[14px] font-medium text-gray-title"
         >{{ t('Ressources') }}</span>
-        <button
-          type="button"
-          :title="collapsed ? t('Afficher le panneau des ressources') : t('Masquer le panneau')"
-          class="flex size-6 items-center justify-center rounded text-gray-plain hover:bg-gray-100"
-          @click="$emit('update:collapsed', !collapsed)"
-        >
-          <component
-            :is="collapsed ? RiSidebarUnfoldLine : RiSidebarFoldLine"
-            class="size-5"
-          />
-        </button>
+        <span class="flex items-center gap-1">
+          <button
+            v-if="!collapsed"
+            type="button"
+            class="inline-flex h-7 items-center gap-1 rounded px-2 text-[13px] font-medium text-gray-title underline-offset-4 hover:bg-gray-100 hover:underline"
+            @click="$emit('update:expanded', !expanded)"
+          >
+            <template v-if="expanded">
+              <RiArrowLeftLine
+                class="size-3.5"
+                aria-hidden="true"
+              />
+              {{ t('Revenir à l’explorateur') }}
+            </template>
+            <template v-else>
+              {{ t('Tout afficher') }}
+            </template>
+          </button>
+          <button
+            v-if="!expanded"
+            type="button"
+            :title="collapsed ? t('Afficher le panneau des ressources') : t('Masquer le panneau')"
+            class="flex size-6 items-center justify-center rounded text-gray-plain hover:bg-gray-100"
+            @click="$emit('update:collapsed', !collapsed)"
+          >
+            <component
+              :is="collapsed ? RiSidebarUnfoldLine : RiSidebarFoldLine"
+              class="size-5"
+            />
+          </button>
+        </span>
       </div>
 
       <!-- min-w keeps the content laid out at the sidebar's min width so it doesn't
@@ -65,6 +92,8 @@
             :to="resourceTo(resource)"
             :replace
             :selected="resource.id === selectedResourceId"
+            :expanded
+            @click="$emit('update:expanded', false)"
           />
           <button
             v-if="group.items.length < group.total"
@@ -107,7 +136,7 @@
          button would announce an action that no key can trigger. Keyboard users fold
          the panel from the header instead. -->
     <div
-      v-if="!collapsed"
+      v-if="!collapsed && !expanded"
       role="separator"
       aria-orientation="vertical"
       :title="t('Glisser pour redimensionner')"
@@ -131,7 +160,7 @@
 
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
-import { RiSidebarFoldLine, RiSidebarUnfoldLine, RiSearchLine, RiLoader5Line } from '@remixicon/vue'
+import { RiArrowLeftLine, RiSidebarFoldLine, RiSidebarUnfoldLine, RiSearchLine, RiLoader5Line } from '@remixicon/vue'
 import BrandedButton from '../BrandedButton.vue'
 import ResourceListItem from '../ResourceListItem.vue'
 import { getResourceLabel } from '../../functions/resources'
@@ -145,6 +174,7 @@ defineProps<{
   groups: ResourceGroup[]
   selectedResourceId: string | null
   collapsed: boolean
+  expanded: boolean
   search: string
   loadingType: ResourceType | null
   resourceTo: (resource: Resource) => RouteLocationRaw
@@ -154,6 +184,7 @@ defineProps<{
 defineEmits<{
   'load-more': [type: ResourceType]
   'update:collapsed': [value: boolean]
+  'update:expanded': [value: boolean]
   'update:search': [value: string]
 }>()
 
