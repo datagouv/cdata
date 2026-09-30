@@ -463,9 +463,12 @@ test.describe('column filter', () => {
 
 test.describe('going back from an advice', () => {
   async function openAdviceAndGoBack(page: Page, link = dataTable(page).locator('a.link').first()) {
+    const id = (await link.innerText()).trim()
     await link.click()
-    await page.waitForURL(/\/explore\/cada\/\d+/, { timeout: 30000 })
-    await expect(page.locator('h1').first()).toBeVisible()
+    await page.waitForURL(`**/explore/cada/${id}`, { timeout: 30000 })
+    // The list stays displayed while the advice loads, and it has an `h1` too:
+    // only the advice heading tells the advice page is really shown.
+    await expect(page.getByRole('heading', { level: 1, name: id })).toBeVisible({ timeout: 30000 })
     await page.goBack()
   }
 

@@ -165,16 +165,18 @@ test.describe('table state in the URL', () => {
     await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}${query}`)
   }
 
+  // The profile is fetched during SSR, out of reach of `mockTabular`: the sorted
+  // column must be one of the real resource, not of the mocked profile.
   test('a sort in the URL is applied to the table', async ({ page, request }) => {
-    const sorted = page.waitForResponse(response => response.url().includes('/data/') && response.url().includes('Construction__sort=desc'), { timeout: 30000 })
-    await gotoFixtureResource(page, request, '&sort=-Construction')
+    const sorted = page.waitForResponse(response => response.url().includes('/data/') && response.url().includes('Nbre_logements__sort=desc'), { timeout: 30000 })
+    await gotoFixtureResource(page, request, '&sort=-Nbre_logements')
     await sorted
 
     await expect(page.getByRole('button', { name: 'Supprimer le tri' })).toBeVisible()
   })
 
   test('dropping the sort from its chip removes it from the URL', async ({ page, request }) => {
-    await gotoFixtureResource(page, request, '&sort=-Construction')
+    await gotoFixtureResource(page, request, '&sort=-Nbre_logements')
 
     await page.getByRole('button', { name: 'Supprimer le tri' }).click()
 
