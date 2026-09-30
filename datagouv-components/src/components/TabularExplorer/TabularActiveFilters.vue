@@ -80,9 +80,10 @@
 
     <div class="flex shrink-0 items-center gap-1">
       <!-- A sort alone narrows nothing: the file would be the whole resource, which
-           the resource's own download already gives. -->
+           the resource's own download already gives. And with no matching row, the
+           API answers an empty file, without even the header. -->
       <BrandedButton
-        v-if="activeFilters.length > 0 || globalSearch"
+        v-if="(activeFilters.length > 0 || globalSearch) && tableData?.meta.total"
         color="tertiary"
         size="2xs"
         :icon="RiDownloadLine"
@@ -114,5 +115,5 @@ import { useTabularContext } from './useTabularContext'
 defineProps<{ withClear?: boolean }>()
 
 const { t } = useTranslation()
-const { activeFilters, sort, globalSearch, removeFilter, clearAllFilters, getColumnDisplay, filteredDownloadUrl } = useTabularContext()
+const { tableData, activeFilters, sort, globalSearch, removeFilter, clearAllFilters, getColumnDisplay, filteredDownloadUrl } = useTabularContext()
 </script>

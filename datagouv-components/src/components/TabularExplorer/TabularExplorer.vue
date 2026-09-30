@@ -303,10 +303,10 @@ function removeFilter(column: string) {
 
 // The Tabular API's CSV export takes the params of the data endpoint and ignores the
 // pagination: the file holds every filtered row, not just the pages loaded on screen.
-// `columns` keeps the file to what the table displays (and drops its `__id`).
+// All the columns, not only the displayed ones: the API splits `columns` on every
+// comma, so a column whose name holds one can't be requested by name.
 const filteredDownloadUrl = computed(() => {
   const params = new URLSearchParams(Object.entries(tableQuery.value).map(([key, value]) => [key, String(value)]))
-  params.set('columns', displayedColumns.value.join(','))
   return `${config.tabularApiUrl}/api/resources/${props.resourceId}/data/csv/?${params}`
 })
 

@@ -51,7 +51,7 @@ export type TabularContext = {
   // The last request was rejected after a first successful load: the controls stay,
   // the rows are replaced by the error.
   queryFailed: ComputedRef<boolean>
-  // CSV export of the rows matching the filters and search, in the displayed columns
+  // CSV export of the rows matching the filters and search
   filteredDownloadUrl: ComputedRef<string>
   hasFilterForColumn: (col: string) => boolean
 

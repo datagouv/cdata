@@ -187,31 +187,44 @@ test('the search narrows the table and survives a trip to another tab', async ({
   await expect(page.getByTestId('data-table').getByText('Aucun résultat trouvé.')).toBeHidden()
 })
 
-test('the filtered download holds the rows and columns the table shows', async ({ page, request }) => {
+test('the filtered download holds every row matching the search', async ({ page, request }) => {
   const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
   const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
   const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
   await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}`)
   await loaded
+  const table = page.getByTestId('data-table')
+  const rowCount = page.getByTestId('row-count').first()
+  const searchbox = page.getByRole('searchbox', { name: 'Rechercher une valeur' })
   const downloadLink = page.getByRole('link', { name: 'Télécharger les données filtrées' })
   await expect(downloadLink).toHaveCount(0)
 
-  const searched = page.waitForResponse(response => response.url().includes('/data/') && response.url().includes('or='), { timeout: 30000 })
-  await page.getByRole('searchbox', { name: 'Rechercher une valeur' }).fill('zzqqxx-introuvable')
-  await searched
-  await expect(page.getByTestId('data-table').getByText('Aucun résultat trouvé.')).toBeVisible()
+  // No matching row: the API would answer an empty file, so there is nothing to offer.
+  const searchedNothing = page.waitForResponse(response => response.url().includes('/data/') && response.url().includes('or='), { timeout: 30000 })
+  await searchbox.fill('zzqqxx-introuvable')
+  await searchedNothing
+  await expect(table.getByText('Aucun résultat trouvé.')).toBeVisible()
+  await expect(downloadLink).toHaveCount(0)
+  await page.getByRole('button', { name: 'Supprimer la recherche' }).click()
+  await expect(table.getByText('Aucun résultat trouvé.')).toBeHidden()
+
+  // Search a value the table does hold: the region of its first row (`nom_region` is
+  // the third column of the fixture).
+  const region = (await table.locator('tbody tr').first().locator('td').nth(2).innerText()).trim()
+  const unfiltered = await rowCount.innerText()
+  await searchbox.fill(region)
+  await expect(rowCount).not.toHaveText(unfiltered, { timeout: 30000 })
+  const matching = Number((await rowCount.innerText()).split('/')[0]!.replace(/\D/g, ''))
+  expect(matching).toBeGreaterThan(0)
 
   const downloading = page.waitForEvent('download')
   await downloadLink.click()
   const file = await (await downloading).path()
   const lines = readFileSync(file, 'utf-8').trim().split('\n')
 
-  // Nothing matches the search, so the file is its header alone: the displayed
-  // columns, without the API's technical `__id`.
-  expect(lines).toHaveLength(1)
-  const header = lines[0]!.split(',')
-  expect(header).not.toContain('__id')
-  expect(header).toHaveLength(await page.getByTestId('data-table').locator('thead th').count())
+  // Every matching row, not just the page loaded on screen, under a header line.
+  expect(lines).toHaveLength(matching + 1)
+  expect(lines[0]).toContain('nom_region')
 })
 
 test.describe('a search the API rejects', () => {
