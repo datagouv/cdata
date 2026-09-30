@@ -176,6 +176,11 @@ test('the search narrows the table and survives a trip to another tab', async ({
 
   await expect(page.getByRole('searchbox', { name: 'Rechercher une valeur' })).toHaveValue('zzqqxx-introuvable')
   await expect(page.getByTestId('data-table').getByText('Aucun résultat trouvé.')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Effacer la recherche' }).click()
+
+  await expect(page.getByRole('searchbox', { name: 'Rechercher une valeur' })).toHaveValue('')
+  await expect(page.getByTestId('data-table').getByText('Aucun résultat trouvé.')).toBeHidden()
 })
 
 test('leaving fullscreen lands back on the dataset page, on the same resource', async ({ page, request }) => {

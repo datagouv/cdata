@@ -77,10 +77,22 @@
                         <input
                           v-model="search"
                           type="search"
-                          class="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-gray-medium"
+                          class="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-gray-medium [&::-webkit-search-cancel-button]:appearance-none"
                           :aria-label="t('Rechercher une valeur')"
                           :placeholder="t('Rechercher une valeur')"
                         >
+                        <button
+                          v-if="search"
+                          type="button"
+                          class="flex size-4 shrink-0 items-center justify-center rounded text-gray-medium hover:bg-gray-100"
+                          :aria-label="t('Effacer la recherche')"
+                          @click="clearSearch"
+                        >
+                          <RiCloseLine
+                            class="size-3.5"
+                            aria-hidden="true"
+                          />
+                        </button>
                       </label>
                     </template>
                   </TabularToolbar>
@@ -182,7 +194,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { RiSearchLine } from '@remixicon/vue'
+import { RiCloseLine, RiSearchLine } from '@remixicon/vue'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
 import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
@@ -276,8 +288,14 @@ if (hasTabularData.value) {
 // search survives a trip to another tab, and it resets with the resource since
 // switching resource remounts the viewer.
 const search = ref('')
-const { debounced: debouncedSearch } = useDebouncedRef(search, config.searchDebounce ?? 300)
+const { debounced: debouncedSearch, flush: flushSearch } = useDebouncedRef(search, config.searchDebounce ?? 300)
 const appliedSearch = computed(() => debouncedSearch.value.trim() || undefined)
+
+// Only typing is debounced: clearing brings the full table back right away.
+function clearSearch() {
+  search.value = ''
+  flushSearch()
+}
 
 // The active tab lives in the URL so a shared link opens on the same one. Read once
 // at mount (TabGroup only takes an initial index), which is enough: switching resource
