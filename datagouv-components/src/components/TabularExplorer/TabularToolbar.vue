@@ -1,6 +1,9 @@
 <template>
   <div class="flex items-center gap-2">
     <div class="flex min-w-0 flex-1 items-center gap-1.5">
+      <!-- Controls owned by the call site, e.g. a search whose value it passes back as
+           the explorer's `globalSearch`. -->
+      <slot name="start" />
       <TabularMobileFilterButton class="md:hidden" />
       <div class="hidden md:block">
         <TabularActiveFilters with-clear />

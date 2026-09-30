@@ -1,5 +1,6 @@
 import { test, expect } from '../base'
-import { createDataset, createDatasetWithRemoteResources, createRemoteResource, deleteDatasets, enableNewExplorer } from '../helpers'
+import { API_BASE, createDataset, createDatasetWithRemoteResources, createRemoteResource, deleteDatasets, enableNewExplorer } from '../helpers'
+import { RESOURCE_ID as TABULAR_RESOURCE_ID } from '../visualizations/fixtures'
 
 const createdDatasets: Array<string> = []
 
@@ -150,6 +151,31 @@ test('the full-width list labels explorable resources on the row, without a hove
 
   await withPreviewRow.hover()
   await expect(page.getByRole('tooltip')).toHaveCount(0)
+})
+
+// Against the real Tabular API: the table is rendered during SSR, so mocking only the
+// browser side would hydrate it with other rows than the server rendered.
+test('the search narrows the table and survives a trip to another tab', async ({ page, request }) => {
+  const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
+  const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+  // The explorer only hydrates once its browser-side data request answers: typing
+  // before that would be reset by hydration.
+  const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
+  await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}`)
+  await loaded
+  const table = page.getByTestId('data-table')
+  await expect(table.getByText('Aucun résultat trouvé.')).toBeHidden()
+
+  const searched = page.waitForResponse(response => response.url().includes('/data/') && response.url().includes('or='), { timeout: 30000 })
+  await page.getByRole('searchbox', { name: 'Rechercher une valeur' }).fill('zzqqxx-introuvable')
+  expect((await searched).ok()).toBe(true)
+  await expect(table.getByText('Aucun résultat trouvé.')).toBeVisible()
+
+  await page.getByRole('tab', { name: 'Métadonnées' }).click()
+  await page.getByRole('tab', { name: 'Données' }).click()
+
+  await expect(page.getByRole('searchbox', { name: 'Rechercher une valeur' })).toHaveValue('zzqqxx-introuvable')
+  await expect(page.getByTestId('data-table').getByText('Aucun résultat trouvé.')).toBeVisible()
 })
 
 test('leaving fullscreen lands back on the dataset page, on the same resource', async ({ page, request }) => {

@@ -63,8 +63,27 @@
                 v-if="previewKind === 'tabular'"
                 :timeout="200"
               >
-                <TabularExplorer :resource-id="resource.id">
-                  <TabularToolbar class="shrink-0 border-b border-gray-default p-2" />
+                <TabularExplorer
+                  :resource-id="resource.id"
+                  :global-search="appliedSearch"
+                >
+                  <TabularToolbar class="shrink-0 border-b border-gray-default p-2">
+                    <template #start>
+                      <label class="flex h-8 w-[clamp(160px,22vw,220px)] min-w-0 shrink-0 items-center gap-1 rounded border border-gray-default bg-gray-some px-2">
+                        <RiSearchLine
+                          class="size-3.5 shrink-0 text-gray-medium"
+                          aria-hidden="true"
+                        />
+                        <input
+                          v-model="search"
+                          type="search"
+                          class="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-gray-medium"
+                          :aria-label="t('Rechercher une valeur')"
+                          :placeholder="t('Rechercher une valeur')"
+                        >
+                      </label>
+                    </template>
+                  </TabularToolbar>
                   <TabularTable :fill="fullscreen" />
                   <TabularMobileFilters />
                 </TabularExplorer>
@@ -161,8 +180,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { RiSearchLine } from '@remixicon/vue'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
 import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
@@ -182,6 +202,7 @@ import ResourceViewerHeader from './ResourceViewerHeader.vue'
 import { trackEvent } from '../../functions/matomo'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
+import { useDebouncedRef } from '../../composables/useDebouncedRef'
 import { useResourceCapabilities } from '../../composables/useResourceCapabilities'
 import { provideTabularProfile } from '../../composables/useTabularProfile'
 import type { RouteLocationRaw } from 'vue-router'
@@ -250,6 +271,13 @@ const {
 if (hasTabularData.value) {
   await provideTabularProfile(() => props.resource.id)
 }
+
+// Held here rather than in the table: the viewer outlives the data tab, so the
+// search survives a trip to another tab, and it resets with the resource since
+// switching resource remounts the viewer.
+const search = ref('')
+const { debounced: debouncedSearch } = useDebouncedRef(search, config.searchDebounce ?? 300)
+const appliedSearch = computed(() => debouncedSearch.value.trim() || undefined)
 
 // The active tab lives in the URL so a shared link opens on the same one. Read once
 // at mount (TabGroup only takes an initial index), which is enough: switching resource
