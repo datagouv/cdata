@@ -1,7 +1,7 @@
 import type { APIRequestContext, Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { API_BASE, createDatasetWithRemoteResources, deleteDatasets, enableNewExplorer } from '../helpers'
-import { mockTabular, RESOURCE_ID as TABULAR_RESOURCE_ID } from '../visualizations/fixtures'
+import { RESOURCE_ID as TABULAR_RESOURCE_ID } from '../visualizations/fixtures'
 
 const createdDatasets: Array<string> = []
 
@@ -154,19 +154,16 @@ test('switching resources drops the filters and sort of the previous one', async
   expect(query.get('tab')).toBe('metadata')
 })
 
+// Against the real Tabular API, not `mockTabular`: the table is rendered during
+// SSR, and mocking only the browser side would hydrate it with other rows than
+// the server rendered.
 test.describe('table state in the URL', () => {
-  test.beforeEach(async ({ page }) => {
-    await mockTabular(page)
-  })
-
   async function gotoFixtureResource(page: Page, request: APIRequestContext, query = '') {
     const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
     const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
     await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}${query}`)
   }
 
-  // The profile is fetched during SSR, out of reach of `mockTabular`: the sorted
-  // column must be one of the real resource, not of the mocked profile.
   test('a sort in the URL is applied to the table', async ({ page, request }) => {
     const sorted = page.waitForResponse(response => response.url().includes('/data/') && response.url().includes('Nbre_logements__sort=desc'), { timeout: 30000 })
     await gotoFixtureResource(page, request, '&sort=-Nbre_logements')
