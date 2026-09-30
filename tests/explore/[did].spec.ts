@@ -208,8 +208,7 @@ test('the filtered download holds every row matching the search', async ({ page,
   await page.getByRole('button', { name: 'Supprimer la recherche' }).click()
   await expect(table.getByText('Aucun résultat trouvé.')).toBeHidden()
 
-  // A value the resource does hold: one of the most frequent `nom_region` values in its
-  // profile (tests/visualizations/profile.json).
+  // A value the resource holds: a French region, in a dataset broken down by region.
   const unfiltered = await rowCount.innerText()
   await searchbox.fill('OCCITANIE')
   await expect(rowCount).not.toHaveText(unfiltered, { timeout: 30000 })
@@ -221,9 +220,9 @@ test('the filtered download holds every row matching the search', async ({ page,
   const file = await (await downloading).path()
   const lines = readFileSync(file, 'utf-8').trim().split('\n')
 
-  // Every matching row, not just the page loaded on screen, under a header line.
+  // Every matching row, not just the page loaded on screen, under the API's header line.
   expect(lines).toHaveLength(matching + 1)
-  expect(lines[0]).toContain('nom_region')
+  expect(lines[0]).toMatch(/^__id,/)
 })
 
 test.describe('a search the API rejects', () => {
