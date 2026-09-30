@@ -5,6 +5,12 @@
     :initial-filters="initialFilters"
   >
     <TabularToolbar class="py-3" />
+    <div class="hidden md:block">
+      <TabularActiveFilters
+        with-clear
+        class="pb-3"
+      />
+    </div>
     <TabularTable />
     <TabularMobileFilters />
   </TabularExplorer>
@@ -18,7 +24,7 @@
 </template>
 
 <script setup lang="ts">
-import { SimpleBanner, TabularExplorer, TabularMobileFilters, TabularTable, TabularToolbar } from '@datagouv/components-next'
+import { SimpleBanner, TabularActiveFilters, TabularExplorer, TabularMobileFilters, TabularTable, TabularToolbar } from '@datagouv/components-next'
 import { buildFiltersFromQuery } from '~/utils/previewDashboard'
 
 const config = useRuntimeConfig()

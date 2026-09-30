@@ -281,11 +281,15 @@ function removeFilter(column: string) {
   filters.value = rest
 }
 
-const hasGlobalSearch = computed(() => !!props.globalSearch)
+const globalSearch = computed(() => props.globalSearch || undefined)
+
+function clearGlobalSearch() {
+  emit('update:globalSearch', '')
+}
 
 function clearAllFilters() {
   filters.value = {}
-  if (hasGlobalSearch.value) emit('update:globalSearch', '')
+  if (globalSearch.value) clearGlobalSearch()
 }
 
 function hasFilterForColumn(col: string): boolean {
@@ -309,7 +313,8 @@ provideTabularContext({
   activeFilters,
   removeFilter,
   clearAllFilters,
-  hasGlobalSearch,
+  globalSearch,
+  clearGlobalSearch,
   hasFilterForColumn,
   allColumns,
   visibleColumns,

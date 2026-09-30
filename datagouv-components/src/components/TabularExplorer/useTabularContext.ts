@@ -44,7 +44,9 @@ export type TabularContext = {
   removeFilter: (column: string) => void
   // Also empties the global search, which the parent owns.
   clearAllFilters: () => void
-  hasGlobalSearch: ComputedRef<boolean>
+  // The parent's search, and a way to ask the parent to empty it.
+  globalSearch: ComputedRef<string | undefined>
+  clearGlobalSearch: () => void
   hasFilterForColumn: (col: string) => boolean
 
   // Columns visibility

@@ -5,9 +5,6 @@
            the explorer's `globalSearch`. -->
       <slot name="start" />
       <TabularMobileFilterButton class="md:hidden" />
-      <div class="hidden md:block">
-        <TabularActiveFilters with-clear />
-      </div>
     </div>
     <div class="flex shrink-0 items-center gap-4">
       <TabularColumnsMenu />
@@ -17,7 +14,6 @@
 </template>
 
 <script setup lang="ts">
-import TabularActiveFilters from './TabularActiveFilters.vue'
 import TabularColumnsMenu from './TabularColumnsMenu.vue'
 import TabularMobileFilterButton from './TabularMobileFilterButton.vue'
 import TabularRowsInfo from './TabularRowsInfo.vue'
@@ -25,4 +21,6 @@ import TabularRowsInfo from './TabularRowsInfo.vue'
 // Framing (borders, padding, spacing) belongs to the call site: this toolbar sits in a
 // bordered panel in the resource viewer and in the page flow on the standalone explore
 // pages. Single root element, so the caller's `class` merges onto it.
+// The active filters are not in here: they get a line of their own, placed by the
+// call site under the toolbar (<TabularActiveFilters>).
 </script>

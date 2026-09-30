@@ -85,6 +85,12 @@
                       </label>
                     </template>
                   </TabularToolbar>
+                  <div class="hidden shrink-0 md:block">
+                    <TabularActiveFilters
+                      with-clear
+                      class="border-b border-gray-default p-2"
+                    />
+                  </div>
                   <TabularTable :fill="fullscreen" />
                   <TabularMobileFilters />
                 </TabularExplorer>
@@ -192,6 +198,7 @@ import TabList from '../Tabs/TabList.vue'
 import Tab from '../Tabs/Tab.vue'
 import TabPanels from '../Tabs/TabPanels.vue'
 import TabPanel from '../Tabs/TabPanel.vue'
+import TabularActiveFilters from '../TabularExplorer/TabularActiveFilters.vue'
 import TabularExplorer from '../TabularExplorer/TabularExplorer.vue'
 import TabularToolbar from '../TabularExplorer/TabularToolbar.vue'
 import TabularTable from '../TabularExplorer/TabularTable.vue'
