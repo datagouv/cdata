@@ -123,6 +123,34 @@ test('clicking the Numéro de dossier link navigates to the CADA detail page', a
   await expect(page.locator('h1').first()).toBeVisible()
 })
 
+test('going back before the advice is loaded shows the list again, not a 404', async ({ page }) => {
+  await page.goto('/explore/cada')
+  await expect(page.getByTestId('row-count')).toBeVisible({ timeout: 30000 })
+
+  // The advice request never answers: the back navigation always happens while
+  // the advice page is still loading, and the list is still the one displayed.
+  const readable = (url: string) => decodeURIComponent(url.replace(/\+/g, ' '))
+  let releaseAdvice = () => {}
+  await page.route(url => readable(url.href).includes('Numéro de dossier__exact='), async (route) => {
+    await new Promise<void>((resolve) => {
+      releaseAdvice = resolve
+    })
+    await route.abort()
+  })
+
+  await dataTable(page).locator('a.link').first().click()
+  await page.waitForURL(/\/explore\/cada\/\d+/, { timeout: 30000 })
+  await page.goBack()
+  await page.waitForURL(/\/explore\/cada$/)
+
+  // The abandoned advice page used to raise its 404 a few ms after the back
+  // navigation. Nothing marks the moment it would have, hence a fixed window.
+  await page.waitForTimeout(1000)
+  await expect(page.getByRole('heading', { name: '404' })).toHaveCount(0)
+  await expect(page.getByTestId('row-count')).toBeVisible()
+  releaseAdvice()
+})
+
 test('the Numéro de dossier column keeps its digits unformatted', async ({ page }) => {
   await gotoExplore(page)
 
