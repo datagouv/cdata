@@ -173,7 +173,11 @@ test.describe('table state in the URL', () => {
   })
 
   test('dropping the sort from its chip removes it from the URL', async ({ page, request }) => {
+    // The chip is in the server-rendered HTML, but the explorer only hydrates once
+    // its browser-side data request answers: a click before that does nothing.
+    const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
     await gotoFixtureResource(page, request, '&sort=-Nbre_logements')
+    await loaded
 
     await page.getByRole('button', { name: 'Supprimer le tri' }).click()
 
