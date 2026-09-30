@@ -78,7 +78,10 @@
           &mdash;
           <span>{{ getActivityTranslation(activities.data[0]) }}</span>
           &mdash;
-          <span class="text-gray-medium">{{ formatDate(activities.data[0].created_at) }}</span>
+          <FormattedDate
+            class="text-gray-medium"
+            :date="activities.data[0].created_at"
+          />
         </p>
       </div>
 
@@ -101,7 +104,7 @@
 </template>
 
 <script setup lang="ts">
-import { AvatarWithName, BrandedButton, summarize, Tooltip, useFormatDate, getActivityTranslation } from '@datagouv/components-next'
+import { AvatarWithName, BrandedButton, summarize, Tooltip, FormattedDate, getActivityTranslation } from '@datagouv/components-next'
 import type { Activity, Dataservice } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiEyeLine, RiStarLine } from '@remixicon/vue'
 import DataserviceBadge from '~/components/AdminBadge/DataserviceBadge.vue'
@@ -109,15 +112,15 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 import type { PaginatedArray } from '~/types/types'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const { t } = useTranslation()
 
 const route = useRoute()
-const { formatDate } = useFormatDate()
 const me = useMe()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
 const { data: dataservice } = await useAPI<Dataservice>(url, { redirectOn404: true })

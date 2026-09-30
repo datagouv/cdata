@@ -190,7 +190,7 @@
                     {{ $t("API du portail") }}
                   </a>
                 </li>
-                <li>
+                <li data-testid="udata-version">
                   <a
                     href="https://github.com/opendatateam/udata/"
                     class="fr-footer__top-link"
@@ -199,12 +199,11 @@
                     {{ $t('Moteur open source : udata ({version})', { version: site?.version ?? '' }) }}
                   </a>
                 </li>
-                <li>
+                <li data-testid="commit-version">
                   <a
                     :href="appConfig.commitId ? `https://github.com/datagouv/cdata/commit/${appConfig.commitId}` : 'https://github.com/datagouv/cdata/'"
                     :title="appConfig.commitId ? $t('Version {version}', { version: appConfig.commitId }) : undefined"
                     class="fr-footer__top-link"
-                    data-testid="commit-version"
                   >
                     {{ $t('Interface utilisateur de data.gouv.fr : cdata ({version})', { version: appConfig.commitId }) }}
                   </a>
@@ -237,10 +236,16 @@
             </a>
           </div>
           <div class="fr-footer__content">
-            <p class="fr-footer__content-desc">
+            <div
+              v-if="appConfig.isFrenchGovernment"
+              class="w-full text-right mb-2"
+            >
+              <LogoNumeriqueGouv class="inline-block w-45" />
+            </div>
+            <p class="fr-footer__content-desc text-right">
               {{ $t("Un produit de la Direction Interministérielle du Numérique (DINUM).") }}
             </p>
-            <ul class="fr-footer__content-list">
+            <ul class="fr-footer__content-list w-full justify-end">
               <li
                 v-for="item in networkLinks"
                 :key="item.label"

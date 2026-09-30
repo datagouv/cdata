@@ -67,7 +67,7 @@ import styleVector from '../../../assets/json/vector.json'
 import PreviewUnavailable from './PreviewUnavailable.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
-import { getOwnerName, getOwnerPage } from '../../functions/owned'
+import { getMapAttribution } from '../../functions/owned'
 
 const props = defineProps<{ resource: Resource, dataset: Dataset | DatasetV2 }>()
 
@@ -94,11 +94,7 @@ const lastUpdate = computed(() => {
 
 const container = useTemplateRef('containerRef')
 
-const attributions = computed(() => {
-  if (!props.dataset.organization && !props.dataset.owner)
-    return ''
-  return `© <a href="${getOwnerPage(props.dataset)}" target="_blank">${getOwnerName(props.dataset)}</a>`
-})
+const attributions = computed(() => getMapAttribution(props.dataset))
 
 async function displayMap() {
   await import('maplibre-gl/dist/maplibre-gl.css')

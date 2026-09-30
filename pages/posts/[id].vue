@@ -58,12 +58,16 @@
             {{ post.name }}
           </h1>
           <template v-if="post.published || isMeAdmin()">
-            <p
+            <TranslationT
               v-if="post.published"
+              tag="p"
               class="text-xs mt-2 mb-0"
+              keypath="Publié le {date}"
             >
-              {{ $t('Publié le {date}', { date: formatDate(post.published) }) }}
-            </p>
+              <template #date>
+                <FormattedDate :date="post.published" />
+              </template>
+            </TranslationT>
             <p
               v-else
               class="text-xs mb-0"
@@ -137,7 +141,7 @@
 </template>
 
 <script setup lang="ts">
-import { markdownClasses, MarkdownViewer, LoadingBlock, BrandedButton, toast, useFormatDate } from '@datagouv/components-next'
+import { markdownClasses, MarkdownViewer, LoadingBlock, BrandedButton, toast, FormattedDate, TranslationT } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
@@ -145,17 +149,10 @@ import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 import type { PageBloc } from '~/types/pages'
 import type { Post } from '~/types/posts'
 
-// Keep the scroll position when toggling the `edit` query, otherwise the global
-// scrollBehavior resets to the top and cancels the scroll-to-blocs below.
-definePageMeta({
-  keepScroll: true,
-})
-
 const config = useRuntimeConfig()
 const siteConfig = useSiteConfig()
 const route = useRoute()
 const router = useRouter()
-const { formatDate } = useFormatDate()
 
 const blocsSection = ref<HTMLElement | null>(null)
 

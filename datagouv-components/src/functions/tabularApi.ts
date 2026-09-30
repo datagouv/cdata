@@ -1,6 +1,7 @@
 import { ofetch } from 'ofetch'
 import { useComponentsConfig, type PluginConfig } from '../config'
-import type { GenericFilter } from '../types/visualizations'
+import { encodeConditionValue } from './tabular'
+import type { AndFilters, Filter, GenericFilter, OrFilters } from '../types/visualizations'
 import type { SortConfig, TabularProfileResponse } from '../components/TabularExplorer/types'
 
 export type { SortConfig }
@@ -56,39 +57,65 @@ export async function fetchTabularData(config: PluginConfig, options: FetchTabul
   return await ofetch<TabularDataResponse>(url)
 }
 
-function buildFilterQuery(filters: GenericFilter): string {
+/**
+ * Serialize a filter tree into tabular-api query params.
+ * - `Filter` → `column__condition=value` (ANDed with the other params)
+ * - root `AndFilters` → one param per child; `OrFilters` children become `or=(...)` params
+ * - root `OrFilters` → a single `or=(...)` param, with `AndFilters` children nested as `and(...)`
+ * (nested-condition grammar: `.` instead of `=`, no value for isnull/isnotnull)
+ */
+export function buildFilterQuery(filters: GenericFilter): string {
   const params: Array<string> = []
-  if ('filters' in filters) {
-    for (const filter of filters.filters) {
-      if ('filters' in filter) {
-        params.push(buildFilterQuery(filter))
+  if (filters._cls === 'Filter') {
+    const param = serializeParam(filters)
+    if (param) params.push(param)
+  }
+  else if (filters._cls === 'AndFilters') {
+    for (const child of filters.filters) {
+      if (child._cls === 'Filter') {
+        const param = serializeParam(child)
+        if (param) params.push(param)
       }
       else {
-        if (filter.condition === 'is_null') {
-          params.push(`${encodeURIComponent(filter.column)}__isnull`)
-        }
-        else if (filter.condition === 'is_not_null') {
-          params.push(`${encodeURIComponent(filter.column)}__isnotnull`)
-        }
-        else if (filter.value !== null && filter.value !== undefined && filter.value !== '') {
-          params.push(`${encodeURIComponent(filter.column)}__${encodeURIComponent(filter.condition)}=${encodeURIComponent(filter.value)}`)
-        }
+        // child is an OrFilters group: serializeGroup returns `or(...)`, the param is `or=(...)`
+        const nested = serializeGroup(child)
+        if (nested) params.push(`or=${nested.slice(2)}`)
       }
     }
   }
   else {
-    const filter = filters
-    if (filter.condition === 'is_null') {
-      params.push(`${encodeURIComponent(filter.column)}__isnull`)
-    }
-    else if (filter.condition === 'is_not_null') {
-      params.push(`${encodeURIComponent(filter.column)}__isnotnull`)
-    }
-    else if (filter.value !== null && filter.value !== undefined && filter.value !== '') {
-      params.push(`${encodeURIComponent(filter.column)}__${encodeURIComponent(filter.condition)}=${encodeURIComponent(filter.value)}`)
-    }
+    const nested = serializeGroup(filters)
+    if (nested) params.push(`or=${nested.slice(2)}`)
   }
   return params.join('&')
+}
+
+/** `column__condition=value` param for a top-level (ANDed) filter, null when empty */
+function serializeParam(filter: Filter): string | null {
+  const column = encodeURIComponent(filter.column)
+  if (filter.condition === 'is_null') return `${column}__isnull`
+  if (filter.condition === 'is_not_null') return `${column}__isnotnull`
+  if (filter.value === null || filter.value === undefined || filter.value === '') return null
+  return `${column}__${encodeURIComponent(filter.condition)}=${encodeURIComponent(filter.value)}`
+}
+
+/** `column__condition.value` condition for the `or(...)` / `and(...)` grammar, null when empty */
+function serializeCondition(filter: Filter): string | null {
+  const column = encodeURIComponent(filter.column)
+  if (filter.condition === 'is_null') return `${column}__isnull`
+  if (filter.condition === 'is_not_null') return `${column}__isnotnull`
+  if (filter.value === null || filter.value === undefined || filter.value === '') return null
+  return `${column}__${encodeURIComponent(filter.condition)}.${encodeConditionValue(filter.value)}`
+}
+
+/** `or(a,b,...)` / `and(a,b,...)` for the nested-condition grammar, null when empty */
+function serializeGroup(group: AndFilters | OrFilters): string | null {
+  const operator = group._cls === 'OrFilters' ? 'or' : 'and'
+  const conditions = group.filters
+    .map(child => ('filters' in child ? serializeGroup(child) : serializeCondition(child)))
+    .filter((condition): condition is string => condition !== null)
+  if (conditions.length === 0) return null
+  return `${operator}(${conditions.join(',')})`
 }
 
 /**

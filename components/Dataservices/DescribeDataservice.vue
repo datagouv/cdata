@@ -55,9 +55,27 @@
           :title="t('Ajouter un lien vers la documentation machine')"
           :state="accordionState('machine_documentation_url')"
         >
-          <p class="fr-m-0">
+          <p class="mb-3">
             {{ t("Idéalement, proposez un lien OpenAPI (Swagger) qui permet aux développeurs d'explorer les endpoints, voir les méthodes disponibles, et tester des requêtes directement depuis la documentation. Dans le cas de services géographiques, vous pouvez renseigner un lien vers le service avec une requête GetCapabilities pour obtenir les métadonnées du service.") }}
           </p>
+          <SimpleBanner type="primary">
+            <span
+              class="fr-icon-info-line mr-2"
+              aria-hidden="true"
+            />
+            <TranslationT
+              keypath="Vous êtes une administration et vous n'avez pas de solution pour héberger ce fichier ? Déposez-le sur {files}, le service de partage de fichiers de La Suite numérique, puis renseignez ici son lien de partage."
+            >
+              <template #files>
+                <a
+                  class="link"
+                  href="https://fichiers.numerique.gouv.fr"
+                  target="_blank"
+                  rel="noopener"
+                >fichiers.numerique.gouv.fr</a>
+              </template>
+            </TranslationT>
+          </SimpleBanner>
         </Accordion>
         <Accordion
           :id="technicalDocumentationUrlAccordionId"
@@ -349,7 +367,7 @@
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-0">
-              {{ harvested ? t("Attributions et points de contacts") : t("Points de contact") }}
+              {{ t("Points de contact et attributions") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -363,14 +381,12 @@
               v-model="form.contact_points[index]"
               class="pt-3"
               :organization="form.owned?.organization"
-              :show-attributions="harvested"
             />
             <ContactPointSelect
               v-if="form.contact_points.length === 0"
               v-model="form.contact_points[0]"
               class="pt-3"
               :organization="form.owned?.organization"
-              :show-attributions="harvested"
             />
             <BrandedButton
               class="mt-3"
@@ -380,7 +396,7 @@
               :icon="RiAddLine"
               @click="form.contact_points.push({ ...defaultContactForm })"
             >
-              {{ harvested ? t('Nouvelle attribution') : t('Nouveau contact') }}
+              {{ t('Nouvelle attribution') }}
             </BrandedButton>
           </LinkedToAccordion>
         </fieldset>
@@ -561,7 +577,6 @@ import ProducerSelect from '~/components/ProducerSelect.vue'
 import type { DataserviceForm } from '~/types/types'
 
 const props = defineProps<{
-  harvested?: boolean
   type: 'create' | 'update'
 }>()
 const dataserviceForm = defineModel<DataserviceForm>({ required: true })

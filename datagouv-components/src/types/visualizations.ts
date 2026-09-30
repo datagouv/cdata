@@ -12,10 +12,15 @@ export type Filter = {
 
 export type AndFilters = {
   _cls: 'AndFilters'
+  filters: Array<Filter | OrFilters>
+}
+
+export type OrFilters = {
+  _cls: 'OrFilters'
   filters: Array<Filter | AndFilters>
 }
 
-export type GenericFilter = Filter | AndFilters
+export type GenericFilter = Filter | AndFilters | OrFilters
 
 export type XAxisType = 'discrete' | 'continuous'
 
@@ -67,6 +72,7 @@ export type Chart = Owned & {
   created_at: string
   last_modified: string
   deleted_at: string | null
+  image: string | null
   uri: string
   page: string
   x_axis: XAxis

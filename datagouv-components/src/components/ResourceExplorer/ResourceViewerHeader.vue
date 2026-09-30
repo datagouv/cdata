@@ -24,7 +24,14 @@
            carried by the separators' margins. -->
       <div class="min-w-0 truncate [flex-shrink:9999]">
         <span class="mr-1.5">·</span>
-        <span :title="formatDate(resource.last_modified)">{{ t('mis à jour {date}', { date: formatRelativeIfRecentDate(resource.last_modified) }) }}</span>
+        <TranslationT keypath="mis à jour {date}">
+          <template #date>
+            <FormattedDate
+              :date="resource.last_modified"
+              format="relative"
+            />
+          </template>
+        </TranslationT>
         <template v-if="resourceFilesize">
           <span class="mx-1.5">·</span>
           <span>{{ filesize(resourceFilesize) }}</span>
@@ -46,7 +53,7 @@
       <CopyButton
         :label="t('Copier le lien')"
         :copied-label="t('Lien copié !')"
-        :text="resourceExternalUrl"
+        :text="externalUrl"
         icon-only
         class="hidden shrink-0 md:inline-flex"
       />
@@ -84,10 +91,11 @@ import ResourceIcon from '../ResourceAccordion/ResourceIcon.vue'
 import SchemaBadge from '../ResourceAccordion/SchemaBadge.vue'
 import ResourceSelector from './ResourceSelector.vue'
 import ResourceMainAction from './ResourceMainAction.vue'
+import FormattedDate from '../FormattedDate.vue'
+import TranslationT from '../TranslationT.vue'
 import { filesize, summarize } from '../../functions/helpers'
-import { getResourceExternalUrl, getResourceFilesize } from '../../functions/resources'
+import { getResourceFilesize, resolveResourceExternalUrl } from '../../functions/resources'
 import { trackEvent } from '../../functions/matomo'
-import { useFormatDate } from '../../functions/dates'
 import { useTranslation } from '../../composables/useTranslation'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Resource } from '../../types/resources'
@@ -102,14 +110,15 @@ const props = defineProps<{
   resources?: Resource[]
   resourceTo?: (resource: Resource) => RouteLocationRaw
   exploreTo?: (resource: Resource) => string
+  // Overrides the "Copier le lien" target.
+  resourceExternalUrl?: (resource: Resource) => string
   replace?: boolean
   // Fullscreen mode hides the inline actions — they live in the dataset context bar above.
   fullscreen?: boolean
 }>()
 
 const { t } = useTranslation()
-const { formatRelativeIfRecentDate, formatDate } = useFormatDate()
 
 const resourceFilesize = computed(() => getResourceFilesize(props.resource))
-const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset, props.resource))
+const externalUrl = computed(() => resolveResourceExternalUrl(props.dataset, props.resource, props.resourceExternalUrl))
 </script>

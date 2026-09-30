@@ -85,4 +85,31 @@ test.describe('Dataset ownership transfer', () => {
     const updated = await (await request.get(`${API_BASE}/api/2/datasets/${dataset.id}/`)).json()
     expect(updated.organization).toBeNull()
   })
+
+  test('shows a transfer request with no known requester on behalf of the current owner', async ({ page, request }) => {
+    const uniqueId = Date.now()
+    const { dataset, organization } = await createDatasetAndOrganization(request, uniqueId)
+
+    await requestTransfer(page, dataset, organization)
+
+    // Transfers created before udata recorded the requester (December 2024) are served with `user: null`.
+    let ownerName = ''
+    await page.route(/\/api\/1\/transfer\/\?/, async (route) => {
+      const response = await route.fetch()
+      const transfers: Array<{ owner: { first_name: string, last_name: string } }> = await response.json()
+      ownerName = `${transfers[0]!.owner.first_name} ${transfers[0]!.owner.last_name}`
+      await route.fulfill({ response, json: transfers.map(transfer => ({ ...transfer, user: null })) })
+    })
+
+    // Reach the datasets page through a client-side navigation: the transfer list is then
+    // fetched by the browser, where it can be intercepted, instead of during SSR.
+    await page.goto(`/admin/organizations/${organization.id}/reuses`)
+    await page.waitForLoadState('networkidle')
+    await page.getByRole('link', { name: 'Jeux de données' })
+      .and(page.locator(`[href="/admin/organizations/${organization.id}/datasets"]`))
+      .click()
+
+    await expect(page.getByText(`${ownerName} a demandé un transfert`)).toBeVisible()
+    await expect(page.getByRole('link', { name: `Test transfer dataset ${uniqueId}` }).first()).toBeVisible()
+  })
 })

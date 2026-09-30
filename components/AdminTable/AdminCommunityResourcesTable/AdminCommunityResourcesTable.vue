@@ -6,41 +6,43 @@
 
   <AdminTable>
     <thead>
-      <AdminTableTh
-        :sorted="sorted('title')"
-        scope="col"
-        @sort="(direction: SortDirection) => $emit('sort', 'title', direction)"
-      >
-        {{ t("Titre de la ressource") }}
-      </AdminTableTh>
-      <AdminTableTh class="w-44">
-        {{ t("Statut") }}
-      </AdminTableTh>
-      <AdminTableTh class="w-14">
-        {{ t("Format") }}
-      </AdminTableTh>
-      <AdminTableTh
-        class="w-32"
-        :sorted="sorted('created_at_internal')"
-        scope="col"
-        @sort="(direction: SortDirection) => $emit('sort', 'created_at_internal', direction)"
-      >
-        {{ t("Créé le") }}
-      </AdminTableTh>
-      <AdminTableTh
-        class="w-32"
-        :sorted="sorted('last_modified_internal')"
-        scope="col"
-        @sort="(direction: SortDirection) => $emit('sort', 'last_modified_internal', direction)"
-      >
-        {{ t("Modifié le") }}
-      </AdminTableTh>
-      <AdminTableTh
-        class="w-32"
-        scope="col"
-      >
-        {{ t("Action") }}
-      </AdminTableTh>
+      <tr>
+        <AdminTableTh
+          :sorted="sorted('title')"
+          scope="col"
+          @sort="(direction: SortDirection) => $emit('sort', 'title', direction)"
+        >
+          {{ t("Titre de la ressource") }}
+        </AdminTableTh>
+        <AdminTableTh class="w-44">
+          {{ t("Statut") }}
+        </AdminTableTh>
+        <AdminTableTh class="w-14">
+          {{ t("Format") }}
+        </AdminTableTh>
+        <AdminTableTh
+          class="w-32"
+          :sorted="sorted('created_at_internal')"
+          scope="col"
+          @sort="(direction: SortDirection) => $emit('sort', 'created_at_internal', direction)"
+        >
+          {{ t("Créé le") }}
+        </AdminTableTh>
+        <AdminTableTh
+          class="w-32"
+          :sorted="sorted('last_modified_internal')"
+          scope="col"
+          @sort="(direction: SortDirection) => $emit('sort', 'last_modified_internal', direction)"
+        >
+          {{ t("Modifié le") }}
+        </AdminTableTh>
+        <AdminTableTh
+          class="w-32"
+          scope="col"
+        >
+          {{ t("Action") }}
+        </AdminTableTh>
+      </tr>
     </thead>
     <tbody>
       <tr
@@ -73,8 +75,8 @@
         <td>
           <code class="p-1 font-mono bg-gray-lower text-sm text-gray-medium rounded">{{ communityResource.format }}</code>
         </td>
-        <td>{{ formatDate(communityResource.created_at) }}</td>
-        <td>{{ formatDate(communityResource.last_modified) }}</td>
+        <td><FormattedDate :date="communityResource.created_at" /></td>
+        <td><FormattedDate :date="communityResource.last_modified" /></td>
         <td>
           <FileEditModal
             :dataset="communityResource.dataset"
@@ -90,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { useFormatDate, type CommunityResource, type Resource, type SchemaResponseData, toast } from '@datagouv/components-next'
+import { FormattedDate, type CommunityResource, type Resource, type SchemaResponseData, toast } from '@datagouv/components-next'
 import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
@@ -111,7 +113,6 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 
 const { data: schemas } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/')
 

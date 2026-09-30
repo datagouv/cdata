@@ -1,9 +1,9 @@
-import type { Chart, ChartForm, ChartForApi, Filter, ColumnDefinition } from '../types/visualizations'
+import type { Chart, ChartForm, ChartForApi, GenericFilter, ColumnDefinition } from '../types/visualizations'
 import type { ColumnType, TabularProfile } from '../components/TabularExplorer/types'
 import { resolveColumnType } from './tabular'
 
 export function toChartForm(chart: Chart) {
-  const seriesFilter = chart.series[0]?.filters as Filter | null
+  const seriesFilter: GenericFilter | null = chart.series[0]?.filters ?? null
 
   return {
     title: chart.title,
@@ -72,13 +72,13 @@ export function toChartApi(chartForm: ChartForm): ChartForApi {
 export function buildColumnsFromProfile(profile: { profile: TabularProfile }): Array<ColumnDefinition> {
   return profile.profile.header.map((name) => {
     const colInfo = profile.profile.columns[name]
-    const isCategorical = profile.profile.categorical.includes(name)
+    const isCategorical = profile.profile.categorical?.includes(name) ?? false
     // The chart stack only branches on 'number' and 'date' (continuous axis,
     // aggregatable series, time formatting): it has no notion of a year column,
     // and on an axis a year is a number.
     const resolvedType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
     const colType = resolvedType === 'year' ? 'number' : resolvedType
-    const colProfile = profile.profile.profile[name]
+    const colProfile = profile.profile.profile?.[name]
     return {
       name,
       type: colType,

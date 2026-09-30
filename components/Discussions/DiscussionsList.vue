@@ -14,11 +14,11 @@
           {{ $t('Vous consultez une discussion spécifique sur {subject}.', {
             subject: {
               Dataservice: $t('cette API'),
-              Dataset: $t('ce jeu de donnée'),
+              Dataset: $t('ce jeu de données'),
               Reuse: $t('cette réutilisation'),
               Post: $t('cet article'),
               Topic: $t('ce bouquet'),
-              Organization: $t('cette organization'),
+              Organization: $t('cette organisation'),
             }[type],
           }) }}
         </p>

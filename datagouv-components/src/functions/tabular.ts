@@ -1,4 +1,5 @@
 import type { Component } from 'vue'
+import { parseDate, type CalendarDate } from '@internationalized/date'
 import {
   RiHashtag,
   RiPriceTag3Line,
@@ -22,12 +23,107 @@ import {
 } from '@remixicon/vue'
 import { useTranslation } from '../composables/useTranslation'
 import type { TranslationFunction } from '../composables/useTranslation'
-import type { ColumnFilters, ColumnType } from '../components/TabularExplorer/types'
+import type { ColumnFilters, ColumnType, DateFilter } from '../components/TabularExplorer/types'
+import { parseDateValue } from './dates'
 
 export function hasFilterForColumn(filters: Record<string, ColumnFilters>, column: string): boolean {
   const f = filters[column]
   if (!f) return false
-  return !!(f.in?.length || f.exact != null || f.contains || f.null || f.min != null || f.max != null)
+  return !!(f.in?.length || f.exact != null || f.contains || f.null || f.min != null || f.max != null || f.date)
+}
+
+// `initialFilters` is a public prop of TabularExplorer, so a filter can carry
+// anything a consumer put in it. An unparseable date is dropped rather than
+// thrown, the way a non-numeric `min` is already ignored by `Number.isFinite`.
+export function parseIsoDate(value: string | undefined): CalendarDate | null {
+  if (!value) return null
+  try {
+    return parseDate(value)
+  }
+  catch {
+    return null
+  }
+}
+
+/**
+ * The calendar day a cell of a date column falls on, as an ISO date, or null
+ * when the value is not one the API produced. Timestamps keep only their day:
+ * filtering a whole day is the useful reading of "filter by this value", where
+ * the exact millisecond would only ever match that one row.
+ */
+export function toIsoDay(value: unknown): string | null {
+  const day = String(value ?? '').slice(0, 10)
+  return parseIsoDate(day) ? day : null
+}
+
+/**
+ * The day interval a date filter selects, half-open: `[lower, upper)`.
+ * An absent bound means the interval is open on that side.
+ */
+function dateFilterBounds(filter: DateFilter): { lower: CalendarDate | null, upper: CalendarDate | null } {
+  const start = parseIsoDate(filter.start)
+  if (!start) return { lower: null, upper: null }
+  switch (filter.operator) {
+    case 'is':
+      return { lower: start, upper: start.add({ days: 1 }) }
+    case 'before':
+      return { lower: null, upper: start }
+    case 'after':
+      return { lower: start.add({ days: 1 }), upper: null }
+    case 'between': {
+      const end = parseIsoDate(filter.end)
+      return { lower: start, upper: end ? end.add({ days: 1 }) : null }
+    }
+  }
+}
+
+/**
+ * Query params for a date filter, as a half-open day interval.
+ *
+ * The same two operators cover `date` and `datetime` columns, which
+ * `resolveColumnType` merges into one display type. `__exact` would not: a
+ * timestamp is never equal to a bare day, so an exact filter silently matches
+ * nothing on a `datetime` column.
+ */
+export function buildDateFilterParams(column: string, filter: DateFilter): Record<string, string> {
+  const { lower, upper } = dateFilterBounds(filter)
+  const params: Record<string, string> = {}
+  if (lower) params[`${column}__greater`] = lower.toString()
+  if (upper) params[`${column}__strictly_less`] = upper.toString()
+  return params
+}
+
+/**
+ * The filter "filter by this value" sets on a column for the cell that was
+ * clicked, merged into the filters already set on that column.
+ *
+ * An empty cell holds no value to match on: whatever the column type, filtering
+ * on the missing values is what "this value" means there — and it is the filter
+ * the column panel offers for them.
+ */
+export function buildCellValueFilter(columnType: ColumnType, value: unknown, existing: ColumnFilters): ColumnFilters {
+  if (value == null || value === '') return { ...existing, null: 'only' }
+  switch (columnType) {
+    // A date goes through the same `date` filter the column panel writes, so the
+    // calendar opens on the day that was clicked instead of on an empty month.
+    case 'date': {
+      const day = toIsoDay(value)
+      return day ? { ...existing, date: { operator: 'is', start: day } } : existing
+    }
+    case 'number': {
+      const num = Number(value)
+      return Number.isFinite(num) ? { ...existing, min: num, max: num } : existing
+    }
+    case 'boolean':
+      return { ...existing, exact: String(value) }
+    case 'categorical':
+    case 'text':
+    case 'year': {
+      const val = String(value)
+      const selected = existing.in ?? []
+      return selected.includes(val) ? existing : { ...existing, in: [...selected, val] }
+    }
+  }
 }
 
 export type TypeDisplay = {
@@ -148,8 +244,8 @@ export function useFormatTabular() {
 
   function formatCellDate(value: unknown): string {
     if (value == null || value === '') return '–'
-    const d = new Date(String(value))
-    if (Number.isNaN(d.getTime())) return String(value)
+    const d = parseDateValue(String(value))
+    if (!d) return String(value)
     return new Intl.DateTimeFormat(locale, { day: '2-digit', month: '2-digit', year: 'numeric' }).format(d)
   }
 
@@ -161,15 +257,16 @@ const FALSY_VALUES = ['false', '0', 'non', 'no']
 
 // `encodeURIComponent` leaves `.`, `(` and `)` as-is, but they are the operator
 // separator and the delimiters of the API's `or(...)` grammar: a search value
-// containing one makes the parser reject the whole query with a 400. Wrapping
-// the value in double quotes (as the API README suggests) does not work here —
-// the API keeps them as part of the searched string and returns no result. It
-// does percent-decode the value after parsing, so encoding them is enough.
-function encodeConditionValue(value: string): string {
+// containing one makes the parser reject the whole query with a 400.
+// The API percent-decodes the query string once before running the grammar
+// parser, then percent-decodes the parsed value: grammar-significant characters
+// must therefore be sent double-encoded (`%252E`) so the first decode leaves
+// them escaped (`%2E`) for the parser to unquote after parsing.
+export function encodeConditionValue(value: string): string {
   return encodeURIComponent(value)
-    .replace(/\./g, '%2E')
-    .replace(/\(/g, '%28')
-    .replace(/\)/g, '%29')
+    .replace(/\./g, '%252E')
+    .replace(/\(/g, '%2528')
+    .replace(/\)/g, '%2529')
 }
 
 // A decimal literal, not `Number()`: the API compares against a number column,

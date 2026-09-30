@@ -73,7 +73,8 @@ import ObjectCardBadge from './ObjectCardBadge.vue'
 defineProps<{
   reuse: Reuse | ReuseV2
   reuseUrl?: RouteLocationRaw
-  organizationUrl?: RouteLocationRaw
+  // undefined falls back to the organization's data.gouv.fr page; pass null to render plain, non-linked text
+  organizationUrl?: RouteLocationRaw | null
 }>()
 
 const { t } = useTranslation()

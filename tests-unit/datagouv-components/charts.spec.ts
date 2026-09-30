@@ -54,6 +54,29 @@ describe('toChartForm / toChartApi', () => {
     expect(toChartApi(form).series[0].filters).toEqual(filter)
   })
 
+  it('round-trips grouped filters through the form', () => {
+    const filters = {
+      _cls: 'AndFilters',
+      filters: [
+        { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Bretagne' },
+        { _cls: 'OrFilters', filters: [
+          { _cls: 'Filter', column: 'annee', condition: 'exact', value: '2020' },
+          { _cls: 'Filter', column: 'annee', condition: 'exact', value: '2021' },
+        ] },
+      ],
+    } as const
+    const chart = {
+      ...baseChart,
+      series: [{ type: 'bar', column_y: 'montant', aggregate_y: 'sum', filters }],
+    } as unknown as Chart
+
+    const form = toChartForm(chart)
+    expect(form.filter).toEqual(filters)
+
+    const api = toChartApi(form)
+    expect(api.series[0].filters).toEqual(filters)
+  })
+
   it('round-trips a count aggregation', () => {
     const chart = {
       ...baseChart,
@@ -166,5 +189,24 @@ describe('buildColumnsFromProfile', () => {
     const columns = buildColumnsFromProfile(profileWithoutDateBounds)
     const createdAtColumn = columns.find(c => c.name === 'created_at')
     expect(createdAtColumn).toEqual({ name: 'created_at', type: 'date', min: undefined, max: undefined })
+  })
+
+  // Non-CSV resources (parquet…) are indexed without csv-detective: the profile
+  // only carries the column names, their types and the row count.
+  it('builds columns from a profile without csv-detective output', () => {
+    const parquetProfile: { profile: TabularProfile } = {
+      profile: {
+        header: profile.profile.header,
+        columns: profile.profile.columns,
+        total_lines: profile.profile.total_lines,
+      },
+    }
+    const columns = buildColumnsFromProfile(parquetProfile)
+    expect(columns).toEqual([
+      { name: 'year', type: 'number', min: undefined, max: undefined },
+      { name: 'rate', type: 'number', min: undefined, max: undefined },
+      { name: 'label', type: 'text', min: undefined, max: undefined },
+      { name: 'created_at', type: 'date', min: undefined, max: undefined },
+    ])
   })
 })

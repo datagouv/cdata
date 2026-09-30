@@ -12,7 +12,10 @@
           <p class="text-[10px] text-gray-plain mb-0">
             {{ t('Valeur brute') }}
           </p>
-          <p class="text-xs text-gray-title mb-0">
+          <p
+            class="text-xs text-gray-title mb-0"
+            data-testid="cell-raw-value"
+          >
             {{ displayValue }}
           </p>
         </div>
@@ -77,7 +80,7 @@ import {
 } from '@remixicon/vue'
 import { toast } from 'vue-sonner'
 import { useTranslation } from '../../composables/useTranslation'
-import { buildTypeConfig } from '../../functions/tabular'
+import { buildCellValueFilter, buildTypeConfig } from '../../functions/tabular'
 import ClientOnly from '../ClientOnly.vue'
 import type { ColumnType, ColumnFilters } from './types'
 
@@ -125,23 +128,10 @@ function close() {
 
 function filterByValue() {
   if (!cell.value) return
-  const val = String(cell.value.value ?? '')
   const col = cell.value.column
-  const existing = filters.value[col] ?? {}
-  if (cell.value.columnType === 'categorical' || cell.value.columnType === 'text' || cell.value.columnType === 'date' || cell.value.columnType === 'year') {
-    const current = existing.in ?? []
-    if (!current.includes(val)) {
-      filters.value = { ...filters.value, [col]: { ...existing, in: [...current, val] } }
-    }
-  }
-  else if (cell.value.columnType === 'number') {
-    const num = Number(cell.value.value)
-    if (Number.isFinite(num)) {
-      filters.value = { ...filters.value, [col]: { ...existing, min: num, max: num } }
-    }
-  }
-  else if (cell.value.columnType === 'boolean') {
-    filters.value = { ...filters.value, [col]: { ...existing, exact: val } }
+  filters.value = {
+    ...filters.value,
+    [col]: buildCellValueFilter(cell.value.columnType, cell.value.value, filters.value[col] ?? {}),
   }
   close()
 }

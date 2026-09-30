@@ -51,6 +51,8 @@ Pour tester localement :
 ```
 NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES="hero_15.png"  #  to avoid homepage image randomness
 UDATA_WORKING_DIR="/path/to/udata/"  # to allow for udata commands execution (ex: in 2FA flow tests cleanup)
+NUXT_PUBLIC_TABULAR_API_PREVIEW_RESOURCES_ID="982d9dd0-365a-4c4b-8a83-75dec40c36bb"  # preview dashboard E2E tests
+NUXT_PUBLIC_TABULAR_API_PREVIEW_STATS_ID="33cf9a65-3f77-4d88-acd1-bca420d83e60"  # preview dashboard E2E tests
 ```
 3. **Lancer les tests** :
 ```bash

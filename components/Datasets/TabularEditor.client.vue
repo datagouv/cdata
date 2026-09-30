@@ -562,13 +562,16 @@ defineExpose({ generateFile })
 
 type ParsedFile = { columns: Array<string>, rows: Array<RowData> }
 
-function readDelimitedText(file: File): Promise<ParsedFile> {
+async function readDelimitedText(file: File): Promise<ParsedFile> {
+  const encoding = await detectFileEncoding(file)
+
   return new Promise((resolve, reject) => {
     paparse.parse<RowData, File>(file, {
       header: true,
       // A trailing newline otherwise counts as a row when guessing the delimiter,
       // which makes tab separated files with two columns fall back to the comma
       skipEmptyLines: true,
+      encoding,
       complete: (results) => {
         if (results.errors.length > 0) {
           console.warn('PapaParse a rencontré des avertissements:', results.errors)

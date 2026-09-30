@@ -47,7 +47,7 @@
           <CopyButton
             :label="t('Copier le lien')"
             :copied-label="t('Lien copié !')"
-            :text="resourceExternalUrl"
+            :text="externalUrl"
             class="z-2"
           />
         </div>
@@ -60,7 +60,17 @@
             aria-hidden="true"
             class="size-3 fill-gray-medium"
           />
-          <span class="text-xs mb-0">{{ t('Mis à jour {date}', { date: formatRelativeIfRecentDate(lastUpdate) }) }}</span>
+          <TranslationT
+            class="text-xs mb-0"
+            keypath="Mis à jour {date}"
+          >
+            <template #date>
+              <FormattedDate
+                :date="lastUpdate"
+                format="relative"
+              />
+            </template>
+          </TranslationT>
           <RiSubtractLine
             aria-hidden="true"
             class="size-3 fill-gray-medium"
@@ -303,7 +313,8 @@ import { ref, computed, defineAsyncComponent } from 'vue'
 import { RiDownloadLine, RiFileCopyLine, RiFileWarningLine, RiSubtractLine } from '@remixicon/vue'
 import OrganizationNameWithCertificate from '../OrganizationNameWithCertificate.vue'
 import { filesize, summarize } from '../../functions/helpers'
-import { useFormatDate } from '../../functions/dates'
+import FormattedDate from '../FormattedDate.vue'
+import TranslationT from '../TranslationT.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
 import type { CommunityResource, Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
@@ -316,7 +327,7 @@ import { trackEvent } from '../../functions/matomo'
 import CopyButton from '../CopyButton.vue'
 import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
-import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceExternalUrl, getResourceFilesize, isImagePreviewFormat } from '../../functions/resources'
+import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceFilesize, isImagePreviewFormat, resolveResourceExternalUrl } from '../../functions/resources'
 import BrandedButton from '../BrandedButton.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useHasTabularData } from '../../composables/useHasTabularData'
@@ -338,6 +349,8 @@ const props = withDefaults(defineProps<{
   isCommunityResource?: boolean
   resource: Resource | CommunityResource
   canEdit?: boolean
+  // Overrides the "Copier le lien" target.
+  resourceExternalUrl?: (resource: Resource | CommunityResource) => string
 }>(), {
   expandedOnMount: false,
   isCommunityResource: false,
@@ -355,7 +368,6 @@ const ImagePreview = defineAsyncComponent(() => import('./ImagePreview.client.vu
 const DatafairPreview = defineAsyncComponent(() => import('./Datafair.client.vue'))
 
 const { t } = useTranslation()
-const { formatRelativeIfRecentDate } = useFormatDate()
 const checkTabularData = useHasTabularData()
 
 const hasPreview = computed(() => {
@@ -458,7 +470,7 @@ const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 const unavailable = availabilityChecked && props.resource.extras['check:available'] === false
 const downloadButtonTitle = unavailable ? t(`Le robot de {certifier} n'a pas pu accéder à ce fichier - Télécharger le fichier en {format}`, { certifier: config.name, format: format.value }) : t(`Télécharger le fichier en {format}`, { format: format.value })
 
-const resourceExternalUrl = computed(() => getResourceExternalUrl(props.dataset, props.resource))
+const externalUrl = computed(() => resolveResourceExternalUrl(props.dataset, props.resource, props.resourceExternalUrl))
 
 const resourceContentId = 'resource-' + props.resource.id
 const resourceHeaderId = 'resource-' + props.resource.id + '-header'

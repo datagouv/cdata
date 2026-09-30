@@ -20,6 +20,25 @@
       <EmbedsDatasetCard slug="elections-municipales-2020-liste-des-candidats-elus-au-t1-et-liste-des-communes-entierement-pourvues" />
     </div>
 
+    <h3 class="mb-3">
+      Dataset (organisation non cliquable)
+    </h3>
+    <div class="not-prose grid gap-4 md:grid-cols-2">
+      <LoadingBlock
+        :status="datasetStatus"
+        :data="datasetData"
+        class="bg-transparent"
+      >
+        <template #default="{ data }">
+          <DatasetCard
+            :dataset="data"
+            :dataset-url="data.page"
+            :organization-url="null"
+          />
+        </template>
+      </LoadingBlock>
+    </div>
+
     <h2 class="mb-3">
       Dataservice
     </h2>
@@ -61,6 +80,26 @@
         <ReuseHorizontalCard
           v-if="data"
           :reuse="data"
+        />
+      </LoadingBlock>
+    </div>
+
+    <h2 class="mb-3">
+      Chart
+    </h2>
+    <div class="not-prose grid gap-4 md:grid-cols-2">
+      <LoadingBlock
+        v-for="chart in charts"
+        :key="chart.id"
+        v-slot="{ data }"
+        :status="chartStatus"
+        :data="chart"
+        class="bg-transparent"
+      >
+        <ChartCard
+          v-if="data"
+          :chart="data"
+          :chart-url="`/visualizations/${data.slug}/`"
         />
       </LoadingBlock>
     </div>
@@ -144,11 +183,16 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { DiscussionMessageCard, LoadingBlock, PostCard, ReuseHorizontalCard, TopicCard, type PaginatedArray, type Post, type ReuseV2, type Thread, type TopicV2 } from '@datagouv/components-next'
+import { ChartCard, DatasetCard, DiscussionMessageCard, LoadingBlock, PostCard, ReuseHorizontalCard, TopicCard, type Chart, type DatasetV2, type PaginatedArray, type Post, type ReuseV2, type Thread, type TopicV2 } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+
+const { data: datasetData, status: datasetStatus } = await useAPI<DatasetV2>('/api/2/datasets/municipales-2020-resultats-2nd-tour/', { lazy: true, server: false })
 
 const { data: reusesData, status: reusesHorizontalStatus } = await useAPI<PaginatedArray<ReuseV2>>('/api/2/reuses/', { lazy: true, server: false, query: { page_size: 2 } })
 const reusesForHorizontal = computed(() => reusesData.value?.data ?? [])
+
+const { data: chartsData, status: chartStatus } = await useAPI<PaginatedArray<Chart>>('/api/1/visualizations/', { lazy: true, server: false, query: { page_size: 2 } })
+const charts = computed(() => chartsData.value?.data ?? [])
 
 const { data: discussionsData, status: discussionStatus } = await useAPI<PaginatedArray<Thread>>('/api/1/discussions/', { lazy: true, server: false, query: { page_size: 2 } })
 const discussionsForCards = computed(() => {

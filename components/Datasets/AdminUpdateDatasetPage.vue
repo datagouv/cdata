@@ -8,7 +8,6 @@
       v-if="datasetForm"
       v-model="datasetForm"
       type="update"
-      :harvested
       :badges="dataset.badges"
       :submit-label="t('Sauvegarder')"
       :can-edit="dataset.permissions.edit"
@@ -158,12 +157,10 @@ const { data: dataset, status, refresh } = await useAPI<DatasetV2WithFullObject>
 })
 
 const datasetForm = ref<DatasetForm | null>(null)
-const harvested = ref(false)
 const pendingBadges = ref<Array<Badge> | null>(null)
 watchEffect(() => {
   if (dataset.value) {
     datasetForm.value = datasetToForm(dataset.value)
-    harvested.value = isHarvested(dataset.value)
   }
 })
 

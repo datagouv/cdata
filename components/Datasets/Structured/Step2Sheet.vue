@@ -68,6 +68,7 @@ import { RiErrorWarningLine } from '@remixicon/vue'
 import { computedAsync } from '@vueuse/core'
 import { ofetch } from 'ofetch'
 import type { ValidationReport } from '~/types/schema'
+import { goToStep } from '~/utils/scroll'
 
 const props = defineProps<{
   schema: RegisteredSchema | null
@@ -126,11 +127,11 @@ const schemaDetails = computedAsync<SchemaDetails | null>(
 )
 
 const goBack = () => {
-  navigateTo({ path: route.path, query: { step: 2 } })
+  goToStep(route, { step: 2 })
 }
 
 const changeSchema = () => {
-  navigateTo({ path: route.path, query: { step: 1 } })
+  goToStep(route, { step: 1 })
 }
 
 const submit = async () => {

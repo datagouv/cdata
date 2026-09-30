@@ -226,8 +226,7 @@ const total = computed(() => {
 
 const { formatNumber } = useFormatTabular()
 
-// One URL-synced model per filter slug. The page hosting the filters must set
-// definePageMeta({ keepScroll: true }) so the query updates don't scroll back to top.
+// One URL-synced model per filter slug.
 // A filter may declare `aliases` (legacy query keys): the model reads the canonical
 // key first, then falls back to the first alias that has a value, so old links keep
 // filtering. Writing the filter sets the canonical key and clears the aliases.

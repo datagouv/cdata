@@ -23,7 +23,7 @@ import type { Site } from './types/site'
 import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
-import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm, CombinedSort, ColumnDefinition, ColumnsDefinition } from './types/visualizations'
+import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, OrFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm, CombinedSort, ColumnDefinition, ColumnsDefinition } from './types/visualizations'
 import type { ColumnFilters, ColumnType, TabularRow } from './components/TabularExplorer/types'
 import type { GlobalSearchConfig, SearchType, SearchTypeConfig, SortOption, HiddenFilter, BuiltInFilterKey, DatasetSearchConfig, DatasetSearchFilters, DataserviceSearchConfig, DataserviceSearchFilters, ReuseSearchConfig, ReuseSearchFilters, OrganizationSearchConfig, OrganizationSearchFilters, TopicSearchConfig, TopicSearchFilters } from './types/search'
 import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
@@ -38,6 +38,7 @@ import Avatar from './components/Avatar.vue'
 import AvatarWithName from './components/AvatarWithName.vue'
 import BannerAction from './components/BannerAction.vue'
 import BrandedButton from './components/BrandedButton.vue'
+import ChartCard from './components/ChartCard.vue'
 import CopyButton from './components/CopyButton.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
 import DataserviceQuality from './components/DataserviceQuality.vue'
@@ -51,6 +52,7 @@ import DescriptionListTerm from './components/DescriptionListTerm.vue'
 import DescriptionListDetails from './components/DescriptionListDetails.vue'
 import DiscussionMessageCard from './components/DiscussionMessageCard.vue'
 import DateRangeDetails from './components/DateRangeDetails.vue'
+import FormattedDate from './components/FormattedDate.vue'
 import { DatasetInformationSection, DatasetTemporalitySection, DatasetSpatialSection, DatasetSchemaSection, DatasetEmbedSection } from './components/DatasetInformation'
 import LeafletMap from './components/LeafletMap.vue'
 import LicenseBadge from './components/LicenseBadge.vue'
@@ -270,6 +272,7 @@ export type {
   FilterCondition,
   Filter,
   AndFilters,
+  OrFilters,
   GenericFilter,
   XAxisType,
   XAxisSortBy,
@@ -343,6 +346,7 @@ export {
   AvatarWithName,
   BannerAction,
   BrandedButton,
+  ChartCard,
   CopyButton,
   DataserviceCard,
   DataserviceQuality,
@@ -366,6 +370,7 @@ export {
   QualityScore,
   DatasetQualityTooltipContent,
   DateRangeDetails,
+  FormattedDate,
   ExtraAccordion,
   LabelTag,
   LeafletMap,

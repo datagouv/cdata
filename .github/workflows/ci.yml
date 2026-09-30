@@ -46,7 +46,15 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      # The Sentry plugin stamps debug ids into the bundles here, and uploads the source maps
+      # too, but only when it gets a token. Withholding the token everywhere except `main` and
+      # manual runs is what keeps PR builds from uploading: they inject and stay quiet.
       - name: Build application
+        env:
+          SENTRY_AUTH_TOKEN: ${{ (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch') && secrets.SENTRY_AUTH_TOKEN || '' }}
+          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
+          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
+          SENTRY_URL: ${{ secrets.SENTRY_URL }}
         run: NUXT_APP_COMMIT_ID=$(git rev-parse --short HEAD) pnpm run build
 
       - name: Upload build artifacts
@@ -120,7 +128,7 @@ jobs:
           - browser: firefox
             projects: "--project=setup --project=setup-normal-user --project=firefox"
     container:
-      image: mcr.microsoft.com/playwright:v1.61.1-noble
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
       options: --user 1001
 
     services:
@@ -188,7 +196,7 @@ jobs:
           SERVER_NAME = 'localhost:7000'
           CDATA_BASE_URL="http://localhost:3000"
 
-          CACHE_TYPE = 'null'
+          CACHE_TYPE = 'flask_caching.backends.NullCache'
           DEFAULT_LANGUAGE = 'fr'
 
           SCHEMA_CATALOG_URL='https://schema.data.gouv.fr/schemas/schemas.json'
@@ -245,9 +253,17 @@ jobs:
         env:
           NUXT_PUBLIC_API_BASE: http://localhost:7000
           NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "hero_15.png"
+          # Lets the matomo plugin load (tests stub matomo.js at the context
+          # level, the tracking spec asserts what the app sends). CI pre-starts
+          # this server and Playwright reuses it (reuseExistingServer), so the
+          # webServer.env in playwright.config.ts does not apply here.
+          NUXT_PUBLIC_MATOMO_HOST: http://localhost:3000
           NUXT_SITE_URL: http://localhost:3000
           NUXT_PUBLIC_CHARTS_API_BASE: http://localhost:7000
           NUXT_PUBLIC_CADA_RESOURCE_ID: 3a6d6fe3-8548-43ed-ad09-72052771447c
+          NUXT_PUBLIC_TABULAR_API_PREVIEW_RESOURCES_ID: 982d9dd0-365a-4c4b-8a83-75dec40c36bb
+          NUXT_PUBLIC_TABULAR_API_PREVIEW_STATS_ID: 33cf9a65-3f77-4d88-acd1-bca420d83e60
+          NUXT_PUBLIC_EXPLORER_FEEDBACK_URL: https://example.com/feedback
         run: |
           # Start cdata server in background using pre-built artifacts
           PORT=3000 node .output/server/index.mjs > cdata.log 2>&1 &
@@ -383,6 +399,7 @@ jobs:
             type=sha,format=long,prefix=
             type=ref,event=branch
             type=ref,event=tag
+            type=raw,value=latest,enable={{is_default_branch}}
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
@@ -393,46 +410,17 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
 
   # ============================================
-  # JOB 5: Sentry - upload source maps (automatic on main, manual on any branch)
-  # ============================================
-  sentry:
-    needs: [quality_and_test, e2e]
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Download build artifacts
-        uses: actions/download-artifact@v8
-        with:
-          name: build-output
-          path: .output
-
-      - name: Set version
-        id: version
-        run: |
-          echo "short=${GITHUB_SHA:0:7}" >> $GITHUB_OUTPUT
-
-      - name: Create Sentry release
-        uses: getsentry/action-release@v3
-        env:
-          SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
-          SENTRY_ORG: ${{ secrets.SENTRY_ORG }}
-          SENTRY_PROJECT: ${{ secrets.SENTRY_PROJECT }}
-          SENTRY_URL: ${{ secrets.SENTRY_URL }}
-        with:
-          sourcemaps: ".output/public/_nuxt"
-          url_prefix: "~/_nuxt"
-          environment: ${{ github.ref_name }}
-          version: ${{ steps.version.outputs.short }}
-          ignore_missing: true
-
-  # ============================================
-  # JOB 6: Publish datagouv-components (automatic on main, manual on any branch)
+  # JOB 5: Publish datagouv-components (automatic on main, manual on any branch)
   # ============================================
   publish-datagouv-components:
     needs: [quality_and_test, e2e]
     runs-on: ubuntu-latest
+    # The version is read from the `dev` dist-tag then incremented, so two overlapping runs would
+    # compute the same number and the second would get a 403. `queue: max` serializes them FIFO
+    # (up to 100 pending) instead of cancelling the pending one like the default `queue: single`.
+    concurrency:
+      group: publish-datagouv-components
+      queue: max
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout repository

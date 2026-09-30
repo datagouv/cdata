@@ -80,46 +80,6 @@
       </div>
 
       <div class="col-span-5 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
-        <fieldset
-          v-if="isAdmin"
-          class="min-w-0 space-y-4"
-        >
-          <label
-            for="existing-charts"
-            class="mb-2 font-bold"
-          >
-            {{ $t('Graphiques existants') }}
-          </label>
-          <div class="flex gap-2">
-            <select
-              id="existing-charts"
-              v-model="selectedChartId"
-              class="flex-1 fr-select"
-            >
-              <option
-                value=""
-                disabled
-              >
-                {{ $t('Sélectionnez un graphique') }}
-              </option>
-              <option
-                v-for="column in charts?.data"
-                :key="column.id"
-                :value="column.id"
-              >
-                {{ column.title }}
-              </option>
-            </select>
-            <button
-              class="fr-btn"
-              type="button"
-              :disabled="!selectedChartId"
-              @click="loadSelectedChart"
-            >
-              {{ $t('Charger') }}
-            </button>
-          </div>
-        </fieldset>
         <fieldset class="min-w-0">
           <ProducerSelect
             v-model="producer"
@@ -177,25 +137,50 @@
               {{ $t('Filtres') }}
             </p>
             <div class="space-y-3">
-              <ChartFilterRow
-                v-for="(filter, index) in filterList"
-                :key="index"
-                :model-value="filter"
-                :index="index"
-                :column-options="columnDetails"
-                :condition-options="conditionOptions"
-                @update:model-value="updateFilter(index, $event)"
-                @remove="removeFilter(index)"
-              />
+              <template
+                v-for="(group, groupIndex) in filterGroups.groups"
+                :key="groupIndex"
+              >
+                <p
+                  v-if="groupIndex > 0"
+                  class="text-xs text-gray-600"
+                >
+                  {{ filterGroups.rootCombinator === 'and' ? $t('et') : $t('ou') }}
+                </p>
+                <ChartFilterGroup
+                  :group="group"
+                  :combinator="innerCombinator"
+                  :can-remove-group="filterGroups.groups.length > 1"
+                  :bordered="totalRules > 1"
+                  :column-options="columnDetails"
+                  :condition-options="conditionOptions"
+                  @update:combinator="setInnerCombinator"
+                  @remove:filter="(i) => removeFilter(groupIndex, i)"
+                  @add-condition="addCondition(groupIndex)"
+                  @remove-group="removeGroup(groupIndex)"
+                />
+              </template>
             </div>
-            <BrandedButton
-              size="sm"
-              color="tertiary"
-              :icon="RiAddLine"
-              @click="addFilter"
-            >
-              {{ $t('Ajouter un filtre') }}
-            </BrandedButton>
+            <div class="flex flex-wrap gap-2">
+              <BrandedButton
+                v-if="totalRules === 0"
+                size="sm"
+                color="tertiary"
+                :icon="RiAddLine"
+                @click="addGroup"
+              >
+                {{ $t('Ajouter une règle') }}
+              </BrandedButton>
+              <BrandedButton
+                v-if="totalRules > 1"
+                size="sm"
+                color="tertiary"
+                :icon="RiAddLine"
+                @click="addGroup"
+              >
+                {{ $t('Ajouter un groupe') }}
+              </BrandedButton>
+            </div>
           </fieldset>
 
           <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
@@ -472,15 +457,16 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, AndFilters, GenericFilter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
-import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, toChartForm, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
+import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartLine, RiCalculatorLine, RiLineChartLine, RiText } from '@remixicon/vue'
-import { useAPI } from '~/utils/api'
 import { isMeAdmin } from '~/utils/auth'
 import { keepValidSortCombined } from '~/utils/charts'
-import ChartFilterRow from './ChartFilterRow.vue'
+import { fromFilterGroups, toFilterGroups } from '~/utils/chartFilters'
+import type { FilterColumnOption, FilterGroupCombinator, FilterGroupsState } from '~/utils/chartFilters'
+import ChartFilterGroup from './ChartFilterGroup.vue'
 import ProducerSelect from '../ProducerSelect.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
@@ -508,7 +494,6 @@ const { t } = useTranslation()
 const hasTabularData = useHasTabularData()
 const getProfile = useGetProfile()
 const isAdmin = isMeAdmin()
-const { data: charts, refresh } = await useAPI<PaginatedArray<Chart>>('/api/1/visualizations/', { lazy: true })
 
 const $chartsApi = $fetch.create({
   baseURL: runtimeConfig.public.chartsApiBase as string,
@@ -524,6 +509,14 @@ const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/componen
 const form = defineModel<ChartForm>({
   required: true,
 })
+
+const props = defineProps<{
+  /**
+   * Full chart being edited, used only to initialize producer/resources/dataset
+   * and to keep the chart id for saving — the form data itself comes from the v-model
+   */
+  initialChart?: Chart
+}>()
 
 const columns = ref<ColumnsDefinition>({})
 const producer = ref<Owned | null>(null)
@@ -541,7 +534,6 @@ watch(producer, (newProducer) => {
   }
 }, { immediate: true })
 const savedChart = ref<Chart | null>(null)
-const selectedChartId = ref('')
 
 const chartForViewer = ref(toChartApi(form.value))
 
@@ -636,8 +628,8 @@ const sortProxy = computed<SortOption | null>({
   },
 })
 
-const columnDetails = computed<Array<{ key: string, value: string, disabled: boolean }>>(() => {
-  const options: Array<{ key: string, value: string, disabled: boolean }> = [{ key: '', value: t('Colonne'), disabled: true }]
+const columnDetails = computed<Array<FilterColumnOption>>(() => {
+  const options: Array<FilterColumnOption> = [{ key: '', value: t('Colonne'), disabled: true }]
   const resourceColumns = columns.value[selectedResource.value ?? '']
 
   if (resourceColumns) {
@@ -647,26 +639,32 @@ const columnDetails = computed<Array<{ key: string, value: string, disabled: boo
   return options
 })
 
-function isFilter(f: GenericFilter | null): f is Filter {
-  return f?._cls === 'Filter'
+const filterGroups = computed<FilterGroupsState>(() => toFilterGroups(form.value.filter))
+
+/** Conditions inside a group are combined with the opposite of the root combinator. */
+const innerCombinator = computed<FilterGroupCombinator>(() =>
+  filterGroups.value.rootCombinator === 'and' ? 'or' : 'and',
+)
+
+const totalRules = computed(() =>
+  filterGroups.value.groups.reduce((count, group) => count + group.length, 0),
+)
+
+/** All group combinator selects share one value: flip the root to its opposite. */
+function setInnerCombinator(combinator: FilterGroupCombinator) {
+  applyFilterGroups({
+    ...filterGroups.value,
+    rootCombinator: combinator === 'and' ? 'or' : 'and',
+  })
 }
 
-function isAndFilters(f: GenericFilter | null): f is AndFilters {
-  return f?._cls === 'AndFilters'
+function applyFilterGroups(state: FilterGroupsState) {
+  form.value.filter = fromFilterGroups(state)
 }
 
-const filterList = computed<Array<Filter>>(() => {
-  if (!form.value.filter) return []
-
-  const filter = form.value.filter
-  if (isFilter(filter)) {
-    return [filter]
-  }
-  else if (isAndFilters(filter)) {
-    return filter.filters.filter(isFilter)
-  }
-  return []
-})
+function newEmptyFilter(): Filter {
+  return { _cls: 'Filter', column: '', condition: 'exact', value: '' }
+}
 
 function getColumnTypeIcon(colType: ColumnType | 'count'): Component {
   if (colType === 'count') {
@@ -792,143 +790,94 @@ async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
   })
 }
 
-async function loadChart(id: string) {
-  try {
-    const data = await $api<Chart>(`/api/1/visualizations/${id}/`)
-    if (data) {
-      savedChart.value = data
+async function initializeFromChart(data: Chart) {
+  savedChart.value = data
 
-      const chartResources = new Set<string>()
-      for (const serie of data.series) {
-        if (serie.resource_id) {
-          chartResources.add(serie.resource_id)
-        }
-      }
-
-      form.value = toChartForm(data)
-
-      await loadMissingResourcesForChart(Array.from(chartResources))
-      await loadColumnsForResources(Array.from(chartResources))
-
-      if (data.organization) {
-        producer.value = { organization: data.organization, owner: null }
-      }
-      if (data.owner) {
-        producer.value = { organization: null, owner: data.owner }
-      }
-
-      if (!dataset.value && data.series.length > 0 && data.series[0]?.resource_id) {
-        try {
-          const resourceData = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${data.series[0].resource_id}/`)
-          if (resourceData.dataset_id) {
-            const fetchedDataset = await $chartsApi<DatasetSuggest>(`/api/2/datasets/${resourceData.dataset_id}/`)
-            dataset.value = fetchedDataset
-          }
-        }
-        catch (error) {
-          console.error('Failed to load dataset for chart:', error)
-        }
-      }
-
-      if (data.series.length > 0 && data.series[0]?.resource_id) {
-        await nextTick()
-
-        selectedResource.value = data.series[0].resource_id
-      }
-
-      toast.success(t('Graphique chargé !'))
+  const chartResources = new Set<string>()
+  for (const serie of data.series) {
+    if (serie.resource_id) {
+      chartResources.add(serie.resource_id)
     }
   }
-  catch (error) {
-    console.error('Failed to load chart:', error)
-    toast.error(t('Erreur lors du chargement du graphique'))
-  }
-}
 
-function loadSelectedChart() {
-  if (selectedChartId.value) {
-    loadChart(selectedChartId.value)
+  await loadMissingResourcesForChart(Array.from(chartResources))
+  await loadColumnsForResources(Array.from(chartResources))
+
+  if (data.organization) {
+    producer.value = { organization: data.organization, owner: null }
+  }
+  if (data.owner) {
+    producer.value = { organization: null, owner: data.owner }
+  }
+
+  if (!dataset.value && data.series.length > 0 && data.series[0]?.resource_id) {
+    try {
+      const resourceData = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${data.series[0].resource_id}/`)
+      if (resourceData.dataset_id) {
+        const fetchedDataset = await $chartsApi<DatasetSuggest>(`/api/2/datasets/${resourceData.dataset_id}/`)
+        dataset.value = fetchedDataset
+      }
+    }
+    catch (error) {
+      console.error('Failed to load dataset for chart:', error)
+    }
+  }
+
+  if (data.series.length > 0 && data.series[0]?.resource_id) {
+    await nextTick()
+
+    selectedResource.value = data.series[0].resource_id
   }
 }
 
 async function saveChart() {
-  try {
-    const chartForApi = toChartApi(form.value)
-    const update = savedChart.value?.id
-    if (update) {
-      savedChart.value = await $api<Chart>(`/api/1/visualizations/${savedChart.value!.id}/`, {
-        method: 'PATCH',
-        body: JSON.stringify(chartForApi),
-      })
-    }
-    else {
-      savedChart.value = await $api<Chart>('/api/1/visualizations/', {
-        method: 'POST',
-        body: JSON.stringify(chartForApi),
-      })
-    }
-
-    const imageUrl = chartViewerWrapperRef.value?.capture()
-    if (imageUrl) {
-      const i = await fetch(imageUrl)
-      const imageBlob = await i.blob()
-      const formData = new FormData()
-      formData.set('file', imageBlob, 'image.png')
-      await $fileApi(`/api/1/visualizations/${savedChart.value.id}/image/`, {
-        method: 'POST',
-        body: formData,
-      })
-    }
-
-    toast.success(update ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
-    await refresh()
-    selectedChartId.value = savedChart.value.id
+  const chartForApi = toChartApi(form.value)
+  const update = savedChart.value?.id
+  if (update) {
+    savedChart.value = await $api<Chart>(`/api/1/visualizations/${savedChart.value!.id}/`, {
+      method: 'PATCH',
+      body: JSON.stringify(chartForApi),
+    })
   }
-  catch (error) {
-    console.error('Failed to save chart:', error)
+  else {
+    savedChart.value = await $api<Chart>('/api/1/visualizations/', {
+      method: 'POST',
+      body: JSON.stringify(chartForApi),
+    })
   }
+
+  const imageUrl = chartViewerWrapperRef.value?.capture()
+  if (imageUrl) {
+    const i = await fetch(imageUrl)
+    const imageBlob = await i.blob()
+    const formData = new FormData()
+    formData.set('file', imageBlob, 'image.png')
+    await $fileApi(`/api/1/visualizations/${savedChart.value.id}/image/`, {
+      method: 'POST',
+      body: formData,
+    })
+  }
+
+  toast.success(update ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
 }
 
-function removeFilter(index: number) {
-  if (!form.value.filter) return
-
-  if (isFilter(form.value.filter)) {
-    form.value.filter = null
-  }
-  else if (isAndFilters(form.value.filter)) {
-    form.value.filter.filters.splice(index, 1)
-    if (form.value.filter.filters.length === 0) {
-      form.value.filter = null
-    }
-  }
+function addGroup() {
+  applyFilterGroups({ ...filterGroups.value, groups: [...filterGroups.value.groups, [newEmptyFilter()]] })
 }
 
-function updateFilter(index: number, newFilter: Filter) {
-  if (!form.value.filter) return
-
-  if (isFilter(form.value.filter)) {
-    form.value.filter = newFilter
-  }
-  else if (isAndFilters(form.value.filter)) {
-    form.value.filter.filters[index] = newFilter
-  }
+function removeGroup(groupIndex: number) {
+  applyFilterGroups({ ...filterGroups.value, groups: filterGroups.value.groups.filter((_, i) => i !== groupIndex) })
 }
 
-function addFilter() {
-  const newFilter: Filter = { _cls: 'Filter', column: '', condition: 'exact' as const, value: '' }
+function addCondition(groupIndex: number) {
+  const groups = filterGroups.value.groups.map((g, i) => (i === groupIndex ? [...g, newEmptyFilter()] : g))
+  applyFilterGroups({ ...filterGroups.value, groups })
+}
 
-  if (!form.value.filter) {
-    form.value.filter = newFilter
-  }
-  else if (isFilter(form.value.filter)) {
-    form.value.filter = {
-      _cls: 'AndFilters',
-      filters: [form.value.filter, newFilter],
-    }
-  }
-  else if (isAndFilters(form.value.filter)) {
-    form.value.filter.filters.push(newFilter)
-  }
+function removeFilter(groupIndex: number, filterIndex: number) {
+  const groups = filterGroups.value.groups.map((g, i) =>
+    (i === groupIndex ? g.filter((_, j) => j !== filterIndex) : g))
+  applyFilterGroups({ ...filterGroups.value, groups })
 }
 
 watch(
@@ -1025,4 +974,8 @@ watch(
   },
   { immediate: true },
 )
+
+if (props.initialChart) {
+  await initializeFromChart(props.initialChart)
+}
 </script>

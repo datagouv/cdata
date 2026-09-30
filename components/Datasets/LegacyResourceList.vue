@@ -94,15 +94,18 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, getResourceLabel, LoadingBlock, Pagination, RESOURCE_TYPE, ResourceAccordion, SearchInput, SimpleBanner, type DatasetV2, type Resource } from '@datagouv/components-next'
+import { BrandedButton, getResourceLabel, LoadingBlock, Pagination, RESOURCE_TYPE, ResourceAccordion, SearchInput, SimpleBanner, toast, type DatasetV2, type Resource } from '@datagouv/components-next'
 import { RiCloseCircleLine } from '@remixicon/vue'
 import { refDebounced } from '@vueuse/core'
+import { FetchError } from 'ofetch'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{ dataset: DatasetV2 }>()
 
 const config = useRuntimeConfig()
 const route = useRoute()
+const router = useRouter()
+const { t } = useTranslation()
 
 const url = computed(() => `/api/2/datasets/${props.dataset.id}/resources/`)
 const pageSize = ref(10)
@@ -147,14 +150,31 @@ const { $api } = useNuxtApp()
 const selectedResource = ref<Resource | null>(null)
 const selectedResourceBanner = useTemplateRef('selectedResourceBannerRef')
 watchEffect(async () => {
-  if (hasResourceId.value) {
-    selectedResource.value = await $api<Resource>(`/api/1/datasets/${props.dataset.id}/resources/${route.query.resource_id}/`)
-    nextTick(() => {
-      selectedResourceBanner.value?.scrollIntoView({ behavior: 'smooth' })
-    })
-  }
-  else {
+  if (!hasResourceId.value) {
     selectedResource.value = null
+    return
   }
+
+  try {
+    selectedResource.value = await $api<Resource>(`/api/1/datasets/${props.dataset.id}/resources/${route.query.resource_id}/`)
+  }
+  catch (e) {
+    // A bookmarked or shared link can carry a `resource_id` that has since been deleted.
+    // The dataset page itself is still valid, so fall back to the full list of resources
+    // instead of erroring out.
+    if (!(e instanceof FetchError) || e.statusCode !== 404) throw e
+
+    selectedResource.value = null
+    if (import.meta.client) {
+      toast.error(t('Ce fichier est introuvable.'))
+      const { resource_id: _, ...query } = route.query
+      router.replace({ query })
+    }
+    return
+  }
+
+  nextTick(() => {
+    selectedResourceBanner.value?.scrollIntoView({ behavior: 'smooth' })
+  })
 })
 </script>
