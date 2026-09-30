@@ -107,9 +107,21 @@
       role="separator"
       aria-orientation="vertical"
       :title="t('Glisser pour redimensionner')"
-      class="absolute right-0 top-0 z-20 h-full w-2 cursor-col-resize touch-none hover:bg-new-primary/10"
+      class="group absolute right-0 top-0 z-20 h-full w-2 cursor-col-resize touch-none hover:bg-new-primary/10"
       @mousedown="startResize"
-    />
+    >
+      <!-- Grip centered on the header so the resize affordance is visible at rest. -->
+      <span
+        aria-hidden="true"
+        class="mt-3 flex h-8 w-2 flex-col items-center justify-center gap-0.5 rounded-full border border-gray-default bg-white shadow-sm transition-colors group-hover:border-new-primary"
+      >
+        <span
+          v-for="dot in 3"
+          :key="dot"
+          class="size-0.5 rounded-full bg-gray-medium group-hover:bg-new-primary"
+        />
+      </span>
+    </div>
   </aside>
 </template>
 
