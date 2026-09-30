@@ -71,6 +71,13 @@ export async function createDatasetWithRemoteResources(request: APIRequestContex
   return { dataset, resources }
 }
 
+// Typing into a server-rendered field before Vue hydrates it is lost: hydration resets each
+// input to its `v-model`. Use it before filling a form right after landing on a page.
+export async function gotoHydrated(page: Page, url: string): Promise<void> {
+  await page.goto(url)
+  await page.waitForLoadState('networkidle')
+}
+
 // The banner is the only way into the new explorer, and it only lives on the resources
 // tab: opt in from there, then navigate wherever the test needs to go.
 export async function enableNewExplorer(page: Page, url: string): Promise<void> {

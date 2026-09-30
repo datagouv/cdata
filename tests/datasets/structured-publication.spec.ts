@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import * as path from 'node:path'
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { createOrganization, deleteDatasets, deleteOrganizations, type ApiOrganization } from '../helpers'
+import { createOrganization, deleteDatasets, deleteOrganizations, gotoHydrated, type ApiOrganization } from '../helpers'
 
 // These tests replay the situation reported in datagouv/data.gouv.fr#2060 with the very
 // files it was reported with: a washing machine durability record, exported as CSV
@@ -143,7 +143,7 @@ async function selectProducer(page: Page) {
 }
 
 async function startWizard(page: Page, schema: SchemaKey) {
-  await page.goto('/admin/datasets/structured?step=1')
+  await gotoHydrated(page, '/admin/datasets/structured?step=1')
   await selectProducer(page)
   await selectSchema(page, schema)
   await page.getByRole('button', { name: 'Suivant' }).click()
@@ -157,7 +157,7 @@ async function uploadAndOpenSpreadsheet(page: Page, fileName: string) {
 test.describe('choix du schéma', () => {
   test('les résultats de recherche restent visibles après une sélection', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
 
     await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill('test')
     await expect(page.getByRole('option')).toHaveCount(3)
@@ -172,7 +172,7 @@ test.describe('choix du schéma', () => {
 
   test('on peut passer directement d’un schéma à un autre', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
 
     await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill('test')
     await page.getByRole('option', { name: SCHEMAS.durabilite.title }).click()
@@ -184,7 +184,7 @@ test.describe('choix du schéma', () => {
 
   test('sélectionner un schéma n’affiche jamais l’erreur « vous devez sélectionner un schéma »', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
 
     await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill('test')
     await page.getByRole('option', { name: SCHEMAS.durabilite.title }).click()
@@ -196,7 +196,7 @@ test.describe('choix du schéma', () => {
 
   test('la recherche ignore les accents et les séparateurs', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
 
     const search = page.getByRole('searchbox', { name: 'Rechercher un schéma' })
 
@@ -213,7 +213,7 @@ test.describe('choix du schéma', () => {
 
   test('la recherche accepte un identifiant technique collé', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
 
     // The identifier as it appears in the catalog, which the title alone never matched
     await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill(SCHEMAS.durabilite.name)
@@ -224,7 +224,7 @@ test.describe('choix du schéma', () => {
 
   test('une recherche sans rapport ne renvoie rien', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
 
     await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill('zzzz')
 
@@ -234,7 +234,7 @@ test.describe('choix du schéma', () => {
 
   test('la liste des schémas se parcourt au clavier', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
 
     await page.getByRole('searchbox', { name: 'Rechercher un schéma' }).fill('test')
     const listbox = page.getByRole('listbox')
@@ -260,7 +260,7 @@ test.describe('choix du schéma', () => {
 
   test('le choix du mode de publication est exclusif', async ({ page }) => {
     await stubPublicationApis(page)
-    await page.goto('/admin/datasets/structured?step=1')
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
     await selectProducer(page)
 
     const nouveau = page.getByRole('radio', { name: 'Créer un nouveau jeu de données' })
