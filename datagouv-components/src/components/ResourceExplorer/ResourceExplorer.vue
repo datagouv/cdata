@@ -20,6 +20,7 @@
       >
         <ResourceExplorerSidebar
           v-model:expanded="resourceListExpanded"
+          :dataset
           :groups
           :selected-resource-id="selectedResource?.id ?? null"
           :collapsed="sidebarCollapsed"

@@ -1,5 +1,5 @@
 import { test, expect } from '../base'
-import { createDatasetWithRemoteResources, deleteDatasets, enableNewExplorer } from '../helpers'
+import { createDataset, createDatasetWithRemoteResources, createRemoteResource, deleteDatasets, enableNewExplorer } from '../helpers'
 
 const createdDatasets: Array<string> = []
 
@@ -112,6 +112,26 @@ test('the full-width resource list can be left without picking a resource', asyn
 
   await expect(viewer).toBeVisible()
   await expect(page).toHaveURL(new RegExp(`resource_id=${target.id}`))
+})
+
+test('only resources with a preview are labelled explorable in the sidebar', async ({ page, request }) => {
+  const dataset = await createDataset(request, `Test explore preview mark ${Date.now()}`, 'Dataset de test E2E')
+  createdDatasets.push(dataset.id)
+  // An unanalysed remote CSV has no preview, a PDF always has one.
+  const withoutPreview = await createRemoteResource(request, dataset.id, 'Fichier sans apercu')
+  const withPreview = await createRemoteResource(request, dataset.id, 'Fichier avec apercu', 'pdf')
+
+  await page.goto(`/explore/${dataset.id}`)
+  await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
+  const hoverCard = page.getByRole('tooltip')
+
+  await page.locator('aside').getByRole('link', { name: withPreview.title }).hover()
+  await expect(hoverCard.getByText(withPreview.title)).toBeVisible()
+  await expect(hoverCard.getByText('Explorable')).toBeVisible()
+
+  await page.locator('aside').getByRole('link', { name: withoutPreview.title }).hover()
+  await expect(hoverCard.getByText(withoutPreview.title)).toBeVisible()
+  await expect(hoverCard.getByText('Explorable')).toHaveCount(0)
 })
 
 test('leaving fullscreen lands back on the dataset page, on the same resource', async ({ page, request }) => {

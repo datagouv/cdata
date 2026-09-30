@@ -82,6 +82,10 @@ export function useResourceCapabilities(
     return 'unavailable'
   })
 
+  // Whether opening the resource shows its content (a preview or a map), not just
+  // its metadata.
+  const hasPreview = computed(() => previewKind.value !== 'unavailable' || !!hasPmtiles.value || ogcWms.value)
+
   const tabsOptions = computed(() => {
     const r = toValue(resource)
     const options = []
@@ -122,6 +126,7 @@ export function useResourceCapabilities(
 
   return {
     previewKind,
+    hasPreview,
     hasTabularData,
     hasPmtiles,
     hasPmtilesError,

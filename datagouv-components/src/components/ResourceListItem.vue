@@ -9,7 +9,7 @@
       // Expanded, each row is its own grid: fixed tracks keep the extra columns
       // aligned from one row to the next, where `auto` tracks would follow each
       // row's content.
-      expanded ? 'grid-cols-[auto_minmax(0,1fr)_13rem_5rem_6rem_4rem]' : 'grid-cols-[auto_minmax(0,1fr)_auto]',
+      expanded ? 'grid-cols-[auto_minmax(0,1fr)_13rem_5rem_6rem_4rem_1.25rem]' : 'grid-cols-[auto_minmax(0,1fr)_auto_1.25rem]',
     ]"
     class="grid h-8 w-full items-center gap-1 rounded px-1 py-1 text-left !bg-none !no-underline"
     @pointerenter="openOnHover"
@@ -46,8 +46,8 @@
       class="max-w-24 justify-self-start truncate rounded bg-gray-lower px-1.5 py-0.5 text-[13px] uppercase leading-4 text-gray-medium"
       :title="resource.format"
     >{{ resource.format }}</span>
-    <!-- Holds the format track so the downloads stay in their column. -->
-    <span v-else-if="expanded" />
+    <!-- Holds the format track so the next columns stay in place. -->
+    <span v-else />
     <span
       v-if="expanded"
       class="inline-flex items-center justify-end gap-1 text-[13px] tabular-nums text-gray-medium"
@@ -57,6 +57,14 @@
         aria-hidden="true"
       />
       {{ summarize(resource.metrics.views) }}
+    </span>
+    <!-- Labelled in the hover card, which already opens on this row. -->
+    <span class="flex items-center justify-center">
+      <RiEyeLine
+        v-if="hasPreview"
+        class="size-4 text-gray-medium"
+        aria-hidden="true"
+      />
     </span>
   </AppLink>
 
@@ -103,6 +111,16 @@
             {{ summarize(resource.metrics.views) }}
           </span>
         </div>
+        <span
+          v-if="hasPreview"
+          class="mt-1.5 flex w-fit items-center gap-0.5 rounded bg-gray-lower px-1.5 py-0.5 text-[12px] leading-4 text-gray-medium"
+        >
+          <RiEyeLine
+            class="size-3"
+            aria-hidden="true"
+          />
+          {{ t('Explorable') }}
+        </span>
       </div>
     </Teleport>
   </ClientOnly>
@@ -113,7 +131,7 @@ import { computed, ref, useTemplateRef } from 'vue'
 import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/vue'
 import { useEventListener } from '@vueuse/core'
 import type { RouteLocationRaw } from 'vue-router'
-import { RiDownloadLine } from '@remixicon/vue'
+import { RiDownloadLine, RiEyeLine } from '@remixicon/vue'
 import AppLink from './AppLink.vue'
 import ClientOnly from './ClientOnly.vue'
 import FormattedDate from './FormattedDate.vue'
@@ -121,7 +139,9 @@ import ResourceIconBadge from './ResourceIconBadge.vue'
 import TranslationT from './TranslationT.vue'
 import { getResourceFilesize } from '../functions/resources'
 import { filesize, summarize } from '../functions/helpers'
+import { useResourceCapabilities } from '../composables/useResourceCapabilities'
 import { useTranslation } from '../composables/useTranslation'
+import type { Dataset, DatasetV2 } from '../types/datasets'
 import type { Resource } from '../types/resources'
 
 // The hover card below is a second root node, so Vue drops fallthrough attributes
@@ -134,6 +154,8 @@ defineOptions({ inheritAttrs: false })
 // truth for the selection.
 const props = withDefaults(defineProps<{
   resource: Resource
+  // Some previews (Data Fair, OpenAPI) depend on the dataset's organization.
+  dataset: Dataset | DatasetV2
   to: RouteLocationRaw
   selected?: boolean
   replace?: boolean
@@ -146,6 +168,8 @@ const props = withDefaults(defineProps<{
 })
 
 const { t } = useTranslation()
+
+const { hasPreview } = useResourceCapabilities(() => props.resource, () => props.dataset)
 
 const humanFilesize = computed(() => {
   const size = getResourceFilesize(props.resource)

@@ -89,6 +89,7 @@
             v-for="resource in group.items"
             :key="resource.id"
             :resource
+            :dataset
             :to="resourceTo(resource)"
             :replace
             :selected="resource.id === selectedResourceId"
@@ -166,11 +167,13 @@ import ResourceListItem from '../ResourceListItem.vue'
 import { getResourceLabel } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
 import { useResizable } from '../../composables/useResizable'
+import type { DatasetV2 } from '../../types/datasets'
 import type { Resource, ResourceGroup, ResourceType } from '../../types/resources'
 
 const { t } = useTranslation()
 
 defineProps<{
+  dataset: DatasetV2
   groups: ResourceGroup[]
   selectedResourceId: string | null
   collapsed: boolean

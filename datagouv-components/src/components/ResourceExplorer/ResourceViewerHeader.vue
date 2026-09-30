@@ -8,6 +8,7 @@
       >{{ resource.title || t('Fichier sans nom') }}</span>
       <ResourceSelector
         v-if="resources && resources.length > 1 && resourceTo"
+        :dataset
         :resources
         :selected-id="resource.id"
         :resource-to
