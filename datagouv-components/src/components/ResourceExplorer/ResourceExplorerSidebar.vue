@@ -11,7 +11,7 @@
     >
       <span
         v-if="!collapsed"
-        class="text-[13px] font-medium text-gray-title"
+        class="text-[14px] font-medium text-gray-title"
       >{{ t('Ressources') }}</span>
       <button
         type="button"
@@ -41,7 +41,7 @@
         <input
           :value="search"
           type="search"
-          class="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-gray-medium"
+          class="min-w-0 flex-1 bg-transparent text-[14px] outline-none placeholder:text-gray-medium"
           :placeholder="t('Rechercher une ressource')"
           @input="$emit('update:search', ($event.target as HTMLInputElement).value)"
         >
@@ -52,7 +52,7 @@
         :key="group.type"
         class="space-y-0.5"
       >
-        <p class="px-1 py-2 text-[12px] font-medium leading-3 text-gray-medium">
+        <p class="px-1 py-2 text-[13px] font-medium leading-4 text-gray-medium">
           {{ getResourceLabel(group.type, group.total) }}
         </p>
         <ResourceListItem
@@ -67,7 +67,7 @@
           v-if="group.items.length < group.total"
           type="button"
           :disabled="loadingType === group.type"
-          class="flex w-full items-center gap-1 px-1 py-1 text-left text-[13px] text-blue-default hover:underline disabled:cursor-default disabled:no-underline"
+          class="flex w-full items-center gap-1 px-1 py-1 text-left text-[14px] text-blue-default hover:underline disabled:cursor-default disabled:no-underline"
           @click="$emit('load-more', group.type)"
         >
           <RiLoader5Line
@@ -84,7 +84,7 @@
         v-if="search && !groups.length"
         class="flex flex-col gap-2 px-1 py-2"
       >
-        <p class="m-0 text-[13px] leading-snug text-gray-medium">
+        <p class="m-0 text-[14px] leading-snug text-gray-medium">
           {{ t('Pas de résultats pour « {q} »', { q: search }) }}
         </p>
         <BrandedButton

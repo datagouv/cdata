@@ -14,12 +14,12 @@
     <ResourceIconBadge :resource />
     <div class="flex min-w-0 items-baseline gap-0.5 whitespace-nowrap leading-4">
       <span
-        class="truncate text-[13px]"
+        class="truncate text-[14px]"
         :class="selected ? 'font-extrabold text-gray-title' : 'font-medium text-gray-medium'"
       >{{ resource.title || t('Fichier sans nom') }}</span>
       <template v-if="humanFilesize">
-        <span class="shrink-0 text-[13px] text-gray-medium">·</span>
-        <span class="shrink-0 text-[12px] text-gray-medium">{{ humanFilesize }}</span>
+        <span class="shrink-0 text-[14px] text-gray-medium">·</span>
+        <span class="shrink-0 text-[13px] text-gray-medium">{{ humanFilesize }}</span>
       </template>
     </div>
     <!-- Capped and truncated: an `auto` grid track floors at its content width, so an
@@ -27,7 +27,7 @@
          the title track to nothing and overflow the fixed-height row. -->
     <span
       v-if="resource.format"
-      class="max-w-24 truncate rounded bg-gray-lower px-1.5 py-0.5 text-[12px] uppercase leading-4 text-gray-medium"
+      class="max-w-24 truncate rounded bg-gray-lower px-1.5 py-0.5 text-[13px] uppercase leading-4 text-gray-medium"
       :title="resource.format"
     >{{ resource.format }}</span>
   </AppLink>
