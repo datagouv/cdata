@@ -463,9 +463,11 @@ test.describe('column filter', () => {
 
 test.describe('going back from an advice', () => {
   async function openAdviceAndGoBack(page: Page, link = dataTable(page).locator('a.link').first()) {
-    const id = (await link.innerText()).trim()
     await link.click()
-    await page.waitForURL(`**/explore/cada/${id}`, { timeout: 30000 })
+    await page.waitForURL(/\/explore\/cada\/\d+$/, { timeout: 30000 })
+    // Read from the URL, not the link: the rows may have been replaced by a refetch
+    // between reading the link and clicking it.
+    const id = new URL(page.url()).pathname.split('/').pop()!
     // The list stays displayed while the advice loads, and it has an `h1` too:
     // only the advice heading tells the advice page is really shown.
     await expect(page.getByRole('heading', { level: 1, name: id })).toBeVisible({ timeout: 30000 })
