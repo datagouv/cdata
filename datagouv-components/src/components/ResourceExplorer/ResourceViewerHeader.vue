@@ -1,10 +1,7 @@
 <template>
   <header class="flex h-14 shrink-0 items-center justify-between gap-2 border-b border-gray-default bg-gray-some px-3">
     <div class="flex min-w-0 items-center gap-1.5 overflow-hidden text-[13px] text-gray-medium">
-      <ResourceIcon
-        :resource
-        class="size-4 shrink-0"
-      />
+      <ResourceIconBadge :resource />
       <span
         class="min-w-0 truncate font-medium text-gray-title"
         :title="resource.title || t('Fichier sans nom')"
@@ -87,7 +84,7 @@ import { computed } from 'vue'
 import { RiDownloadLine, RiFullscreenLine } from '@remixicon/vue'
 import BrandedButton from '../BrandedButton.vue'
 import CopyButton from '../CopyButton.vue'
-import ResourceIcon from '../ResourceAccordion/ResourceIcon.vue'
+import ResourceIconBadge from '../ResourceIconBadge.vue'
 import SchemaBadge from '../ResourceAccordion/SchemaBadge.vue'
 import ResourceSelector from './ResourceSelector.vue'
 import ResourceMainAction from './ResourceMainAction.vue'

@@ -11,16 +11,7 @@
     @focus="show = true"
     @blur="closeTooltip"
   >
-    <span
-      :class="[iconColor, '[&_svg]:fill-current']"
-      class="flex size-5 shrink-0 items-center justify-center rounded-[1px]"
-    >
-      <component
-        :is="iconComponent"
-        class="size-4"
-        aria-hidden="true"
-      />
-    </span>
+    <ResourceIconBadge :resource />
     <div class="flex min-w-0 items-baseline gap-0.5 whitespace-nowrap leading-4">
       <span
         class="truncate text-[13px]"
@@ -97,10 +88,10 @@ import type { RouteLocationRaw } from 'vue-router'
 import { RiDownloadLine } from '@remixicon/vue'
 import AppLink from './AppLink.vue'
 import ClientOnly from './ClientOnly.vue'
-import File from './Icons/File.vue'
 import FormattedDate from './FormattedDate.vue'
+import ResourceIconBadge from './ResourceIconBadge.vue'
 import TranslationT from './TranslationT.vue'
-import { getResourceFormatIcon, getResourceIconColor, getResourceFilesize } from '../functions/resources'
+import { getResourceFilesize } from '../functions/resources'
 import { filesize, summarize } from '../functions/helpers'
 import { useTranslation } from '../composables/useTranslation'
 import type { Resource } from '../types/resources'
@@ -124,11 +115,6 @@ const props = withDefaults(defineProps<{
 })
 
 const { t } = useTranslation()
-
-// Render the icon directly (not via ResourceIcon which forces a gray color) so the
-// colored badge can tint it through currentColor + [&_svg]:fill-current.
-const iconComponent = computed(() => (props.resource.format ? getResourceFormatIcon(props.resource.format) : null) ?? File)
-const iconColor = computed(() => getResourceIconColor(props.resource.format))
 
 const humanFilesize = computed(() => {
   const size = getResourceFilesize(props.resource)
