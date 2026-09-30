@@ -5,7 +5,7 @@
     :to
     :replace
     :class="selected ? '[&&]:!bg-gray-200' : '[&&]:hover:!bg-gray-100'"
-    class="grid h-7 w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded px-1 py-1 text-left !bg-none !no-underline"
+    class="grid h-8 w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded px-1 py-1 text-left !bg-none !no-underline"
     @pointerenter="openOnHover"
     @pointerleave="closeTooltip"
     @focus="show = true"
