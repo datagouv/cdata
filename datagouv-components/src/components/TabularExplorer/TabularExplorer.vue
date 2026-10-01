@@ -8,11 +8,16 @@
 
     <!-- Same skeleton as the Suspense fallback above us: in both cases the slot isn't
          rendered yet, so its toolbar is a placeholder too. -->
-    <TabularSkeleton v-else-if="previewLoading" />
+    <TabularSkeleton
+      v-else-if="previewLoading"
+      :search-input
+    />
 
     <!-- Loaded: the consumer composes the parts (toolbar, table, mobile sheet) from
-         the provided context, so it controls the framing and layout. -->
-    <template v-else-if="tableData && profileData">
+         the provided context, so it controls the framing and layout. Once loaded, it
+         stays: a failed search or filter only empties the rows, so the controls that
+         caused it remain there to undo it. -->
+    <template v-else-if="(tableData || loadedOnce) && profileData">
       <slot />
     </template>
   </div>
@@ -33,15 +38,11 @@ import { provideTabularContext, type ActiveFilter } from './useTabularContext'
 import { useColumnMetadata } from './useColumnMetadata'
 import { useTabularUrlState } from './useTabularUrlState'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   resourceId: string
-  // When set, searches across multiple columns using the Tabular API's or(...)
-  // parameter. Text and categorical columns get a __contains filter; number
-  // columns get a __exact filter (since __contains is not supported for numbers
-  // by the API). Year, date and boolean columns are excluded.
-  // Note: combined via AND with any existing column-specific `contains` filters,
-  // so it acts as an additional narrowing constraint, not a replacement.
-  globalSearch?: string
+  // Whether the toolbar shows its search field. A page with a search of its own
+  // hides it and drives the search through `v-model:global-search` instead.
+  searchInput?: boolean
   // Filters seeded on mount, e.g. { 'Administration': { contains: 'Ministère' } }.
   // The explorer owns them afterwards: later changes to this prop are ignored,
   // so pass a fresh instance (or remount) to reset them.
@@ -59,7 +60,18 @@ const props = defineProps<{
   // e.g. { administration: { column: 'Administration', operator: 'contains' } }.
   // Any other filter goes into a JSON `filters` param.
   urlAliases?: Record<string, TabularUrlAlias>
-}>()
+}>(), {
+  searchInput: true,
+})
+
+// Searches across multiple columns using the Tabular API's or(...) parameter. Text
+// and categorical columns get a __contains filter; number columns get a __exact
+// filter (since __contains is not supported for numbers by the API). Year, date and
+// boolean columns are excluded.
+// Combined via AND with any column-specific `contains` filter, so it acts as an
+// additional narrowing constraint, not a replacement.
+// Owned here like the filters; a parent binds it to drive or keep it.
+const globalSearch = defineModel<string>('globalSearch', { default: '' })
 
 const { t } = useTranslation()
 const config = useComponentsConfig()
@@ -99,8 +111,10 @@ const { sort, filters } = props.syncUrl
 
 const PAGE_SIZE = 50
 
-const dataQuery = computed(() => {
-  const q: Record<string, string | number> = { page: 1, page_size: PAGE_SIZE }
+// What the table shows (sort, filters, search), apart from its pagination: the
+// filtered download sends the very same params, so the file can't drift from the table.
+const tableQuery = computed(() => {
+  const q: Record<string, string | number> = {}
   if (sort.value) {
     q[`${sort.value.column}__sort`] = sort.value.direction
   }
@@ -130,21 +144,28 @@ const dataQuery = computed(() => {
       Object.assign(q, buildDateFilterParams(col, filter.date))
     }
   }
-  if (props.globalSearch && profileData.value?.profile) {
-    const conditions = buildGlobalSearchConditions(allColumns.value, getColumnType, props.globalSearch)
+  if (globalSearch.value && profileData.value?.profile) {
+    const conditions = buildGlobalSearchConditions(allColumns.value, getColumnType, globalSearch.value)
     q.or = '(' + conditions.join(',') + ')'
   }
   return q
 })
 
+const dataQuery = computed(() => ({ page: 1, page_size: PAGE_SIZE, ...tableQuery.value }))
+
 const { data: tableData, error, status: dataStatus } = await useFetch<TabularDataResponse>(dataUrl, { raw: true, query: dataQuery })
+
+// A failed request clears `tableData`: telling a resource that can't be previewed
+// from a search or filter the API rejects needs to know whether it ever loaded.
+const loadedOnce = ref(!!tableData.value)
 
 // The component renders nothing useful until the profile is available
 // (allColumns is derived from it). Surface a clear loading / error state
 // so we don't end up with an empty table + a spinner running forever.
 const profileLoading = computed(() => !profileData.value && (profileStatus.value === 'idle' || profileStatus.value === 'pending'))
-const previewError = computed(() => error.value || profileError.value)
-const previewLoading = computed(() => !previewError.value && (!tableData.value || profileLoading.value))
+const previewError = computed(() => profileError.value || (!loadedOnce.value && error.value))
+const queryFailed = computed(() => loadedOnce.value && !!error.value)
+const previewLoading = computed(() => !previewError.value && (profileLoading.value || (!tableData.value && !loadedOnce.value)))
 // A search / filter / sort change refetches while the previous rows stay on
 // screen: without a signal, the table looks unchanged for several seconds.
 const isRefreshing = computed(() => dataStatus.value === 'pending' && !previewLoading.value)
@@ -159,9 +180,14 @@ const generation = ref(0)
 watch(() => tableData.value, (data) => {
   generation.value++
   if (data) {
+    loadedOnce.value = true
     allRows.value = [...data.data]
     currentPage.value = 1
     hasMore.value = data.data.length < data.meta.total
+  }
+  else if (queryFailed.value) {
+    allRows.value = []
+    hasMore.value = false
   }
 }, { immediate: true })
 
@@ -289,12 +315,22 @@ function removeFilter(column: string) {
   filters.value = rest
 }
 
-// Resetting goes back to how the table opened: no filter, but the initial sort
-// — it is the table's default order, not a criterion the user added.
-const canReset = computed(() => activeFilters.value.length > 0 || !isSameSort(sort.value, props.initialSort))
+// The Tabular API's CSV export takes the params of the data endpoint and ignores the
+// pagination: the file holds every filtered row, not just the pages loaded on screen.
+// All the columns, not only the displayed ones: the API splits `columns` on every
+// comma, so a column whose name holds one can't be requested by name.
+const filteredDownloadUrl = computed(() => {
+  const params = new URLSearchParams(Object.entries(tableQuery.value).map(([key, value]) => [key, String(value)]))
+  return `${config.tabularApiUrl}/api/resources/${props.resourceId}/data/csv/?${params}`
+})
+
+// Resetting goes back to how the table opened: no filter nor search, but the
+// initial sort — it is the table's default order, not a criterion the user added.
+const canReset = computed(() => activeFilters.value.length > 0 || !!globalSearch.value || !isSameSort(sort.value, props.initialSort))
 
 function reset() {
   filters.value = {}
+  globalSearch.value = ''
   sort.value = props.initialSort ? { ...props.initialSort } : null
 }
 
@@ -320,6 +356,10 @@ provideTabularContext({
   removeFilter,
   canReset,
   reset,
+  globalSearch,
+  searchInput: computed(() => props.searchInput),
+  queryFailed,
+  filteredDownloadUrl,
   hasFilterForColumn,
   allColumns,
   visibleColumns,

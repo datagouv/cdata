@@ -113,11 +113,12 @@
               class="py-16 text-center"
             >
               <div class="flex flex-col items-center gap-2">
-                <RiSearchLine
+                <component
+                  :is="queryFailed ? RiErrorWarningLine : RiSearchLine"
                   class="size-8 text-gray-low"
                   aria-hidden="true"
                 />
-                <span class="text-sm text-gray-low">{{ t('Aucun résultat trouvé.') }}</span>
+                <span class="text-sm text-gray-low">{{ emptyMessage }}</span>
               </div>
             </td>
           </tr>
@@ -175,11 +176,12 @@
         class="py-16 text-center"
       >
         <div class="flex flex-col items-center gap-2">
-          <RiSearchLine
+          <component
+            :is="queryFailed ? RiErrorWarningLine : RiSearchLine"
             class="size-8 text-gray-low"
             aria-hidden="true"
           />
-          <span class="text-sm text-gray-low">{{ t('Aucun résultat trouvé.') }}</span>
+          <span class="text-sm text-gray-low">{{ emptyMessage }}</span>
         </div>
       </div>
       <div
@@ -256,7 +258,7 @@
 <script setup lang="ts">
 import { computed, nextTick, onUnmounted, ref, useTemplateRef, watch } from 'vue'
 import { useElementSize, useScroll } from '@vueuse/core'
-import { RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiSearchLine } from '@remixicon/vue'
+import { RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiErrorWarningLine, RiSearchLine } from '@remixicon/vue'
 import AppLink from '../AppLink.vue'
 import BrandedButton from '../BrandedButton.vue'
 import InfiniteLoader from '../InfiniteLoader.vue'
@@ -300,7 +302,12 @@ const {
   getColumnDisplay,
   getNullPercent,
   getBooleanCounts,
+  queryFailed,
 } = useTabularContext()
+
+const emptyMessage = computed(() => queryFailed.value
+  ? t('Les données n\'ont pas pu être chargées avec cette recherche ou ces filtres.')
+  : t('Aucun résultat trouvé.'))
 
 function getRowHref(row: TabularRow): string | undefined {
   return props.rowHref?.href(row)

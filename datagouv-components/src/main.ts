@@ -109,6 +109,7 @@ import SearchableSelect from './components/Form/SearchableSelect.vue'
 import SelectGroup from './components/Form/SelectGroup.vue'
 import Listbox from './components/Form/Listbox.vue'
 import InfiniteLoader from './components/InfiniteLoader.vue'
+import TabularActiveFilters from './components/TabularExplorer/TabularActiveFilters.vue'
 import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
 import TabularMobileFilters from './components/TabularExplorer/TabularMobileFilters.vue'
 import TabularTable from './components/TabularExplorer/TabularTable.vue'
@@ -423,6 +424,7 @@ export {
   SelectGroup,
   Listbox,
   InfiniteLoader,
+  TabularActiveFilters,
   TabularExplorer,
   TabularMobileFilters,
   TabularTable,

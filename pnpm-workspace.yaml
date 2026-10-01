@@ -16,9 +16,6 @@ ignoredBuiltDependencies:
   - core-js
   - unrs-resolver
 
-patchedDependencies:
-  "@nuxt/nitro-server": patches/@nuxt__nitro-server.patch
-
 overrides:
   shell-quote: ^1.9.0
   flatted: ^3.4.2
@@ -46,3 +43,8 @@ overrides:
   js-yaml@4: ^4.3.1
   nanoid@3: ^3.3.17
   dompurify: ^3.4.15
+
+# GetCapabilities strings (layer title, abstract, attribution, metadata/legend URLs)
+# are rendered as HTML by the library: render them as text and only link http(s) URLs.
+patchedDependencies:
+  geopf-extensions-openlayers@1.0.0-beta.15: patches/geopf-extensions-openlayers@1.0.0-beta.15.patch

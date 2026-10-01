@@ -66,10 +66,17 @@
                 <!-- Fullscreen, the explorer owns the page and its URL: the filters
                      can live there. Inline, the URL belongs to the dataset page. -->
                 <TabularExplorer
+                  v-model:global-search="search"
                   :resource-id="resource.id"
                   :sync-url="fullscreen"
                 >
                   <TabularToolbar class="shrink-0 border-b border-gray-default p-2" />
+                  <div class="hidden shrink-0 md:block">
+                    <TabularActiveFilters
+                      with-clear
+                      class="border-b border-gray-default p-2"
+                    />
+                  </div>
                   <TabularTable :fill="fullscreen" />
                   <TabularMobileFilters />
                 </TabularExplorer>
@@ -166,7 +173,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, defineAsyncComponent } from 'vue'
+import { computed, defineAsyncComponent, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
@@ -176,6 +183,7 @@ import TabList from '../Tabs/TabList.vue'
 import Tab from '../Tabs/Tab.vue'
 import TabPanels from '../Tabs/TabPanels.vue'
 import TabPanel from '../Tabs/TabPanel.vue'
+import TabularActiveFilters from '../TabularExplorer/TabularActiveFilters.vue'
 import TabularExplorer from '../TabularExplorer/TabularExplorer.vue'
 import TabularToolbar from '../TabularExplorer/TabularToolbar.vue'
 import TabularTable from '../TabularExplorer/TabularTable.vue'
@@ -255,6 +263,11 @@ const {
 if (hasTabularData.value) {
   await provideTabularProfile(() => props.resource.id)
 }
+
+// Kept here as well as in the table: the viewer outlives the data tab, so the search
+// survives a trip to another tab, and it resets with the resource since switching
+// resource remounts the viewer.
+const search = ref('')
 
 // The active tab lives in the URL so a shared link opens on the same one. Read once
 // at mount (TabGroup only takes an initial index), which is enough: switching resource

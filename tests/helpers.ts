@@ -47,14 +47,14 @@ export async function createDataset(request: APIRequestContext, title: string, d
   return await response.json()
 }
 
-export async function createRemoteResource(request: APIRequestContext, datasetId: string, title: string): Promise<ApiResource> {
+export async function createRemoteResource(request: APIRequestContext, datasetId: string, title: string, format = 'csv'): Promise<ApiResource> {
   const response = await request.post(`${API_BASE}/api/1/datasets/${datasetId}/resources/`, {
     data: {
       title,
       type: 'main',
       filetype: 'remote',
-      url: `https://example.com/${datasetId}/${encodeURIComponent(title)}.csv`,
-      format: 'csv',
+      url: `https://example.com/${datasetId}/${encodeURIComponent(title)}.${format}`,
+      format,
     },
   })
   return await response.json()
@@ -69,6 +69,13 @@ export async function createDatasetWithRemoteResources(request: APIRequestContex
   }
 
   return { dataset, resources }
+}
+
+// Typing into a server-rendered field before Vue hydrates it is lost: hydration resets each
+// input to its `v-model`. Use it before filling a form right after landing on a page.
+export async function gotoHydrated(page: Page, url: string): Promise<void> {
+  await page.goto(url)
+  await page.waitForLoadState('networkidle')
 }
 
 // The banner is the only way into the new explorer, and it only lives on the resources

@@ -37,13 +37,20 @@
     <ClientOnly>
       <TabularExplorer
         v-if="RESOURCE_ID"
+        v-model:global-search="q"
         :resource-id="RESOURCE_ID"
-        :global-search="q"
+        :search-input="false"
         :initial-sort="{ column: 'Séance', direction: 'desc' }"
         sync-url
         :url-aliases="URL_ALIASES"
       >
         <TabularToolbar class="py-3" />
+        <div class="hidden md:block">
+          <TabularActiveFilters
+            with-clear
+            class="pb-3"
+          />
+        </div>
         <TabularTable
           full-bleed
           :row-href="{ columns: ['Numéro de dossier'], href: row => `/explore/cada/${row['Numéro de dossier']}` }"
@@ -186,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { SearchInput, TabularExplorer, TabularMobileFilters, TabularTable, TabularToolbar, TranslationT, provideTabularProfile } from '@datagouv/components-next'
+import { SearchInput, TabularActiveFilters, TabularExplorer, TabularMobileFilters, TabularTable, TabularToolbar, TranslationT, provideTabularProfile } from '@datagouv/components-next'
 import type { TabularUrlAlias } from '@datagouv/components-next'
 import { useRouteQuery } from '@vueuse/router'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
@@ -215,6 +222,11 @@ const q = useRouteQuery('q', '', {
   transform: (value: string | string[] | null) => (Array.isArray(value) ? value[0] : value) ?? '',
 })
 const searchQuery = ref(q.value)
+
+// Cleared from the explorer (its chip, "Tout réinitialiser"): the field follows.
+watch(q, (value) => {
+  searchQuery.value = value
+})
 
 function applySearch() {
   q.value = searchQuery.value.trim()

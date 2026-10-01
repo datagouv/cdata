@@ -21,6 +21,7 @@
         >
           <ResourceListItem
             :resource="r"
+            :dataset
             :to="resourceTo(r)"
             :replace
             :selected="r.id === selectedId"
@@ -38,9 +39,11 @@ import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { RiArrowDownSLine } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
 import ResourceListItem from '../ResourceListItem.vue'
+import type { Dataset, DatasetV2 } from '../../types/datasets'
 import type { Resource } from '../../types/resources'
 
 defineProps<{
+  dataset: Dataset | DatasetV2
   resources: Resource[]
   selectedId: string
   resourceTo: (resource: Resource) => RouteLocationRaw
