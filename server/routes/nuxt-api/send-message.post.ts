@@ -1,3 +1,5 @@
+import type { SendMessageBody } from '~/types/support'
+
 const CRISP_API_BASE = 'https://api.crisp.chat/v1'
 
 export function getNicknameFromEmail(email: string) {
@@ -29,7 +31,7 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Content type should be application/json',
     })
   }
-  const body = await readBody(event)
+  const body = await readBody<SendMessageBody>(event)
 
   const config = useRuntimeConfig(event)
   const websiteId = config.crispWebsiteId as string

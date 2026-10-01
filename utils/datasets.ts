@@ -39,6 +39,21 @@ export function getDatasetAdminUrl(dataset: Dataset | DatasetV2 | DatasetV2WithF
   return `/admin/datasets/${dataset.id}`
 }
 
+/**
+ * Why this dataset cannot receive a DOI, or `null` when it can.
+ *
+ * Mirrors the conditions `create_doi` enforces in udata.
+ */
+export function useDoiBlockedReason() {
+  const { t } = useTranslation()
+
+  return (dataset: DatasetV2WithFullObject): string | null => {
+    if (!dataset.organization) return t('Seul un jeu de données publié par une organisation peut recevoir un DOI.')
+    if (dataset.private || dataset.deleted || dataset.archived) return t('Seul un jeu de données public peut recevoir un DOI.')
+    return null
+  }
+}
+
 export function datasetToForm(dataset: DatasetV2WithFullObject): DatasetForm {
   return {
     owned: dataset.organization ? { organization: dataset.organization, owner: null } : { owner: dataset.owner, organization: null },
