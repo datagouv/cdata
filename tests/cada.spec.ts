@@ -582,7 +582,11 @@ test('clearing everything goes back to the default sort, not to no sort at all',
 })
 
 test('searching and filtering do not pile up history entries', async ({ page }) => {
+  // matomo.js is injected after the load event: leaving the page while it loads
+  // makes Firefox warn that the script failed to load.
+  const matomoLoaded = page.waitForResponse('**/matomo.js')
   await page.goto('/explore')
+  await matomoLoaded
   await gotoExplore(page)
 
   const searchInput = page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')
