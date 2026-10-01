@@ -93,13 +93,13 @@
       </BrandedButton>
       <!-- Clear all -->
       <BrandedButton
-        v-if="withClear"
+        v-if="withClear && canReset"
         color="tertiary"
         size="2xs"
         :icon="RiCloseLine"
-        @click="clearAllFilters(); sort = null"
+        @click="reset"
       >
-        {{ t('Tout effacer') }}
+        {{ t('Tout réinitialiser') }}
       </BrandedButton>
     </div>
   </div>
@@ -115,5 +115,5 @@ import { useTabularContext } from './useTabularContext'
 defineProps<{ withClear?: boolean }>()
 
 const { t } = useTranslation()
-const { tableData, activeFilters, sort, globalSearch, removeFilter, clearAllFilters, getColumnDisplay, filteredDownloadUrl } = useTabularContext()
+const { tableData, activeFilters, sort, globalSearch, removeFilter, canReset, reset, getColumnDisplay, filteredDownloadUrl } = useTabularContext()
 </script>

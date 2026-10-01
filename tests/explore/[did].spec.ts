@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs'
+import type { APIRequestContext, Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { API_BASE, createDataset, createDatasetWithRemoteResources, createRemoteResource, deleteDatasets, enableNewExplorer } from '../helpers'
 import { RESOURCE_ID as TABULAR_RESOURCE_ID } from '../visualizations/fixtures'
@@ -334,6 +335,80 @@ test('switching resources does not pile up history entries', async ({ page, requ
   // stepping through the resources we just viewed.
   await page.goBack()
   await expect(page).toHaveURL(/\/explore$/)
+})
+
+test('switching resources drops the filters, sort and search of the previous one', async ({ page, request }) => {
+  const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore filters reset ${Date.now()}`, resourceTitles(2))
+  createdDatasets.push(dataset.id)
+  const [first, second] = [resources[1]!, resources[0]!]
+
+  const filters = encodeURIComponent(JSON.stringify({ Type: { in: ['Avis'] } }))
+  await page.goto(`/explore/${dataset.id}?resource_id=${first.id}&tab=metadata&sort=-Type&filters=${filters}&q=Avis`)
+  await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
+
+  await page.locator('aside').getByRole('link', { name: second.title }).click()
+
+  await expect(page).toHaveURL(new RegExp(`resource_id=${second.id}`))
+  const query = new URL(page.url()).searchParams
+  expect(query.has('sort')).toBe(false)
+  expect(query.has('filters')).toBe(false)
+  expect(query.has('q')).toBe(false)
+  // Only the table params are dropped, not the rest of the explorer state
+  expect(query.get('tab')).toBe('metadata')
+})
+
+// Against the real Tabular API, not `mockTabular`: the table is rendered during
+// SSR, and mocking only the browser side would hydrate it with other rows than
+// the server rendered.
+test.describe('table state in the URL', () => {
+  async function gotoFixtureResource(page: Page, request: APIRequestContext, query = '') {
+    const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
+    const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+    await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}${query}`)
+  }
+
+  test('a sort in the URL is applied to the table', async ({ page, request }) => {
+    const sorted = page.waitForResponse(response => response.url().includes('/data/') && response.url().includes('Nbre_logements__sort=desc'), { timeout: 30000 })
+    await gotoFixtureResource(page, request, '&sort=-Nbre_logements')
+    await sorted
+
+    await expect(page.getByRole('button', { name: 'Supprimer le tri' })).toBeVisible()
+  })
+
+  test('dropping the sort from its chip removes it from the URL', async ({ page, request }) => {
+    // The chip is in the server-rendered HTML, but the explorer only hydrates once
+    // its browser-side data request answers: a click before that does nothing.
+    const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
+    await gotoFixtureResource(page, request, '&sort=-Nbre_logements')
+    await loaded
+
+    await page.getByRole('button', { name: 'Supprimer le tri' }).click()
+
+    await expect.poll(() => new URL(page.url()).searchParams.has('sort')).toBe(false)
+    expect(new URL(page.url()).searchParams.get('resource_id')).toBe(TABULAR_RESOURCE_ID)
+  })
+
+  test('a search in the URL is applied to the table and shown in the search field', async ({ page, request }) => {
+    const searched = page.waitForResponse(response => response.url().includes('/data/') && response.url().includes('or='), { timeout: 30000 })
+    await gotoFixtureResource(page, request, '&q=zzqqxx-introuvable')
+    expect((await searched).ok()).toBe(true)
+
+    await expect(page.getByRole('searchbox', { name: 'Rechercher une valeur' })).toHaveValue('zzqqxx-introuvable')
+    await expect(page.getByTestId('data-table').getByText('Aucun résultat trouvé.')).toBeVisible()
+  })
+
+  test('typing a search writes it to the URL, and removing it drops it', async ({ page, request }) => {
+    const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
+    await gotoFixtureResource(page, request)
+    await loaded
+
+    await page.getByRole('searchbox', { name: 'Rechercher une valeur' }).fill('OCCITANIE')
+    await expect.poll(() => new URL(page.url()).searchParams.get('q'), { timeout: 30000 }).toBe('OCCITANIE')
+
+    await page.getByRole('button', { name: 'Supprimer la recherche' }).click()
+    await expect.poll(() => new URL(page.url()).searchParams.has('q')).toBe(false)
+    expect(new URL(page.url()).searchParams.get('resource_id')).toBe(TABULAR_RESOURCE_ID)
+  })
 })
 
 test('the explorer answers a 404 for a dataset that does not exist', async ({ page }) => {

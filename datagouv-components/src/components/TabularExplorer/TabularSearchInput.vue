@@ -33,7 +33,7 @@ watch(debounced, (value) => {
   globalSearch.value = value.trim()
 })
 
-// Cleared from elsewhere (its chip, "Tout effacer"): the field follows.
+// Cleared from elsewhere (its chip, "Tout réinitialiser"): the field follows.
 watch(globalSearch, (value) => {
   if (value !== text.value.trim()) text.value = value
 })

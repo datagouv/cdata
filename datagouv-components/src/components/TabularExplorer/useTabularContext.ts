@@ -42,8 +42,9 @@ export type TabularContext = {
   filters: Ref<Record<string, ColumnFilters>>
   activeFilters: ComputedRef<ActiveFilter[]>
   removeFilter: (column: string) => void
-  // Also empties the global search.
-  clearAllFilters: () => void
+  // Back to how the table opened: no filter nor search, the initial sort
+  canReset: ComputedRef<boolean>
+  reset: () => void
 
   // Global search across all columns, and whether the toolbar shows its field
   globalSearch: Ref<string>

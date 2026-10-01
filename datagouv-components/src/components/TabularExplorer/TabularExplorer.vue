@@ -30,12 +30,13 @@ import { useFetch } from '../../functions/api'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { injectTabularProfile } from '../../composables/useTabularProfile'
-import { hasFilterForColumn as _hasFilterForColumn, buildDateFilterParams, buildGlobalSearchConditions, useFormatTabular } from '../../functions/tabular'
+import { hasFilterForColumn as _hasFilterForColumn, buildDateFilterParams, buildGlobalSearchConditions, isSameSort, useFormatTabular } from '../../functions/tabular'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import TabularSkeleton from './TabularSkeleton.vue'
-import type { TabularDataResponse, TabularRow, SortConfig, ColumnFilters, DateFilter } from './types'
+import type { TabularDataResponse, TabularRow, SortConfig, ColumnFilters, DateFilter, TabularUrlAlias } from './types'
 import { provideTabularContext, type ActiveFilter } from './useTabularContext'
 import { useColumnMetadata } from './useColumnMetadata'
+import { useTabularUrlState } from './useTabularUrlState'
 
 const props = withDefaults(defineProps<{
   resourceId: string
@@ -45,11 +46,21 @@ const props = withDefaults(defineProps<{
   // Filters seeded on mount, e.g. { 'Administration': { contains: 'Ministère' } }.
   // The explorer owns them afterwards: later changes to this prop are ignored,
   // so pass a fresh instance (or remount) to reset them.
+  // Ignored with `syncUrl`: the filters come from the URL then.
   initialFilters?: Record<string, ColumnFilters>
   // Sort seeded on mount, e.g. { column: 'Séance', direction: 'desc' }.
   // Same ownership rule as `initialFilters`: the explorer owns it afterwards,
   // and the user can drop it from the active-sort chip.
+  // With `syncUrl`, it is the sort applied when the URL names none.
   initialSort?: SortConfig
+  // Keeps sort, filters and global search in the URL, so that going back to the
+  // page restores them. Only for an explorer that owns its page: the params are
+  // not namespaced.
+  syncUrl?: boolean
+  // With `syncUrl`, readable params for the simple filters of some columns,
+  // e.g. { administration: { column: 'Administration', operator: 'contains' } }.
+  // Any other filter goes into a JSON `filters` param.
+  urlAliases?: Record<string, TabularUrlAlias>
 }>(), {
   searchInput: true,
 })
@@ -61,7 +72,7 @@ const props = withDefaults(defineProps<{
 // Combined via AND with any column-specific `contains` filter, so it acts as an
 // additional narrowing constraint, not a replacement.
 // Owned here like the filters; a parent binds it to drive or keep it.
-const globalSearch = defineModel<string>('globalSearch', { default: '' })
+const globalSearchModel = defineModel<string>('globalSearch', { default: '' })
 
 const { t } = useTranslation()
 const config = useComponentsConfig()
@@ -91,9 +102,29 @@ const {
   getBooleanCounts,
 } = useColumnMetadata(profileData, allColumns, t)
 
-// Sort & filter state
-const sort = ref<SortConfig | null>(props.initialSort ? { ...props.initialSort } : null)
-const filters = ref<Record<string, ColumnFilters>>({ ...props.initialFilters })
+// Sort, filter & search state
+const urlState = props.syncUrl
+  ? useTabularUrlState(props.urlAliases ?? {}, props.initialSort ?? null, allColumns)
+  : null
+const { sort, filters, globalSearch } = urlState ?? {
+  sort: ref<SortConfig | null>(props.initialSort ? { ...props.initialSort } : null),
+  filters: ref<Record<string, ColumnFilters>>({ ...props.initialFilters }),
+  globalSearch: globalSearchModel,
+}
+
+// With `syncUrl` the search lives in the URL, and a bound `v-model` mirrors it.
+// A search the parent already holds at mount wins: it was typed while the
+// explorer was loading, after the URL was read.
+if (urlState) {
+  if (globalSearchModel.value) urlState.globalSearch.value = globalSearchModel.value
+  else globalSearchModel.value = urlState.globalSearch.value
+  watch(urlState.globalSearch, (value) => {
+    globalSearchModel.value = value
+  })
+  watch(globalSearchModel, (value) => {
+    urlState.globalSearch.value = value
+  })
+}
 
 const PAGE_SIZE = 50
 
@@ -310,9 +341,14 @@ const filteredDownloadUrl = computed(() => {
   return `${config.tabularApiUrl}/api/resources/${props.resourceId}/data/csv/?${params}`
 })
 
-function clearAllFilters() {
+// Resetting goes back to how the table opened: no filter nor search, but the
+// initial sort — it is the table's default order, not a criterion the user added.
+const canReset = computed(() => activeFilters.value.length > 0 || !!globalSearch.value || !isSameSort(sort.value, props.initialSort))
+
+function reset() {
   filters.value = {}
   globalSearch.value = ''
+  sort.value = props.initialSort ? { ...props.initialSort } : null
 }
 
 function hasFilterForColumn(col: string): boolean {
@@ -335,7 +371,8 @@ provideTabularContext({
   filters,
   activeFilters,
   removeFilter,
-  clearAllFilters,
+  canReset,
+  reset,
   globalSearch,
   searchInput: computed(() => props.searchInput),
   queryFailed,

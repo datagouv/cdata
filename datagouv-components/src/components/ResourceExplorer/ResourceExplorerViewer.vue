@@ -63,9 +63,12 @@
                 v-if="previewKind === 'tabular'"
                 :timeout="200"
               >
+                <!-- Fullscreen, the explorer owns the page and its URL: the filters
+                     can live there. Inline, the URL belongs to the dataset page. -->
                 <TabularExplorer
                   v-model:global-search="search"
                   :resource-id="resource.id"
+                  :sync-url="fullscreen"
                 >
                   <TabularToolbar class="shrink-0 border-b border-gray-default p-2" />
                   <div class="hidden shrink-0 md:block">
