@@ -139,6 +139,7 @@ The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for t
   await page.getByTestId('searchable-select-couverture-spatiale').click()
   await page.getByPlaceholder('Rechercher une couverture').fill('france')
   await page.getByText('France Insee : fr').click()
+  await clickOutside(page)
   await page.getByTestId('searchable-select-granularit-spatiale').click()
   await page.getByRole('option', { name: 'Pays', exact: true }).click()
   await page.getByRole('button', { name: 'Suivant' }).click()
