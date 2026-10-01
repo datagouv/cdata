@@ -1,9 +1,13 @@
 <template>
-  <!-- Toolbar row — mirrors TabularToolbar: the mobile filter button on the left (it
-       only shows below md), and the columns menu (h-6 button, which drives the row
-       height) plus the rows info on the right. The active-filters area stays empty
-       until the user filters, so nothing stands in for it. -->
+  <!-- Toolbar row — mirrors TabularToolbar: the search field and the mobile filter
+       button (it only shows below md) on the left, the columns menu plus the rows info
+       on the right. The active-filters line stays empty until the user filters, so
+       nothing stands in for it. -->
   <div class="animate-pulse-placeholder flex shrink-0 items-center gap-2 border-b border-gray-default p-2">
+    <div
+      v-if="searchInput"
+      class="h-8 w-[clamp(160px,22vw,220px)] shrink-0 rounded bg-gray-200"
+    />
     <div class="h-6 w-24 rounded bg-gray-200 md:hidden" />
     <div class="flex flex-1 items-center justify-end gap-4">
       <div class="h-6 w-24 rounded bg-gray-200" />
@@ -83,10 +87,14 @@
 <script setup lang="ts">
 import { useTranslation } from '../../composables/useTranslation'
 
-defineProps<{
+withDefaults(defineProps<{
   // Fill the available height (fullscreen) instead of the default capped height.
   fill?: boolean
-}>()
+  // Same as the explorer's: whether the toolbar has its search field.
+  searchInput?: boolean
+}>(), {
+  searchInput: true,
+})
 
 const { t } = useTranslation()
 </script>

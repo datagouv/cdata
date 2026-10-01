@@ -1,79 +1,119 @@
 <template>
   <div
-    v-if="activeFilters.length > 0 || sort"
-    class="flex flex-wrap items-center gap-1.5"
+    v-if="activeFilters.length > 0 || sort || globalSearch"
+    class="flex items-center justify-between gap-2"
   >
-    <!-- Sort chip -->
-    <span
-      v-if="sort"
-      class="inline-flex h-6 items-center gap-1 rounded border border-new-primary/20 bg-new-primary/10 pl-1.5 pr-0.5 text-[12px] leading-4 text-new-primary"
-    >
-      <component
-        :is="sort.direction === 'asc' ? RiArrowUpLine : RiArrowDownLine"
-        class="size-3.5"
-        aria-hidden="true"
-      />
-      <span class="font-medium">{{ sort.column }}</span>
-      <span>{{ sort.direction === 'asc' ? t('croissant') : t('décroissant') }}</span>
-      <button
-        :aria-label="t('Supprimer le tri')"
-        class="flex size-5 items-center justify-center rounded hover:bg-new-primary/15"
-        @click="sort = null"
+    <div class="flex min-w-0 flex-wrap items-center gap-1.5">
+      <!-- Sort chip -->
+      <span
+        v-if="sort"
+        class="inline-flex h-6 items-center gap-1 rounded border border-new-primary/20 bg-new-primary/10 pl-1.5 pr-0.5 text-[12px] leading-4 text-new-primary"
       >
-        <RiCloseLine
+        <component
+          :is="sort.direction === 'asc' ? RiArrowUpLine : RiArrowDownLine"
           class="size-3.5"
           aria-hidden="true"
         />
-      </button>
-    </span>
+        <span class="font-medium">{{ sort.column }}</span>
+        <span>{{ sort.direction === 'asc' ? t('croissant') : t('décroissant') }}</span>
+        <button
+          :aria-label="t('Supprimer le tri')"
+          class="flex size-5 items-center justify-center rounded hover:bg-new-primary/15"
+          @click="sort = null"
+        >
+          <RiCloseLine
+            class="size-3.5"
+            aria-hidden="true"
+          />
+        </button>
+      </span>
 
-    <!-- Filter chips -->
-    <span
-      v-for="af in activeFilters"
-      :key="af.column"
-      :data-testid="`active-filter-${af.column}`"
-      class="inline-flex h-6 items-center gap-1 rounded border border-new-primary/20 bg-new-primary/10 pl-1.5 pr-0.5 text-[12px] leading-4 text-new-primary"
-    >
-      <component
-        :is="getColumnDisplay(af.column).icon"
-        class="size-3.5"
-        aria-hidden="true"
-      />
-      <span class="font-medium">{{ af.column }}</span>
-      <span>{{ af.label }}</span>
-      <button
-        :aria-label="t('Supprimer ce filtre')"
-        class="flex size-5 items-center justify-center rounded hover:bg-new-primary/15"
-        @click="removeFilter(af.column)"
+      <!-- Global search chip -->
+      <span
+        v-if="globalSearch"
+        class="inline-flex h-6 items-center gap-1 rounded border border-new-primary/20 bg-new-primary/10 pl-1.5 pr-0.5 text-[12px] leading-4 text-new-primary"
       >
-        <RiCloseLine
+        <RiSearchLine
           class="size-3.5"
           aria-hidden="true"
         />
-      </button>
-    </span>
+        <span class="font-medium">{{ t('Toutes les colonnes') }}</span>
+        <span>{{ t('contient') }} "{{ globalSearch }}"</span>
+        <button
+          :aria-label="t('Supprimer la recherche')"
+          class="flex size-5 items-center justify-center rounded hover:bg-new-primary/15"
+          @click="globalSearch = ''"
+        >
+          <RiCloseLine
+            class="size-3.5"
+            aria-hidden="true"
+          />
+        </button>
+      </span>
 
-    <!-- Clear all -->
-    <BrandedButton
-      v-if="withClear"
-      color="tertiary"
-      size="2xs"
-      :icon="RiCloseLine"
-      @click="clearAllFilters(); sort = null"
-    >
-      {{ t('Tout effacer') }}
-    </BrandedButton>
+      <!-- Filter chips -->
+      <span
+        v-for="af in activeFilters"
+        :key="af.column"
+        :data-testid="`active-filter-${af.column}`"
+        class="inline-flex h-6 items-center gap-1 rounded border border-new-primary/20 bg-new-primary/10 pl-1.5 pr-0.5 text-[12px] leading-4 text-new-primary"
+      >
+        <component
+          :is="getColumnDisplay(af.column).icon"
+          class="size-3.5"
+          aria-hidden="true"
+        />
+        <span class="font-medium">{{ af.column }}</span>
+        <span>{{ af.label }}</span>
+        <button
+          :aria-label="t('Supprimer ce filtre')"
+          class="flex size-5 items-center justify-center rounded hover:bg-new-primary/15"
+          @click="removeFilter(af.column)"
+        >
+          <RiCloseLine
+            class="size-3.5"
+            aria-hidden="true"
+          />
+        </button>
+      </span>
+    </div>
+
+    <div class="flex shrink-0 items-center gap-1">
+      <!-- A sort alone narrows nothing: the file would be the whole resource, which
+           the resource's own download already gives. And with no matching row, the
+           API answers an empty file, without even the header. -->
+      <BrandedButton
+        v-if="(activeFilters.length > 0 || globalSearch) && tableData?.meta.total"
+        color="tertiary"
+        size="2xs"
+        :icon="RiDownloadLine"
+        :href="filteredDownloadUrl"
+      >
+        {{ t('Télécharger les données filtrées') }}
+      </BrandedButton>
+      <!-- Clear all -->
+      <BrandedButton
+        v-if="withClear"
+        color="tertiary"
+        size="2xs"
+        :icon="RiCloseLine"
+        @click="clearAllFilters(); sort = null"
+      >
+        {{ t('Tout effacer') }}
+      </BrandedButton>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { RiArrowDownLine, RiArrowUpLine, RiCloseLine } from '@remixicon/vue'
+import { RiArrowDownLine, RiArrowUpLine, RiCloseLine, RiDownloadLine, RiSearchLine } from '@remixicon/vue'
 import BrandedButton from '../BrandedButton.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useTabularContext } from './useTabularContext'
 
+// Framing (borders, padding) belongs to the call site, like the toolbar's.
 defineProps<{ withClear?: boolean }>()
 
 const { t } = useTranslation()
-const { activeFilters, sort, removeFilter, clearAllFilters, getColumnDisplay } = useTabularContext()
+const { tableData, activeFilters, sort, globalSearch, removeFilter, clearAllFilters, getColumnDisplay, filteredDownloadUrl } = useTabularContext()
 </script>

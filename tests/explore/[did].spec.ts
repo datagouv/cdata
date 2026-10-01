@@ -1,5 +1,7 @@
+import { readFileSync } from 'node:fs'
 import { test, expect } from '../base'
-import { createDatasetWithRemoteResources, deleteDatasets, enableNewExplorer } from '../helpers'
+import { API_BASE, createDataset, createDatasetWithRemoteResources, createRemoteResource, deleteDatasets, enableNewExplorer } from '../helpers'
+import { RESOURCE_ID as TABULAR_RESOURCE_ID } from '../visualizations/fixtures'
 
 const createdDatasets: Array<string> = []
 
@@ -51,6 +53,207 @@ test('clicking a resource in the sidebar updates resource_id and the viewer', as
 
   await expect(page).toHaveURL(new RegExp(`resource_id=${other.id}`))
   await expect(page.locator('header').getByText(other.title, { exact: true })).toBeVisible()
+})
+
+test('the full-width resource list replaces the viewer until a resource is picked', async ({ page, request }) => {
+  const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore expanded list ${Date.now()}`, resourceTitles(3))
+  createdDatasets.push(dataset.id)
+  const other = resources[0]!
+  const viewer = page.getByRole('region', { name: 'Détail de la ressource' })
+
+  await page.goto(`/explore/${dataset.id}`)
+  await expect(viewer).toBeVisible({ timeout: 30000 })
+
+  await page.locator('aside').getByRole('button', { name: 'Tout afficher' }).click()
+
+  await expect(viewer).toBeHidden()
+  await expect(page.locator('aside').getByText(/^Mis à jour le /)).toHaveCount(3)
+
+  await page.locator('aside').getByRole('link', { name: other.title }).click()
+
+  await expect(page).toHaveURL(new RegExp(`resource_id=${other.id}`))
+  await expect(viewer).toBeVisible()
+  await expect(page.locator('header').getByText(other.title, { exact: true })).toBeVisible()
+  await expect(page.locator('aside').getByRole('button', { name: 'Tout afficher' })).toBeVisible()
+})
+
+test('picking the resource already shown also closes the full-width list', async ({ page, request }) => {
+  const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore expanded same ${Date.now()}`, resourceTitles(2))
+  createdDatasets.push(dataset.id)
+  const target = resources[0]!
+  const viewer = page.getByRole('region', { name: 'Détail de la ressource' })
+
+  await page.goto(`/explore/${dataset.id}?resource_id=${target.id}`)
+  await expect(viewer).toBeVisible({ timeout: 30000 })
+
+  await page.locator('aside').getByRole('button', { name: 'Tout afficher' }).click()
+  await expect(viewer).toBeHidden()
+
+  // Same URL, so no navigation to react to: the click itself closes the list.
+  await page.locator('aside').getByRole('link', { name: target.title }).click()
+
+  await expect(viewer).toBeVisible()
+})
+
+test('the full-width resource list can be left without picking a resource', async ({ page, request }) => {
+  const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore expanded back ${Date.now()}`, resourceTitles(2))
+  createdDatasets.push(dataset.id)
+  const target = resources[1]!
+  const viewer = page.getByRole('region', { name: 'Détail de la ressource' })
+
+  await page.goto(`/explore/${dataset.id}?resource_id=${target.id}`)
+  await expect(viewer).toBeVisible({ timeout: 30000 })
+  await expect(page.locator('aside').getByTitle('Masquer le panneau')).toBeVisible()
+
+  await page.locator('aside').getByRole('button', { name: 'Tout afficher' }).click()
+  await expect(viewer).toBeHidden()
+  // The panel can't be folded from the full-width list, only left.
+  await expect(page.locator('aside').getByTitle('Masquer le panneau')).toBeHidden()
+
+  await page.locator('aside').getByRole('button', { name: 'Revenir à l’explorateur' }).click()
+
+  await expect(viewer).toBeVisible()
+  await expect(page).toHaveURL(new RegExp(`resource_id=${target.id}`))
+})
+
+test('only resources with a preview are labelled explorable in the sidebar', async ({ page, request }) => {
+  const dataset = await createDataset(request, `Test explore preview mark ${Date.now()}`, 'Dataset de test E2E')
+  createdDatasets.push(dataset.id)
+  // An unanalysed remote CSV has no preview, a PDF always has one.
+  const withoutPreview = await createRemoteResource(request, dataset.id, 'Fichier sans apercu')
+  const withPreview = await createRemoteResource(request, dataset.id, 'Fichier avec apercu', 'pdf')
+
+  await page.goto(`/explore/${dataset.id}`)
+  await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
+  const hoverCard = page.getByRole('tooltip')
+
+  await page.locator('aside').getByRole('link', { name: withPreview.title }).hover()
+  await expect(hoverCard.getByText(withPreview.title)).toBeVisible()
+  await expect(hoverCard.getByText('Explorable')).toBeVisible()
+
+  await page.locator('aside').getByRole('link', { name: withoutPreview.title }).hover()
+  await expect(hoverCard.getByText(withoutPreview.title)).toBeVisible()
+  await expect(hoverCard.getByText('Explorable')).toHaveCount(0)
+})
+
+test('the full-width list labels explorable resources on the row, without a hover card', async ({ page, request }) => {
+  const dataset = await createDataset(request, `Test explore expanded preview mark ${Date.now()}`, 'Dataset de test E2E')
+  createdDatasets.push(dataset.id)
+  const withoutPreview = await createRemoteResource(request, dataset.id, 'Fichier sans apercu')
+  const withPreview = await createRemoteResource(request, dataset.id, 'Fichier avec apercu', 'pdf')
+
+  await page.goto(`/explore/${dataset.id}`)
+  await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
+  await page.locator('aside').getByRole('button', { name: 'Tout afficher' }).click()
+
+  const withPreviewRow = page.locator('aside').getByRole('link', { name: withPreview.title })
+  await expect(withPreviewRow.getByText('Explorable')).toBeVisible()
+  await expect(page.locator('aside').getByRole('link', { name: withoutPreview.title }).getByText('Explorable')).toHaveCount(0)
+
+  await withPreviewRow.hover()
+  await expect(page.getByRole('tooltip')).toHaveCount(0)
+})
+
+// Against the real Tabular API: the table is rendered during SSR, so mocking only the
+// browser side would hydrate it with other rows than the server rendered.
+test('the search narrows the table and survives a trip to another tab', async ({ page, request }) => {
+  const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
+  const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+  // The explorer only hydrates once its browser-side data request answers: typing
+  // before that would be reset by hydration.
+  const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
+  await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}`)
+  await loaded
+  const table = page.getByTestId('data-table')
+  await expect(table.getByText('Aucun résultat trouvé.')).toBeHidden()
+
+  const searched = page.waitForResponse(response => response.url().includes('/data/') && response.url().includes('or='), { timeout: 30000 })
+  await page.getByRole('searchbox', { name: 'Rechercher une valeur' }).fill('zzqqxx-introuvable')
+  expect((await searched).ok()).toBe(true)
+  await expect(table.getByText('Aucun résultat trouvé.')).toBeVisible()
+  await expect(page.getByText('contient "zzqqxx-introuvable"')).toBeVisible()
+
+  await page.getByRole('tab', { name: 'Métadonnées' }).click()
+  // Exact: "Structure des données" and "Métadonnées" contain it too.
+  await page.getByRole('tab', { name: 'Données', exact: true }).click()
+
+  await expect(page.getByRole('searchbox', { name: 'Rechercher une valeur' })).toHaveValue('zzqqxx-introuvable')
+  await expect(page.getByTestId('data-table').getByText('Aucun résultat trouvé.')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Supprimer la recherche' }).click()
+
+  await expect(page.getByRole('searchbox', { name: 'Rechercher une valeur' })).toHaveValue('')
+  await expect(page.getByText('contient "zzqqxx-introuvable"')).toBeHidden()
+  await expect(page.getByTestId('data-table').getByText('Aucun résultat trouvé.')).toBeHidden()
+})
+
+test('the filtered download holds every row matching the search', async ({ page, request }) => {
+  const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
+  const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+  const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
+  await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}`)
+  await loaded
+  const table = page.getByTestId('data-table')
+  const rowCount = page.getByTestId('row-count').first()
+  const searchbox = page.getByRole('searchbox', { name: 'Rechercher une valeur' })
+  const downloadLink = page.getByRole('link', { name: 'Télécharger les données filtrées' })
+  await expect(downloadLink).toHaveCount(0)
+
+  // No matching row: the API would answer an empty file, so there is nothing to offer.
+  const searchedNothing = page.waitForResponse(response => response.url().includes('/data/') && response.url().includes('or='), { timeout: 30000 })
+  await searchbox.fill('zzqqxx-introuvable')
+  await searchedNothing
+  await expect(table.getByText('Aucun résultat trouvé.')).toBeVisible()
+  await expect(downloadLink).toHaveCount(0)
+  await page.getByRole('button', { name: 'Supprimer la recherche' }).click()
+  await expect(table.getByText('Aucun résultat trouvé.')).toBeHidden()
+
+  // A value the resource holds: a French region, in a dataset broken down by region.
+  const unfiltered = await rowCount.innerText()
+  await searchbox.fill('OCCITANIE')
+  await expect(rowCount).not.toHaveText(unfiltered, { timeout: 30000 })
+  const matching = Number((await rowCount.innerText()).split('/')[0]!.replace(/\D/g, ''))
+  expect(matching).toBeGreaterThan(0)
+
+  const downloading = page.waitForEvent('download')
+  await downloadLink.click()
+  const file = await (await downloading).path()
+  const lines = readFileSync(file, 'utf-8').trim().split('\n')
+
+  // Every matching row, not just the page loaded on screen, under the API's header line.
+  expect(lines).toHaveLength(matching + 1)
+  expect(lines[0]).toMatch(/^__id,/)
+})
+
+test.describe('a search the API rejects', () => {
+  // The rejection below is the point of the test: the browser logs it.
+  test.use({ allowedConsoleMessages: ['the server responded with a status of 400'] })
+
+  test('keeps the toolbar so it can be undone', async ({ page, request }) => {
+    const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
+    const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+    const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
+    await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}`)
+    await loaded
+    // Only the browser-side requests that carry the search fail: the first load
+    // (server-rendered, then hydrated) goes through untouched.
+    await page.route(url => url.pathname.includes('/data/') && url.searchParams.has('or'), route => route.fulfill({ status: 400, body: 'Bad request' }))
+    const table = page.getByTestId('data-table')
+    const rejected = 'Les données n\'ont pas pu être chargées avec cette recherche ou ces filtres.'
+
+    const searchbox = page.getByRole('searchbox', { name: 'Rechercher une valeur' })
+    await searchbox.fill('rejetee')
+
+    await expect(table.getByText(rejected)).toBeVisible()
+    await expect(page.getByText('L\'aperçu de ce fichier n\'a pas pu être chargé.')).toBeHidden()
+    await expect(searchbox).toBeVisible()
+
+    await page.getByRole('button', { name: 'Supprimer la recherche' }).click()
+
+    await expect(searchbox).toHaveValue('')
+    await expect(table.getByText(rejected)).toBeHidden()
+    await expect(table.getByText('Aucun résultat trouvé.')).toBeHidden()
+  })
 })
 
 test('leaving fullscreen lands back on the dataset page, on the same resource', async ({ page, request }) => {

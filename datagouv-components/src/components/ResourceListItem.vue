@@ -4,41 +4,82 @@
     v-bind="$attrs"
     :to
     :replace
-    :class="selected ? '[&&]:!bg-gray-200' : '[&&]:hover:!bg-gray-100'"
-    class="grid h-7 w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1 rounded px-1 py-1 text-left !bg-none !no-underline"
+    :class="[
+      selected ? '[&&]:!bg-gray-200' : '[&&]:hover:!bg-gray-100',
+      // Expanded, each row is its own grid: fixed tracks keep the extra columns
+      // aligned from one row to the next, where `auto` tracks would follow each
+      // row's content.
+      expanded ? 'grid-cols-[auto_minmax(0,1fr)_13rem_5rem_6rem_4rem_6.5rem]' : 'grid-cols-[auto_minmax(0,1fr)_auto_1.25rem]',
+    ]"
+    class="grid h-8 w-full items-center gap-1 rounded px-1 py-1 text-left !bg-none !no-underline"
     @pointerenter="openOnHover"
     @pointerleave="closeTooltip"
-    @focus="show = true"
+    @focus="show = !expanded"
     @blur="closeTooltip"
   >
-    <span
-      :class="[iconColor, '[&_svg]:fill-current']"
-      class="flex size-5 shrink-0 items-center justify-center rounded-[1px]"
-    >
-      <component
-        :is="iconComponent"
-        class="size-4"
-        aria-hidden="true"
-      />
-    </span>
+    <ResourceIconBadge :resource />
     <div class="flex min-w-0 items-baseline gap-0.5 whitespace-nowrap leading-4">
       <span
-        class="truncate text-[13px]"
+        class="truncate text-[14px]"
         :class="selected ? 'font-extrabold text-gray-title' : 'font-medium text-gray-medium'"
       >{{ resource.title || t('Fichier sans nom') }}</span>
-      <template v-if="humanFilesize">
-        <span class="shrink-0 text-[13px] text-gray-medium">·</span>
-        <span class="shrink-0 text-[12px] text-gray-medium">{{ humanFilesize }}</span>
+      <template v-if="humanFilesize && !expanded">
+        <span class="shrink-0 text-[14px] text-gray-medium">·</span>
+        <span class="shrink-0 text-[13px] text-gray-medium">{{ humanFilesize }}</span>
       </template>
     </div>
+    <template v-if="expanded">
+      <span class="truncate text-[13px] text-gray-medium">
+        <TranslationT keypath="Mis à jour le {date}">
+          <template #date>
+            <FormattedDate :date="resource.last_modified" />
+          </template>
+        </TranslationT>
+      </span>
+      <span class="text-right text-[13px] tabular-nums text-gray-medium">{{ humanFilesize }}</span>
+    </template>
     <!-- Capped and truncated: an `auto` grid track floors at its content width, so an
          unusually long format (`www:link-1.0-http--samples`) would otherwise squeeze
          the title track to nothing and overflow the fixed-height row. -->
     <span
       v-if="resource.format"
-      class="max-w-24 truncate rounded bg-gray-lower px-1.5 py-0.5 text-[12px] uppercase leading-4 text-gray-medium"
+      class="max-w-24 justify-self-start truncate rounded bg-gray-lower px-1.5 py-0.5 text-[13px] uppercase leading-4 text-gray-medium"
       :title="resource.format"
     >{{ resource.format }}</span>
+    <!-- Holds the format track so the next columns stay in place. -->
+    <span v-else />
+    <span
+      v-if="expanded"
+      class="inline-flex items-center justify-end gap-1 text-[13px] tabular-nums text-gray-medium"
+    >
+      <RiDownloadLine
+        class="size-3"
+        aria-hidden="true"
+      />
+      {{ summarize(resource.metrics.views) }}
+    </span>
+    <!-- Compact, the eye is labelled in the hover card; expanded, the row has room
+         for the label and no hover card. -->
+    <span
+      v-if="expanded && hasPreview"
+      class="flex w-fit items-center gap-0.5 justify-self-end rounded bg-gray-lower px-1.5 py-0.5 text-[13px] leading-4 text-gray-medium"
+    >
+      <RiEyeLine
+        class="size-3.5"
+        aria-hidden="true"
+      />
+      {{ t('Explorable') }}
+    </span>
+    <span
+      v-else
+      class="flex items-center justify-center"
+    >
+      <RiEyeLine
+        v-if="hasPreview"
+        class="size-4 text-gray-medium"
+        aria-hidden="true"
+      />
+    </span>
   </AppLink>
 
   <!-- Hover card: the row truncates the title, so surface the full name plus the
@@ -84,6 +125,16 @@
             {{ summarize(resource.metrics.views) }}
           </span>
         </div>
+        <span
+          v-if="hasPreview"
+          class="mt-1.5 flex w-fit items-center gap-0.5 rounded bg-gray-lower px-1.5 py-0.5 text-[12px] leading-4 text-gray-medium"
+        >
+          <RiEyeLine
+            class="size-3"
+            aria-hidden="true"
+          />
+          {{ t('Explorable') }}
+        </span>
       </div>
     </Teleport>
   </ClientOnly>
@@ -94,15 +145,17 @@ import { computed, ref, useTemplateRef } from 'vue'
 import { autoUpdate, flip, offset, shift, useFloating } from '@floating-ui/vue'
 import { useEventListener } from '@vueuse/core'
 import type { RouteLocationRaw } from 'vue-router'
-import { RiDownloadLine } from '@remixicon/vue'
+import { RiDownloadLine, RiEyeLine } from '@remixicon/vue'
 import AppLink from './AppLink.vue'
 import ClientOnly from './ClientOnly.vue'
-import File from './Icons/File.vue'
 import FormattedDate from './FormattedDate.vue'
+import ResourceIconBadge from './ResourceIconBadge.vue'
 import TranslationT from './TranslationT.vue'
-import { getResourceFormatIcon, getResourceIconColor, getResourceFilesize } from '../functions/resources'
+import { getResourceFilesize } from '../functions/resources'
 import { filesize, summarize } from '../functions/helpers'
+import { useResourceCapabilities } from '../composables/useResourceCapabilities'
 import { useTranslation } from '../composables/useTranslation'
+import type { Dataset, DatasetV2 } from '../types/datasets'
 import type { Resource } from '../types/resources'
 
 // The hover card below is a second root node, so Vue drops fallthrough attributes
@@ -115,20 +168,22 @@ defineOptions({ inheritAttrs: false })
 // truth for the selection.
 const props = withDefaults(defineProps<{
   resource: Resource
+  // Some previews (Data Fair, OpenAPI) depend on the dataset's organization.
+  dataset: Dataset | DatasetV2
   to: RouteLocationRaw
   selected?: boolean
   replace?: boolean
+  // Full-width list: the row also shows the update date, size and downloads.
+  expanded?: boolean
 }>(), {
   selected: false,
   replace: false,
+  expanded: false,
 })
 
 const { t } = useTranslation()
 
-// Render the icon directly (not via ResourceIcon which forces a gray color) so the
-// colored badge can tint it through currentColor + [&_svg]:fill-current.
-const iconComponent = computed(() => (props.resource.format ? getResourceFormatIcon(props.resource.format) : null) ?? File)
-const iconColor = computed(() => getResourceIconColor(props.resource.format))
+const { hasPreview } = useResourceCapabilities(() => props.resource, () => props.dataset)
 
 const humanFilesize = computed(() => {
   const size = getResourceFilesize(props.resource)
@@ -151,9 +206,10 @@ const { floatingStyles } = useFloating(rowEl, card, {
 
 // A tap fires a pointer enter too, so the card would flash on every touch selection
 // in the mobile resource picker. Only a real pointer opens it — keyboard focus still
-// does, through @focus.
+// does, through @focus. The expanded row already shows everything the card holds,
+// so it never opens there.
 function openOnHover(event: PointerEvent) {
-  if (event.pointerType === 'mouse') show.value = true
+  if (event.pointerType === 'mouse' && !props.expanded) show.value = true
 }
 
 function closeTooltip() {

@@ -10,7 +10,7 @@ import data from './data.json' with { type: 'json' }
 // API calls go straight to the backend: the frontend (baseURL) does not proxy them
 const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 // Real resource from the test DB: bailleurs_sociaux_region.csv in "Logements sociaux et bailleurs par région"
-const RESOURCE_ID = '63f39717-e5c9-4d70-a0d5-544773c1d742'
+export const RESOURCE_ID = '63f39717-e5c9-4d70-a0d5-544773c1d742'
 
 /**
  * Mocks the tabular resource profile and data so the chart configurator can

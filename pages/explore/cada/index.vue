@@ -38,12 +38,19 @@
       <TabularExplorer
         v-if="RESOURCE_ID"
         :key="route.fullPath"
+        v-model:global-search="currentSearch"
         :resource-id="RESOURCE_ID"
-        :global-search="currentSearch"
+        :search-input="false"
         :initial-filters="filtersFromQuery"
         :initial-sort="{ column: 'Séance', direction: 'desc' }"
       >
         <TabularToolbar class="py-3" />
+        <div class="hidden md:block">
+          <TabularActiveFilters
+            with-clear
+            class="pb-3"
+          />
+        </div>
         <TabularTable
           full-bleed
           :row-href="{ columns: ['Numéro de dossier'], href: row => `/explore/cada/${row['Numéro de dossier']}` }"
@@ -186,7 +193,7 @@
 </template>
 
 <script setup lang="ts">
-import { SearchInput, TabularExplorer, TabularMobileFilters, TabularTable, TabularToolbar, TranslationT, provideTabularProfile } from '@datagouv/components-next'
+import { SearchInput, TabularActiveFilters, TabularExplorer, TabularMobileFilters, TabularTable, TabularToolbar, TranslationT, provideTabularProfile } from '@datagouv/components-next'
 import type { ColumnFilters } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -209,6 +216,11 @@ useSeoMeta({
 
 const searchQuery = ref('')
 const currentSearch = ref('')
+
+// Cleared from the explorer (its chip, "Tout effacer"): the field follows.
+watch(currentSearch, (value) => {
+  searchQuery.value = value
+})
 
 function applySearch() {
   currentSearch.value = searchQuery.value.trim()
