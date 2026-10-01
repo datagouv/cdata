@@ -314,7 +314,7 @@
                         stacked
                       />
                       <DatasetAssignmentSelector
-                        v-if="newRole === 'partial_editor' && currentOrganization"
+                        v-if="newRole === 'partial_editor' && currentOrganization && editAssignmentsLoaded"
                         v-model="editSelectedDatasetIds"
                         :organization-id="currentOrganization.id"
                       />
@@ -443,11 +443,15 @@ const loading = ref(false)
 
 const editSelectedDatasetIds = ref<Set<string>>(new Set())
 const editInitialDatasetIds = ref<Set<string>>(new Set())
+// The selector picks its opening tab from the selection it starts with: it must not be
+// mounted before the member's current assignments are known.
+const editAssignmentsLoaded = ref(false)
 
 const openEditModal = async (member: Member) => {
   newRole.value = member.role
   editSelectedDatasetIds.value = new Set()
   editInitialDatasetIds.value = new Set()
+  editAssignmentsLoaded.value = false
 
   if (member.role === 'partial_editor' && currentOrganization.value) {
     const assignments = await $api<Array<Assignment>>(`/api/1/organizations/${currentOrganization.value.id}/assignments/`)
@@ -457,6 +461,7 @@ const openEditModal = async (member: Member) => {
     editSelectedDatasetIds.value = new Set(userDatasetIds)
     editInitialDatasetIds.value = new Set(userDatasetIds)
   }
+  editAssignmentsLoaded.value = true
 }
 
 const removeMemberFromOrganization = async (member: Member, close: () => void) => {
