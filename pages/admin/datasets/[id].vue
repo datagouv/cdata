@@ -102,9 +102,9 @@
             <RiCalendarLine class="inline size-3" />
             <span>{{ $t('Dernière activité :') }}</span>
             <span class="inline-flex items-center">
-              <AvatarWithName
+              <ActivityActor
                 class="fr-ml-1v"
-                :user="activities.data[0].actor"
+                :actor="activities.data[0].actor"
               />
             </span>
             &mdash;
@@ -137,7 +137,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, DatasetQualityTooltipContent, QualityScore, summarize, FormattedDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
+import { ActivityActor, BrandedButton, DatasetQualityTooltipContent, QualityScore, summarize, FormattedDate, Tooltip, getActivityTranslation } from '@datagouv/components-next'
 import type { Activity, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiDownloadLine, RiEyeLine, RiLineChartLine, RiPriceTag3Line, RiStarLine } from '@remixicon/vue'
 import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'

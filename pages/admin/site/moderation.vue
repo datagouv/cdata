@@ -205,9 +205,9 @@
                       </TranslationT>
                       <p class="flex items-center min-w-0">
                         {{ t('par ') }}
-                        <AvatarWithName
+                        <ActivityActor
                           class="fr-ml-1v min-w-0"
-                          :user="activities[report.subject.id].actor"
+                          :actor="activities[report.subject.id].actor"
                         />
                       </p>
                     </div>
@@ -357,7 +357,7 @@
 
 <script setup lang="ts">
 import type { Report, ReportReason, ReportSubject, Activity, Dataservice, DatasetV2, Organization, Reuse, User, UserReference } from '@datagouv/components-next'
-import { AvatarWithName, FormattedDate, LoadingBlock, Pagination, SearchableSelect, BrandedButton, TranslationT } from '@datagouv/components-next'
+import { ActivityActor, AvatarWithName, FormattedDate, LoadingBlock, Pagination, SearchableSelect, BrandedButton, TranslationT } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine, RiRobot2Line, RiSpyLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'
