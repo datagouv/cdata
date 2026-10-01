@@ -112,7 +112,7 @@ import { useRoute } from 'vue-router'
 import type { RouteLocationRaw } from 'vue-router'
 import { useTranslation } from '../../composables/useTranslation'
 import { useDatasetResources } from '../../composables/useDatasetResources'
-import { TABULAR_FILTERS_PARAM, TABULAR_SORT_PARAM } from '../../functions/tabular'
+import { TABULAR_FILTERS_PARAM, TABULAR_SEARCH_PARAM, TABULAR_SORT_PARAM } from '../../functions/tabular'
 import type { DatasetV2 } from '../../types/datasets'
 import type { Resource } from '../../types/resources'
 import ResourceExplorerSidebar from './ResourceExplorerSidebar.vue'
@@ -163,9 +163,10 @@ const sidebarCollapsed = ref(false)
 const resourceListExpanded = ref(false)
 
 // The filters and sort of the table name the columns of the resource they were
-// set on: carried over, they would query columns the next one may not have.
+// set on: carried over, they would query columns the next one may not have. The
+// search goes with them: it was typed for the content of the previous resource.
 const resourceTo = (resource: Resource): RouteLocationRaw => {
-  const { [TABULAR_FILTERS_PARAM]: _filters, [TABULAR_SORT_PARAM]: _sort, ...query } = route.query
+  const { [TABULAR_FILTERS_PARAM]: _filters, [TABULAR_SORT_PARAM]: _sort, [TABULAR_SEARCH_PARAM]: _search, ...query } = route.query
   return { query: { ...query, resource_id: resource.id } }
 }
 </script>

@@ -224,6 +224,7 @@ test.describe('global search', () => {
     await page.getByRole('button', { name: 'Tout réinitialiser' }).click()
 
     await expect(searchInput).toHaveValue('')
+    await expect.poll(() => new URL(page.url()).searchParams.has('q')).toBe(false)
     await expect.poll(async () => (await readRowCount(page)).shown).toBe(unfiltered.shown)
   })
 

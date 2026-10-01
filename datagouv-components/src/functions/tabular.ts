@@ -130,6 +130,7 @@ export function buildCellValueFilter(columnType: ColumnType, value: unknown, exi
 
 export const TABULAR_FILTERS_PARAM = 'filters'
 export const TABULAR_SORT_PARAM = 'sort'
+export const TABULAR_SEARCH_PARAM = 'q'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -219,6 +220,10 @@ export function filtersFromUrlQuery(
     if (Object.keys(filter).length && columns.includes(column)) filters[column] = filter
   }
   return filters
+}
+
+export function searchFromUrlParam(param: LocationQueryValue | LocationQueryValue[] | undefined): string {
+  return firstQueryValue(param) ?? ''
 }
 
 export function isSameSort(a: SortConfig | null | undefined, b: SortConfig | null | undefined): boolean {

@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { ColumnFilters, ColumnType, DateFilter, SortConfig, TabularUrlAlias } from '~/datagouv-components/src/components/TabularExplorer/types'
-import { buildCellValueFilter, buildDateFilterParams, filtersFromUrlQuery, filtersToUrlQuery, hasFilterForColumn, resolveColumnType, buildGlobalSearchConditions, sortFromUrlParam, sortToUrlParam, toIsoDay, useFormatTabular } from '~/datagouv-components/src/functions/tabular'
+import { buildCellValueFilter, buildDateFilterParams, filtersFromUrlQuery, filtersToUrlQuery, hasFilterForColumn, resolveColumnType, buildGlobalSearchConditions, searchFromUrlParam, sortFromUrlParam, sortToUrlParam, toIsoDay, useFormatTabular } from '~/datagouv-components/src/functions/tabular'
 
 const has = (filter?: ColumnFilters) => hasFilterForColumn(filter ? { price: filter } : {}, 'price')
 
@@ -291,6 +291,17 @@ describe('sort in the URL', () => {
     expect(sortFromUrlParam('-Renamed', DEFAULT, COLUMNS)).toEqual(DEFAULT)
     // A bare dash names the empty column
     expect(sortFromUrlParam('-', DEFAULT, COLUMNS)).toEqual(DEFAULT)
+  })
+})
+
+describe('search in the URL', () => {
+  it('reads no search from an absent param', () => {
+    expect(searchFromUrlParam(undefined)).toBe('')
+    expect(searchFromUrlParam(null)).toBe('')
+  })
+
+  it('reads the first value of a repeated param', () => {
+    expect(searchFromUrlParam(['cheval', 'vache'])).toBe('cheval')
   })
 })
 

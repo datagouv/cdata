@@ -337,13 +337,13 @@ test('switching resources does not pile up history entries', async ({ page, requ
   await expect(page).toHaveURL(/\/explore$/)
 })
 
-test('switching resources drops the filters and sort of the previous one', async ({ page, request }) => {
+test('switching resources drops the filters, sort and search of the previous one', async ({ page, request }) => {
   const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore filters reset ${Date.now()}`, resourceTitles(2))
   createdDatasets.push(dataset.id)
   const [first, second] = [resources[1]!, resources[0]!]
 
   const filters = encodeURIComponent(JSON.stringify({ Type: { in: ['Avis'] } }))
-  await page.goto(`/explore/${dataset.id}?resource_id=${first.id}&tab=metadata&sort=-Type&filters=${filters}`)
+  await page.goto(`/explore/${dataset.id}?resource_id=${first.id}&tab=metadata&sort=-Type&filters=${filters}&q=Avis`)
   await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
 
   await page.locator('aside').getByRole('link', { name: second.title }).click()
@@ -352,6 +352,7 @@ test('switching resources drops the filters and sort of the previous one', async
   const query = new URL(page.url()).searchParams
   expect(query.has('sort')).toBe(false)
   expect(query.has('filters')).toBe(false)
+  expect(query.has('q')).toBe(false)
   // Only the table params are dropped, not the rest of the explorer state
   expect(query.get('tab')).toBe('metadata')
 })
@@ -384,6 +385,28 @@ test.describe('table state in the URL', () => {
     await page.getByRole('button', { name: 'Supprimer le tri' }).click()
 
     await expect.poll(() => new URL(page.url()).searchParams.has('sort')).toBe(false)
+    expect(new URL(page.url()).searchParams.get('resource_id')).toBe(TABULAR_RESOURCE_ID)
+  })
+
+  test('a search in the URL is applied to the table and shown in the search field', async ({ page, request }) => {
+    const searched = page.waitForResponse(response => response.url().includes('/data/') && response.url().includes('or='), { timeout: 30000 })
+    await gotoFixtureResource(page, request, '&q=zzqqxx-introuvable')
+    expect((await searched).ok()).toBe(true)
+
+    await expect(page.getByRole('searchbox', { name: 'Rechercher une valeur' })).toHaveValue('zzqqxx-introuvable')
+    await expect(page.getByTestId('data-table').getByText('Aucun résultat trouvé.')).toBeVisible()
+  })
+
+  test('typing a search writes it to the URL, and removing it drops it', async ({ page, request }) => {
+    const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
+    await gotoFixtureResource(page, request)
+    await loaded
+
+    await page.getByRole('searchbox', { name: 'Rechercher une valeur' }).fill('OCCITANIE')
+    await expect.poll(() => new URL(page.url()).searchParams.get('q'), { timeout: 30000 }).toBe('OCCITANIE')
+
+    await page.getByRole('button', { name: 'Supprimer la recherche' }).click()
+    await expect.poll(() => new URL(page.url()).searchParams.has('q')).toBe(false)
     expect(new URL(page.url()).searchParams.get('resource_id')).toBe(TABULAR_RESOURCE_ID)
   })
 })

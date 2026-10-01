@@ -53,8 +53,9 @@ const props = withDefaults(defineProps<{
   // and the user can drop it from the active-sort chip.
   // With `syncUrl`, it is the sort applied when the URL names none.
   initialSort?: SortConfig
-  // Keeps sort and filters in the URL, so that going back to the page restores
-  // them. Only for an explorer that owns its page: the params are not namespaced.
+  // Keeps sort, filters and global search in the URL, so that going back to the
+  // page restores them. Only for an explorer that owns its page: the params are
+  // not namespaced.
   syncUrl?: boolean
   // With `syncUrl`, readable params for the simple filters of some columns,
   // e.g. { administration: { column: 'Administration', operator: 'contains' } }.
@@ -71,7 +72,7 @@ const props = withDefaults(defineProps<{
 // Combined via AND with any column-specific `contains` filter, so it acts as an
 // additional narrowing constraint, not a replacement.
 // Owned here like the filters; a parent binds it to drive or keep it.
-const globalSearch = defineModel<string>('globalSearch', { default: '' })
+const globalSearchModel = defineModel<string>('globalSearch', { default: '' })
 
 const { t } = useTranslation()
 const config = useComponentsConfig()
@@ -101,13 +102,29 @@ const {
   getBooleanCounts,
 } = useColumnMetadata(profileData, allColumns, t)
 
-// Sort & filter state
-const { sort, filters } = props.syncUrl
+// Sort, filter & search state
+const urlState = props.syncUrl
   ? useTabularUrlState(props.urlAliases ?? {}, props.initialSort ?? null, allColumns)
-  : {
-      sort: ref<SortConfig | null>(props.initialSort ? { ...props.initialSort } : null),
-      filters: ref<Record<string, ColumnFilters>>({ ...props.initialFilters }),
-    }
+  : null
+const { sort, filters, globalSearch } = urlState ?? {
+  sort: ref<SortConfig | null>(props.initialSort ? { ...props.initialSort } : null),
+  filters: ref<Record<string, ColumnFilters>>({ ...props.initialFilters }),
+  globalSearch: globalSearchModel,
+}
+
+// With `syncUrl` the search lives in the URL, and a bound `v-model` mirrors it.
+// A search the parent already holds at mount wins: it was typed while the
+// explorer was loading, after the URL was read.
+if (urlState) {
+  if (globalSearchModel.value) urlState.globalSearch.value = globalSearchModel.value
+  else globalSearchModel.value = urlState.globalSearch.value
+  watch(urlState.globalSearch, (value) => {
+    globalSearchModel.value = value
+  })
+  watch(globalSearchModel, (value) => {
+    urlState.globalSearch.value = value
+  })
+}
 
 const PAGE_SIZE = 50
 

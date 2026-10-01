@@ -37,7 +37,7 @@
     <ClientOnly>
       <TabularExplorer
         v-if="RESOURCE_ID"
-        v-model:global-search="q"
+        v-model:global-search="search"
         :resource-id="RESOURCE_ID"
         :search-input="false"
         :initial-sort="{ column: 'Séance', direction: 'desc' }"
@@ -193,9 +193,8 @@
 </template>
 
 <script setup lang="ts">
-import { SearchInput, TabularActiveFilters, TabularExplorer, TabularMobileFilters, TabularTable, TabularToolbar, TranslationT, provideTabularProfile } from '@datagouv/components-next'
+import { SearchInput, TABULAR_SEARCH_PARAM, TabularActiveFilters, TabularExplorer, TabularMobileFilters, TabularTable, TabularToolbar, TranslationT, provideTabularProfile, searchFromUrlParam } from '@datagouv/components-next'
 import type { TabularUrlAlias } from '@datagouv/components-next'
-import { useRouteQuery } from '@vueuse/router'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
@@ -213,23 +212,19 @@ useSeoMeta({
     t('Recherchez parmi les avis et conseils rendus par la Commission d\'accès aux documents administratifs.'),
 })
 
-// The applied search lives in the URL, the input only holds what is being typed.
-// Nuxt's page route, not vue-router's global one: while the next page loads, this
-// one is still mounted and would otherwise see its search vanish.
-const q = useRouteQuery('q', '', {
-  route: useRoute(),
-  // A repeated `?q=` comes as an array: only the first one is searched
-  transform: (value: string | string[] | null) => (Array.isArray(value) ? value[0] : value) ?? '',
-})
-const searchQuery = ref(q.value)
+// The explorer keeps the applied search in the URL; the input only holds what is
+// being typed. Read from the URL here too: the explorer only renders client-side,
+// and the server-rendered input must already show the search.
+const search = ref(searchFromUrlParam(useRoute().query[TABULAR_SEARCH_PARAM]))
+const searchQuery = ref(search.value)
 
 // Cleared from the explorer (its chip, "Tout réinitialiser"): the field follows.
-watch(q, (value) => {
+watch(search, (value) => {
   searchQuery.value = value
 })
 
 function applySearch() {
-  q.value = searchQuery.value.trim()
+  search.value = searchQuery.value.trim()
 }
 
 // The badges of an advice link here through these params.
