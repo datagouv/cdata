@@ -26,7 +26,7 @@ import type { Report, ReportSubject, ReportReason } from './types/reports'
 import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, OrFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm, CombinedSort, ColumnDefinition, ColumnsDefinition } from './types/visualizations'
 import type { ColumnFilters, ColumnType, TabularRow, TabularUrlAlias } from './components/TabularExplorer/types'
 import type { GlobalSearchConfig, SearchType, SearchTypeConfig, SortOption, HiddenFilter, BuiltInFilterKey, DatasetSearchConfig, DatasetSearchFilters, DataserviceSearchConfig, DataserviceSearchFilters, ReuseSearchConfig, ReuseSearchFilters, OrganizationSearchConfig, OrganizationSearchFilters, TopicSearchConfig, TopicSearchFilters } from './types/search'
-import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
+import { SearchFilterAliases, getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 import { useSearchFilter } from './composables/useSearchFilter'
 import type { UseSearchFilterOptions } from './composables/useSearchFilter'
 
@@ -289,6 +289,7 @@ export type {
 }
 
 export {
+  SearchFilterAliases,
   getDefaultDatasetConfig,
   getDefaultDataserviceConfig,
   getDefaultReuseConfig,
