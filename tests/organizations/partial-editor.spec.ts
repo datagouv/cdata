@@ -127,11 +127,15 @@ test.describe('Partial editor', () => {
       await expect(assignedTab).toHaveAttribute('aria-selected', 'true')
       const assignedRow = page.getByRole('tabpanel').locator('tr').filter({ hasText: dataset.title })
       await expect(assignedRow.locator('input[type="checkbox"]')).toBeChecked({ timeout: 10000 })
+      await expect(page.getByRole('button', { name: 'Valider', exact: true })).toBeVisible()
 
       // Unchecking keeps the row on screen, so that a misclick can be undone in place
       await assignedRow.locator('input[type="checkbox"]').click()
       await expect(page.getByRole('tab', { name: 'Assignés (0)' })).toBeVisible()
       await expect(assignedRow.locator('input[type="checkbox"]')).not.toBeChecked()
+
+      // The selection is only saved on submit: the button tells there is something to save
+      await expect(page.getByRole('button', { name: 'Valider le changement' })).toBeVisible()
 
       // The add tab shares the same selection
       await page.getByRole('tab', { name: 'Ajouter' }).click()
@@ -142,6 +146,15 @@ test.describe('Partial editor', () => {
 
       await page.getByRole('tab', { name: 'Assignés (1)' }).click()
       await expect(assignedRow.locator('input[type="checkbox"]')).toBeChecked()
+
+      // Back to the saved selection: nothing left to save
+      await expect(page.getByRole('button', { name: 'Valider', exact: true })).toBeVisible()
+
+      // Under another role the selection is not saved, so it is not counted
+      await assignedRow.locator('input[type="checkbox"]').click()
+      await expect(page.getByRole('button', { name: 'Valider le changement' })).toBeVisible()
+      await page.locator('input[type="radio"][value="editor"] + label').click()
+      await expect(page.getByRole('button', { name: 'Valider', exact: true })).toBeVisible()
     }
     finally {
       await page.request.delete(`${API_BASE}/api/1/datasets/${dataset.id}/`)

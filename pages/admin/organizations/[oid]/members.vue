@@ -339,7 +339,7 @@
                           :form="editFormId"
                           :disabled="loading"
                         >
-                          {{ t("Valider") }}
+                          {{ t("Valider | Valider le changement | Valider les {n} changements", { n: assignmentChangesCount }) }}
                         </BrandedButton>
                       </div>
                       <BannerAction
@@ -486,10 +486,18 @@ const syncAssignments = async (member: Member) => {
   })
 }
 
+// Assignments are only saved for a partial editor: switching to another role leaves them untouched.
+const assignmentChangesCount = computed(() => {
+  if (newRole.value !== 'partial_editor') return 0
+  const added = [...editSelectedDatasetIds.value].filter(id => !editInitialDatasetIds.value.has(id))
+  const removed = [...editInitialDatasetIds.value].filter(id => !editSelectedDatasetIds.value.has(id))
+  return added.length + removed.length
+})
+
 const updateRole = async (member: Member, close: () => void) => {
   const roleChanged = member.role !== newRole.value
   const isPartialEditor = newRole.value === 'partial_editor'
-  const assignmentsChanged = isPartialEditor && !setsEqual(editSelectedDatasetIds.value, editInitialDatasetIds.value)
+  const assignmentsChanged = assignmentChangesCount.value > 0
 
   if (!roleChanged && !assignmentsChanged) {
     close()

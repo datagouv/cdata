@@ -146,7 +146,3 @@ export function removeLangPrefix(url: string): string {
 export function simpleSlug(str: string): string {
   return str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
 }
-
-export function setsEqual<T>(a: Set<T>, b: Set<T>): boolean {
-  return a.size === b.size && [...a].every(v => b.has(v))
-}
