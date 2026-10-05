@@ -1,134 +1,183 @@
 <template>
-  <aside
-    class="relative flex shrink-0 flex-col overflow-hidden border-r border-gray-default bg-white"
-    :class="resizing ? '' : 'transition-[width] duration-200'"
-    :style="{ width: collapsed ? '48px' : `${width}px` }"
-    :aria-label="t('Ressources')"
+  <!-- The resize grip sits outside the aside: it straddles the border, and the
+       aside's overflow-hidden would clip its outer half. -->
+  <div
+    class="relative flex"
+    :class="expanded ? 'flex-1' : 'shrink-0'"
   >
-    <div
-      class="flex h-14 items-center border-b border-gray-default bg-gray-some px-3"
-      :class="collapsed ? 'justify-center' : 'justify-between'"
+    <!-- Expanded, the list takes the viewer's place (the explorer hides the viewer). -->
+    <aside
+      class="flex flex-col overflow-hidden bg-white"
+      :class="[
+        expanded ? 'flex-1' : 'shrink-0 border-r border-gray-default',
+        resizing ? '' : 'transition-[width] duration-200',
+      ]"
+      :style="expanded ? undefined : { width: collapsed ? '48px' : `${width}px` }"
+      :aria-label="t('Ressources')"
     >
-      <span
-        v-if="!collapsed"
-        class="text-[13px] font-medium text-gray-title"
-      >{{ t('Ressources') }}</span>
-      <button
-        type="button"
-        :title="collapsed ? t('Afficher le panneau des ressources') : t('Masquer le panneau')"
-        class="flex size-6 items-center justify-center rounded text-gray-plain hover:bg-gray-100"
-        @click="$emit('update:collapsed', !collapsed)"
+      <div
+        class="flex h-14 items-center border-b border-gray-default bg-gray-some px-3"
+        :class="collapsed ? 'justify-center' : 'justify-between'"
       >
-        <component
-          :is="collapsed ? RiSidebarUnfoldLine : RiSidebarFoldLine"
-          class="size-5"
-        />
-      </button>
-    </div>
+        <span
+          v-if="!collapsed"
+          class="text-[14px] font-medium text-gray-title"
+        >{{ t('Ressources') }}</span>
+        <span class="flex items-center gap-1">
+          <button
+            v-if="!collapsed"
+            type="button"
+            class="inline-flex h-7 items-center gap-1 rounded px-2 text-[13px] font-medium text-gray-title underline-offset-4 hover:bg-gray-100 hover:underline"
+            @click="$emit('update:expanded', !expanded)"
+          >
+            <template v-if="expanded">
+              <RiArrowLeftLine
+                class="size-3.5"
+                aria-hidden="true"
+              />
+              {{ t('Revenir à l’explorateur') }}
+            </template>
+            <template v-else>
+              {{ t('Tout afficher') }}
+            </template>
+          </button>
+          <button
+            v-if="!expanded"
+            type="button"
+            :title="collapsed ? t('Afficher le panneau des ressources') : t('Masquer le panneau')"
+            class="flex size-6 items-center justify-center rounded text-gray-plain hover:bg-gray-100"
+            @click="$emit('update:collapsed', !collapsed)"
+          >
+            <component
+              :is="collapsed ? RiSidebarUnfoldLine : RiSidebarFoldLine"
+              class="size-5"
+            />
+          </button>
+        </span>
+      </div>
 
-    <!-- min-w keeps the content laid out at the sidebar's min width so it doesn't
+      <!-- min-w keeps the content laid out at the sidebar's min width so it doesn't
          reflow (badges wrapping, section titles on 2 lines) while the width animates
          open from the collapsed state — the aside's overflow-hidden clips the rest. -->
-    <!-- Extra bottom padding so the last item can scroll clear of the browser's
+      <!-- Extra bottom padding so the last item can scroll clear of the browser's
          hover URL bar (Firefox shows it bottom-left). -->
-    <div
-      v-if="!collapsed"
-      class="flex min-h-0 min-w-[260px] flex-1 flex-col gap-3 overflow-y-auto p-2 pb-16"
-    >
-      <label class="flex h-8 items-center gap-1 rounded border border-gray-default bg-gray-some px-2">
-        <RiSearchLine class="size-3.5 shrink-0 text-gray-medium" />
-        <span class="sr-only">{{ t('Rechercher') }}</span>
-        <input
-          :value="search"
-          type="search"
-          class="min-w-0 flex-1 bg-transparent text-[13px] outline-none placeholder:text-gray-medium"
-          :placeholder="t('Rechercher une ressource')"
-          @input="$emit('update:search', ($event.target as HTMLInputElement).value)"
-        >
-      </label>
-
-      <section
-        v-for="group in groups"
-        :key="group.type"
-        class="space-y-0.5"
-      >
-        <p class="px-1 py-2 text-[12px] font-medium leading-3 text-gray-medium">
-          {{ getResourceLabel(group.type, group.total) }}
-        </p>
-        <ResourceListItem
-          v-for="resource in group.items"
-          :key="resource.id"
-          :resource
-          :to="resourceTo(resource)"
-          :replace
-          :selected="resource.id === selectedResourceId"
-        />
-        <button
-          v-if="group.items.length < group.total"
-          type="button"
-          :disabled="loadingType === group.type"
-          class="flex w-full items-center gap-1 px-1 py-1 text-left text-[13px] text-blue-default hover:underline disabled:cursor-default disabled:no-underline"
-          @click="$emit('load-more', group.type)"
-        >
-          <RiLoader5Line
-            v-if="loadingType === group.type"
-            class="size-3.5 shrink-0 animate-spin"
-          />
-          {{ t('Charger plus…') }}
-        </button>
-      </section>
-
-      <!-- The search lives here, so its outcome does too: the viewer only says that
-           nothing is selected. -->
       <div
-        v-if="search && !groups.length"
-        class="flex flex-col gap-2 px-1 py-2"
+        v-if="!collapsed"
+        class="flex min-h-0 min-w-[260px] flex-1 flex-col gap-3 overflow-y-auto p-2 pb-16"
       >
-        <p class="m-0 text-[13px] leading-snug text-gray-medium">
-          {{ t('Pas de résultats pour « {q} »', { q: search }) }}
-        </p>
-        <BrandedButton
-          color="secondary"
-          size="xs"
-          class="w-full"
-          @click="$emit('update:search', '')"
+        <label class="flex h-8 items-center gap-1 rounded border border-gray-default bg-gray-some px-2">
+          <RiSearchLine class="size-3.5 shrink-0 text-gray-medium" />
+          <span class="sr-only">{{ t('Rechercher') }}</span>
+          <input
+            :value="search"
+            type="search"
+            class="min-w-0 flex-1 bg-transparent text-[14px] outline-none placeholder:text-gray-medium"
+            :placeholder="t('Rechercher une ressource')"
+            @input="$emit('update:search', ($event.target as HTMLInputElement).value)"
+          >
+        </label>
+
+        <section
+          v-for="group in groups"
+          :key="group.type"
+          class="space-y-0.5"
         >
-          {{ t('Réinitialiser la recherche') }}
-        </BrandedButton>
+          <p class="px-1 py-2 text-[13px] font-medium leading-4 text-gray-medium">
+            {{ getResourceLabel(group.type, group.total) }}
+          </p>
+          <ResourceListItem
+            v-for="resource in group.items"
+            :key="resource.id"
+            :resource
+            :dataset
+            :to="resourceTo(resource)"
+            :replace
+            :selected="resource.id === selectedResourceId"
+            :expanded
+            @click="$emit('update:expanded', false)"
+          />
+          <button
+            v-if="group.items.length < group.total"
+            type="button"
+            :disabled="loadingType === group.type"
+            class="flex w-full items-center gap-1 px-1 py-1 text-left text-[14px] text-blue-default hover:underline disabled:cursor-default disabled:no-underline"
+            @click="$emit('load-more', group.type)"
+          >
+            <RiLoader5Line
+              v-if="loadingType === group.type"
+              class="size-3.5 shrink-0 animate-spin"
+            />
+            {{ t('Charger plus…') }}
+          </button>
+        </section>
+
+        <!-- The search lives here, so its outcome does too: the viewer only says that
+           nothing is selected. -->
+        <div
+          v-if="search && !groups.length"
+          class="flex flex-col gap-2 px-1 py-2"
+        >
+          <p class="m-0 text-[14px] leading-snug text-gray-medium">
+            {{ t('Pas de résultats pour « {q} »', { q: search }) }}
+          </p>
+          <BrandedButton
+            color="secondary"
+            size="xs"
+            class="w-full"
+            @click="$emit('update:search', '')"
+          >
+            {{ t('Réinitialiser la recherche') }}
+          </BrandedButton>
+        </div>
       </div>
-    </div>
+    </aside>
 
     <!-- Drag the right edge to resize the panel and read longer resource titles.
          A separator rather than a button: it only answers to a drag, and a focusable
          button would announce an action that no key can trigger. Keyboard users fold
          the panel from the header instead. -->
     <div
-      v-if="!collapsed"
+      v-if="!collapsed && !expanded"
       role="separator"
       aria-orientation="vertical"
       :title="t('Glisser pour redimensionner')"
-      class="absolute right-0 top-0 z-20 h-full w-2 cursor-col-resize touch-none hover:bg-new-primary/10"
+      class="group absolute -right-1.5 top-0 z-20 flex h-full w-3 cursor-col-resize touch-none justify-center hover:bg-new-primary/10"
       @mousedown="startResize"
-    />
-  </aside>
+    >
+      <!-- Grip centered on the header so the resize affordance is visible at rest. -->
+      <span
+        aria-hidden="true"
+        class="mt-3 flex h-8 w-2 flex-col items-center justify-center gap-0.5 rounded-full border border-gray-default bg-white shadow-sm transition-colors group-hover:border-new-primary"
+      >
+        <span
+          v-for="dot in 3"
+          :key="dot"
+          class="size-0.5 rounded-full bg-gray-medium group-hover:bg-new-primary"
+        />
+      </span>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
-import { RiSidebarFoldLine, RiSidebarUnfoldLine, RiSearchLine, RiLoader5Line } from '@remixicon/vue'
+import { RiArrowLeftLine, RiSidebarFoldLine, RiSidebarUnfoldLine, RiSearchLine, RiLoader5Line } from '@remixicon/vue'
 import BrandedButton from '../BrandedButton.vue'
 import ResourceListItem from '../ResourceListItem.vue'
 import { getResourceLabel } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
 import { useResizable } from '../../composables/useResizable'
+import type { DatasetV2 } from '../../types/datasets'
 import type { Resource, ResourceGroup, ResourceType } from '../../types/resources'
 
 const { t } = useTranslation()
 
 defineProps<{
+  dataset: DatasetV2
   groups: ResourceGroup[]
   selectedResourceId: string | null
   collapsed: boolean
+  expanded: boolean
   search: string
   loadingType: ResourceType | null
   resourceTo: (resource: Resource) => RouteLocationRaw
@@ -138,11 +187,12 @@ defineProps<{
 defineEmits<{
   'load-more': [type: ResourceType]
   'update:collapsed': [value: boolean]
+  'update:expanded': [value: boolean]
   'update:search': [value: string]
 }>()
 
 const { width, resizing, startResize } = useResizable({
-  initialWidth: 300,
+  initialWidth: 340,
   minWidth: 260,
   maxWidth: 720,
 })

@@ -96,14 +96,14 @@
             </div>
             <!-- Reset all -->
             <div
-              v-if="activeFilters.length > 0 || sort"
+              v-if="canReset"
               class="border-t border-gray-default px-4 py-3"
             >
               <BrandedButton
                 color="secondary"
                 size="xs"
                 class="w-full"
-                @click="clearAllFilters(); sort = null; mobileFilterOpen = false"
+                @click="reset(); mobileFilterOpen = false"
               >
                 {{ t('Tout réinitialiser') }}
               </BrandedButton>
@@ -132,7 +132,8 @@ const {
   sort,
   filters,
   hasFilterForColumn,
-  clearAllFilters,
+  canReset,
+  reset,
   totalLines,
   getColumnDisplay,
   getColumnType,

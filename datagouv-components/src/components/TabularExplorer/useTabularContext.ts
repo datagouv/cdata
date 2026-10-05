@@ -42,7 +42,18 @@ export type TabularContext = {
   filters: Ref<Record<string, ColumnFilters>>
   activeFilters: ComputedRef<ActiveFilter[]>
   removeFilter: (column: string) => void
-  clearAllFilters: () => void
+  // Back to how the table opened: no filter nor search, the initial sort
+  canReset: ComputedRef<boolean>
+  reset: () => void
+
+  // Global search across all columns, and whether the toolbar shows its field
+  globalSearch: Ref<string>
+  searchInput: ComputedRef<boolean>
+  // The last request was rejected after a first successful load: the controls stay,
+  // the rows are replaced by the error.
+  queryFailed: ComputedRef<boolean>
+  // CSV export of the rows matching the filters and search
+  filteredDownloadUrl: ComputedRef<string>
   hasFilterForColumn: (col: string) => boolean
 
   // Columns visibility

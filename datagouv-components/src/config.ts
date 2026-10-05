@@ -1,6 +1,7 @@
 import { inject, type Component, type InjectionKey } from 'vue'
 import type { UseFetchFunction } from './functions/api.types'
 import type { $Fetch, FetchOptions } from 'ofetch'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 export type PluginConfig = {
   name: string // Name of the application (ex: data.gouv.fr)
@@ -43,6 +44,12 @@ export type PluginConfig = {
   textClamp?: string | Component | null
   appLink?: Component | null
   clientOnly?: Component | null
+  /**
+   * The route of the page a component is rendered in. vue-router's `useRoute` is the
+   * global one: while the next page loads, the page being left is still mounted and
+   * already sees the next URL. Nuxt's `useRoute` keeps each page on its own route.
+   */
+  useRoute?: () => RouteLocationNormalizedLoaded
   searchDebounce?: number
   forumUrl?: string
 }

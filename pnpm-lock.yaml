@@ -32,6 +32,11 @@ overrides:
   nanoid@3: ^3.3.17
   dompurify: ^3.4.15
 
+patchedDependencies:
+  geopf-extensions-openlayers@1.0.0-beta.15:
+    hash: 6187a52a7ab3801da317ae6c18e213419dc95b78fe60500f78f6ca35c7408a08
+    path: patches/geopf-extensions-openlayers@1.0.0-beta.15.patch
+
 importers:
 
   .:
@@ -290,8 +295,8 @@ importers:
         specifier: ^6.1.0
         version: 6.1.0
       geopf-extensions-openlayers:
-        specifier: 1.0.0-beta.11
-        version: 1.0.0-beta.11
+        specifier: 1.0.0-beta.15
+        version: 1.0.0-beta.15(patch_hash=6187a52a7ab3801da317ae6c18e213419dc95b78fe60500f78f6ca35c7408a08)(@panoramax/web-viewer@4.4.0)
       leaflet:
         specifier: ^1.9.4
         version: 1.9.4
@@ -1018,6 +1023,29 @@ packages:
     peerDependencies:
       vue: '>=3.3.0'
 
+  '@fontsource/atkinson-hyperlegible-next@5.3.0':
+    resolution: {integrity: sha512-8p1tHVoPDo6oYwSO3sMw5snGwFwSf3TmeSF9Gcj792GXdsg6oqvhoItbj6Hj/XZIk0Xs+Cwu6pkLBAl3Q5HrwA==}
+
+  '@fortawesome/fontawesome-common-types@6.7.2':
+    resolution: {integrity: sha512-Zs+YeHUC5fkt7Mg1l6XTniei3k4bwG/yo3iFUtZWd/pMx9g3fdvkSK9E0FOC+++phXOka78uJcYb8JaFkW52Xg==}
+    engines: {node: '>=6'}
+
+  '@fortawesome/fontawesome-svg-core@6.7.2':
+    resolution: {integrity: sha512-yxtOBWDrdi5DD5o1pmVdq3WMCvnobT0LU6R8RyyVXPvFRd2o79/0NCuQoCjNTeZz9EzA9xS3JxNWfv54RIHFEA==}
+    engines: {node: '>=6'}
+
+  '@fortawesome/free-regular-svg-icons@6.7.2':
+    resolution: {integrity: sha512-7Z/ur0gvCMW8G93dXIQOkQqHo2M5HLhYrRVC0//fakJXxcF1VmMPsxnG6Ee8qEylA8b8Q3peQXWMNZ62lYF28g==}
+    engines: {node: '>=6'}
+
+  '@fortawesome/free-solid-svg-icons@6.7.2':
+    resolution: {integrity: sha512-GsBrnOzU8uj0LECDfD5zomZJIjrPhIlWU82AHwa2s40FKH+kcxQaBvBo3Z4TxyZHIyX8XTDxsyA33/Vx9eFuQA==}
+    engines: {node: '>=6'}
+
+  '@gouvfr/dsfr@1.14.4':
+    resolution: {integrity: sha512-Ca17apmTyAF2tMFwMcLwQN7fTlbfMFeyYSLUIUmjoSg1XVF4vDDkbvvKBpWJWaoTLDSFZBbvvHzcDyxw9wSkLA==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
+
   '@gouvfr/dsfr@1.15.3':
     resolution: {integrity: sha512-R9AALZc1LfZjtytWZMOaUIOHWTkllBZ/sZlsL8TpKZVgF3qUKXt/uNYh+L1D1Fh4p92ZqWxbtNcebsigBZe5pQ==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
@@ -1047,6 +1075,9 @@ packages:
   '@humanwhocodes/retry@0.4.3':
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
+
+  '@iconify/types@2.0.0':
+    resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -1306,6 +1337,12 @@ packages:
   '@lezer/yaml@1.0.4':
     resolution: {integrity: sha512-2lrrHqxalACEbxIbsjhqGpSW8kWpUKuY6RHgnSAFZa6qK62wvnPxA8hGOwOoDbwHcOFs5M4o27mjGu+P7TvBmw==}
 
+  '@lit-labs/ssr-dom-shim@1.6.0':
+    resolution: {integrity: sha512-VHb0ALPMTlgKjM6yIxxoQNnpKyUKLD04VzeQdsiXkMqkvYlAHxq9glGLmgbb889/1GsohSOAjvQYoiBppXFqrQ==}
+
+  '@lit/reactive-element@2.1.2':
+    resolution: {integrity: sha512-pbCDiVMnne1lYUIaYNN5wrwQXDtHaYtg7YEFPeW+hws6U47WeFvISGUWekPGKWOP1ygrs0ef0o1VJMk1exos5A==}
+
   '@mapbox/jsonlint-lines-primitives@2.0.3':
     resolution: {integrity: sha512-0SElaV0uMxEnxzBhhX9WTuPyUeMsAN/SS0i16tjuba4/mio63MG9khjC1a0JAiPGXAwvwm4UfHJURCN7nyudQg==}
     engines: {node: '>= 22'}
@@ -1344,12 +1381,12 @@ packages:
   '@maplibre/geojson-vt@6.1.1':
     resolution: {integrity: sha512-FVMOcmSP/yqol45t7StApEyTL5/vmqBCuFhH9n+fFuINenhaX+YgHHIt1yJ86S8kln3uJLcMvmEU2cfn6E2eCQ==}
 
-  '@maplibre/maplibre-gl-style-spec@23.3.0':
-    resolution: {integrity: sha512-IGJtuBbaGzOUgODdBRg66p8stnwj9iDXkgbYKoYcNiiQmaez5WVRfXm4b03MCDwmZyX93csbfHFWEJJYHnn5oA==}
-    hasBin: true
-
   '@maplibre/maplibre-gl-style-spec@24.10.0':
     resolution: {integrity: sha512-lichxSiagMEBBrqHF0trtMQH9RKh+9jUlIJl0qW0QHvt2H/tbvUWdE+ZzI2Jd0/pT7j/iavLonlPu7EQ/ixTOw==}
+    hasBin: true
+
+  '@maplibre/maplibre-gl-style-spec@26.4.4':
+    resolution: {integrity: sha512-hG4RZR4PBd/+6A3ODdZ3AnQRF106ZQk1y3bhwDg8bH/A4Oz2tnRUJVVWs9BZa6gXZ1d3UKe89C+Mm+olGBELvA==}
     hasBin: true
 
   '@maplibre/mlt@1.2.1':
@@ -2043,6 +2080,9 @@ packages:
   '@oxc-project/types@0.151.0':
     resolution: {integrity: sha512-J1yXrIlNDZVzE3ada310xeAw7nH8yCAyLPuUIsjKatFPmfn5bS1oW+cM+QsGOtVWd5nhSpbwZWx/rue+r5Z+PA==}
 
+  '@panoramax/web-viewer@4.4.0':
+    resolution: {integrity: sha512-6tgxINkdbb8rRC70sTMcyc5gjsVXjca+4EEa03F3ecPc5b36krnkmoEJqC5KIBa+CxIRuZ+UkTucVVG4AENHNA==}
+
   '@parcel/watcher-android-arm64@2.5.1':
     resolution: {integrity: sha512-KF8+j9nNbUN8vzOFDpRMsaKBHZ/mcjEjMToVMJOhTozkDonQFFrRcfdLWn6yWKCmJKmdVxSgHiYvTCef4/qcBA==}
     engines: {node: '>= 10.0.0'}
@@ -2221,6 +2261,29 @@ packages:
 
   '@petamoriken/float16@3.9.3':
     resolution: {integrity: sha512-8awtpHXCx/bNpFt4mt2xdkgtgVvKqty8VbjHI/WWWQuEw+KLzFot3f4+LkQY9YmOtq7A5GdOnqoIC8Pdygjk2g==}
+
+  '@photo-sphere-viewer/core@5.14.1':
+    resolution: {integrity: sha512-qrwUudrX9YZms4c2shlY/H3jUP0oh9FyGEqIDr/95ulNZgKbhQ6C/i8zDQ4j8ooFR4+z5FDORQtGvLgPyX8VCA==}
+
+  '@photo-sphere-viewer/equirectangular-tiles-adapter@5.14.1':
+    resolution: {integrity: sha512-QHd9y5cIFXAAZInbKbh+nUz5uzSRTiR8HYApm+ONlDu8JHAp410xNhB1vNm2Q1mVgg8IigQpD9Za5mPq10fESA==}
+    peerDependencies:
+      '@photo-sphere-viewer/core': 5.14.1
+
+  '@photo-sphere-viewer/gallery-plugin@5.14.1':
+    resolution: {integrity: sha512-MzIB4Kc652yfdgPkh3xh/Kvu3XY84VkmshqZhXxa9UV4E2uNMop+vttkWeKogsaNSDT5/aEkMaFgwL/Bs/ZmRw==}
+    peerDependencies:
+      '@photo-sphere-viewer/core': 5.14.1
+
+  '@photo-sphere-viewer/markers-plugin@5.14.1':
+    resolution: {integrity: sha512-tKMrVem19sZFVQwH6IlubEIucDD2EtwxzmWClHCEojM/+ajucuTDvO2N+I6HEqJClBcNsdHAUwA/zyY6MGOu2Q==}
+    peerDependencies:
+      '@photo-sphere-viewer/core': 5.14.1
+
+  '@photo-sphere-viewer/virtual-tour-plugin@5.14.1':
+    resolution: {integrity: sha512-PRRQXoViKAg8g1TfagKJnvLMuuOXnGN9rvWOAs7W7J+knhcAuAenPFUax1Z5FgKli45mo21NspsPf1RV9lJHkQ==}
+    peerDependencies:
+      '@photo-sphere-viewer/core': 5.14.1
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -3550,7 +3613,6 @@ packages:
   '@xmldom/xmldom@0.9.12':
     resolution: {integrity: sha512-5AXjrcMClTryPe9LgZrygpB1lj7s0S9E0+W+AHaVKAVyHanafK86iPSvG5xHVSp/jC+VH1UXu0TAEmY279xH7A==}
     engines: {node: '>=14.6'}
-    deprecated: this version has critical issues, please update to the latest version
 
   '@zarrita/storage@0.2.0':
     resolution: {integrity: sha512-855ZXqtnds7spnT8vNvD+MXa3QExP1m2GqShe8yt7uZXHnQLgJHgkpVwFjE1B0KDDRO0ki09hmk6OboTaIfPsQ==}
@@ -4093,6 +4155,9 @@ packages:
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
+
+  date-fns@4.4.0:
+    resolution: {integrity: sha512-+1UMbeh68lH1SegH83CGWwpb6OHHbpSgr3+s5Eww5M4CAgswBpoWS0AjTOfEJ33HiYKz1hdj/KTFprzXHmq/6w==}
 
   db0@0.3.4:
     resolution: {integrity: sha512-RiXXi4WaNzPTHEOu8UPQKMooIbqOEyqA1t7Z6MsdxSCeb8iUC9ko3LcmsLmeUt2SM5bctfArZKkRQggKZz7JNw==}
@@ -4705,12 +4770,17 @@ packages:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
 
-  geopf-extensions-openlayers@1.0.0-beta.11:
-    resolution: {integrity: sha512-QEZVYe7xCzD3kZYkgWnvfkW/Sen3MlX033qqXdgczreXBRK0c/bzx3/hBSAd4gzV8d1YBpDvSVYTLBxJ+e7qgg==}
-    engines: {node: '>=20'}
+  geojson-vt@4.0.3:
+    resolution: {integrity: sha512-jR1MwkLaZGa8Zftct9ZFruyWFrdl9ZyD2OliXNy9Qq5bBPeg5wHVpBQF9p5GjnicSDQqvBVpysxTPKmWdsfWMA==}
 
-  geoportal-access-lib@3.4.6:
-    resolution: {integrity: sha512-TC0NKVHcJZ9QvkEDyuMB327lT0xQIcZoIE3aSNOHN4Bkt1TcF+D/zAMQTl2AVTAYdrLAqFl6bhTWn5r7VJvkpw==}
+  geopf-extensions-openlayers@1.0.0-beta.15:
+    resolution: {integrity: sha512-b7RtsPnVDTEztrY7k0bbz8J7ShJwIyrjooQ+JeEk4ZJaQPT9MegHU6WgRfjokT5TePHZK8VkKUrdx6OmR6Hujw==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@panoramax/web-viewer': ^4.4.0
+
+  geoportal-access-lib@3.4.7:
+    resolution: {integrity: sha512-r5Y+74iILMbcCcV3GCvxZYiwZjIt4ZJoA+CgiHVakLRXtVJvYCQQ28tA7pcbO2Z+ubgB7x1cjuMQbVUfSg+vgw==}
     engines: {node: '>=20'}
     bundledDependencies: []
 
@@ -4902,6 +4972,9 @@ packages:
     resolution: {integrity: sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==}
     engines: {node: '>=18'}
     hasBin: true
+
+  iconify-icon@3.0.3:
+    resolution: {integrity: sha512-n4ZIChz3N75KqFSWLt9hHGzbrqGQeeoFxCE+nND4WFFa88x8AW8GvmnVZaVNYErhhiZkxJhBfVKMIGrF1wt3hg==}
 
   identifier-regex@1.1.0:
     resolution: {integrity: sha512-SLX4H/vtcYlYnL7XqnuJKHU7Z8517TgsW9nmQiGOgMCjQ8V/deLYu6bEmbGoXe7WMMhc9+EUGyFFneHja8KabA==}
@@ -5367,6 +5440,15 @@ packages:
     peerDependenciesMeta:
       '@parcel/watcher':
         optional: true
+
+  lit-element@4.2.2:
+    resolution: {integrity: sha512-aFKhNToWxoyhkNDmWZwEva2SlQia+jfG0fjIWV//YeTaWrVnOxD89dPKfigCUspXFmjzOEUQpOkejH5Ly6sG0w==}
+
+  lit-html@3.3.3:
+    resolution: {integrity: sha512-el8M6jK2o3RXBnrSHX3ZKrsN8zEV63pSExTO1wYJz7QndGYZ8353e2a5PPX+qHe2aGayfnchQmkAojaWAREOIA==}
+
+  lit@3.3.3:
+    resolution: {integrity: sha512-fycuvZg/hkpozL00lm1pEJH5nN/lr9ZXd6mJI2HSN4+Bzc+LDNdEApJ6HFbPkdFNHLvOplIIuJvxkS4XUxqirw==}
 
   loader-utils@3.3.1:
     resolution: {integrity: sha512-FMJTLMXfCLMLfJxcX9PFqX5qD88Z5MRGaZCVzfuqeZSPsyiBzs+pahDQjbIWz2QIzPZz0NX9Zy4FX3lmK6YHIg==}
@@ -5962,8 +6044,8 @@ packages:
     peerDependencies:
       ol: '> 7.x <= 10.x'
 
-  ol-mapbox-style@12.6.1:
-    resolution: {integrity: sha512-bpN7ZvqbQX/JZnru0MTQgPIAUBAgPOvYDj/9BoJoqCvFYjHxCpRFDQJEoD10PLw3vGHNJFYBUvY82yfW26otQg==}
+  ol-mapbox-style@13.5.1:
+    resolution: {integrity: sha512-xjUq4N97Z53x5jgTByV8UH0C0azbrO9F5w8lLd4DSCQo3S+KDowz2aaMr3o6DKqpBKP+dbQ8AbE7PvPFEMoMTw==}
     peerDependencies:
       ol: '*'
 
@@ -6469,6 +6551,9 @@ packages:
 
   quansync@1.0.0:
     resolution: {integrity: sha512-5xZacEEufv3HSTPQuchrvV6soaiACMFnq1H8wkVioctoH3TRha9Sz66lOxRwPK/qZj7HPiSveih9yAyh98gvqA==}
+
+  query-selector-shadow-dom@1.0.1:
+    resolution: {integrity: sha512-lT5yCqEBgfoMYpf3F2xQRK7zEr1rhIIZuceDK6+xRkJQ4NMbHTwXqk4NkwDwQMNqXgG9r9fyHnzwNVs6zV5KRw==}
 
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
@@ -7174,6 +7259,9 @@ packages:
 
   text-decoder@1.2.7:
     resolution: {integrity: sha512-vlLytXkeP4xvEq2otHeJfSQIRyWxo/oZGEbXrtEEF9Hnmrdly59sUbzZ/QgyWuLYHctCHxFF4tRQZNQ9k60ExQ==}
+
+  three@0.179.1:
+    resolution: {integrity: sha512-5y/elSIQbrvKOISxpwXCR4sQqHtGiOI+MKLc3SsBdDXA2hz3Mdp3X59aUp8DyybMa34aeBwbFTpdoLJaUDEWSw==}
 
   time-span@5.1.0:
     resolution: {integrity: sha512-75voc/9G4rDIJleOo4jPvN4/YC4GRZrY8yy1uU4lwrB3XEQbWve8zXoO5No4eFrGcTAMYyoY67p8jRQdtA1HbA==}
@@ -8800,6 +8888,24 @@ snapshots:
       '@floating-ui/utils': 0.2.12
       vue: 3.5.42(typescript@5.9.3)
 
+  '@fontsource/atkinson-hyperlegible-next@5.3.0': {}
+
+  '@fortawesome/fontawesome-common-types@6.7.2': {}
+
+  '@fortawesome/fontawesome-svg-core@6.7.2':
+    dependencies:
+      '@fortawesome/fontawesome-common-types': 6.7.2
+
+  '@fortawesome/free-regular-svg-icons@6.7.2':
+    dependencies:
+      '@fortawesome/fontawesome-common-types': 6.7.2
+
+  '@fortawesome/free-solid-svg-icons@6.7.2':
+    dependencies:
+      '@fortawesome/fontawesome-common-types': 6.7.2
+
+  '@gouvfr/dsfr@1.14.4': {}
+
   '@gouvfr/dsfr@1.15.3': {}
 
   '@headlessui/vue@1.7.23(vue@3.5.42(typescript@5.9.3))':
@@ -8822,6 +8928,8 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/retry@0.4.3': {}
+
+  '@iconify/types@2.0.0': {}
 
   '@img/colour@1.1.0':
     optional: true
@@ -9080,6 +9188,12 @@ snapshots:
       '@lezer/highlight': 1.2.3
       '@lezer/lr': 1.4.10
 
+  '@lit-labs/ssr-dom-shim@1.6.0': {}
+
+  '@lit/reactive-element@2.1.2':
+    dependencies:
+      '@lit-labs/ssr-dom-shim': 1.6.0
+
   '@mapbox/jsonlint-lines-primitives@2.0.3': {}
 
   '@mapbox/mapbox-gl-style-spec@14.8.0':
@@ -9130,17 +9244,16 @@ snapshots:
     dependencies:
       kdbush: 4.1.0
 
-  '@maplibre/maplibre-gl-style-spec@23.3.0':
+  '@maplibre/maplibre-gl-style-spec@24.10.0':
     dependencies:
       '@mapbox/jsonlint-lines-primitives': 2.0.3
-      '@mapbox/unitbezier': 0.0.1
+      '@mapbox/unitbezier': 1.0.0
       json-stringify-pretty-compact: 4.0.0
       minimist: 1.2.8
       quickselect: 3.0.0
-      rw: 1.3.3
       tinyqueue: 3.0.0
 
-  '@maplibre/maplibre-gl-style-spec@24.10.0':
+  '@maplibre/maplibre-gl-style-spec@26.4.4':
     dependencies:
       '@mapbox/jsonlint-lines-primitives': 2.0.3
       '@mapbox/unitbezier': 1.0.0
@@ -10706,6 +10819,26 @@ snapshots:
 
   '@oxc-project/types@0.151.0': {}
 
+  '@panoramax/web-viewer@4.4.0':
+    dependencies:
+      '@fontsource/atkinson-hyperlegible-next': 5.3.0
+      '@fortawesome/fontawesome-svg-core': 6.7.2
+      '@fortawesome/free-regular-svg-icons': 6.7.2
+      '@fortawesome/free-solid-svg-icons': 6.7.2
+      '@maplibre/vt-pbf': 4.3.2
+      '@photo-sphere-viewer/core': 5.14.1
+      '@photo-sphere-viewer/equirectangular-tiles-adapter': 5.14.1(@photo-sphere-viewer/core@5.14.1)
+      '@photo-sphere-viewer/gallery-plugin': 5.14.1(@photo-sphere-viewer/core@5.14.1)
+      '@photo-sphere-viewer/markers-plugin': 5.14.1(@photo-sphere-viewer/core@5.14.1)
+      '@photo-sphere-viewer/virtual-tour-plugin': 5.14.1(@photo-sphere-viewer/core@5.14.1)
+      geojson-vt: 4.0.3
+      iconify-icon: 3.0.3
+      json5: 2.2.3
+      lit: 3.3.3
+      maplibre-gl: 5.24.0
+      pmtiles: 4.5.0
+      query-selector-shadow-dom: 1.0.1
+
   '@parcel/watcher-android-arm64@2.5.1':
     optional: true
 
@@ -10828,6 +10961,26 @@ snapshots:
       '@parcel/watcher-win32-x64': 2.6.0
 
   '@petamoriken/float16@3.9.3': {}
+
+  '@photo-sphere-viewer/core@5.14.1':
+    dependencies:
+      three: 0.179.1
+
+  '@photo-sphere-viewer/equirectangular-tiles-adapter@5.14.1(@photo-sphere-viewer/core@5.14.1)':
+    dependencies:
+      '@photo-sphere-viewer/core': 5.14.1
+
+  '@photo-sphere-viewer/gallery-plugin@5.14.1(@photo-sphere-viewer/core@5.14.1)':
+    dependencies:
+      '@photo-sphere-viewer/core': 5.14.1
+
+  '@photo-sphere-viewer/markers-plugin@5.14.1(@photo-sphere-viewer/core@5.14.1)':
+    dependencies:
+      '@photo-sphere-viewer/core': 5.14.1
+
+  '@photo-sphere-viewer/virtual-tour-plugin@5.14.1(@photo-sphere-viewer/core@5.14.1)':
+    dependencies:
+      '@photo-sphere-viewer/core': 5.14.1
 
   '@pkgjs/parseargs@0.11.0':
     optional: true
@@ -11544,8 +11697,7 @@ snapshots:
 
   '@types/tabulator-tables@6.3.6': {}
 
-  '@types/trusted-types@2.0.7':
-    optional: true
+  '@types/trusted-types@2.0.7': {}
 
   '@types/unist@2.0.11': {}
 
@@ -12672,6 +12824,8 @@ snapshots:
 
   csstype@3.2.3: {}
 
+  date-fns@4.4.0: {}
+
   db0@0.3.4: {}
 
   debug@4.4.3:
@@ -13326,23 +13480,28 @@ snapshots:
 
   gensync@1.0.0-beta.2: {}
 
-  geopf-extensions-openlayers@1.0.0-beta.11:
+  geojson-vt@4.0.3: {}
+
+  geopf-extensions-openlayers@1.0.0-beta.15(patch_hash=6187a52a7ab3801da317ae6c18e213419dc95b78fe60500f78f6ca35c7408a08)(@panoramax/web-viewer@4.4.0):
     dependencies:
-      '@gouvfr/dsfr': 1.15.3
+      '@gouvfr/dsfr': 1.14.4
       '@mapbox/mapbox-gl-style-spec': 14.8.0
+      '@panoramax/web-viewer': 4.4.0
       '@xmldom/xmldom': 0.9.12
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       clusterize.js: 1.0.0
+      date-fns: 4.4.0
       doctoc: 2.5.0
       dompurify: 3.4.15
       eventbusjs: 0.2.0
-      geoportal-access-lib: 3.4.6
+      geoportal-access-lib: 3.4.7
+      lit: 3.3.3
       loglevel: 1.9.2
       marked: 16.4.2
       ol: 10.10.0
       ol-contextmenu: 5.5.0(ol@10.10.0)
-      ol-mapbox-style: 12.6.1(ol@10.10.0)
+      ol-mapbox-style: 13.5.1(ol@10.10.0)
       proj4: 2.15.0
       sortablejs: 1.15.3
       typescript: 5.9.3
@@ -13352,7 +13511,7 @@ snapshots:
       - encoding
       - supports-color
 
-  geoportal-access-lib@3.4.6:
+  geoportal-access-lib@3.4.7:
     dependencies:
       '@xmldom/xmldom': 0.9.12
       es6-promise: 4.2.8
@@ -13612,6 +13771,10 @@ snapshots:
   human-signals@5.0.0: {}
 
   husky@9.1.7: {}
+
+  iconify-icon@3.0.3:
+    dependencies:
+      '@iconify/types': 2.0.0
 
   identifier-regex@1.1.0:
     dependencies:
@@ -14022,6 +14185,22 @@ snapshots:
       '@parcel/watcher': 2.6.0
     transitivePeerDependencies:
       - srvx
+
+  lit-element@4.2.2:
+    dependencies:
+      '@lit-labs/ssr-dom-shim': 1.6.0
+      '@lit/reactive-element': 2.1.2
+      lit-html: 3.3.3
+
+  lit-html@3.3.3:
+    dependencies:
+      '@types/trusted-types': 2.0.7
+
+  lit@3.3.3:
+    dependencies:
+      '@lit/reactive-element': 2.1.2
+      lit-element: 4.2.2
+      lit-html: 3.3.3
 
   loader-utils@3.3.1: {}
 
@@ -15401,9 +15580,9 @@ snapshots:
       ol: 10.10.0
       tiny-emitter: 2.1.0
 
-  ol-mapbox-style@12.6.1(ol@10.10.0):
+  ol-mapbox-style@13.5.1(ol@10.10.0):
     dependencies:
-      '@maplibre/maplibre-gl-style-spec': 23.3.0
+      '@maplibre/maplibre-gl-style-spec': 26.4.4
       mapbox-to-css-font: 3.2.1
       ol: 10.10.0
 
@@ -15958,6 +16137,8 @@ snapshots:
 
   quansync@1.0.0:
     optional: true
+
+  query-selector-shadow-dom@1.0.1: {}
 
   queue-microtask@1.2.3: {}
 
@@ -16778,6 +16959,8 @@ snapshots:
       b4a: 1.8.1
     transitivePeerDependencies:
       - react-native-b4a
+
+  three@0.179.1: {}
 
   time-span@5.1.0:
     dependencies:

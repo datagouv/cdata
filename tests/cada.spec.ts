@@ -123,6 +123,34 @@ test('clicking the Numéro de dossier link navigates to the CADA detail page', a
   await expect(page.locator('h1').first()).toBeVisible()
 })
 
+test('going back before the advice is loaded shows the list again, not a 404', async ({ page }) => {
+  await page.goto('/explore/cada')
+  await expect(page.getByTestId('row-count')).toBeVisible({ timeout: 30000 })
+
+  // The advice request never answers: the back navigation always happens while
+  // the advice page is still loading, and the list is still the one displayed.
+  const readable = (url: string) => decodeURIComponent(url.replace(/\+/g, ' '))
+  let releaseAdvice = () => {}
+  await page.route(url => readable(url.href).includes('Numéro de dossier__exact='), async (route) => {
+    await new Promise<void>((resolve) => {
+      releaseAdvice = resolve
+    })
+    await route.abort()
+  })
+
+  await dataTable(page).locator('a.link').first().click()
+  await page.waitForURL(/\/explore\/cada\/\d+/, { timeout: 30000 })
+  await page.goBack()
+  await page.waitForURL(/\/explore\/cada$/)
+
+  // The abandoned advice page used to raise its 404 a few ms after the back
+  // navigation. Nothing marks the moment it would have, hence a fixed window.
+  await page.waitForTimeout(1000)
+  await expect(page.getByRole('heading', { name: '404' })).toHaveCount(0)
+  await expect(page.getByTestId('row-count')).toBeVisible()
+  releaseAdvice()
+})
+
 test('the Numéro de dossier column keeps its digits unformatted', async ({ page }) => {
   await gotoExplore(page)
 
@@ -206,6 +234,26 @@ test.describe('global search', () => {
     await expect(dataTable(page).getByText('20112327').first()).toBeVisible()
     // …and the search really did narrow the base
     await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
+  })
+
+  test('clearing everything from the toolbar also empties the search', async ({ page }) => {
+    await gotoExplore(page)
+    const unfiltered = await readRowCount(page)
+    // The page's own search field drives the explorer: the toolbar doesn't add one.
+    await expect(page.getByRole('searchbox', { name: 'Rechercher une valeur' })).toHaveCount(0)
+
+    const searchInput = page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')
+    await searchInput.fill('20112327')
+    const searched = dataResponse(page, 'or=(')
+    await searchInput.press('Enter')
+    expect((await searched).ok()).toBe(true)
+    await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
+
+    await page.getByRole('button', { name: 'Tout réinitialiser' }).click()
+
+    await expect(searchInput).toHaveValue('')
+    await expect.poll(() => new URL(page.url()).searchParams.has('q')).toBe(false)
+    await expect.poll(async () => (await readRowCount(page)).shown).toBe(unfiltered.shown)
   })
 
   test('searching by a non-numeric term does not make the API reject the query', async ({ page }) => {
@@ -456,7 +504,142 @@ test.describe('column filter', () => {
     // A non-boolean `exact` filter shows its own value, not Vrai/Faux
     await expect(page.getByTestId('active-filter-Année')).toContainText('= 2011')
     await expect.poll(async () => (await readRowCount(page)).shown).toBeLessThan(unfiltered.shown)
+    // The number input hands over a number: it still reaches the URL, under its alias
+    await page.waitForURL(/[?&]year=2011/)
   })
+})
+
+test.describe('going back from an advice', () => {
+  async function openAdviceAndGoBack(page: Page, link = dataTable(page).locator('a.link').first()) {
+    await link.click()
+    await page.waitForURL(/\/explore\/cada\/\d+$/, { timeout: 30000 })
+    // Read from the URL, not the link: the rows may have been replaced by a refetch
+    // between reading the link and clicking it.
+    const id = new URL(page.url()).pathname.split('/').pop()!
+    // The list stays displayed while the advice loads, and it has an `h1` too:
+    // only the advice heading tells the advice page is really shown.
+    await expect(page.getByRole('heading', { level: 1, name: id })).toBeVisible({ timeout: 30000 })
+    await page.goBack()
+  }
+
+  test('keeps the search applied and in the input', async ({ page }) => {
+    await gotoExplore(page)
+
+    const searchInput = page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')
+    await searchInput.fill('cheval')
+    const searched = dataResponse(page, 'cheval')
+    await searchInput.press('Enter')
+    expect((await searched).ok()).toBe(true)
+    await page.waitForURL(/[?&]q=cheval/)
+
+    const restored = dataResponse(page, 'cheval')
+    await openAdviceAndGoBack(page)
+    expect((await restored).ok()).toBe(true)
+    await expect(searchInput).toHaveValue('cheval')
+  })
+
+  test('keeps a column filter, written under its readable alias', async ({ page }) => {
+    await gotoExplore(page)
+
+    await page.getByRole('button', { name: 'Filtrer Administration' }).click()
+    await page.getByTestId('column-filter-Administration').getByPlaceholder('Rechercher...').fill('Mairie')
+    await page.waitForURL(/[?&]administration=Mairie/, { timeout: 30000 })
+    await page.keyboard.press('Escape')
+
+    const restored = dataResponse(page, 'Administration__contains=Mairie')
+    await openAdviceAndGoBack(page)
+    expect((await restored).ok()).toBe(true)
+    await expect(page.getByTestId('active-filter-Administration')).toContainText('contient "Mairie"')
+  })
+
+  test('keeps a filter that has no alias', async ({ page }) => {
+    await gotoExplore(page)
+
+    await page.getByRole('button', { name: 'Filtrer Séance' }).click()
+    const panel = page.getByTestId('column-filter-Séance')
+    await panel.getByLabel('Condition du filtre').selectOption('after')
+    await panel.getByLabel('Année').selectOption('2015')
+    await panel.getByLabel('Mois', { exact: true }).selectOption('6')
+    await panel.locator('[data-value="2015-06-18"]').click()
+    await panel.getByRole('button', { name: 'Appliquer' }).click()
+    await expect(page.getByTestId('active-filter-Séance')).toContainText('après le 18/06/2015')
+    await page.keyboard.press('Escape')
+
+    const restored = dataResponse(page, 'Séance__greater=2015-06-19')
+    await openAdviceAndGoBack(page)
+    expect((await restored).ok()).toBe(true)
+    // The operator comes back too, not only the bounds sent to the API
+    await expect(page.getByTestId('active-filter-Séance')).toContainText('après le 18/06/2015')
+  })
+
+  test('does not bring back the default sort once dropped', async ({ page }) => {
+    await gotoExplore(page)
+
+    await page.getByRole('button', { name: 'Supprimer le tri' }).click()
+    await page.waitForURL(/[?&]sort=(&|$)/)
+
+    await openAdviceAndGoBack(page)
+    await expect(page.getByTestId('row-count')).toBeVisible({ timeout: 30000 })
+    await expect(page.getByRole('button', { name: 'Supprimer le tri' })).toHaveCount(0)
+  })
+
+  test('comes back to where the reader was in the list', async ({ page }) => {
+    await gotoExplore(page)
+
+    const link = dataTable(page).locator('a.link').nth(20)
+    await link.scrollIntoViewIfNeeded()
+    const before = await page.evaluate(() => window.scrollY)
+    expect(before).toBeGreaterThan(0)
+
+    await openAdviceAndGoBack(page, link)
+    await expect.poll(() => page.evaluate(() => window.scrollY), { timeout: 30000 }).toBe(before)
+  })
+})
+
+test('clearing everything goes back to the default sort, not to no sort at all', async ({ page }) => {
+  await gotoExplore(page, '/explore/cada?administration=Mairie+de+Paris')
+  await expect(page.getByTestId('active-filter-Administration')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Tout réinitialiser' }).click()
+
+  await expect(page.getByTestId('active-filter-Administration')).toHaveCount(0)
+  await expect.poll(() => new URL(page.url()).search).toBe('')
+  await expect(page.getByRole('button', { name: 'Supprimer le tri' })).toBeVisible()
+  // Nothing left to reset: the button goes away rather than doing nothing
+  await expect(page.getByRole('button', { name: 'Tout réinitialiser' })).toHaveCount(0)
+})
+
+test('searching and filtering do not pile up history entries', async ({ page }) => {
+  // matomo.js is injected after the load event: leaving the page while it loads
+  // makes Firefox warn that the script failed to load.
+  const matomoLoaded = page.waitForResponse('**/matomo.js')
+  await page.goto('/explore')
+  await matomoLoaded
+  await gotoExplore(page)
+
+  const searchInput = page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')
+  await searchInput.fill('cheval')
+  await searchInput.press('Enter')
+  await page.waitForURL(/[?&]q=cheval/)
+
+  await page.getByRole('button', { name: 'Filtrer Administration' }).click()
+  await page.getByTestId('column-filter-Administration').getByPlaceholder('Rechercher...').fill('Mairie')
+  await page.waitForURL(/[?&]administration=Mairie/, { timeout: 30000 })
+
+  // Each change replaces the entry, so going back leaves the page at once
+  await page.goBack()
+  await expect(page).toHaveURL(/\/explore$/)
+})
+
+test('a sort or filter on a column the resource does not have is ignored', async ({ page }) => {
+  // The Tabular API answers 400 to such a query, which would leave the table in
+  // its error state without any control to remove the culprit
+  const filters = encodeURIComponent(JSON.stringify({ NoSuchColumn: { contains: 'x' } }))
+  const response = dataResponse(page, 'Séance__sort=desc')
+  await gotoExplore(page, `/explore/cada?sort=-NoSuchColumn&filters=${filters}`)
+  expect((await response).ok()).toBe(true)
+
+  await expect(page.getByTestId('active-filter-NoSuchColumn')).toHaveCount(0)
 })
 
 test.describe('legacy filter params', () => {

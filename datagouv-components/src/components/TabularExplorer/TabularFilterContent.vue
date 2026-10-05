@@ -250,7 +250,8 @@ watchDebounced(search, (q) => {
   const existing = filters.value[props.column] ?? {}
   const operator = isNumeric.value ? 'exact' : 'contains'
   if (q) {
-    filters.value = { ...filters.value, [props.column]: { ...existing, [operator]: q } }
+    // v-model on a `type="number"` input hands over a number, both criteria are strings
+    filters.value = { ...filters.value, [props.column]: { ...existing, [operator]: String(q) } }
   }
   else {
     const { [operator]: _, ...rest } = existing

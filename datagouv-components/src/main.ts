@@ -24,7 +24,7 @@ import type { Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
 import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, OrFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm, CombinedSort, ColumnDefinition, ColumnsDefinition } from './types/visualizations'
-import type { ColumnFilters, ColumnType, TabularRow } from './components/TabularExplorer/types'
+import type { ColumnFilters, ColumnType, TabularRow, TabularUrlAlias } from './components/TabularExplorer/types'
 import type { GlobalSearchConfig, SearchType, SearchTypeConfig, SortOption, HiddenFilter, BuiltInFilterKey, DatasetSearchConfig, DatasetSearchFilters, DataserviceSearchConfig, DataserviceSearchFilters, ReuseSearchConfig, ReuseSearchFilters, OrganizationSearchConfig, OrganizationSearchFilters, TopicSearchConfig, TopicSearchFilters } from './types/search'
 import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 import { useSearchFilter } from './composables/useSearchFilter'
@@ -109,6 +109,7 @@ import SearchableSelect from './components/Form/SearchableSelect.vue'
 import SelectGroup from './components/Form/SelectGroup.vue'
 import Listbox from './components/Form/Listbox.vue'
 import InfiniteLoader from './components/InfiniteLoader.vue'
+import TabularActiveFilters from './components/TabularExplorer/TabularActiveFilters.vue'
 import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
 import TabularMobileFilters from './components/TabularExplorer/TabularMobileFilters.vue'
 import TabularTable from './components/TabularExplorer/TabularTable.vue'
@@ -269,6 +270,7 @@ export type {
   ColumnType,
   ColumnsDefinition,
   TabularRow,
+  TabularUrlAlias,
   FilterCondition,
   Filter,
   AndFilters,
@@ -422,6 +424,7 @@ export {
   SelectGroup,
   Listbox,
   InfiniteLoader,
+  TabularActiveFilters,
   TabularExplorer,
   TabularMobileFilters,
   TabularTable,
