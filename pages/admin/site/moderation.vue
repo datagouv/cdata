@@ -387,8 +387,8 @@ const filterStatusValue = computed(() => filterStatus.value.id === null ? undefi
 const basePath = '/admin/site/moderation'
 const subjectTypeTabs = [
   { href: basePath, label: t('Tous') },
-  { href: `${basePath}?type=Dataset`, label: t('Datasets') },
-  { href: `${basePath}?type=Dataservice`, label: t('Dataservices') },
+  { href: `${basePath}?type=Dataset`, label: t('Jeux de données') },
+  { href: `${basePath}?type=Dataservice`, label: t('API') },
   { href: `${basePath}?type=Reuse`, label: t('Réutilisations') },
   { href: `${basePath}?type=Organization`, label: t('Organisations') },
   { href: `${basePath}?type=Discussion`, label: t('Discussions') },
