@@ -160,7 +160,7 @@
         v-else
         class="fr-text--bold fr-my-3v"
       >
-        {{ t(`Pas d'organizations`) }}
+        {{ t(`Pas d'organisations`) }}
       </p>
     </div>
   </div>
