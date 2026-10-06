@@ -1,6 +1,15 @@
 <template>
   <div class="bg-white fr-p-3w">
     <template v-if="canEdit">
+      <BannerAction
+        v-if="dataset.private"
+        type="warning"
+        :title="t('Jeu de données en brouillon')"
+        class="fr-mb-3w"
+      >
+        {{ t("Un jeu de données en brouillon ne peut pas être envoyé vers cartes.gouv.fr. Publiez-le pour envoyer ses fichiers.") }}
+      </BannerAction>
+
       <GeopfPanel
         :dataset-id="dataset.id"
         :connected="isGeopfConnected"
@@ -81,6 +90,7 @@
                   :resource="resource"
                   :dataset-id="datasetId"
                   :connected="isGeopfConnected"
+                  :dataset-private="dataset.private"
                   :datastore-id="datastoreId"
                   :refresh="refreshGeopfDatasetStatus"
                   @reauth-required="reauthRequired = true"
@@ -162,7 +172,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, LoadingBlock, useFormatDate, type DatasetV2 } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, LoadingBlock, useFormatDate, type DatasetV2 } from '@datagouv/components-next'
 import GeopfDatastoreSelector from './GeopfDatastoreSelector.vue'
 import GeopfPanel from './GeopfPanel.vue'
 import GeopfPullButton from './GeopfPullButton.vue'

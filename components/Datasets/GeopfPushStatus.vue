@@ -68,15 +68,23 @@
       </template>
     </Tooltip>
 
-    <BrandedButton
-      color="tertiary"
-      size="xs"
-      :icon="RiRefreshLine"
-      :disabled="!!disabledReason"
-      @click="startPush"
+    <component
+      :is="disabledReason ? Tooltip : 'div'"
     >
-      {{ t('Réessayer') }}
-    </BrandedButton>
+      <BrandedButton
+        color="tertiary"
+        size="xs"
+        :icon="RiRefreshLine"
+        :disabled="!!disabledReason"
+        @click="startPush"
+      >
+        {{ t('Réessayer') }}
+      </BrandedButton>
+
+      <template #tooltip>
+        {{ disabledReason }}
+      </template>
+    </component>
   </div>
 </template>
 
@@ -89,6 +97,7 @@ const props = defineProps<{
   resource: GeopfPushableResource
   datasetId: string
   connected: boolean | null
+  datasetPrivate: boolean
   datastoreId: string | null
   refresh: () => Promise<void>
 }>()
@@ -104,6 +113,8 @@ const { formatDate } = useFormatDate()
 const push = computed(() => props.resource.push)
 
 const disabledReason = computed(() => {
+  // Checked first: fixing connection or datastore wouldn't make the push succeed anyway.
+  if (props.datasetPrivate) return t('Ce jeu de données est en brouillon. Publiez-le pour envoyer ce fichier vers cartes.gouv.fr.')
   if (props.connected !== true) return t('Connectez-vous à cartes.gouv.fr pour envoyer ce fichier.')
   if (!props.datastoreId) return t('Choisissez d\'abord l\'entrepôt cartes.gouv.fr de ce jeu de données.')
   return null
