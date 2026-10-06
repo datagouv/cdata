@@ -7,7 +7,7 @@
       <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
         <span class="bg-black/60 text-white px-4 py-2 rounded-full text-sm flex items-center gap-2">
           <RiArrowUpDownLine class="size-4" />
-          {{ $t('Glisser pour repositionner') }}
+          {{ $t('Glisser pour repositionner') }}<template v-if="position != null"> · {{ position }}%</template>
         </span>
       </div>
       <div class="absolute bottom-3 right-3 z-10 flex gap-2">
@@ -92,6 +92,7 @@ const props = defineProps<{
   organization: Organization
   repositioning: boolean
   saving?: boolean
+  position?: number
 }>()
 
 defineEmits<{

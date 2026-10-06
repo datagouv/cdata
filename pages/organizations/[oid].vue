@@ -58,6 +58,7 @@
           :organization="organization"
           :repositioning="repositioning"
           :saving="savingReposition"
+          :position="draftPosition"
           @open-flyout="openFlyout"
           @start-reposition="startReposition"
           @save-reposition="saveReposition"
@@ -168,7 +169,7 @@
 <script setup lang="ts">
 import { BrandedButton, isOrganizationCertified, LoadingBlock, MarkdownViewer, OrganizationNameWithCertificate, OwnerType, ReadMore, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiEdit2Line, RiSearchLine } from '@remixicon/vue'
-import { useTimeoutFn } from '@vueuse/core'
+import { onClickOutside, useTimeoutFn } from '@vueuse/core'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import BannerFlyout from '~/components/Organizations/BannerFlyout.vue'
@@ -252,13 +253,65 @@ function closeFlyout() {
   elementFocusedBeforeFlyout.value = null
 }
 
+// --- Flyout keyboard handling: Esc closes, Tab cycles focus inside the flyout ---
+function onFlyoutKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    closeFlyout()
+    return
+  }
+  if (event.key !== 'Tab') return
+  const root = flyoutElement.value
+  if (!root) return
+  const focusable = Array.from(root.querySelectorAll<HTMLElement>('button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])'))
+    .filter(el => el.offsetParent !== null)
+  if (!focusable.length) {
+    event.preventDefault()
+    return
+  }
+  const first = focusable[0]
+  const last = focusable[focusable.length - 1]
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault()
+    last.focus()
+  }
+  else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault()
+    first.focus()
+  }
+}
+
+// While the flyout is open: watch for outside clicks (registered after the
+// opening click has settled) and keep Tab focus trapped inside the flyout.
+const stopClickOutside = ref<(() => void) | null>(null)
+function teardownFlyoutListeners() {
+  stopClickOutside.value?.()
+  stopClickOutside.value = null
+  document.removeEventListener('keydown', onFlyoutKeydown)
+}
+watch(flyoutOpen, async (open) => {
+  if (open) {
+    document.addEventListener('keydown', onFlyoutKeydown)
+    // Defer registration past the opening click, or it would close immediately.
+    await nextTick()
+    if (flyoutElement.value) {
+      stopClickOutside.value = onClickOutside(flyoutElement, closeFlyout)
+    }
+  }
+  else {
+    teardownFlyoutListeners()
+  }
+})
+onBeforeUnmount(teardownFlyoutListeners)
+
 async function deleteBanner() {
   try {
     await deleteOrganizationBanner(organization.value!.id)
     if (organization.value?.banner_color) {
       organization.value = await updateOrganizationBannerColor(organization.value.id, null)
     }
-    await refresh()
+    else {
+      await refresh()
+    }
   }
   catch {
     // Server errors are already toasted by the $api plugin.
