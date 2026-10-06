@@ -28,3 +28,40 @@ export async function updateOrganization(organization: MaybeRefOrGetter<Organiza
   })
   return resp
 }
+
+export async function uploadOrganizationBanner(oid: string, file: File) {
+  const api = useNuxtApp().$fileApi
+  const formData = new FormData()
+  formData.append('file', file)
+  const resp = await api(`api/1/organizations/${oid}/banner/`, {
+    method: 'POST',
+    body: formData,
+  })
+  return resp
+}
+
+export async function updateOrganizationBannerColor(oid: string, color: string | null) {
+  const api = useNuxtApp().$api
+  const resp = await api<Organization>(`api/1/organizations/${oid}/`, {
+    method: 'PATCH',
+    body: { banner_color: color },
+  })
+  return resp
+}
+
+export async function updateOrganizationBannerPosition(oid: string, position: number) {
+  const api = useNuxtApp().$api
+  const resp = await api<Organization>(`api/1/organizations/${oid}/`, {
+    method: 'PATCH',
+    body: { banner_image_position: position },
+  })
+  return resp
+}
+
+export async function deleteOrganizationBanner(oid: string) {
+  const api = useNuxtApp().$api
+  const resp = await api(`api/1/organizations/${oid}/banner/`, {
+    method: 'DELETE',
+  })
+  return resp
+}
