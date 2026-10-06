@@ -73,9 +73,7 @@ test.describe('Report and moderation', () => {
     const dialog = page.getByRole('dialog')
     await dialog.getByRole('button', { name: 'Signalement' }).click()
 
-    const isMissing = (el: HTMLSelectElement | HTMLTextAreaElement) => el.validity.valueMissing
-    expect(await dialog.getByLabel('Raison du signalement').evaluate(isMissing)).toBe(true)
-    expect(await dialog.getByLabel('Votre message').evaluate(isMissing)).toBe(true)
+    await expect(dialog.getByText('Le champ est requis.')).toHaveCount(2)
     await expect(dialog.getByRole('heading', { name: 'Signaler ce contenu' })).toBeVisible()
     expect(reportPosts).toEqual([])
   })
@@ -93,25 +91,30 @@ test.describe('Report and moderation', () => {
     await expect(select.locator('option[value="auto_spam"]')).toHaveCount(0)
   })
 
-  test('shows an error when the report cannot be sent', async ({ page, request }) => {
-    const dataset = await createDataset(request, `Test report error ${Date.now()}`, 'Dataset pour tester l\'échec du signalement')
-    createdDatasets.push(dataset.id)
+  test.describe('when the API rejects the report', () => {
+    // The rejection below is the point of the test: the browser logs it.
+    test.use({ allowedConsoleMessages: ['the server responded with a status of 400'] })
 
-    await page.route(url => url.pathname === '/api/1/reports/', route => route.request().method() === 'POST'
-      ? route.fulfill({ status: 400, json: { message: 'Validation error' } })
-      : route.fallback())
+    test('shows an error when the report cannot be sent', async ({ page, request }) => {
+      const dataset = await createDataset(request, `Test report error ${Date.now()}`, 'Dataset pour tester l\'échec du signalement')
+      createdDatasets.push(dataset.id)
 
-    await page.goto(`/datasets/${dataset.id}/`)
-    await page.waitForLoadState('networkidle')
+      await page.route(url => url.pathname === '/api/1/reports/', route => route.request().method() === 'POST'
+        ? route.fulfill({ status: 400, json: { message: 'Validation error' } })
+        : route.fallback())
 
-    await page.getByRole('button', { name: 'Signalement' }).click()
-    const dialog = page.getByRole('dialog')
-    await dialog.getByLabel('Raison du signalement').selectOption('spam')
-    await dialog.getByLabel('Votre message').fill('Signalement de test E2E (échec)')
-    await dialog.getByRole('button', { name: 'Signalement' }).click()
+      await page.goto(`/datasets/${dataset.id}/`)
+      await page.waitForLoadState('networkidle')
 
-    await expect(page.getByText('Impossible d\'envoyer le signalement.')).toBeVisible()
-    await expect(dialog.getByRole('heading', { name: 'Signaler ce contenu' })).toBeVisible()
+      await page.getByRole('button', { name: 'Signalement' }).click()
+      const dialog = page.getByRole('dialog')
+      await dialog.getByLabel('Raison du signalement').selectOption('spam')
+      await dialog.getByLabel('Votre message').fill('Signalement de test E2E (échec)')
+      await dialog.getByRole('button', { name: 'Signalement' }).click()
+
+      await expect(page.getByText('Impossible d\'envoyer le signalement.')).toBeVisible()
+      await expect(dialog.getByRole('heading', { name: 'Signaler ce contenu' })).toBeVisible()
+    })
   })
 
   test('can hide a reported object (switch to private)', async ({ page, request }) => {

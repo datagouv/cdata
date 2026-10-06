@@ -47,18 +47,21 @@
       </SimpleBanner>
 
       <SelectGroup
-        v-model="reason"
+        v-model="form.reason"
         :label="$t('Raison du signalement')"
         required
+        :has-error="!!getFirstError('reason')"
+        :error-text="getFirstError('reason')"
         :options="reasons"
       />
 
       <InputGroup
-        v-model="message"
+        v-model="form.message"
         type="textarea"
         :label="$t('Votre message')"
         :placeholder="$t('Évitez de partager des informations personnelles.')"
-        required
+        :has-error="!!getFirstError('message')"
+        :error-text="getFirstError('message')"
       />
     </div>
 
@@ -114,8 +117,13 @@ const { $api } = useNuxtApp()
 const loading = ref(false)
 const reported = ref(false)
 
-const reason = ref<ReportReason['value'] | null>(null)
-const message = ref('')
+const { form, getFirstError, validate } = useForm({
+  reason: null as ReportReason['value'] | null,
+  message: '',
+}, {
+  reason: [required()],
+  message: [required()],
+})
 
 const reasons = ref([] as Array<ReportReason>)
 onMounted(async () => {
@@ -125,6 +133,8 @@ onMounted(async () => {
 })
 
 const send = async () => {
+  if (!await validate()) return
+
   try {
     loading.value = true
 
@@ -132,8 +142,8 @@ const send = async () => {
       method: 'POST',
       body: {
         subject: props.subject,
-        reason: reason.value,
-        message: message.value,
+        reason: form.value.reason,
+        message: form.value.message,
       },
     })
     emit('reported')
