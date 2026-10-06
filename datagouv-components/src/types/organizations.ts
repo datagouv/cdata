@@ -78,4 +78,11 @@ export type Organization = {
   // means published. Like `presentation_blocs`, only present when requested with
   // X-Fields.
   presentation_blocs_published_at?: string | null
+  // Organization page banner (data.gouv.fr#2049). `banner_image` is written
+  // only by the dedicated upload endpoint (read-only in PATCH).
+  // `banner_image_position` is an int 0-100 (CSS background-position-y
+  // semantics), backend default 50.
+  banner_color?: string | null
+  banner_image?: string | null
+  banner_image_position?: number
 }
