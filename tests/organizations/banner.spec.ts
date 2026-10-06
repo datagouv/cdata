@@ -17,7 +17,7 @@ test.describe('organization banner', () => {
     await page.goto(`/organizations/${ORG_SLUG}/datasets`)
 
     const banner = page.getByTestId('organization-banner')
-    await banner.hover()
+    await banner.hover({ position: { x: 30, y: 15 } })
     await expect(page.getByRole('button', { name: 'Ajouter une bannière' })).toBeVisible()
   })
 
@@ -25,7 +25,7 @@ test.describe('organization banner', () => {
     await page.goto(`/organizations/${ORG_SLUG}/datasets`)
 
     const banner = page.getByTestId('organization-banner')
-    await banner.hover()
+    await banner.hover({ position: { x: 30, y: 15 } })
     await page.getByRole('button', { name: 'Ajouter une bannière' }).click()
     await page.getByRole('tab', { name: 'Couleur' }).click()
     await page.getByRole('button', { name: 'green-emeraude' }).click()
