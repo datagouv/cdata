@@ -19,10 +19,10 @@
       />
 
       <BrandedButton
-        v-if="geopfDatasetStatus?.push.fiche_url"
+        v-if="geopfDatasetStatus?.push.datasheet_url"
         color="secondary"
         size="xs"
-        :href="geopfDatasetStatus.push.fiche_url"
+        :href="geopfDatasetStatus.push.datasheet_url"
         new-tab
         class="fr-mb-3w"
       >
@@ -155,7 +155,7 @@
           :dataset-id="datasetId"
           :connected="isGeopfConnected"
           :pull="loadedGeopfDatasetStatus.pull"
-          :fiche-url="loadedGeopfDatasetStatus.push.fiche_url"
+          :datasheet-url="loadedGeopfDatasetStatus.push.datasheet_url"
           :refresh="refreshGeopfDatasetStatus"
           class="mt-3"
           @reauth-required="reauthRequired = true"

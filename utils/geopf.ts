@@ -32,7 +32,7 @@ export type GeopfOfferingResource = {
 export type GeopfDatasetStatus = {
   push: {
     datastore_id: string | null
-    fiche_url: string | null
+    datasheet_url: string | null
   }
   pull: {
     status: GeopfPullStatus | null
