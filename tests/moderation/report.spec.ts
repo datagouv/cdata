@@ -73,7 +73,9 @@ test.describe('Report and moderation', () => {
     const dialog = page.getByRole('dialog')
     await dialog.getByRole('button', { name: 'Signalement' }).click()
 
-    await expect(dialog.getByText('Le champ est requis.')).toHaveCount(2)
+    const isMissing = (el: HTMLSelectElement | HTMLTextAreaElement) => el.validity.valueMissing
+    expect(await dialog.getByLabel('Raison du signalement').evaluate(isMissing)).toBe(true)
+    expect(await dialog.getByLabel('Votre message').evaluate(isMissing)).toBe(true)
     await expect(dialog.getByRole('heading', { name: 'Signaler ce contenu' })).toBeVisible()
     expect(reportPosts).toEqual([])
   })

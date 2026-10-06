@@ -2,6 +2,8 @@
   <ModalWithButton
     :title="reported ? $t(`Merci d'avoir signalé ce contenu`) : $t('Signaler ce contenu')"
     size="lg"
+    form
+    @submit.prevent="send"
   >
     <template #button="{ attrs, listeners }">
       <BrandedButton
@@ -45,23 +47,18 @@
       </SimpleBanner>
 
       <SelectGroup
-        v-model="form.reason"
+        v-model="reason"
         :label="$t('Raison du signalement')"
-        :required="true"
-        :has-error="!!getFirstError('reason')"
-        :has-warning="!!getFirstWarning('reason')"
-        :error-text="getFirstError('reason')"
+        required
         :options="reasons"
       />
 
       <InputGroup
-        v-model="form.message"
+        v-model="message"
         type="textarea"
         :label="$t('Votre message')"
         :placeholder="$t('Évitez de partager des informations personnelles.')"
-        :has-error="!!getFirstError('message')"
-        :has-warning="!!getFirstWarning('message')"
-        :error-text="getFirstError('message')"
+        required
       />
     </div>
 
@@ -86,10 +83,10 @@
         </BrandedButton>
         <BrandedButton
           v-if="! reported"
+          type="submit"
           color="primary"
           :loading
           :icon="RiFlagLine"
-          @click="send"
         >
           {{ $t('Signalement') }}
         </BrandedButton>
@@ -117,13 +114,8 @@ const { $api } = useNuxtApp()
 const loading = ref(false)
 const reported = ref(false)
 
-const { form, getFirstError, getFirstWarning, validate } = useForm({
-  reason: null,
-  message: '',
-}, {
-  reason: [required()],
-  message: [required()],
-})
+const reason = ref<ReportReason['value'] | null>(null)
+const message = ref('')
 
 const reasons = ref([] as Array<ReportReason>)
 onMounted(async () => {
@@ -133,8 +125,6 @@ onMounted(async () => {
 })
 
 const send = async () => {
-  if (!await validate()) return
-
   try {
     loading.value = true
 
@@ -142,8 +132,8 @@ const send = async () => {
       method: 'POST',
       body: {
         subject: props.subject,
-        reason: form.value.reason,
-        message: form.value.message,
+        reason: reason.value,
+        message: message.value,
       },
     })
     emit('reported')
