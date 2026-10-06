@@ -55,5 +55,5 @@ const { t } = useTranslation()
 
 const route = useRoute()
 const url = computed(() => `/api/1/posts/${route.params.id}`)
-const { data: post } = await useAPI<Post>(url, { redirectOn404: true })
+const { data: post } = await useAPI<Post>(url, { showErrorPage: true })
 </script>

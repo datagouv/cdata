@@ -130,7 +130,7 @@ const route = useRoute()
 const config = useRuntimeConfig()
 
 const url = computed(() => `/api/2/topics/${route.params.id}/`)
-const { data: topic, status } = await useAPI<TopicV2>(url, { redirectOn404: true, redirectOnSlug: 'id' })
+const { data: topic, status } = await useAPI<TopicV2>(url, { showErrorPage: true, redirectOnSlug: 'id' })
 
 const { data: discussions } = await useAPI<PaginatedArray<Thread>>('/api/1/discussions/', {
   query: { for: topic.value?.id, page_size: 1 },

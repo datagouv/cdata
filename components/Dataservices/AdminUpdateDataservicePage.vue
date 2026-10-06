@@ -176,7 +176,7 @@ const route = useRoute()
 const isLoading = ref(false)
 
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
-const { data: dataservice, status, refresh } = await useAPI<Dataservice>(url, { redirectOn404: true })
+const { data: dataservice, status, refresh } = await useAPI<Dataservice>(url, { showErrorPage: true })
 const dataserviceForm = ref<DataserviceForm | null>(null)
 watchEffect(() => {
   if (!dataservice.value) return

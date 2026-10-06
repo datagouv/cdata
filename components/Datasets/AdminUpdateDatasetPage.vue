@@ -168,7 +168,7 @@ const { data: dataset, status, refresh } = await useAPI<DatasetV2WithFullObject>
   headers: {
     'X-Get-Datasets-Full-Objects': 'True',
   },
-  redirectOn404: true,
+  showErrorPage: true,
 })
 
 const datasetForm = ref<DatasetForm | null>(null)

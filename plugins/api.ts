@@ -9,7 +9,7 @@ export default defineNuxtPlugin({
     const route = useRoute()
     const { t, locale } = useTranslation()
 
-    const makeApi = (apiOptions: { sendJson: boolean, redirectOn404: boolean }) => {
+    const makeApi = (apiOptions: { sendJson: boolean, showErrorPage: boolean }) => {
       return $fetch.create({
         baseURL: config.public.apiBase,
         onRequest({ options }) {
@@ -38,13 +38,18 @@ export default defineNuxtPlugin({
         },
         async onResponseError({ response, options }) {
           if (response.status === 404) {
-            if (apiOptions.redirectOn404) {
+            if (apiOptions.showErrorPage) {
               await nuxtApp.runWithContext(() => showError({ statusCode: 404, statusMessage: 'Page Not Found' }))
             }
             else {
               // We don't want to show the toast for default 404 Flask response
               return
             }
+          }
+
+          if (response.status === 410 && apiOptions.showErrorPage) {
+            await nuxtApp.runWithContext(() => showError({ statusCode: 410, statusMessage: 'Gone' }))
+            return
           }
 
           if (response.status === 401) {
@@ -90,9 +95,9 @@ export default defineNuxtPlugin({
     // Expose to useNuxtApp().$api
     return {
       provide: {
-        api: makeApi({ sendJson: true, redirectOn404: false }),
-        fileApi: makeApi({ sendJson: false, redirectOn404: false }),
-        apiWith404: makeApi({ sendJson: true, redirectOn404: true }),
+        api: makeApi({ sendJson: true, showErrorPage: false }),
+        fileApi: makeApi({ sendJson: false, showErrorPage: false }),
+        apiWithErrorPage: makeApi({ sendJson: true, showErrorPage: true }),
       },
     }
   },
