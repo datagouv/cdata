@@ -5,6 +5,9 @@ import { createDataset, createOrganization, deleteDatasets, deleteOrganizations 
 
 // The API answers 410 on a deleted object to anyone without edit rights on it:
 // a logged-out visitor must land on the shared error page, not on an empty page.
+// The page itself answers 410 on purpose: the browser logs it.
+test.use({ allowedConsoleMessages: ['the server responded with a status of 410'] })
+
 let api: APIRequestContext
 
 test.beforeAll(async () => {
