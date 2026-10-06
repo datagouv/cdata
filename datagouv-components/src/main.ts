@@ -30,6 +30,7 @@ import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseCo
 import { useSearchFilter } from './composables/useSearchFilter'
 import type { UseSearchFilterOptions } from './composables/useSearchFilter'
 
+import ActivityActor from './components/ActivityList/ActivityActor.vue'
 import ActivityList from './components/ActivityList/ActivityList.vue'
 import UserActivityList from './components/ActivityList/UserActivityList.vue'
 import AnimatedLoader from './components/AnimatedLoader.vue'
@@ -341,6 +342,7 @@ const datagouv: Plugin<PluginConfig> = {
 export {
   datagouv,
   useComponentsConfig,
+  ActivityActor,
   ActivityList,
   AnimatedLoader,
   AppLink,

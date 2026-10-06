@@ -58,9 +58,9 @@
             <p><FormattedDate :date="activities[reuse.id].created_at" /></p>
             <p class="inline-flex items-center">
               {{ t('par ') }}
-              <AvatarWithName
+              <ActivityActor
                 class="fr-ml-1v"
-                :user="activities[reuse.id].actor"
+                :actor="activities[reuse.id].actor"
               />
             </p>
           </div>
@@ -102,7 +102,7 @@
 </template>
 
 <script setup lang="ts">
-import { AvatarWithName, BrandedButton, summarize, FormattedDate } from '@datagouv/components-next'
+import { ActivityActor, BrandedButton, summarize, FormattedDate } from '@datagouv/components-next'
 import type { Activity, Reuse, ReuseV2 } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
