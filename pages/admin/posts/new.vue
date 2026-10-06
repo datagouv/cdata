@@ -24,6 +24,7 @@
       :post="postForm"
       type="create"
       :submit-label="t('Suivant')"
+      :loading
       @submit="postNext"
     />
     <PostContentForm
@@ -31,6 +32,7 @@
       :post="postForm"
       type="create"
       :submit-label="t('Sauvegarder')"
+      :loading
       @submit="save"
     />
     <div class="h-64" />
@@ -73,17 +75,12 @@ const postForm = useState<PostForm>(POST_FORM_STATE, () => ({
   image: null,
 } satisfies PostForm))
 
-const POST_LOADING_STATE = 'post-loading'
-
 const newPost = useState<Post | null>(
   'new-post',
   () => null,
 )
 
-const loading = useState<boolean>(
-  POST_LOADING_STATE,
-  () => false,
-)
+const loading = ref(false)
 
 const currentStep = computed(() => parseInt(route.query.step as string) || 1)
 const isCurrentStepValid = computed(() => {
@@ -122,10 +119,17 @@ async function save(form: { content: string }) {
     if (postForm.value.image && typeof postForm.value.image !== 'string') {
       const formData = new FormData()
       formData.set('file', postForm.value.image)
-      await $fileApi(`/api/1/posts/${newPost.value.id}/image/`, {
-        method: 'POST',
-        body: formData,
-      })
+      try {
+        await $fileApi(`/api/1/posts/${newPost.value.id}/image/`, {
+          method: 'POST',
+          body: formData,
+        })
+      }
+      catch {
+        // The error is already toasted by $fileApi. The post exists anyway: staying on the
+        // creation form would let a retry create it a second time, the image can be fixed
+        // from the edit page.
+      }
     }
     if (newPost.value.body_type === 'blocs') {
       await navigateTo(`/posts/${newPost.value.slug}?edit=true`)
@@ -135,7 +139,7 @@ async function save(form: { content: string }) {
     }
   }
   finally {
-    clearNuxtState(POST_LOADING_STATE)
+    loading.value = false
   }
 }
 
