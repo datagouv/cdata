@@ -1,7 +1,6 @@
-import type { CERTIFIED, PUBLIC_SERVICE, ASSOCIATION, LOCAL_AUTHORITY, COMPANY, DataserviceReference, DatasetReference, OrganizationReference, ReuseReference, UserReference } from '@datagouv/components-next'
-import type { MembershipRequestKind } from './types'
+import type { DataserviceReference, DatasetReference, OrganizationReference, ReuseReference, UserReference } from '@datagouv/components-next'
 import type { Thread } from './discussions'
-import type { HarvesterSource, HarvesterValidationStatus } from './harvesters'
+import type { HarvesterSource } from './harvesters'
 
 export type CommonNotification = {
   created_at: string
@@ -9,18 +8,21 @@ export type CommonNotification = {
   id: string
   last_modified: string
   user: UserReference
+  // Resolved by acting on the subject (accepting a request, validating a source) rather than by reading it
+  requires_action: boolean
 }
 
 export type MembershipRequestNotification = CommonNotification & {
+  type: 'organization.membership.requested' | 'organization.membership.invited'
   details: {
     class: 'MembershipRequestNotificationDetails'
-    kind: MembershipRequestKind
     request_organization: OrganizationReference
     request_user: UserReference
   }
 }
 
 export type TransferRequestNotification = CommonNotification & {
+  type: 'transfer.requested'
   details: {
     class: 'TransferRequestNotificationDetails'
     transfer_owner: OrganizationReference | UserReference
@@ -30,17 +32,21 @@ export type TransferRequestNotification = CommonNotification & {
 }
 
 export type NewBadgeNotification = CommonNotification & {
+  type: 'organization.badge.certified'
+    | 'organization.badge.public-service'
+    | 'organization.badge.company'
+    | 'organization.badge.association'
+    | 'organization.badge.local-authority'
   details: {
     class: 'NewBadgeNotificationDetails'
-    kind: typeof CERTIFIED | typeof PUBLIC_SERVICE | typeof ASSOCIATION | typeof LOCAL_AUTHORITY | typeof COMPANY
     organization: OrganizationReference
   }
 }
 
 export type DiscussionNotification = CommonNotification & {
+  type: 'discussion.new' | 'discussion.comment' | 'discussion.closed'
   details: {
     class: 'DiscussionNotificationDetails'
-    status: 'new_discussion' | 'new_comment' | 'closed'
     discussion: Thread
     message_id: string | null
     title: string
@@ -48,6 +54,7 @@ export type DiscussionNotification = CommonNotification & {
 }
 
 export type MembershipAcceptedNotification = CommonNotification & {
+  type: 'organization.membership.accepted'
   details: {
     class: 'MembershipAcceptedNotificationDetails'
     organization: OrganizationReference
@@ -55,6 +62,7 @@ export type MembershipAcceptedNotification = CommonNotification & {
 }
 
 export type MembershipRefusedNotification = CommonNotification & {
+  type: 'organization.membership.refused'
   details: {
     class: 'MembershipRefusedNotificationDetails'
     organization: OrganizationReference
@@ -62,14 +70,15 @@ export type MembershipRefusedNotification = CommonNotification & {
 }
 
 export type ValidateHarvesterNotification = CommonNotification & {
+  type: 'harvest.source.pending' | 'harvest.source.accepted' | 'harvest.source.refused'
   details: {
     class: 'ValidateHarvesterNotificationDetails'
     source: HarvesterSource
-    status: HarvesterValidationStatus
   }
 }
 
 export type ReuseCreatedNotification = CommonNotification & {
+  type: 'reuse.created'
   details: {
     class: 'ReuseCreatedNotificationDetails'
     reuse: ReuseReference
@@ -78,6 +87,7 @@ export type ReuseCreatedNotification = CommonNotification & {
 }
 
 export type DataserviceCreatedNotification = CommonNotification & {
+  type: 'dataservice.created'
   details: {
     class: 'DataserviceCreatedNotificationDetails'
     dataservice: DataserviceReference
