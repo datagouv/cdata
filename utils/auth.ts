@@ -1,5 +1,6 @@
 import type { Organization, OrganizationReference, User } from '@datagouv/components-next'
 import { usePostApiWithCsrf } from './api'
+import type { MailCadence } from '~/types/notifications'
 
 const UNLOGGED_SECURITY_ROUTES = [
   'login', 'register', 'reset', 'tf-validate',
@@ -13,6 +14,7 @@ export type Me = User & {
   about: string | null
   active: boolean
   email: string
+  mail_cadence: MailCadence
   metrics: {
     datasets: number
     followers: number

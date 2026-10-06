@@ -26,6 +26,10 @@
         >
           {{ $t('Marquer comme non spam') }}
         </BrandedButton>
+        <DiscussionFollowMenu
+          v-if="me"
+          :thread
+        />
         <EditCommentModal
           v-if="firstComment.permissions.edit"
           :subject
@@ -59,6 +63,7 @@ import { RiLockLine } from '@remixicon/vue'
 import { BrandedButton, CopyButton } from '@datagouv/components-next'
 import ReportModal from '../Spam/ReportModal.vue'
 import DeleteThreadModal from './DeleteThreadModal.vue'
+import DiscussionFollowMenu from './DiscussionFollowMenu.vue'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
 import EditCommentModal from './EditCommentModal.vue'
 import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
@@ -74,6 +79,7 @@ const emit = defineEmits<{
   change: []
 }>()
 
+const me = useMaybeMe()
 const firstComment = computed(() => props.thread.discussion[0])
 
 const { $api } = useNuxtApp()

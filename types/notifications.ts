@@ -96,3 +96,24 @@ export type DataserviceCreatedNotification = CommonNotification & {
 }
 
 export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification | DiscussionNotification | MembershipAcceptedNotification | MembershipRefusedNotification | ValidateHarvesterNotification | ReuseCreatedNotification | DataserviceCreatedNotification
+
+export type NotificationCategory = 'discussions' | 'reuses'
+
+export type NotificationChannel = 'app' | 'mail'
+
+export type MailCadence = 'immediate' | 'daily' | 'weekly'
+
+export type NotificationScope = {
+  class: 'Organization' | 'Discussion' | 'Dataset' | 'Reuse' | 'Dataservice' | 'Post' | 'Topic'
+  id: string
+}
+
+// A decision the user took. Whatever has no decision follows the defaults of the user's role.
+export type NotificationSetting = {
+  id: string
+  // `null` covers every subject the user is concerned with
+  scope: NotificationScope | null
+  category: NotificationCategory
+  channel: NotificationChannel
+  enabled: boolean
+}

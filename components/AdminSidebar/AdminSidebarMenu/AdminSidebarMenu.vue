@@ -72,6 +72,12 @@
               :to="me.id === user.id ? `/admin/me/profile` : `/admin/users/${user.id}/profile`"
             />
             <AdminSidebarLink
+              v-if="me.id === user.id"
+              :icon="RiNotification3Line"
+              :label="$t('Notifications')"
+              to="/admin/me/notifications"
+            />
+            <AdminSidebarLink
               :icon="RiBarChartBoxLine"
               :label="$t('Statistiques')"
               :to="me.id === user.id ? `/admin/me/metrics` : `/admin/users/${user.id}/metrics`"
@@ -206,7 +212,7 @@
 import { Avatar, OrganizationLogo } from '@datagouv/components-next'
 import type { OrganizationReference, User } from '@datagouv/components-next'
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
-import { RiAlarmWarningLine, RiArticleLine, RiAwardLine, RiBarChartBoxLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiGitPullRequestLine, RiGroup3Line, RiLineChartLine, RiParentLine, RiPieChartLine, RiPlanetLine, RiTerminalLine, RiServerLine, RiUserLine } from '@remixicon/vue'
+import { RiAlarmWarningLine, RiArticleLine, RiAwardLine, RiBarChartBoxLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiGitPullRequestLine, RiGroup3Line, RiLineChartLine, RiNotification3Line, RiParentLine, RiPieChartLine, RiPlanetLine, RiTerminalLine, RiServerLine, RiUserLine } from '@remixicon/vue'
 import { key, type AccordionRegister } from '~/components/Accordion/injectionKey'
 import AdminSidebarLink from '~/components/AdminSidebar/AdminSidebarLink/AdminSidebarLink.vue'
 

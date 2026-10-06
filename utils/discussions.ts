@@ -1,6 +1,7 @@
-import { throwOnNever, type Dataservice, type DatasetV2, type Reuse } from '@datagouv/components-next'
+import { throwOnNever, type Dataservice, type DatasetV2, type Reuse, type TopicV2 } from '@datagouv/components-next'
 import { RiArticleLine, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
 import type { Comment, DiscussionSubject, DiscussionSubjectTypes, Thread } from '~/types/discussions'
+import type { Post } from '~/types/posts'
 import type { ApiFetch } from '~/types/types'
 
 export async function getSubject(api: ApiFetch, subject: DiscussionSubject): Promise<DiscussionSubjectTypes | null> {
@@ -11,6 +12,10 @@ export async function getSubject(api: ApiFetch, subject: DiscussionSubject): Pro
       return await api<DatasetV2>(`/api/2/datasets/${subject.id}/`)
     case 'Reuse':
       return await api<Reuse>(`/api/1/reuses/${subject.id}/`)
+    case 'Post':
+      return await api<Post>(`/api/1/posts/${subject.id}/`)
+    case 'Topic':
+      return await api<TopicV2>(`/api/2/topics/${subject.id}/`)
     default:
       return null
   };
