@@ -20,6 +20,24 @@
     >
       <template #top>
         <BannerAction
+          v-if="!isOrganizationPresentationPublished(organization.presentation_blocs_published_at)"
+          class="mb-4"
+          type="primary"
+          :title="$t('Personnalisez votre page de présentation')"
+        >
+          {{ $t('Ajoutez des blocs de texte, des liens ou des images pour présenter votre organisation au public.') }}
+
+          <template #button>
+            <BrandedButton
+              :href="`${organization.page}/presentation?edit=true`"
+              new-tab
+              :icon="RiEditLine"
+            >
+              {{ $t('Personnaliser la page') }}
+            </BrandedButton>
+          </template>
+        </BannerAction>
+        <BannerAction
           v-if="isMeAdmin() && organization.deleted"
           class="mb-4"
           type="warning"
@@ -82,7 +100,7 @@
 </template>
 
 <script setup lang="ts">
-import { RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
+import { RiArrowGoBackLine, RiDeleteBin6Line, RiEditLine } from '@remixicon/vue'
 import { AnimatedLoader, BannerAction, BrandedButton, toast } from '@datagouv/components-next'
 import type { Organization, Badge } from '@datagouv/components-next'
 import DescribeOrganizationFrom from '~/components/Organization/New/Step2DescribeOrganization.vue'
