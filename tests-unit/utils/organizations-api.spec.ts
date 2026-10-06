@@ -30,7 +30,7 @@ describe('banner API helpers', () => {
     const { $api } = stubNuxtApp()
     await updateOrganizationBannerColor('org-id', '#a558a0')
     expect($api).toHaveBeenCalledWith('api/1/organizations/org-id/', {
-      method: 'PATCH',
+      method: 'PUT',
       body: { banner_color: '#a558a0' },
     })
   })
@@ -39,7 +39,7 @@ describe('banner API helpers', () => {
     const { $api } = stubNuxtApp()
     await updateOrganizationBannerColor('org-id', null)
     expect($api).toHaveBeenCalledWith('api/1/organizations/org-id/', {
-      method: 'PATCH',
+      method: 'PUT',
       body: { banner_color: null },
     })
   })
@@ -48,7 +48,7 @@ describe('banner API helpers', () => {
     const { $api } = stubNuxtApp()
     await updateOrganizationBannerPosition('org-id', 25)
     expect($api).toHaveBeenCalledWith('api/1/organizations/org-id/', {
-      method: 'PATCH',
+      method: 'PUT',
       body: { banner_image_position: 25 },
     })
   })
