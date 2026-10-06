@@ -100,7 +100,7 @@
 
 <script setup lang="ts">
 import { RiFlagLine } from '@remixicon/vue'
-import { BrandedButton, SelectGroup, SimpleBanner, TranslationT } from '@datagouv/components-next'
+import { BrandedButton, SelectGroup, SimpleBanner, toast, TranslationT } from '@datagouv/components-next'
 import type { ReportReason, ReportSubject } from '@datagouv/components-next'
 import CdataLink from '../CdataLink.vue'
 
@@ -112,11 +112,12 @@ const emit = defineEmits<{
 }>()
 
 const config = useRuntimeConfig()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const loading = ref(false)
 const reported = ref(false)
 
-const { form, getFirstError, getFirstWarning } = useForm({
+const { form, getFirstError, getFirstWarning, validate } = useForm({
   reason: null,
   message: '',
 }, {
@@ -126,10 +127,14 @@ const { form, getFirstError, getFirstWarning } = useForm({
 
 const reasons = ref([] as Array<ReportReason>)
 onMounted(async () => {
-  reasons.value = await $api<Array<ReportReason>>('/api/1/reports/reasons/')
+  const allReasons = await $api<Array<ReportReason>>('/api/1/reports/reasons/')
+  // `auto_spam` is set by the spam detection, users must not pick it
+  reasons.value = allReasons.filter(reason => reason.value !== 'auto_spam')
 })
 
 const send = async () => {
+  if (!await validate()) return
+
   try {
     loading.value = true
 
@@ -143,6 +148,9 @@ const send = async () => {
     })
     emit('reported')
     reported.value = true
+  }
+  catch {
+    toast.error(t('Impossible d\'envoyer le signalement.'))
   }
   finally {
     loading.value = false
