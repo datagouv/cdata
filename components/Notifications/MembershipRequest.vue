@@ -1,13 +1,13 @@
 <template>
   <NotificationLayout
-    :icon="notification.details.kind === 'invitation' ? RiMailSendLine : RiUserAddLine"
-    :title="notification.details.kind === 'invitation' ? $t('Invitation à rejoindre une organisation') : $t('Demande d\'adhésion')"
+    :icon="isInvitation ? RiMailSendLine : RiUserAddLine"
+    :title="isInvitation ? $t('Invitation à rejoindre une organisation') : $t('Demande d\'adhésion')"
     :notification="notification"
-    :title-link="notification.details.kind === 'invitation' ? '/admin/me/profile' : `/admin/organizations/${notification.details.request_organization.id}/members`"
+    :title-link="isInvitation ? '/admin/me/profile' : `/admin/organizations/${notification.details.request_organization.id}/members`"
     :title-link-title="$t('Voir la demande')"
   >
     <p class="m-0 text-xs">
-      {{ notification.details.kind === 'invitation' ? $t('pour') : $t('de') }}
+      {{ isInvitation ? $t('pour') : $t('de') }}
       <AvatarWithName
         :user="notification.details.request_user"
         :with-link="false"
@@ -34,7 +34,9 @@ import { RiMailSendLine, RiUserAddLine } from '@remixicon/vue'
 import type { MembershipRequestNotification } from '~/types/notifications'
 import NotificationLayout from './NotificationLayout.vue'
 
-defineProps<{
+const props = defineProps<{
   notification: MembershipRequestNotification
 }>()
+
+const isInvitation = computed(() => props.notification.type === 'organization.membership.invited')
 </script>

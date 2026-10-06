@@ -29,19 +29,19 @@ const props = defineProps<{
 const { t } = useTranslation()
 
 const badge = computed(() => {
-  switch (props.notification.details.kind) {
-    case 'certified':
+  switch (props.notification.type) {
+    case 'organization.badge.certified':
       return t('certifiée')
-    case 'association':
+    case 'organization.badge.association':
       return t('identifiée comme association')
-    case 'company':
+    case 'organization.badge.company':
       return t('identifiée comme entreprise')
-    case 'local-authority':
+    case 'organization.badge.local-authority':
       return t('identifiée comme collectivité territoriale')
-    case 'public-service':
+    case 'organization.badge.public-service':
       return t('identifiée comme service public')
     default:
-      return throwOnNever(props.notification.details.kind, 'No other type')
+      return throwOnNever(props.notification.type, 'No other type')
   }
 })
 </script>
