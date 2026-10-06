@@ -218,7 +218,7 @@ function onOrganizationUpdated(updated: Organization) {
 
 // --- Organization banner (data.gouv.fr#2049) ---
 const flyoutOpen = ref(false)
-const flyoutElement = ref<HTMLElement | null>(null)
+const flyoutElement = ref<InstanceType<typeof BannerFlyout> | null>(null)
 const elementFocusedBeforeFlyout = ref<Element | null>(null)
 const repositioning = ref(false)
 const savingReposition = ref(false)
@@ -241,7 +241,9 @@ function openFlyout() {
   // Remember where focus was so closeFlyout can restore it (a11y).
   elementFocusedBeforeFlyout.value = document.activeElement
   flyoutOpen.value = true
-  nextTick(() => flyoutElement.value?.focus())
+  nextTick(() => {
+    (flyoutElement.value?.$el as HTMLElement | undefined)?.focus()
+  })
 }
 
 function closeFlyout() {
@@ -260,7 +262,7 @@ function onFlyoutKeydown(event: KeyboardEvent) {
     return
   }
   if (event.key !== 'Tab') return
-  const root = flyoutElement.value
+  const root = flyoutElement.value?.$el as HTMLElement | undefined
   if (!root) return
   const focusable = Array.from(root.querySelectorAll<HTMLElement>('button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])'))
     .filter(el => el.offsetParent !== null)
@@ -294,7 +296,7 @@ watch(flyoutOpen, async (open) => {
     // Defer registration past the opening click, or it would close immediately.
     await nextTick()
     if (flyoutElement.value) {
-      stopClickOutside.value = onClickOutside(flyoutElement, closeFlyout)
+      stopClickOutside.value = onClickOutside(() => flyoutElement.value?.$el as HTMLElement | undefined, closeFlyout)
     }
   }
   else {
