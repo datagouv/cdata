@@ -150,7 +150,7 @@ const me = useMaybeMe()
 const { t } = useTranslation()
 
 const url = computed(() => `/api/1/organizations/${route.params.oid}/`)
-const { data: organization, status } = await useAPI<Organization>(url, { redirectOn404: true, redirectOnSlug: 'oid' })
+const { data: organization, status } = await useAPI<Organization>(url, { showErrorPage: true, redirectOnSlug: 'oid' })
 
 // A presentation is offered to the public only once published. The publication
 // date lives in the default mask, so we read it straight from the organization

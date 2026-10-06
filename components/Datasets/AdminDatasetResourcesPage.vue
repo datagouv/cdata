@@ -224,7 +224,7 @@ const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extens
 
 const datasetUrl = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset, status } = await useAPI<DatasetV2>(datasetUrl, {
-  redirectOn404: true,
+  showErrorPage: true,
   headers: {
     'X-Get-Datasets-Full-Objects': 'True',
   },

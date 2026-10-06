@@ -186,7 +186,7 @@ const route = useRoute()
 const config = useRuntimeConfig()
 
 const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
-const { data: reuse, status } = await useAPI<Reuse>(url, { redirectOn404: true, redirectOnSlug: 'rid' })
+const { data: reuse, status } = await useAPI<Reuse>(url, { showErrorPage: true, redirectOnSlug: 'rid' })
 
 const title = computed(() => `Réutilisation - ${reuse.value?.title} | ${config.public.title}`)
 const description = computed(() => reuse.value ? getDescriptionShort(reuse.value) : '')

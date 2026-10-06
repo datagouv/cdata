@@ -165,7 +165,7 @@ async function editContent() {
 }
 
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
-const { data: post, status, refresh: refreshPost } = await useAPI<Post>(url, { redirectOn404: true, lazy: true })
+const { data: post, status, refresh: refreshPost } = await useAPI<Post>(url, { showErrorPage: true, lazy: true })
 
 const { $api } = useNuxtApp()
 const { t } = useTranslation()

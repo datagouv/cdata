@@ -12,7 +12,7 @@ const { setCurrentOrganization } = useCurrentOwned()
 
 const route = useRoute()
 const url = computed(() => `api/1/organizations/${route.params.oid}/`)
-const { data: organization, refresh } = await useAPI<Organization>(url, { redirectOn404: true })
+const { data: organization, refresh } = await useAPI<Organization>(url, { showErrorPage: true })
 
 watch(organization, () => {
   if (organization.value) setCurrentOrganization(organization.value)

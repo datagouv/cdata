@@ -345,7 +345,7 @@ const { height: sidebarHeight } = useElementSize(sidebar)
 const { height: headerHeight } = useElementSize(header)
 
 const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
-const { data: dataservice, status } = await useAPI<Dataservice>(url, { redirectOn404: true, redirectOnSlug: 'did' })
+const { data: dataservice, status } = await useAPI<Dataservice>(url, { showErrorPage: true, redirectOnSlug: 'did' })
 
 const title = computed(() => `API - ${dataservice.value?.title} | ${config.public.title}`)
 const description = computed(() => dataservice.value ? getDescriptionShort(dataservice.value) : '')

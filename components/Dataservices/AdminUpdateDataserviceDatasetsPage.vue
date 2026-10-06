@@ -63,7 +63,7 @@ const { $api } = useNuxtApp()
 
 const route = useRoute()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
-const { data: dataservice } = await useAPI<Dataservice>(url, { redirectOn404: true })
+const { data: dataservice } = await useAPI<Dataservice>(url, { showErrorPage: true })
 const canEdit = computed(() => dataservice.value?.permissions.edit ?? false)
 
 const tooManyDatasets = computed(() => (dataservice.value?.datasets.total ?? 0) > config.public.maxNumberOfDatasetsForDataserviceUpdate)

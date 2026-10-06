@@ -197,7 +197,7 @@ const pageSize = ref(20)
 const route = useRoute()
 
 const sourceUrl = computed(() => `/api/1/harvest/source/${route.params.id}`)
-const { data: harvester } = await useAPI<HarvesterSource>(sourceUrl, { redirectOn404: true })
+const { data: harvester } = await useAPI<HarvesterSource>(sourceUrl, { showErrorPage: true })
 
 const jobsUrl = computed(() => `/api/1/harvest/source/${route.params.id}/jobs`)
 const jobsParams = computed(() => {
