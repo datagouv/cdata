@@ -1,45 +1,81 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <div class="bg-blue-lightest">
-    <div class="container">
+  <div>
+    <div class="relative group">
       <div
-        v-if="organization"
-        class="flex items-center justify-between"
+        ref="bannerElement"
+        class="relative"
+        :class="{ 'cursor-grab active:cursor-grabbing select-none touch-none': repositioning }"
+        @pointerdown="onPointerDown"
+        @pointermove="onPointerMove"
+        @pointerup="onPointerUp"
+        @pointercancel="onPointerUp"
       >
-        <Breadcrumb>
-          <BreadcrumbItem
-            to="/"
+        <OrganizationBanner
+          v-if="organization"
+          :organization="organization"
+          :position-override="repositioning ? draftPosition : null"
+        >
+          <div
+            class="flex items-center justify-between"
+            :class="{ 'pointer-events-none': repositioning }"
           >
-            {{ $t('Accueil') }}
-          </BreadcrumbItem>
-          <BreadcrumbItem to="/organizations">
-            {{ $t('Organisations') }}
-          </BreadcrumbItem>
-          <BreadcrumbItem>
-            {{ organization.name }}
-          </BreadcrumbItem>
-        </Breadcrumb>
-        <div class="flex gap-3 items-center">
-          <BrandedButton
-            v-if="isPresentationTab && canEditPresentation && !isEditingPresentation"
-            color="warning"
-            size="xs"
-            :icon="RiEdit2Line"
-            @click="editPresentation"
-          >
-            {{ hasPresentation ? $t('Modifier la présentation') : $t('Modifier ou publier la présentation') }}
-          </BrandedButton>
-          <EditButton
-            v-if="organization.permissions.edit"
-            :id="organization.id"
-            type="organizations"
-          />
-          <ReportModal
-            v-if="!isOrganizationCertified(organization)"
-            :subject="{ id: organization.id, class: 'Organization' }"
-          />
-        </div>
+            <Breadcrumb>
+              <BreadcrumbItem to="/">
+                {{ $t('Accueil') }}
+              </BreadcrumbItem>
+              <BreadcrumbItem to="/organizations">
+                {{ $t('Organisations') }}
+              </BreadcrumbItem>
+              <BreadcrumbItem>
+                {{ organization.name }}
+              </BreadcrumbItem>
+            </Breadcrumb>
+            <div class="flex gap-3 items-center">
+              <BrandedButton
+                v-if="isPresentationTab && canEditPresentation && !isEditingPresentation"
+                color="warning"
+                size="xs"
+                :icon="RiEdit2Line"
+                @click="editPresentation"
+              >
+                {{ hasPresentation ? $t('Modifier la présentation') : $t('Modifier ou publier la présentation') }}
+              </BrandedButton>
+              <EditButton
+                v-if="organization.permissions.edit"
+                :id="organization.id"
+                type="organizations"
+              />
+              <ReportModal
+                v-if="!isOrganizationCertified(organization)"
+                :subject="{ id: organization.id, class: 'Organization' }"
+              />
+            </div>
+          </div>
+        </OrganizationBanner>
+        <OrganizationBannerControls
+          v-if="organization && organization.permissions.edit"
+          :organization="organization"
+          :repositioning="repositioning"
+          :saving="savingReposition"
+          @open-flyout="openFlyout"
+          @start-reposition="startReposition"
+          @save-reposition="saveReposition"
+          @cancel-reposition="cancelReposition"
+          @delete-banner="deleteBanner"
+        />
       </div>
+      <BannerFlyout
+        v-if="flyoutOpen && organization"
+        ref="flyoutElement"
+        :organization="organization"
+        class="absolute right-0 top-full z-30 mt-2"
+        tabindex="-1"
+        @updated="onBannerUpdated"
+        @refresh="onBannerRefresh"
+        @request-reposition="startReposition"
+        @close="closeFlyout"
+      />
     </div>
     <LoadingBlock
       v-if="organization"
@@ -48,7 +84,7 @@
       :data="organization"
     >
       <div class="container relative">
-        <div class="bg-white p-1 rounded-sm border border-gray-default object-contain size-20 -mb-10 mt-14 relative z-1">
+        <div class="bg-white p-1 rounded-sm border border-gray-default object-contain size-20 -mb-10 -mt-10 relative z-1">
           <OrganizationLogo
             :organization
             size-class="size-full"
@@ -135,8 +171,13 @@ import { RiDeleteBinLine, RiEdit2Line, RiSearchLine } from '@remixicon/vue'
 import { useTimeoutFn } from '@vueuse/core'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import BannerFlyout from '~/components/Organizations/BannerFlyout.vue'
+import OrganizationBanner from '~/components/Organizations/OrganizationBanner.vue'
+import OrganizationBannerControls from '~/components/Organizations/OrganizationBannerControls.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
+import { deleteOrganizationBanner, updateOrganizationBannerColor, updateOrganizationBannerPosition } from '~/api/organizations'
 import { isUserOrgAdmin, useMaybeMe } from '~/utils/auth'
+import { backgroundCoverHeight, positionFromDrag } from '~/utils/organizationBanner'
 import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
@@ -150,7 +191,7 @@ const me = useMaybeMe()
 const { t } = useTranslation()
 
 const url = computed(() => `/api/1/organizations/${route.params.oid}/`)
-const { data: organization, status } = await useAPI<Organization>(url, { redirectOn404: true, redirectOnSlug: 'oid' })
+const { data: organization, status, refresh } = await useAPI<Organization>(url, { redirectOn404: true, redirectOnSlug: 'oid' })
 
 // A presentation is offered to the public only once published. The publication
 // date lives in the default mask, so we read it straight from the organization
@@ -173,6 +214,128 @@ function editPresentation() {
 function onOrganizationUpdated(updated: Organization) {
   organization.value = updated
 }
+
+// --- Organization banner (data.gouv.fr#2049) ---
+const flyoutOpen = ref(false)
+const flyoutElement = ref<HTMLElement | null>(null)
+const elementFocusedBeforeFlyout = ref<Element | null>(null)
+const repositioning = ref(false)
+const savingReposition = ref(false)
+const draftPosition = ref(50)
+const bannerElement = ref<HTMLElement | null>(null)
+const dragStartY = ref(0)
+const dragStartPosition = ref(50)
+const dragging = ref(false)
+const imageNaturalSize = ref<{ width: number, height: number } | null>(null)
+
+function onBannerUpdated(updated: Organization) {
+  organization.value = updated
+}
+
+async function onBannerRefresh() {
+  await refresh()
+}
+
+function openFlyout() {
+  // Remember where focus was so closeFlyout can restore it (a11y).
+  elementFocusedBeforeFlyout.value = document.activeElement
+  flyoutOpen.value = true
+  nextTick(() => flyoutElement.value?.focus())
+}
+
+function closeFlyout() {
+  flyoutOpen.value = false
+  const previous = elementFocusedBeforeFlyout.value
+  if (previous instanceof HTMLElement && document.contains(previous)) {
+    previous.focus()
+  }
+  elementFocusedBeforeFlyout.value = null
+}
+
+async function deleteBanner() {
+  try {
+    await deleteOrganizationBanner(organization.value!.id)
+    if (organization.value?.banner_color) {
+      organization.value = await updateOrganizationBannerColor(organization.value.id, null)
+    }
+    await refresh()
+  }
+  catch {
+    // Server errors are already toasted by the $api plugin.
+  }
+}
+
+function startReposition() {
+  if (!organization.value?.banner_image) return
+  closeFlyout()
+  draftPosition.value = organization.value.banner_image_position ?? 50
+  repositioning.value = true
+  imageNaturalSize.value = null
+  const image = new Image()
+  image.onload = () => {
+    imageNaturalSize.value = { width: image.naturalWidth, height: image.naturalHeight }
+  }
+  image.onerror = () => {
+    repositioning.value = false
+  }
+  image.src = organization.value.banner_image
+}
+
+async function saveReposition() {
+  savingReposition.value = true
+  try {
+    organization.value = await updateOrganizationBannerPosition(organization.value!.id, draftPosition.value)
+    repositioning.value = false
+  }
+  catch {
+    // Server errors are already toasted by the $api plugin.
+  }
+  finally {
+    savingReposition.value = false
+  }
+}
+
+function cancelReposition() {
+  repositioning.value = false
+}
+
+function onPointerDown(event: PointerEvent) {
+  if (!repositioning.value) return
+  // Let the Enregistrer/Annuler buttons work: only the banner surface drags.
+  if ((event.target as HTMLElement).closest('button')) return
+  dragging.value = true
+  dragStartY.value = event.clientY
+  dragStartPosition.value = draftPosition.value
+  ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
+}
+
+function onPointerUp() {
+  dragging.value = false
+}
+
+function onPointerMove(event: PointerEvent) {
+  if (!repositioning.value) return
+  if (!dragging.value) return
+  const element = bannerElement.value
+  const size = imageNaturalSize.value
+  if (!element || !size) return
+  const overflow = Math.max(0, backgroundCoverHeight(element.clientWidth, size.width, size.height) - element.clientHeight)
+  draftPosition.value = positionFromDrag(dragStartPosition.value, event.clientY - dragStartY.value, overflow)
+}
+
+function onRepositionKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    cancelReposition()
+  }
+}
+watch(repositioning, (active) => {
+  if (active) {
+    document.addEventListener('keydown', onRepositionKeydown)
+  }
+  else {
+    document.removeEventListener('keydown', onRepositionKeydown)
+  }
+})
 
 const tabLinks = computed(() => {
   const oid = route.params.oid
