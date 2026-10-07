@@ -8,7 +8,7 @@
       :key="option.value"
       type="button"
       :aria-pressed="option.value === modelValue"
-      class="flex items-center justify-center gap-2 rounded text-sm"
+      class="flex items-center justify-center gap-2 rounded py-1.5 px-3 text-sm"
       :class="[
         grow ? 'flex-1' : '',
         option.value === modelValue ? 'bg-white font-bold shadow-sm' : 'text-gray-medium hover:text-gray-title',
