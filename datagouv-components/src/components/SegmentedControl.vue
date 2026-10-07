@@ -1,6 +1,7 @@
 <template>
   <div
-    class="flex bg-gray-lower rounded p-1 gap-1 w-fit"
+    class="flex bg-gray-lower rounded p-1 gap-1"
+    :class="{ 'w-fit': !grow }"
     role="group"
   >
     <button
@@ -37,7 +38,7 @@ export type SegmentedControlOption = {
 withDefaults(defineProps<{
   modelValue: string
   options: Array<SegmentedControlOption>
-  // Stretch the segments to fill the container width (default: fit content)
+  // Fill the available width and stretch the segments (default: fit content)
   grow?: boolean
 }>(), {
   grow: false,

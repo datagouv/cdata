@@ -11,15 +11,16 @@
           { value: 'preview', label: 'Prévisualiser', icon: RiEyeLine },
         ]"
       />
-      <SegmentedControl
-        v-model="grown"
-        grow
-        class="w-80"
-        :options="[
-          { value: 'color', label: 'Couleur', icon: RiPaletteLine },
-          { value: 'upload', label: 'Importer', icon: RiImageLine },
-        ]"
-      />
+      <div class="w-80">
+        <SegmentedControl
+          v-model="grown"
+          grow
+          :options="[
+            { value: 'color', label: 'Couleur', icon: RiPaletteLine },
+            { value: 'upload', label: 'Importer', icon: RiImageLine },
+          ]"
+        />
+      </div>
     </div>
   </section>
 </template>
