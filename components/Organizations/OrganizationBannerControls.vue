@@ -36,6 +36,7 @@
           class="absolute top-3 right-3 flex gap-2 pointer-events-auto"
         >
           <BrandedButton
+            color="secondary"
             size="sm"
             @click="$emit('open-flyout')"
           >
@@ -43,12 +44,14 @@
           </BrandedButton>
           <BrandedButton
             v-if="organization.banner_image"
+            color="secondary"
             size="sm"
             @click="$emit('start-reposition')"
           >
             {{ $t('Repositionner') }}
           </BrandedButton>
           <BrandedButton
+            color="secondary"
             size="sm"
             icon-only
             :icon="RiDeleteBinLine"
@@ -62,6 +65,7 @@
           class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-auto"
         >
           <BrandedButton
+            color="secondary"
             size="sm"
             :icon="RiAddLine"
             @click="$emit('open-flyout')"
@@ -73,6 +77,7 @@
       <!-- Mobile: persistent edit button -->
       <BrandedButton
         class="sm:hidden absolute bottom-3 right-3"
+        color="secondary"
         size="sm"
         icon-only
         :icon="RiEditLine"
