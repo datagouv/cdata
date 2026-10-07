@@ -4,7 +4,7 @@
   <div>
     <div
       v-if="canEdit"
-      class="container flex justify-end pt-5"
+      class="container flex justify-end pt-5 mb-4"
     >
       <div
         data-testid="presentation-mode-switch"
