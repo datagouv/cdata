@@ -1,11 +1,12 @@
 import type { NotificationChannel, NotificationEvent, NotificationReason, NotificationResolved, NotificationRuleKey, NotificationScope, NotificationSetting } from '~/types/notifications'
+import type { Me } from '~/utils/auth'
 
 // Shared by every discussion of a page: they all read the same list, fetched once.
 let pendingLoad: Promise<void> | null = null
 
 // The follow buttons of a page asking within the same tick, by event: one call answers
 // all of their subjects.
-const pendingFollows = new Map<NotificationEvent, { scopes: Array<NotificationScope>, answer: Promise<Array<NotificationResolved>> }>()
+const pendingFollows = new Map<NotificationEvent | null, { scopes: Array<NotificationScope>, answer: Promise<Array<NotificationResolved>> }>()
 
 function isSameScope(a: NotificationScope | null, b: NotificationScope | null) {
   if (a === null || b === null) return a === b
@@ -137,31 +138,38 @@ export function useNotificationSettings() {
     await setRule({ scope }, followed)
   }
 
-  // A reason's channels, as chosen, whatever the default: a choice does not follow a later
-  // change of the defaults.
-  //
-  // Only a channel turned off is stored, though. A channel turned on is what every reason
-  // gets anyway, and storing it would beat "turn everything off", being more specific.
-  // No channel at all turns both off rather than saying "not concerned": a follow, being
-  // on a subject, would beat "not concerned", whereas nothing brings back a channel
-  // turned off.
-  async function setReasonChannels(reason: NotificationReason, channels: Array<NotificationChannel>) {
-    await Promise.all([
-      setRule({ reason }, channels.length ? true : null),
-      ...(['app', 'mail'] as const).map(channel => setRule({ reason, channel }, channels.includes(channel) ? null : false)),
-    ])
+  // Whether some kinds of notification reach the user through a channel. Only a channel
+  // turned off is stored: turned on is the default, and a stored "yes" would also beat
+  // the "no" of an organization's channels, being on an event.
+  function kindChannelOn(events: Array<NotificationEvent>, channel: NotificationChannel) {
+    return events.every(event => ruleValue({ event, channel }) !== false)
   }
 
-  // "Turn everything off" is a rule on each channel, everywhere: a channel rule is the
-  // only kind a follow cannot bring back (see udata's `resolve`).
-  const allOff = computed(() => ruleValue({ channel: 'app' }) === false && ruleValue({ channel: 'mail' }) === false)
-
-  async function setAllOff(off: boolean) {
-    await Promise.all([
-      setRule({ channel: 'app' }, off ? false : null),
-      setRule({ channel: 'mail' }, off ? false : null),
-    ])
+  async function setKindChannel(events: Array<NotificationEvent>, channel: NotificationChannel, on: boolean) {
+    await Promise.all(events.map(event => setRule({ event, channel }, on ? null : false)))
   }
 
-  return { settings, load, ruleValue, narrowerRules, setRule, resolve, resolveFollow, follow, followSubject, setReasonChannels, allOff, setAllOff }
+  // The channels of an organization replace those of the kinds of notification for
+  // everything about it; `null` keeps those.
+  function organizationChannels(scope: NotificationScope): Array<NotificationChannel> | null {
+    const chosen = (['app', 'mail'] as const).map(channel => [channel, ruleValue({ scope, channel })] as const)
+    if (chosen.every(([, enabled]) => enabled === null)) return null
+    return chosen.filter(([, enabled]) => enabled).map(([channel]) => channel)
+  }
+
+  async function setOrganizationChannels(scope: NotificationScope, channels: Array<NotificationChannel> | null) {
+    await Promise.all((['app', 'mail'] as const).map(channel => setRule({ scope, channel }, channels ? channels.includes(channel) : null)))
+  }
+
+  // "Turn everything off" is a field of the user rather than a rule: no rule, however
+  // precise, can bring anything back.
+  const me = useMaybeMe()
+  const paused = computed(() => me.value?.notifications_paused ?? false)
+
+  async function setPaused(value: boolean) {
+    const updated = await $api<Me>('/api/1/me/', { method: 'PUT', body: { notifications_paused: value } })
+    if (me.value) me.value.notifications_paused = updated.notifications_paused
+  }
+
+  return { settings, load, ruleValue, narrowerRules, setRule, resolve, resolveFollow, follow, followSubject, kindChannelOn, setKindChannel, organizationChannels, setOrganizationChannels, paused, setPaused }
 }

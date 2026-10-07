@@ -9,7 +9,7 @@ export function useNotificationLabels() {
     'owner': t('en tant que propriétaire'),
     'organization.admin': t('en tant qu\'administrateur de l\'organisation'),
     'organization.editor': t('en tant qu\'éditeur de l\'organisation'),
-    'organization.partial_editor': t('parce que ce contenu vous est confié'),
+    'organization.partial_editor': t('parce que ce jeu de données vous est assigné'),
     'discussion.participant': t('parce que vous participez à cette discussion'),
     'explicit_subscriber': t('parce que vous suivez ce contenu'),
     'contributor': t('parce que vous avez modifié ce contenu'),

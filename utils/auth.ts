@@ -15,6 +15,7 @@ export type Me = User & {
   active: boolean
   email: string
   mail_cadence: MailCadence
+  notifications_paused: boolean
   metrics: {
     datasets: number
     followers: number

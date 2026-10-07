@@ -55,7 +55,7 @@ const props = defineProps<{
 type Action = { label: string, icon: Component, done: string, run: () => Promise<unknown> }
 
 const { t } = useTranslation()
-const { load, ruleValue, narrowerRules, setRule, resolveFollow, follow, allOff } = useNotificationSettings()
+const { load, ruleValue, narrowerRules, setRule, resolveFollow, follow, paused } = useNotificationSettings()
 const { reasonsPhrase, eventLabel, channelsPhrase } = useNotificationLabels()
 
 const titleId = useId()
@@ -76,7 +76,7 @@ const restricted = computed(() => narrowerRules(props.scope).filter(rule => rule
 const muted = computed(() => ruleValue({ scope: props.scope }) === false)
 
 const sentence = computed(() => {
-  if (allOff.value) return t('Toutes vos notifications sont désactivées.')
+  if (paused.value) return t('Toutes vos notifications sont désactivées.')
   const channels = resolved.value?.channels ?? []
   if (channels.length) {
     return t('Vous recevez les notifications de {subject} {channels}, {reasons}.', {
@@ -94,7 +94,7 @@ const sentence = computed(() => {
 
 const action = computed<Action | null>(() => {
   // Nothing to do here: "turn everything off" is undone on the settings page.
-  if (allOff.value) return null
+  if (paused.value) return null
   if (resolved.value?.channels.length || restricted.value.length) {
     return {
       label: t('Ne plus recevoir'),
