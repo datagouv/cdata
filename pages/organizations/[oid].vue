@@ -71,7 +71,7 @@
       :data="organization"
     >
       <div class="container relative">
-        <div class="bg-white p-1 rounded-sm border border-gray-default object-contain size-20 -mb-10 -mt-10 relative z-1">
+        <div class="bg-white p-1 rounded-sm border border-gray-default object-contain size-20 -mb-10 -mt-10 relative z-20">
           <OrganizationLogo
             :organization
             size-class="size-full"
