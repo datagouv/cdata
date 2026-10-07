@@ -31,12 +31,20 @@
       </BannerAction>
 
       <PaddedContainer class="!p-0 divide-y divide-gray-default">
-        <div class="px-5 py-3 flex items-center justify-between">
+        <div :class="[CHANNELS_GRID_CLASS, 'py-3']">
           <h2 class="m-0 text-sm font-bold">
             {{ t('Ce qui vous concerne') }}
           </h2>
+          <p
+            v-for="channel in channelColumns"
+            :key="channel.value"
+            class="m-0 text-xs text-gray-medium text-center"
+          >
+            {{ channel.label }}
+          </p>
           <BrandedButton
             v-if="!allOff"
+            class="justify-self-end"
             color="tertiary"
             size="xs"
             @click="setAllOff(true)"
@@ -47,36 +55,28 @@
         <div
           v-for="row in reasonRows"
           :key="row.reason"
-          :class="ROW_CLASS"
+          :class="[CHANNELS_GRID_CLASS, 'py-3']"
         >
-          <p
-            :id="`reason-${row.reason}`"
-            class="m-0 text-sm font-bold"
-          >
+          <p class="m-0 text-sm font-bold">
             {{ row.label }}
           </p>
           <div
-            role="radiogroup"
-            :aria-labelledby="`reason-${row.reason}`"
-            :class="CHOICES_CLASS"
+            v-for="channel in channelColumns"
+            :key="channel.value"
+            class="flex justify-center"
           >
-            <div
-              v-for="option in channelOptions"
-              :key="option.value"
-              class="fr-radio-group fr-radio-group--sm"
-            >
+            <div class="fr-checkbox-group fr-checkbox-group--sm">
               <input
-                :id="`reason-${row.reason}-${option.value}`"
-                type="radio"
-                :name="`reason-${row.reason}`"
-                :checked="reasonValue(row.reason) === option.value"
-                @change="saveReason(row.reason, option.value)"
+                :id="`reason-${row.reason}-${channel.value}`"
+                type="checkbox"
+                :checked="channelsOf(row.reason).includes(channel.value)"
+                @change="saveChannel(row.reason, channel.value, ($event.target as HTMLInputElement).checked)"
               >
               <label
                 class="fr-label"
-                :for="`reason-${row.reason}-${option.value}`"
+                :for="`reason-${row.reason}-${channel.value}`"
               >
-                {{ option.label }}
+                <span class="sr-only">{{ row.label }} : {{ channel.label }}</span>
               </label>
             </div>
           </div>
@@ -238,8 +238,6 @@ import CdataLink from '~/components/CdataLink.vue'
 import type { Me } from '~/utils/auth'
 import type { MailCadence, NotificationChannel, NotificationEvent, NotificationReason, NotificationScope, NotificationSetting } from '~/types/notifications'
 
-type ChannelsValue = 'both' | 'app' | 'mail' | 'none'
-
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const me = useMe()
@@ -248,6 +246,8 @@ const { settings, load, setRule, resolve, followSubject, setReasonChannels, allO
 // Every setting reads as a line: its label on the left, its choices on the right.
 const ROW_CLASS = 'px-5 py-4 grid grid-cols-[18rem_1fr] items-center gap-6'
 const CHOICES_CLASS = 'flex flex-wrap gap-x-6 gap-y-2'
+// The label column of every other row, then one column per channel.
+const CHANNELS_GRID_CLASS = 'px-5 grid grid-cols-[18rem_6rem_6rem_1fr] items-center gap-6'
 
 onMounted(async () => {
   await Promise.all([load(), refreshReasons()])
@@ -271,11 +271,9 @@ const reasonRows = computed<Array<{ reason: NotificationReason, label: string }>
   ...(isMeAdmin() ? [{ reason: 'sysadmin' as const, label: t('Administration du site') }] : []),
 ])
 
-const channelOptions = computed<Array<{ value: ChannelsValue, label: string }>>(() => [
-  { value: 'both', label: t('Application et e-mail') },
-  { value: 'app', label: t('Application seulement') },
-  { value: 'mail', label: t('E-mail seulement') },
-  { value: 'none', label: t('Jamais') },
+const channelColumns = computed<Array<{ value: NotificationChannel, label: string }>>(() => [
+  { value: 'app', label: t('Application') },
+  { value: 'mail', label: t('E-mail') },
 ])
 
 // What each reason row really gets, as udata resolves it: the page never resolves rules
@@ -287,21 +285,13 @@ async function refreshReasons() {
   reasonChannels.value = Object.fromEntries(resolved.map(answer => [answer.reason, answer.channels]))
 }
 
-function reasonValue(reason: NotificationReason): ChannelsValue {
-  const channels = reasonChannels.value?.[reason] ?? []
-  if (channels.includes('app')) return channels.includes('mail') ? 'both' : 'app'
-  return channels.includes('mail') ? 'mail' : 'none'
+function channelsOf(reason: NotificationReason): Array<NotificationChannel> {
+  return reasonChannels.value?.[reason] ?? []
 }
 
-const CHANNELS_OF: Record<ChannelsValue, Array<NotificationChannel>> = {
-  both: ['app', 'mail'],
-  app: ['app'],
-  mail: ['mail'],
-  none: [],
-}
-
-async function saveReason(reason: NotificationReason, value: ChannelsValue) {
-  await setReasonChannels(reason, CHANNELS_OF[value])
+async function saveChannel(reason: NotificationReason, channel: NotificationChannel, checked: boolean) {
+  const others = channelsOf(reason).filter(other => other !== channel)
+  await setReasonChannels(reason, checked ? [...others, channel] : others)
   await refreshReasons()
   toast.success(t('Préférence enregistrée'))
 }
