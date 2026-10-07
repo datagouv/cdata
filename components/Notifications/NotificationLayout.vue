@@ -2,9 +2,10 @@
   <div class="relative group hover:bg-gray-some">
     <div class="p-3 flex gap-3">
       <div class="flex-none">
+        <!-- The icon and the dot are centered on the first line, 1rem high (`text-xs`). -->
         <component
           :is="icon"
-          class="size-4 mt-1"
+          class="size-4"
         />
       </div>
       <div class="flex-1 truncate">
@@ -26,45 +27,37 @@
       </div>
       <div class="flex-none flex m-0 gap-1.5">
         <p class="m-0 text-xs">
-          <FormattedDate :date="notification.created_at" />
+          <!-- Short month, to leave the room to the title. -->
+          <FormattedDate
+            :date="notification.created_at"
+            :options="{ dateStyle: 'medium' }"
+          />
         </p>
         <AnimatedLoader
           v-if="loading"
-          class="size-2"
+          class="size-2 mt-1"
         />
         <div
           v-else-if="!notification.handled_at"
-          class="size-2 rounded-full mt-0.5"
+          class="size-2 rounded-full mt-1"
           :class="requireAction(notification) ? 'bg-danger' : 'bg-new-primary'"
         />
-        <!-- Above the overlay link, so that it stays clickable. Shown on hover only where
-             there is one: on a touch screen, always. -->
-        <button
-          v-if="isConfigurable(notification)"
-          type="button"
-          class="relative z-10 -mt-0.5 size-5 flex items-center justify-center rounded bg-none hover:bg-gray-lower opacity-0 group-hover:opacity-100 focus:opacity-100 [@media(hover:none)]:opacity-100"
-          :class="{ 'opacity-100': showActions }"
-          :aria-expanded="showActions"
-          :title="$t('Pourquoi je reçois ça ?')"
-          @click="showActions = !showActions"
-        >
-          <RiMoreLine
-            class="size-4"
-            aria-hidden="true"
-          />
-        </button>
       </div>
-      <!-- overlay: only when no titleLink and can be marked as read -->
-      <button
-        v-if="!titleLink && canMarkAsRead(notification)"
-        class="after:absolute after:inset-0 bg-none"
-        :title="$t('Marquer la notification comme lue')"
-        @click="handleMarkAsRead"
-      />
     </div>
+    <!-- overlay: only when no titleLink and can be marked as read. Outside of the row,
+         where its gap would push the date away from the right edge. Transparent even on
+         hover: the DSFR fills hovered buttons, which would hide the notification. -->
+    <button
+      v-if="!titleLink && canMarkAsRead(notification)"
+      class="absolute inset-0 bg-none !bg-transparent"
+      :title="$t('Marquer la notification comme lue')"
+      @click="handleMarkAsRead"
+    />
+    <!-- In the corner under the date, empty on every notification: it moves nothing.
+         Above the overlay link, so that it stays clickable. -->
     <NotificationActions
-      v-if="showActions"
-      class="relative z-10 pl-10 pr-3 pb-3"
+      v-if="isConfigurable(notification)"
+      class="absolute right-2 bottom-2 z-10"
       :notification
     />
   </div>
@@ -72,7 +65,6 @@
 
 <script setup lang="ts">
 import { AnimatedLoader, FormattedDate } from '@datagouv/components-next'
-import { RiMoreLine } from '@remixicon/vue'
 import type { Component } from 'vue'
 import CdataLink from '../CdataLink.vue'
 import NotificationActions from './NotificationActions.vue'
@@ -88,8 +80,6 @@ const props = defineProps<{
 }>()
 
 const { loading, markAsRead } = useMarkAsRead()
-
-const showActions = ref(false)
 
 const handleMarkAsRead = () => {
   if (canMarkAsRead(props.notification)) {

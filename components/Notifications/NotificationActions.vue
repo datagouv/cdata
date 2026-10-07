@@ -1,38 +1,69 @@
 <template>
-  <div class="space-y-2 text-xs">
-    <p
-      v-if="reasonLabels.length"
-      class="m-0 text-gray-medium"
+  <div>
+    <button
+      ref="trigger"
+      type="button"
+      class="size-5 flex items-center justify-center rounded bg-none hover:bg-gray-lower opacity-0 group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100"
+      :class="{ '!opacity-100 bg-gray-lower': open }"
+      :title="t('Pourquoi je reçois ça ?')"
+      aria-haspopup="true"
+      :aria-expanded="open"
+      @click="open = !open"
     >
-      {{ t('Vous recevez cette notification {reasons}.', { reasons: humanJoin(reasonLabels) }) }}
-    </p>
-    <div class="flex flex-wrap gap-2">
-      <BrandedButton
+      <RiMoreLine
+        class="size-4"
+        aria-hidden="true"
+      />
+    </button>
+    <!-- Not teleported: inside the notifications panel, clicking here keeps that one open.
+         Fixed, so that the notification list, which scrolls, does not clip it. -->
+    <div
+      v-if="open"
+      ref="panel"
+      class="z-[900] w-72 overflow-hidden rounded border border-gray-default bg-white shadow-lg"
+      :style="floatingStyles"
+    >
+      <p
+        v-if="reasons"
+        class="m-0 px-3 py-2 border-b border-gray-default bg-gray-some text-xs text-gray-medium"
+      >
+        {{ t('Vous recevez cette notification {reasons}.', { reasons }) }}
+      </p>
+      <button
         v-for="action in actions"
         :key="action.label"
-        color="secondary"
-        size="xs"
-        :loading="pending === action.label"
+        type="button"
+        class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm leading-tight text-gray-title hover:bg-gray-some disabled:opacity-50"
+        :disabled="pending !== null"
         @click="apply(action)"
       >
         {{ action.label }}
-      </BrandedButton>
-      <BrandedButton
-        color="tertiary"
-        size="xs"
-        href="/admin/me/notifications"
+      </button>
+      <CdataLink
+        to="/admin/me/notifications"
+        class="flex w-full items-center gap-2 px-3 py-2 border-t border-gray-default text-sm leading-tight text-gray-title !bg-none !no-underline hover:!bg-gray-some"
+        @click="open = false"
       >
+        <RiSettings3Line
+          class="size-4 shrink-0 text-gray-medium"
+          aria-hidden="true"
+        />
         {{ t('Gérer mes notifications') }}
-      </BrandedButton>
+      </CdataLink>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, toast } from '@datagouv/components-next'
-import type { NotificationReason, NotificationScope, UserNotification } from '~/types/notifications'
+import { toast } from '@datagouv/components-next'
+import { autoUpdate, flip, shift, useFloating } from '@floating-ui/vue'
+import { RiMoreLine, RiSettings3Line } from '@remixicon/vue'
+import { onClickOutside, useEventListener } from '@vueuse/core'
+import CdataLink from '../CdataLink.vue'
+import type { NotificationScope, UserNotification } from '~/types/notifications'
 
-type Action = { label: string, run: () => Promise<unknown> }
+// `done` is what the toast says once `run` succeeded.
+type Action = { label: string, done: string, run: () => Promise<unknown> }
 
 const props = defineProps<{
   notification: UserNotification
@@ -41,21 +72,10 @@ const props = defineProps<{
 const { t } = useTranslation()
 const { setRule, follow, followSubject } = useNotificationSettings()
 
-const REASON_LABELS = computed<Record<NotificationReason, string>>(() => ({
-  'owner': t('en tant que propriétaire'),
-  'organization.admin': t('en tant qu\'administrateur de l\'organisation'),
-  'organization.editor': t('en tant qu\'éditeur de l\'organisation'),
-  'organization.partial_editor': t('parce que ce contenu vous est confié'),
-  'discussion.participant': t('parce que vous participez à cette discussion'),
-  'explicit_subscriber': t('parce que vous suivez ce contenu'),
-  'contributor': t('parce que vous avez modifié ce contenu'),
-  'requester': t('parce que vous avez fait cette demande'),
-  'sysadmin': t('en tant qu\'administrateur du site'),
-}))
+const { reasonsPhrase } = useNotificationLabels()
+const reasons = computed(() => reasonsPhrase(props.notification.reasons))
 
-const reasonLabels = computed(() => props.notification.reasons.map(reason => REASON_LABELS.value[reason]).filter(Boolean))
-
-const ignoreSubject = (label: string, scope: NotificationScope): Action => ({ label, run: () => followSubject(scope, false) })
+const ignoreSubject = (label: string, done: string, scope: NotificationScope): Action => ({ label, done, run: () => followSubject(scope, false) })
 
 // The subject-level ways out, for the notifications whose subject is known.
 function subjectActions(notification: UserNotification): Array<Action> {
@@ -64,13 +84,17 @@ function subjectActions(notification: UserNotification): Array<Action> {
     case 'discussion.comment':
     case 'discussion.closed':
       return [
-        { label: t('Ne plus suivre cette discussion'), run: () => follow({ class: 'Discussion', id: notification.details.discussion.id }, 'discussion', false) },
-        ignoreSubject(t('Ne rien recevoir sur ce contenu'), notification.details.discussion.subject),
+        {
+          label: t('Ne plus suivre cette discussion'),
+          done: t('Vous ne suivez plus cette discussion'),
+          run: () => follow({ class: 'Discussion', id: notification.details.discussion.id }, 'discussion', false),
+        },
+        ignoreSubject(t('Ne rien recevoir sur ce contenu'), t('Vous ne recevrez plus de notifications sur ce contenu'), notification.details.discussion.subject),
       ]
     case 'reuse.created':
     case 'dataservice.created':
       return [
-        ignoreSubject(t('Ne rien recevoir sur ce jeu de données'), { class: 'Dataset', id: notification.details.dataset.id }),
+        ignoreSubject(t('Ne rien recevoir sur ce jeu de données'), t('Vous ne recevrez plus de notifications sur ce jeu de données'), { class: 'Dataset', id: notification.details.dataset.id }),
       ]
     case 'organization.badge.certified':
     case 'organization.badge.public-service':
@@ -80,7 +104,7 @@ function subjectActions(notification: UserNotification): Array<Action> {
     case 'organization.membership.accepted':
     case 'organization.membership.refused':
       return [
-        ignoreSubject(t('Ne rien recevoir sur cette organisation'), { class: 'Organization', id: notification.details.organization.id }),
+        ignoreSubject(t('Ne rien recevoir sur cette organisation'), t('Vous ne recevrez plus de notifications sur cette organisation'), { class: 'Organization', id: notification.details.organization.id }),
       ]
     default:
       return []
@@ -91,7 +115,11 @@ function subjectActions(notification: UserNotification): Array<Action> {
 // notification anywhere.
 const actions = computed<Array<Action>>(() => [
   ...subjectActions(props.notification),
-  { label: t('Ne plus recevoir ce type de notification'), run: () => setRule({ event: props.notification.type }, false) },
+  {
+    label: t('Ne plus recevoir ce type de notification'),
+    done: t('Vous ne recevrez plus ce type de notification'),
+    run: () => setRule({ event: props.notification.type }, false),
+  },
 ])
 
 const pending = ref<string | null>(null)
@@ -100,10 +128,35 @@ async function apply(action: Action) {
   pending.value = action.label
   try {
     await action.run()
-    toast.success(t('C\'est noté, vous ne recevrez plus ces notifications'))
+    toast.success(action.done)
+    open.value = false
   }
   finally {
     pending.value = null
   }
 }
+
+// A hand-made menu rather than headlessui's Popover: nested in the notifications
+// panel, itself a teleported Popover, it took a second click on its own button for a
+// click outside, closed on mousedown and reopened on click.
+const open = ref(false)
+const trigger = useTemplateRef<HTMLButtonElement>('trigger')
+const panel = useTemplateRef<HTMLElement>('panel')
+onClickOutside(panel, () => {
+  open.value = false
+}, { ignore: [trigger] })
+// Captured before the notifications panel, which closes itself on Escape and stops it
+// there: Escape closes this menu first, the panel on the next one.
+useEventListener(document, 'keydown', (event: KeyboardEvent) => {
+  if (event.key !== 'Escape' || !open.value) return
+  event.stopPropagation()
+  open.value = false
+}, { capture: true })
+
+const { floatingStyles } = useFloating(trigger, panel, {
+  placement: 'bottom-end',
+  strategy: 'fixed',
+  middleware: [flip(), shift({ padding: 8 })],
+  whileElementsMounted: autoUpdate,
+})
 </script>
