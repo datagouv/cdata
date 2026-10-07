@@ -7,6 +7,7 @@
     <SegmentedControl
       v-model="activeTab"
       underline
+      grow
       class="mx-4"
       :options="[
         { value: 'color', label: t('Couleur'), icon: RiPaletteLine },
@@ -22,7 +23,7 @@
       <p class="text-xs uppercase text-gray-medium mb-2 m-0">
         {{ $t('Couleurs prédéfinies') }}
       </p>
-      <div class="grid grid-cols-[repeat(auto-fill,44px)] justify-center gap-2 sm:grid-cols-9 sm:gap-x-0 sm:gap-y-2">
+      <div class="grid grid-cols-[repeat(auto-fill,44px)] justify-items-start gap-2 sm:grid-cols-9 sm:gap-x-0 sm:gap-y-2">
         <button
           v-for="color in DSFR_BANNER_COLORS"
           :key="color.name"
@@ -30,7 +31,7 @@
           :aria-label="color.name"
           :title="color.name"
           :aria-pressed="isSelected(color.hex)"
-          class="size-11 rounded cursor-pointer border-0 justify-self-center"
+          class="size-11 rounded cursor-pointer border-0"
           :class="{ 'ring-2 ring-new-primary ring-offset-1': isSelected(color.hex) }"
           :style="{ backgroundColor: color.hex }"
           @click="applyColor(color.hex)"

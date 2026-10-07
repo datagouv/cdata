@@ -12,7 +12,7 @@
       class="flex items-center justify-center gap-2 text-sm"
       :class="[
         underline ? 'py-2 px-1' : 'rounded py-1.5 px-3',
-        grow && !underline ? 'flex-1' : '',
+        grow ? 'flex-1' : '',
         option.value === modelValue
           ? underline
             ? 'text-new-primary font-bold border-b-2 border-b-new-primary -mb-px'
