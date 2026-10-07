@@ -1,23 +1,28 @@
 import { expect, test } from '../base'
-
-const ORG_SLUG = 'sobrana'
+import type { ApiOrganization } from '../helpers'
+import { createOrganization, deleteOrganizations } from '../helpers'
 
 test.describe('organization banner', () => {
   test.describe.configure({ mode: 'serial' })
 
-  test.beforeAll(async ({ browser }) => {
-    // Tests mutate the shared fixture org; reset banner state so reruns and
-    // the second browser project start from the default banner.
+  let org: ApiOrganization
+
+  test.beforeAll(async ({ browser }, testInfo) => {
+    // The chromium and firefox projects run this mutating suite in parallel:
+    // each project gets its own organization so they never share banner state.
     const context = await browser.newContext({ storageState: 'playwright/.auth/user.json' })
-    const page = await context.newPage()
-    await page.request.put('http://dev.local:7000/api/1/organizations/6461fa1f4e1de2ee027048b7/', {
-      data: { banner_color: null },
-    })
+    org = await createOrganization(context.request, `banner-e2e ${testInfo.project.name} ${Date.now()}`)
+    await context.close()
+  })
+
+  test.afterAll(async ({ browser }) => {
+    const context = await browser.newContext({ storageState: 'playwright/.auth/user.json' })
+    await deleteOrganizations(context.request, [org.id])
     await context.close()
   })
 
   test('renders the default banner at desktop height', async ({ page }) => {
-    await page.goto(`/organizations/${ORG_SLUG}/datasets`)
+    await page.goto(`/organizations/${org.id}/datasets`)
 
     const banner = page.getByTestId('organization-banner')
     await expect(banner).toBeVisible()
@@ -25,7 +30,7 @@ test.describe('organization banner', () => {
   })
 
   test('admins see the add-banner control on hover', async ({ page }) => {
-    await page.goto(`/organizations/${ORG_SLUG}/datasets`)
+    await page.goto(`/organizations/${org.id}/datasets`)
 
     const banner = page.getByTestId('organization-banner')
     await banner.hover({ position: { x: 30, y: 15 } })
@@ -33,7 +38,7 @@ test.describe('organization banner', () => {
   })
 
   test('applying a swatch color updates the banner immediately', async ({ page }) => {
-    await page.goto(`/organizations/${ORG_SLUG}/datasets`)
+    await page.goto(`/organizations/${org.id}/datasets`)
 
     const banner = page.getByTestId('organization-banner')
     await banner.hover({ position: { x: 30, y: 15 } })
@@ -45,7 +50,7 @@ test.describe('organization banner', () => {
   })
 
   test('uploading an image sets an image banner with reposition available', async ({ page }) => {
-    await page.goto(`/organizations/${ORG_SLUG}/datasets`)
+    await page.goto(`/organizations/${org.id}/datasets`)
 
     const banner = page.getByTestId('organization-banner')
     await banner.hover()
@@ -60,7 +65,7 @@ test.describe('organization banner', () => {
   })
 
   test('repositioning persists after reload', async ({ page }) => {
-    await page.goto(`/organizations/${ORG_SLUG}/datasets`)
+    await page.goto(`/organizations/${org.id}/datasets`)
 
     const banner = page.getByTestId('organization-banner')
     await banner.hover()
@@ -83,7 +88,7 @@ test.describe('organization banner', () => {
   })
 
   test('deleting the banner restores the default color', async ({ page }) => {
-    await page.goto(`/organizations/${ORG_SLUG}/datasets`)
+    await page.goto(`/organizations/${org.id}/datasets`)
 
     const banner = page.getByTestId('organization-banner')
     await banner.hover()
