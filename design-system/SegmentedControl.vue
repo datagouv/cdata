@@ -21,6 +21,14 @@
           ]"
         />
       </div>
+      <SegmentedControl
+        v-model="underlined"
+        underline
+        :options="[
+          { value: 'color', label: 'Couleur', icon: RiPaletteLine },
+          { value: 'upload', label: 'Importer', icon: RiImageLine },
+        ]"
+      />
     </div>
   </section>
 </template>
@@ -31,4 +39,5 @@ import { SegmentedControl } from '@datagouv/components-next'
 
 const compact = ref('edit')
 const grown = ref('color')
+const underlined = ref('color')
 </script>

@@ -6,8 +6,8 @@
     <!-- Segmented control -->
     <SegmentedControl
       v-model="activeTab"
-      grow
-      class="m-4"
+      underline
+      class="mx-4"
       :options="[
         { value: 'color', label: t('Couleur'), icon: RiPaletteLine },
         { value: 'upload', label: t('Importer'), icon: RiImageLine },
