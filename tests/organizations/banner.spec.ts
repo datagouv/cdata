@@ -45,7 +45,6 @@ test.describe('organization banner', () => {
   })
 
   test('uploading an image sets an image banner with reposition available', async ({ page }) => {
-    test.skip(true, 'pending udata banner endpoints (POST/DELETE /banner/)')
     await page.goto(`/organizations/${ORG_SLUG}/datasets`)
 
     const banner = page.getByTestId('organization-banner')
@@ -61,7 +60,6 @@ test.describe('organization banner', () => {
   })
 
   test('repositioning persists after reload', async ({ page }) => {
-    test.skip(true, 'pending udata banner endpoints (POST/DELETE /banner/)')
     await page.goto(`/organizations/${ORG_SLUG}/datasets`)
 
     const banner = page.getByTestId('organization-banner')
@@ -85,7 +83,6 @@ test.describe('organization banner', () => {
   })
 
   test('deleting the banner restores the default color', async ({ page }) => {
-    test.skip(true, 'pending udata banner endpoints (POST/DELETE /banner/)')
     await page.goto(`/organizations/${ORG_SLUG}/datasets`)
 
     const banner = page.getByTestId('organization-banner')
