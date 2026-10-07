@@ -10,6 +10,8 @@ export type CommonNotification = {
   user: UserReference
   // Resolved by acting on the subject (accepting a request, validating a source) rather than by reading it
   requires_action: boolean
+  // Why the user was concerned, recorded when the notification was sent
+  reasons: Array<NotificationReason>
 }
 
 export type MembershipRequestNotification = CommonNotification & {
@@ -138,7 +140,14 @@ export type NotificationSetting = NotificationRuleKey & {
   } | null
 }
 
-export type NotificationReasonDefault = {
-  reason: NotificationReason
-  default: boolean
+// A rule everybody starts with, read only where the user's own rules say nothing.
+export type NotificationDefaultRule = NotificationRuleKey & {
+  enabled: boolean
+}
+
+// Whether, why and where the user hears about an event on a subject, rules and
+// defaults applied.
+export type NotificationResolved = {
+  channels: Array<NotificationChannel>
+  reasons: Array<NotificationReason>
 }

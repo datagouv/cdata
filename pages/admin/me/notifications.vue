@@ -8,7 +8,7 @@
       {{ t('Notifications') }}
     </h1>
 
-    <AnimatedLoader v-if="settings === null || reasonDefaults === null" />
+    <AnimatedLoader v-if="settings === null || defaults === null" />
     <div
       v-else
       class="max-w-6xl space-y-8"
@@ -236,7 +236,7 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
 import type { Me } from '~/utils/auth'
-import type { MailCadence, NotificationEvent, NotificationReason, NotificationReasonDefault, NotificationScope, NotificationSetting } from '~/types/notifications'
+import type { MailCadence, NotificationChannel, NotificationDefaultRule, NotificationEvent, NotificationReason, NotificationScope, NotificationSetting } from '~/types/notifications'
 
 type ChannelsValue = 'both' | 'app' | 'mail' | 'none'
 
@@ -249,11 +249,11 @@ const { settings, load, ruleValue, setRule } = useNotificationSettings()
 const ROW_CLASS = 'px-5 py-4 grid grid-cols-[14rem_1fr] items-center gap-6'
 const CHOICES_CLASS = 'flex flex-wrap gap-x-6 gap-y-2'
 
-const reasonDefaults = ref<Array<NotificationReasonDefault> | null>(null)
+const defaults = ref<Array<NotificationDefaultRule> | null>(null)
 
 onMounted(async () => {
   load()
-  reasonDefaults.value = await $api<Array<NotificationReasonDefault>>('/api/1/notifications/reasons/')
+  defaults.value = await $api<Array<NotificationDefaultRule>>('/api/1/notifications/defaults/')
 })
 
 // "Turn everything off" is a rule on each channel, everywhere: a channel rule is the
@@ -284,27 +284,36 @@ const channelOptions = computed<Array<{ value: ChannelsValue, label: string }>>(
   { value: 'none', label: t('Jamais') },
 ])
 
-function reasonDefault(reason: NotificationReason) {
-  return reasonDefaults.value?.find(item => item.reason === reason)?.default ?? false
+// What a reason row shows without any rule of the user: the default for this reason,
+// or the default for any reason.
+function defaultFor(reason: NotificationReason, channel: NotificationChannel | null): boolean {
+  const rules = defaults.value ?? []
+  return ruleValueIn(rules, { reason, channel }) ?? ruleValueIn(rules, { channel }) ?? false
 }
 
-// A reason row writes up to three rules: whether one is concerned at all, then a rule
-// per channel turned off.
+// A reason row writes up to three rules: whether one is concerned at all, then one per
+// channel. A rule equal to the default is removed rather than stored.
 function reasonValue(reason: NotificationReason): ChannelsValue {
-  const concerned = ruleValue({ reason }) ?? reasonDefault(reason)
-  const app = ruleValue({ reason, channel: 'app' }) !== false
-  const mail = ruleValue({ reason, channel: 'mail' }) !== false
+  const concerned = ruleValue({ reason }) ?? defaultFor(reason, null)
+  const app = ruleValue({ reason, channel: 'app' }) ?? defaultFor(reason, 'app')
+  const mail = ruleValue({ reason, channel: 'mail' }) ?? defaultFor(reason, 'mail')
   if (!concerned || (!app && !mail)) return 'none'
   if (app && mail) return 'both'
   return app ? 'app' : 'mail'
 }
 
 async function saveReason(reason: NotificationReason, value: ChannelsValue) {
-  const concerned = value !== 'none'
+  const wanted: Record<'concerned' | NotificationChannel, boolean> = {
+    concerned: value !== 'none',
+    app: value === 'both' || value === 'app',
+    mail: value === 'both' || value === 'mail',
+  }
   await Promise.all([
-    setRule({ reason }, concerned === reasonDefault(reason) ? null : concerned),
-    setRule({ reason, channel: 'app' }, concerned && value === 'mail' ? false : null),
-    setRule({ reason, channel: 'mail' }, concerned && value === 'app' ? false : null),
+    setRule({ reason }, wanted.concerned === defaultFor(reason, null) ? null : wanted.concerned),
+    ...(['app', 'mail'] as const).map(channel => setRule(
+      { reason, channel },
+      !wanted.concerned || wanted[channel] === defaultFor(reason, channel) ? null : wanted[channel],
+    )),
   ])
   toast.success(t('Préférence enregistrée'))
 }

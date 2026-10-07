@@ -25,6 +25,12 @@ export function ruleKey(key: Partial<NotificationRuleKey>): NotificationRuleKey 
   }
 }
 
+// The value of exactly this rule among `rules`, `null` when there is none.
+export function ruleValueIn(rules: Array<NotificationRuleKey & { enabled: boolean }>, key: Partial<NotificationRuleKey>): boolean | null {
+  const full = ruleKey(key)
+  return rules.find(rule => isSameRule(rule, full))?.enabled ?? null
+}
+
 // The rules the user set about their notifications (see udata's `NotificationSetting`).
 export function useNotificationSettings() {
   const settings = useState<Array<NotificationSetting> | null>('notification-settings', () => null)
@@ -42,35 +48,26 @@ export function useNotificationSettings() {
     return pendingLoad
   }
 
-  function findRule(key: Partial<NotificationRuleKey>) {
-    const full = ruleKey(key)
-    return settings.value?.find(setting => isSameRule(setting, full))
-  }
-
-  // The value of exactly this rule, `null` when the user never set it.
   function ruleValue(key: Partial<NotificationRuleKey>): boolean | null {
-    return findRule(key)?.enabled ?? null
+    return ruleValueIn(settings.value ?? [], key)
   }
 
   // `null` removes the rule, so the broader rules or the defaults apply again.
   async function setRule(key: Partial<NotificationRuleKey>, enabled: boolean | null) {
-    const existing = findRule(key)
-
-    if (enabled === null) {
-      if (!existing) return
-      await $api(`/api/1/notifications/settings/${existing.id}/`, { method: 'DELETE' })
-      settings.value = (settings.value ?? []).filter(setting => setting.id !== existing.id)
+    const full = ruleKey(key)
+    const saved = await $api<NotificationSetting | ''>('/api/1/notifications/settings/', {
+      method: 'PUT',
+      body: { ...full, enabled },
+    })
+    const others = (settings.value ?? []).filter(setting => !isSameRule(setting, full))
+    if (!saved) {
+      settings.value = others
       return
     }
-
-    const saved = await $api<NotificationSetting>('/api/1/notifications/settings/', {
-      method: 'PUT',
-      body: { ...ruleKey(key), enabled },
-    })
     // Only the listing describes the subject: keep the description already known.
     const subject = settings.value?.find(setting => isSameScope(setting.scope, saved.scope))?.subject ?? null
-    settings.value = [...(settings.value ?? []).filter(setting => setting.id !== saved.id), { ...saved, subject }]
+    settings.value = [...others, { ...saved, subject }]
   }
 
-  return { settings, load, findRule, ruleValue, setRule }
+  return { settings, load, ruleValue, setRule }
 }
