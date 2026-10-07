@@ -28,9 +28,10 @@
       </div>
     </template>
     <template v-else>
-      <!-- Desktop: hover / focus-within overlay -->
+      <!-- Desktop: hover / focus-within overlay. The veil stops 40px above the
+           banner bottom so it never darkens the org logo straddling the edge. -->
       <div class="hidden sm:block absolute inset-0 z-10 pointer-events-none opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-        <div class="absolute inset-0 bg-black/20 pointer-events-none" />
+        <div class="absolute inset-x-0 top-0 bottom-10 bg-black/20 pointer-events-none" />
         <div
           v-if="hasCustomBanner"
           class="absolute top-3 right-3 flex gap-2 pointer-events-auto"
