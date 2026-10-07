@@ -156,7 +156,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: ${{ env.UDATA_WORKING_DIR }}
-          ref: main
+          ref: feat/notification-settings
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
