@@ -70,6 +70,7 @@ export type Dataset = BaseDataset & {
   id: DatasetReference['id']
   badges: Badges
   deleted: string | null
+  doi: string | null
   page: DatasetReference['page']
   resources: Array<Resource>
   community_resources: Array<Resource>
