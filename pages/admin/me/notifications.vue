@@ -281,7 +281,7 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
 import type { Me } from '~/utils/auth'
-import type { MailCadence, NotificationChannel, NotificationEvent, NotificationReason, NotificationScope, NotificationSetting } from '~/types/notifications'
+import type { MailCadence, NotificationChannel, NotificationEvent, NotificationScope, NotificationSetting } from '~/types/notifications'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
@@ -327,7 +327,7 @@ const kindRows = computed<Array<KindRow>>(() => [
   { key: 'harvest', label: t('Moissonneurs validés ou refusés'), events: ['harvest.source.accepted', 'harvest.source.refused'], main: false },
 ])
 
-const isKindChannelRule = (rule: NotificationSetting) => rule.scope === null && rule.reason === null && rule.channel !== null
+const isKindChannelRule = (rule: NotificationSetting) => rule.scope === null && rule.channel !== null
   && kindRows.value.some(kind => kind.events.includes(rule.event!))
 
 // Open from the start when one of them was changed, so that no choice stays hidden.
@@ -432,7 +432,7 @@ async function saveChannelsChoice(organization: OrganizationRow, choice: Channel
 }
 
 const isMemberOrganizationRule = (rule: NotificationSetting) => rule.scope?.class === 'Organization'
-  && rule.event === null && rule.reason === null
+  && rule.event === null
   && (organizations.value ?? []).some(organization => organization.scope.id === rule.scope!.id)
 
 const cadenceOptions = computed<Array<{ value: MailCadence, label: string }>>(() => [
@@ -460,7 +460,7 @@ type RuleRow = {
   done: string
 }
 
-const isFollow = (rule: NotificationSetting) => rule.scope !== null && rule.reason === null && rule.channel === null && rule.enabled
+const isFollow = (rule: NotificationSetting) => rule.scope !== null && rule.channel === null && rule.enabled
 
 const SCOPE_ICONS: Record<NotificationScope['class'], Component> = {
   Organization: RiBuilding2Line,
@@ -481,7 +481,7 @@ const EVENT_ICONS: Record<string, Component> = {
   harvest: RiServerLine,
 }
 
-const { eventLabel, reasonsPhrase } = useNotificationLabels()
+const { eventLabel } = useNotificationLabels()
 
 function subjectTitle(rule: NotificationSetting) {
   return rule.subject?.title ?? t('Contenu qui ne vous est plus accessible')
@@ -509,39 +509,8 @@ function followRow(rule: NotificationSetting): RuleRow {
   }
 }
 
-// What a rule about a reason alone is about. No form writes one any more; the API still
-// can, and such a rule has to read as something one understands and can undo.
-const REASON_TITLES = computed<Record<NotificationReason, string>>(() => ({
-  'owner': t('Vos propres contenus'),
-  'organization.admin': t('Organisations que vous administrez'),
-  'organization.editor': t('Organisations où vous êtes éditeur'),
-  'organization.partial_editor': t('Jeux de données qui vous sont assignés'),
-  'discussion.participant': t('Discussions auxquelles vous participez'),
-  'explicit_subscriber': t('Contenus que vous suivez'),
-  'contributor': t('Contenus que vous avez modifiés'),
-  'requester': t('Réponses à vos demandes'),
-  'sysadmin': t('Administration du site'),
-}))
-
 function cutRow(rule: NotificationSetting): RuleRow {
   const channel = rule.channel === 'mail' ? t('par e-mail') : rule.channel === 'app' ? t('dans l\'application') : null
-
-  if (rule.reason && !rule.scope && !rule.event) {
-    let sentence: string
-    if (rule.enabled) sentence = channel ? t('Vous les recevez toujours {channel}', { channel }) : t('Vous les recevez toujours')
-    else sentence = channel ? t('Vous ne les recevez plus {channel}', { channel }) : t('Vous ne les recevez plus')
-    return {
-      rule,
-      icon: RiNotification3Line,
-      title: REASON_TITLES.value[rule.reason],
-      page: null,
-      detail: sentence,
-      action: rule.enabled ? t('Retirer') : t('Réactiver'),
-      done: rule.enabled ? t('Réglage retiré') : t('Notifications réactivées'),
-    }
-  }
-
-  const reason = rule.reason ? reasonsPhrase([rule.reason]) : null
 
   let sentence: string
   if (rule.scope && rule.event) sentence = t('Vous ne recevez plus : {event}', { event: eventLabel(rule.event) })
@@ -559,7 +528,7 @@ function cutRow(rule: NotificationSetting): RuleRow {
       : (rule.event && EVENT_ICONS[rule.event.split('.')[0]!]) || RiNotification3Line,
     title: rule.scope ? subjectTitle(rule) : rule.event ? eventLabel(rule.event) : t('Toutes les notifications'),
     page: rule.subject?.page ?? null,
-    detail: [rule.scope ? organizationOf(rule) : null, channel ? `${sentence} ${channel}` : sentence, reason].filter(Boolean).join(' · '),
+    detail: [rule.scope ? organizationOf(rule) : null, channel ? `${sentence} ${channel}` : sentence].filter(Boolean).join(' · '),
     action: rule.enabled ? t('Retirer') : t('Réactiver'),
     done: rule.enabled ? t('Réglage retiré') : t('Notifications réactivées'),
   }

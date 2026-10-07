@@ -1,30 +1,38 @@
-import type { APIRequestContext } from '@playwright/test'
+import type { APIRequestContext, Locator, Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, deleteDatasets, gotoHydrated } from '../helpers'
+import { API_BASE, createDataset, createOrganization, deleteDatasets, deleteOrganizations, gotoHydrated } from '../helpers'
 
 type ApiNotificationSetting = {
   id: string
   scope: { class: string, id: string } | null
-  category: string
-  channel: string
+  event: string | null
+  channel: string | null
   enabled: boolean
 }
 
-// Every test here reads and writes the decisions of the same logged-in user.
+// Every test here reads and writes the rules of the same logged-in user.
 test.describe.configure({ mode: 'serial' })
 
 const createdDatasets: Array<string> = []
+const createdOrganizations: Array<string> = []
 
 async function listSettings(request: APIRequestContext): Promise<Array<ApiNotificationSetting>> {
   const response = await request.get(`${API_BASE}/api/1/notifications/settings/`)
   return await response.json()
 }
 
+// The row of "Contenus suivis" or "Notifications coupées" holding this link, with its button.
+function ruleRow(page: Page, link: Locator) {
+  return page.locator('div.px-5.py-3', { has: link })
+}
+
 async function resetNotificationPreferences(request: APIRequestContext) {
-  for (const setting of await listSettings(request)) {
-    await request.delete(`${API_BASE}/api/1/notifications/settings/${setting.id}/`)
+  for (const { scope, event, channel } of await listSettings(request)) {
+    await request.put(`${API_BASE}/api/1/notifications/settings/`, {
+      data: { scope, event, channel, enabled: null },
+    })
   }
-  await request.put(`${API_BASE}/api/1/me/`, { data: { mail_cadence: 'immediate' } })
+  await request.put(`${API_BASE}/api/1/me/`, { data: { mail_cadence: 'immediate', notifications_paused: false } })
 }
 
 test.beforeEach(async ({ request }) => {
@@ -34,43 +42,84 @@ test.beforeEach(async ({ request }) => {
 test.afterEach(async ({ request }) => {
   await resetNotificationPreferences(request)
   await deleteDatasets(request, createdDatasets)
+  await deleteOrganizations(request, createdOrganizations)
 })
 
 test('the mail cadence is saved on the account', async ({ page, request }) => {
   await gotoHydrated(page, '/admin/me/notifications')
 
-  await page.getByLabel('Une fois par semaine').check()
-  await expect(page.getByText('Fréquence des e-mails enregistrée')).toBeVisible()
+  await page.getByLabel('Un résumé par semaine').check({ force: true })
+  await expect(page.getByText('Préférence enregistrée')).toBeVisible()
 
   const me = await (await request.get(`${API_BASE}/api/1/me/`)).json()
   expect(me.mail_cadence).toBe('weekly')
 
   await page.reload()
   await page.waitForLoadState('networkidle')
-  await expect(page.getByLabel('Une fois par semaine')).toBeChecked()
+  await expect(page.getByLabel('Un résumé par semaine')).toBeChecked()
 })
 
-test('a global decision is saved and can be withdrawn', async ({ page, request }) => {
+test('the channel of a kind of notification is saved and can be withdrawn', async ({ page, request }) => {
   await gotoHydrated(page, '/admin/me/notifications')
 
-  const discussionsByMail = page.getByRole('combobox', { name: 'Discussions, par e-mail' })
+  const discussionsByMail = page.getByLabel('Discussions : E-mail')
 
-  await discussionsByMail.selectOption({ label: 'Désactivées' })
+  await discussionsByMail.uncheck({ force: true })
   await expect(page.getByText('Préférence enregistrée')).toBeVisible()
 
   expect(await listSettings(request)).toEqual([
-    expect.objectContaining({ scope: null, category: 'discussions', channel: 'mail', enabled: false }),
+    expect.objectContaining({ scope: null, event: 'discussion', channel: 'mail', enabled: false }),
   ])
 
   await page.reload()
   await page.waitForLoadState('networkidle')
-  await expect(discussionsByMail).toHaveValue(/false/)
+  await expect(discussionsByMail).not.toBeChecked()
 
-  await discussionsByMail.selectOption({ label: 'Selon mon rôle' })
+  await discussionsByMail.check({ force: true })
   await expect.poll(() => listSettings(request)).toEqual([])
 })
 
-test('a discussion can be followed from its thread and shows up in the settings', async ({ page, request }) => {
+test('notifications are paused and resumed from the top of the page', async ({ page, request }) => {
+  await gotoHydrated(page, '/admin/me/notifications')
+
+  await page.getByRole('button', { name: 'Mettre en pause les notifications' }).click()
+  await expect(page.getByText('Toutes vos notifications sont désactivées').first()).toBeVisible()
+  await expect.poll(async () => (await (await request.get(`${API_BASE}/api/1/me/`)).json()).notifications_paused).toBe(true)
+
+  await page.getByRole('button', { name: 'Réactiver' }).click()
+  await expect.poll(async () => (await (await request.get(`${API_BASE}/api/1/me/`)).json()).notifications_paused).toBe(false)
+  await expect(page.getByRole('button', { name: 'Mettre en pause les notifications' })).toBeVisible()
+})
+
+test('an organization is set to what one follows and to its own channels', async ({ page, request }) => {
+  const organization = await createOrganization(request, `Organisation des réglages ${Date.now()}`)
+  createdOrganizations.push(organization.id)
+
+  await gotoHydrated(page, '/admin/me/notifications')
+  const level = page.getByLabel(`Notifications de ${organization.name}`)
+  const channels = page.getByLabel(`Canaux de ${organization.name}`)
+
+  // An administrator hears about everything by default: only a different choice is stored.
+  await expect(level).toHaveValue('all')
+  await level.selectOption('followed')
+  await channels.selectOption('app')
+  await expect.poll(() => listSettings(request)).toEqual(expect.arrayContaining([
+    expect.objectContaining({ scope: { class: 'Organization', id: organization.id }, event: null, channel: null, enabled: false }),
+    expect.objectContaining({ scope: { class: 'Organization', id: organization.id }, channel: 'app', enabled: true }),
+    expect.objectContaining({ scope: { class: 'Organization', id: organization.id }, channel: 'mail', enabled: false }),
+  ]))
+
+  await page.reload()
+  await page.waitForLoadState('networkidle')
+  await expect(level).toHaveValue('followed')
+  await expect(channels).toHaveValue('app')
+
+  await level.selectOption('all')
+  await channels.selectOption('inherit')
+  await expect.poll(() => listSettings(request)).toEqual([])
+})
+
+test('a discussion is muted from its thread and reactivated from the settings', async ({ page, request }) => {
   const uniqueId = Date.now()
   const dataset = await createDataset(request, `Test suivi de discussion ${uniqueId}`, 'Dataset pour tester le suivi des discussions')
   createdDatasets.push(dataset.id)
@@ -84,49 +133,36 @@ test('a discussion can be followed from its thread and shows up in the settings'
 
   await gotoHydrated(page, `/datasets/${dataset.id}/discussions?discussion_id=${discussion.id}`)
 
-  await page.getByRole('button', { name: 'Notifications de cette discussion' }).click()
-  await page.getByRole('menuitem', { name: /Suivre la discussion/ }).click()
-  await expect(page.getByText('Vous suivez cette discussion').first()).toBeVisible()
-
-  const followed = await listSettings(request)
-  expect(followed).toHaveLength(2)
-  for (const channel of ['app', 'mail']) {
-    expect(followed).toContainEqual(expect.objectContaining({
-      scope: { class: 'Discussion', id: discussion.id },
-      category: 'discussions',
-      channel,
-      enabled: true,
-    }))
-  }
+  // The owner of the dataset hears about its threads without having followed them.
+  await page.getByTitle('Ne plus suivre cette discussion').click()
+  await expect(page.getByText('Vous ne serez plus prévenu')).toBeVisible()
+  await expect.poll(() => listSettings(request)).toEqual([
+    expect.objectContaining({ scope: { class: 'Discussion', id: discussion.id }, event: 'discussion', enabled: false }),
+  ])
+  await expect(page.getByTitle('Suivre cette discussion')).toBeVisible()
 
   await gotoHydrated(page, '/admin/me/notifications')
-  const row = page.getByRole('row', { name: new RegExp(`Discussion à suivre ${uniqueId}`) })
-  await expect(row.getByRole('link', { name: `Discussion à suivre ${uniqueId}` })).toHaveAttribute('href', new RegExp(`/discussions\\?discussion_id=${discussion.id}$`))
-  await expect(row.getByText('Discussions : suivies')).toBeVisible()
-
-  await gotoHydrated(page, `/datasets/${dataset.id}/discussions?discussion_id=${discussion.id}`)
-  await page.getByRole('button', { name: 'Vous suivez cette discussion' }).click()
-  await page.getByRole('menuitem', { name: /Par défaut/ }).click()
+  const link = page.getByRole('link', { name: `Discussion à suivre ${uniqueId}` })
+  await expect(link).toHaveAttribute('href', new RegExp(`discussion_id=${discussion.id}`))
+  await ruleRow(page, link).getByRole('button', { name: 'Réactiver' }).click()
+  await expect(page.getByText('Notifications réactivées')).toBeVisible()
   await expect.poll(() => listSettings(request)).toEqual([])
-  await expect(page.getByRole('button', { name: 'Notifications de cette discussion' })).toBeVisible()
 })
 
-test('a followed subject goes back to the general setting from the settings page', async ({ page, request }) => {
+test('a followed subject is unfollowed from the settings page', async ({ page, request }) => {
   const uniqueId = Date.now()
-  const dataset = await createDataset(request, `Test retour au réglage général ${uniqueId}`, 'Dataset pour tester le retour au réglage général')
+  const dataset = await createDataset(request, `Test contenu suivi ${uniqueId}`, 'Dataset pour tester la liste des contenus suivis')
   createdDatasets.push(dataset.id)
-  for (const [channel, enabled] of [['app', true], ['mail', false]] as const) {
-    await request.put(`${API_BASE}/api/1/notifications/settings/`, {
-      data: { scope: { class: 'Dataset', id: dataset.id }, category: 'discussions', channel, enabled },
-    })
-  }
+  await request.put(`${API_BASE}/api/1/notifications/settings/`, {
+    data: { scope: { class: 'Dataset', id: dataset.id }, enabled: true },
+  })
 
   await gotoHydrated(page, '/admin/me/notifications')
-  const row = page.getByRole('row', { name: new RegExp(`Test retour au réglage général ${uniqueId}`) })
-  await expect(row.getByText('Discussions : dans l\'application seulement')).toBeVisible()
+  const link = page.getByRole('link', { name: `Test contenu suivi ${uniqueId}` })
+  await expect(link).toBeVisible()
 
-  await row.getByRole('button', { name: 'Revenir au réglage général' }).click()
-  await expect(page.getByText('Ce contenu suit de nouveau le réglage général')).toBeVisible()
+  await ruleRow(page, link).getByRole('button', { name: 'Ne plus suivre' }).click()
+  await expect(page.getByText('Vous ne suivez plus ce contenu')).toBeVisible()
   await expect.poll(() => listSettings(request)).toEqual([])
-  await expect(row).not.toBeVisible()
+  await expect(link).not.toBeVisible()
 })

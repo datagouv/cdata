@@ -124,11 +124,10 @@ export type NotificationReason = 'owner'
   | 'sysadmin'
 
 // What identifies a rule: every dimension is optional, `null` meaning "whatever it is"
-// (everywhere, every notification, whatever the reason, whether concerned at all).
+// (everywhere, every notification, whether concerned at all).
 export type NotificationRuleKey = {
   scope: NotificationScope | null
   event: NotificationEvent | null
-  reason: NotificationReason | null
   channel: NotificationChannel | null
 }
 
@@ -150,7 +149,6 @@ export type NotificationSetting = NotificationRuleKey & {
 export type NotificationResolved = {
   scope: NotificationScope | null
   event: NotificationEvent | null
-  reason: NotificationReason | null
   channels: Array<NotificationChannel>
   reasons: Array<NotificationReason>
 }

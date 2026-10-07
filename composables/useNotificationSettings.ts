@@ -1,4 +1,4 @@
-import type { NotificationChannel, NotificationEvent, NotificationReason, NotificationResolved, NotificationRuleKey, NotificationScope, NotificationSetting } from '~/types/notifications'
+import type { NotificationChannel, NotificationEvent, NotificationResolved, NotificationRuleKey, NotificationScope, NotificationSetting } from '~/types/notifications'
 import type { Me } from '~/utils/auth'
 
 // Shared by every discussion of a page: they all read the same list, fetched once.
@@ -16,7 +16,6 @@ function isSameScope(a: NotificationScope | null, b: NotificationScope | null) {
 export function isSameRule(setting: NotificationRuleKey, key: NotificationRuleKey) {
   return isSameScope(setting.scope, key.scope)
     && setting.event === key.event
-    && setting.reason === key.reason
     && setting.channel === key.channel
 }
 
@@ -25,7 +24,6 @@ export function ruleKey(key: Partial<NotificationRuleKey>): NotificationRuleKey 
   return {
     scope: key.scope ?? null,
     event: key.event ?? null,
-    reason: key.reason ?? null,
     channel: key.channel ?? null,
   }
 }
@@ -34,7 +32,7 @@ export function ruleKey(key: Partial<NotificationRuleKey>): NotificationRuleKey 
 // and the only place writing them.
 //
 // Reading is udata's job (`/notifications/resolved/`). Writing is not: which rule to
-// write depends on how udata ranks them, a subject beating an event beating a reason,
+// write depends on how udata ranks them, a subject beating an event,
 // and whether a rule says "concerned" or names a channel. That knowledge lives here, in
 // one function per thing a user can ask for, rather than in every button.
 export function useNotificationSettings() {
@@ -61,7 +59,7 @@ export function useNotificationSettings() {
 
   // The user's "concerned" rules on a subject restricted to some of its notifications.
   function narrowerRules(scope: NotificationScope) {
-    return (settings.value ?? []).filter(setting => setting.event !== null && setting.reason === null && setting.channel === null && isSameScope(setting.scope, scope))
+    return (settings.value ?? []).filter(setting => setting.event !== null && setting.channel === null && isSameScope(setting.scope, scope))
   }
 
   // `null` removes the rule, so the broader rules or the defaults apply again.
@@ -76,12 +74,11 @@ export function useNotificationSettings() {
   }
 
   // What the user gets for every combination of the given keys, in one call.
-  function resolve(query: { scopes?: Array<NotificationScope>, events?: Array<NotificationEvent>, reasons?: Array<NotificationReason> }) {
+  function resolve(query: { scopes?: Array<NotificationScope>, events?: Array<NotificationEvent> }) {
     return $api<Array<NotificationResolved>>('/api/1/notifications/resolved/', {
       query: {
         scope: query.scopes?.map(scope => `${scope.class}:${scope.id}`),
         event: query.events,
-        reason: query.reasons,
       },
     })
   }
