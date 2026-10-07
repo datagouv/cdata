@@ -32,11 +32,6 @@
               </BreadcrumbItem>
             </Breadcrumb>
             <div class="flex gap-3 items-center">
-              <EditButton
-                v-if="organization.permissions.edit"
-                :id="organization.id"
-                type="organizations"
-              />
               <ReportModal
                 v-if="!isOrganizationCertified(organization)"
                 :subject="{ id: organization.id, class: 'Organization' }"
@@ -85,23 +80,34 @@
       </div>
       <div class="bg-white">
         <div class="container pt-14 pb-4 sm:pb-6">
-          <p
-            v-if="organization.deleted"
-            class="fr-badge mb-2 flex gap-1 items-center"
-          >
-            <RiDeleteBinLine class="size-3.5" />
-            {{ $t('Supprimée') }}
-          </p>
-          <h1 class="leading-[1.2] font-extrabold text-gray-title mb-2.5">
-            <OrganizationNameWithCertificate
-              :certifier="config.public.title"
-              :organization
-              :show-acronym="true"
-              :show-type="false"
-              color-class="text-gray-title"
-              size="xl"
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p
+                v-if="organization.deleted"
+                class="fr-badge mb-2 flex gap-1 items-center"
+              >
+                <RiDeleteBinLine class="size-3.5" />
+                {{ $t('Supprimée') }}
+              </p>
+              <h1 class="leading-[1.2] font-extrabold text-gray-title mb-2.5">
+                <OrganizationNameWithCertificate
+                  :certifier="config.public.title"
+                  :organization
+                  :show-acronym="true"
+                  :show-type="false"
+                  color-class="text-gray-title"
+                  size="xl"
+                />
+              </h1>
+            </div>
+            <!-- Below the banner (interim placement, pending PO feedback) so the
+                 banner actions row stays limited to the report button. -->
+            <EditButton
+              v-if="organization.permissions.edit"
+              :id="organization.id"
+              type="organizations"
             />
-          </h1>
+          </div>
           <OwnerType
             :type
             size="base"
