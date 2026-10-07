@@ -103,6 +103,7 @@ import Tooltip from './components/Tooltip.vue'
 import Toggletip from './components/Toggletip.vue'
 import TopicCard from './components/TopicCard.vue'
 import TranslationT from './components/TranslationT.vue'
+import SegmentedControl from './components/SegmentedControl.vue'
 import GlobalSearch from './components/Search/GlobalSearch.vue'
 import SearchInput from './components/Search/SearchInput.vue'
 import SearchableSelect from './components/Form/SearchableSelect.vue'
@@ -419,6 +420,7 @@ export {
   TranslationT,
   UserActivityList,
   GlobalSearch,
+  SegmentedControl,
   SearchInput,
   SearchableSelect,
   SelectGroup,

@@ -6,31 +6,14 @@
       v-if="canEdit"
       class="container flex justify-end pt-5 mb-4"
     >
-      <div
+      <SegmentedControl
+        v-model="mode"
         data-testid="presentation-mode-switch"
-        class="flex bg-gray-lower rounded p-1 gap-1"
-      >
-        <button
-          type="button"
-          :aria-pressed="isEditing"
-          class="flex items-center justify-center gap-2 rounded py-1.5 px-3 text-sm"
-          :class="isEditing ? 'bg-white font-bold shadow-sm' : 'text-gray-medium hover:text-gray-title'"
-          @click="setEditing(true)"
-        >
-          <RiEditLine class="size-4" />
-          {{ $t('Modifier') }}
-        </button>
-        <button
-          type="button"
-          :aria-pressed="!isEditing"
-          class="flex items-center justify-center gap-2 rounded py-1.5 px-3 text-sm"
-          :class="!isEditing ? 'bg-white font-bold shadow-sm' : 'text-gray-medium hover:text-gray-title'"
-          @click="setEditing(false)"
-        >
-          <RiEyeLine class="size-4" />
-          {{ $t('Prévisualiser') }}
-        </button>
-      </div>
+        :options="[
+          { value: 'edit', label: t('Modifier'), icon: RiEditLine },
+          { value: 'preview', label: t('Prévisualiser'), icon: RiEyeLine },
+        ]"
+      />
     </div>
     <EditoBlocs
       :blocs
@@ -67,7 +50,7 @@
 
 <script setup lang="ts">
 import { RiEyeLine, RiEditLine } from '@remixicon/vue'
-import type { Organization, PageBloc } from '@datagouv/components-next'
+import { SegmentedControl, type Organization, type PageBloc } from '@datagouv/components-next'
 import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import { isUserOrgAdmin, useMaybeMe } from '~/utils/auth'
@@ -78,6 +61,7 @@ const props = defineProps<{
 
 const route = useRoute()
 const me = useMaybeMe()
+const { t } = useTranslation()
 
 const canEdit = computed(() => isUserOrgAdmin(me.value, props.organization))
 
@@ -90,9 +74,12 @@ const { blocs, isPublished, saveBlocs } = await useOrganizationBlocs(() => props
 const isEditing = computed(() => route.query.edit === 'true')
 
 const router = useRouter()
-function setEditing(editing: boolean) {
-  router.push({ query: { ...route.query, edit: editing ? 'true' : undefined } })
-}
+const mode = computed({
+  get: () => (isEditing.value ? 'edit' : 'preview'),
+  set: (value: string) => {
+    router.push({ query: { ...route.query, edit: value === 'edit' ? 'true' : undefined } })
+  },
+})
 
 // On an unconfigured presentation: non-admins have nothing to read, so they are
 // sent back to the datasets tab (the tab is hidden from them anyway); admins are

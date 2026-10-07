@@ -18,27 +18,15 @@
     </div>
 
     <!-- Segmented control -->
-    <div
-      class="flex bg-gray-lower rounded p-1 gap-1 mx-4 mt-3"
-      role="tablist"
-    >
-      <button
-        v-for="tab in tabs"
-        :key="tab.key"
-        type="button"
-        role="tab"
-        :aria-selected="activeTab === tab.key"
-        class="flex-1 flex items-center justify-center gap-2 rounded py-2 text-sm"
-        :class="activeTab === tab.key ? 'bg-white font-bold shadow-sm' : 'text-gray-medium'"
-        @click="activeTab = tab.key"
-      >
-        <component
-          :is="tab.icon"
-          class="size-4"
-        />
-        {{ tab.label }}
-      </button>
-    </div>
+    <SegmentedControl
+      v-model="activeTab"
+      grow
+      class="mx-4 mt-3"
+      :options="[
+        { value: 'color', label: t('Couleur'), icon: RiPaletteLine },
+        { value: 'upload', label: t('Importer'), icon: RiImageLine },
+      ]"
+    />
 
     <!-- Couleur -->
     <div
@@ -141,7 +129,7 @@
 
 <script setup lang="ts">
 import { RiCloseLine, RiImageLine, RiPaletteLine } from '@remixicon/vue'
-import { toast, type Organization } from '@datagouv/components-next'
+import { SegmentedControl, toast, type Organization } from '@datagouv/components-next'
 import { deleteOrganizationBanner, updateOrganizationBannerColor, uploadOrganizationBanner } from '~/api/organizations'
 import UploadGroup from '~/components/UploadGroup/UploadGroup.vue'
 import { DSFR_BANNER_COLORS, normalizeHexColor, validateBannerFile } from '~/utils/organizationBanner'
@@ -159,13 +147,8 @@ const emit = defineEmits<{
 
 const { t } = useTranslation()
 
-const tabs = [
-  { key: 'color', label: t('Couleur'), icon: RiPaletteLine },
-  { key: 'upload', label: t('Importer'), icon: RiImageLine },
-] as const
-
 // Open on the tab matching the current banner type (spec §2).
-const activeTab = ref<'color' | 'upload'>(props.organization.banner_image ? 'upload' : 'color')
+const activeTab = ref(props.organization.banner_image ? 'upload' : 'color')
 const pending = ref(false)
 const selectedColor = ref<string | null>(props.organization.banner_color ?? null)
 const customColor = ref(props.organization.banner_color ?? '#000091')

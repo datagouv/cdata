@@ -43,7 +43,7 @@ test.describe('organization banner', () => {
     const banner = page.getByTestId('organization-banner')
     await banner.hover({ position: { x: 30, y: 15 } })
     await page.getByRole('button', { name: 'Ajouter une bannière' }).click()
-    await page.getByRole('tab', { name: 'Couleur' }).click()
+    await page.getByRole('button', { name: 'Couleur' }).click()
     await page.getByRole('button', { name: 'green-emeraude' }).click()
 
     await expect(banner).toHaveCSS('background-color', 'rgb(0, 169, 95)')
@@ -68,7 +68,7 @@ test.describe('organization banner', () => {
     const banner = page.getByTestId('organization-banner')
     await banner.hover()
     await page.getByRole('button', { name: 'Modifier' }).click()
-    await page.getByRole('tab', { name: 'Importer' }).click()
+    await page.getByRole('button', { name: 'Importer' }).click()
 
     const fileInput = page.locator('input[type="file"]')
     await fileInput.setInputFiles('tests/fixtures/banner-1200x400.png')
