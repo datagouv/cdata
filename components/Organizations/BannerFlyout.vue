@@ -3,25 +3,11 @@
     data-testid="banner-flyout"
     class="w-[calc(100vw-32px)] sm:w-[480px] max-w-[480px] bg-white rounded shadow-2xl border border-gray-lower"
   >
-    <div class="flex items-center justify-between px-4 pt-3">
-      <h2 class="text-base font-bold m-0">
-        {{ $t('Bannière') }}
-      </h2>
-      <button
-        type="button"
-        class="text-gray-medium hover:text-gray-title"
-        :aria-label="$t('Fermer')"
-        @click="$emit('close')"
-      >
-        <RiCloseLine class="size-5" />
-      </button>
-    </div>
-
     <!-- Segmented control -->
     <SegmentedControl
       v-model="activeTab"
       grow
-      class="mx-4 mt-3"
+      class="m-4"
       :options="[
         { value: 'color', label: t('Couleur'), icon: RiPaletteLine },
         { value: 'upload', label: t('Importer'), icon: RiImageLine },
@@ -104,31 +90,11 @@
         {{ $t('Dimensions minimales : 1200 × 300 px.') }}
       </p>
     </div>
-
-    <!-- Footer actions (also the mobile entry point to reposition/delete) -->
-    <div class="flex gap-2 justify-end px-4 pb-4">
-      <BrandedButton
-        v-if="organization.banner_image"
-        size="xs"
-        @click="$emit('requestReposition')"
-      >
-        {{ $t('Repositionner') }}
-      </BrandedButton>
-      <BrandedButton
-        v-if="hasCustomBanner"
-        size="xs"
-        color="danger"
-        :loading="pending"
-        @click="removeBanner"
-      >
-        {{ $t('Supprimer') }}
-      </BrandedButton>
-    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { RiCloseLine, RiImageLine, RiPaletteLine } from '@remixicon/vue'
+import { RiImageLine, RiPaletteLine } from '@remixicon/vue'
 import { SegmentedControl, toast, type Organization } from '@datagouv/components-next'
 import { deleteOrganizationBanner, updateOrganizationBannerColor, uploadOrganizationBanner } from '~/api/organizations'
 import UploadGroup from '~/components/UploadGroup/UploadGroup.vue'
@@ -141,7 +107,6 @@ const props = defineProps<{
 const emit = defineEmits<{
   updated: [organization: Organization]
   refresh: []
-  requestReposition: []
   close: []
 }>()
 
@@ -154,8 +119,6 @@ const selectedColor = ref<string | null>(props.organization.banner_color ?? null
 const customColor = ref(props.organization.banner_color ?? '#000091')
 const customColorError = ref(false)
 const uploadError = ref<null | 'format' | 'size' | 'dimensions'>(null)
-
-const hasCustomBanner = computed(() => !!(props.organization.banner_image || props.organization.banner_color))
 
 function isSelected(hex: string) {
   return selectedColor.value === hex
@@ -238,24 +201,13 @@ async function onUpload(files: Array<File>) {
   emit('refresh')
 }
 
-async function removeBanner() {
-  if (pending.value) return
-  pending.value = true
-  try {
-    await deleteOrganizationBanner(props.organization.id)
-    if (props.organization.banner_color) {
-      await updateOrganizationBannerColor(props.organization.id, null)
-    }
-    selectedColor.value = null
-    customColor.value = '#000091'
-    uploadError.value = null
-    emit('refresh')
-  }
-  catch {
-    // Server errors are already toasted by the $api plugin.
-  }
-  finally {
-    pending.value = false
+// No close button in the panel (slim design): Escape closes it, and the parent
+// already closes on outside click.
+function onKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') {
+    emit('close')
   }
 }
+onMounted(() => document.addEventListener('keydown', onKeydown))
+onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 </script>
