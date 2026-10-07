@@ -8,27 +8,44 @@
       {{ t('Notifications') }}
     </h1>
 
-    <div class="max-w-6xl space-y-8">
+    <AnimatedLoader v-if="settings === null || reasonDefaults === null" />
+    <div
+      v-else
+      class="max-w-6xl space-y-8"
+    >
+      <BannerAction
+        v-if="allOff"
+        type="warning"
+        :title="t('Toutes vos notifications sont désactivées')"
+      >
+        {{ t(`Vous recevez seulement ce qui demande une action de votre part : invitations, transferts, moissonneurs à valider.`) }}
+        <template #button>
+          <BrandedButton
+            color="secondary"
+            size="xs"
+            @click="setAllOff(false)"
+          >
+            {{ t('Réactiver') }}
+          </BrandedButton>
+        </template>
+      </BannerAction>
+
       <PaddedContainer class="!p-0 divide-y divide-gray-default">
         <div class="px-5 py-3 flex items-center justify-between">
           <h2 class="m-0 text-sm font-bold">
             {{ t('Ce qui vous concerne') }}
           </h2>
           <BrandedButton
+            v-if="!allOff"
             color="tertiary"
             size="xs"
-            @click="disableAll"
+            @click="setAllOff(true)"
           >
             {{ t('Tout désactiver') }}
           </BrandedButton>
         </div>
-        <AnimatedLoader
-          v-if="preferences === null"
-          class="m-5"
-        />
         <div
           v-for="row in reasonRows"
-          v-else
           :key="row.reason"
           :class="ROW_CLASS"
         >
@@ -52,8 +69,8 @@
                 :id="`reason-${row.reason}-${option.value}`"
                 type="radio"
                 :name="`reason-${row.reason}`"
-                :checked="channelsValue(row.reason) === option.value"
-                @change="saveChannels(row.reason, option.value)"
+                :checked="reasonValue(row.reason) === option.value"
+                @change="saveReason(row.reason, option.value)"
               >
               <label
                 class="fr-label"
@@ -92,7 +109,7 @@
                 type="radio"
                 name="mail-cadence"
                 :checked="me.mail_cadence === option.value"
-                @change="saveMe({ mail_cadence: option.value })"
+                @change="saveCadence(option.value)"
               >
               <label
                 class="fr-label"
@@ -103,47 +120,20 @@
             </div>
           </div>
         </div>
-        <div :class="ROW_CLASS">
-          <p
-            id="mail-types"
-            class="m-0 text-sm font-bold"
-          >
-            {{ t('Envoyer par e-mail') }}
-          </p>
-          <div
-            role="group"
-            aria-labelledby="mail-types"
-            :class="CHOICES_CLASS"
-          >
-            <div
-              v-for="type in mailTypes"
-              :key="type.value"
-              class="fr-checkbox-group fr-checkbox-group--sm"
-            >
-              <input
-                :id="`mail-type-${type.value}`"
-                type="checkbox"
-                :checked="!me.mail_muted_types.includes(type.value)"
-                @change="toggleMailType(type.value, ($event.target as HTMLInputElement).checked)"
-              >
-              <label
-                class="fr-label"
-                :for="`mail-type-${type.value}`"
-              >
-                {{ type.label }}
-              </label>
-            </div>
-          </div>
-        </div>
       </PaddedContainer>
 
       <PaddedContainer
         v-if="groups.length"
         class="!p-0 divide-y divide-gray-default"
       >
-        <h2 class="m-0 px-5 py-3 text-sm font-bold">
-          {{ t('Contenus suivis') }}
-        </h2>
+        <div class="px-5 py-3">
+          <h2 class="m-0 text-sm font-bold">
+            {{ t('Contenus suivis') }}
+          </h2>
+          <p class="m-0 text-xs text-gray-medium">
+            {{ t('Décocher un contenu : vous ne recevrez plus rien à son sujet.') }}
+          </p>
+        </div>
         <div
           v-for="group in groups"
           :key="group.key"
@@ -190,10 +180,48 @@
                 v-else
                 class="text-gray-medium"
               >
-                {{ t(`Contenu qui ne vous est plus accessible`) }}
+                {{ t('Contenu qui ne vous est plus accessible') }}
+              </span>
+              <span
+                v-if="row.events.length"
+                class="text-gray-medium"
+              >
+                ({{ row.events.map(eventLabel).join(', ') }})
               </span>
             </label>
           </div>
+        </div>
+      </PaddedContainer>
+
+      <PaddedContainer
+        v-if="otherRules.length"
+        class="!p-0 divide-y divide-gray-default"
+      >
+        <h2 class="m-0 px-5 py-3 text-sm font-bold">
+          {{ t('Autres réglages') }}
+        </h2>
+        <div
+          v-for="rule in otherRules"
+          :key="rule.id"
+          class="px-5 py-2 flex items-center gap-4 text-sm"
+        >
+          <span class="flex-1">{{ describe(rule) }}</span>
+          <BrandedButton
+            color="tertiary"
+            size="xs"
+            @click="setRule(rule, !rule.enabled)"
+          >
+            {{ rule.enabled ? t('Oui') : t('Non') }}
+          </BrandedButton>
+          <BrandedButton
+            color="tertiary"
+            size="xs"
+            :icon="RiDeleteBinLine"
+            icon-only
+            :title="t('Supprimer ce réglage')"
+            keep-margins-even-without-borders
+            @click="setRule(rule, null)"
+          />
         </div>
       </PaddedContainer>
     </div>
@@ -201,31 +229,44 @@
 </template>
 
 <script setup lang="ts">
-import { AnimatedLoader, BrandedButton, PaddedContainer, toast } from '@datagouv/components-next'
+import { AnimatedLoader, BannerAction, BrandedButton, PaddedContainer, toast } from '@datagouv/components-next'
 import type { OrganizationReference } from '@datagouv/components-next'
+import { RiDeleteBinLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
 import type { Me } from '~/utils/auth'
-import type { DiscussionNotification, MailCadence, NotificationChannel, NotificationPreference, NotificationReason, NotificationScope } from '~/types/notifications'
+import type { MailCadence, NotificationEvent, NotificationReason, NotificationReasonDefault, NotificationScope, NotificationSetting } from '~/types/notifications'
 
 type ChannelsValue = 'both' | 'app' | 'mail' | 'none'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const me = useMe()
-const { settings, load, decide } = useNotificationSettings()
+const { settings, load, ruleValue, setRule } = useNotificationSettings()
 
 // Every setting reads as a line: its label on the left, its choices on the right.
 const ROW_CLASS = 'px-5 py-4 grid grid-cols-[14rem_1fr] items-center gap-6'
 const CHOICES_CLASS = 'flex flex-wrap gap-x-6 gap-y-2'
 
-const preferences = ref<Array<NotificationPreference> | null>(null)
+const reasonDefaults = ref<Array<NotificationReasonDefault> | null>(null)
 
 onMounted(async () => {
   load()
-  preferences.value = await $api<Array<NotificationPreference>>('/api/1/notifications/preferences/')
+  reasonDefaults.value = await $api<Array<NotificationReasonDefault>>('/api/1/notifications/reasons/')
 })
+
+// "Turn everything off" is a rule on each channel, everywhere: a channel rule is the
+// only kind a follow cannot bring back (see udata's `resolve`).
+const allOff = computed(() => ruleValue({ channel: 'app' }) === false && ruleValue({ channel: 'mail' }) === false)
+
+async function setAllOff(off: boolean) {
+  await Promise.all([
+    setRule({ channel: 'app' }, off ? false : null),
+    setRule({ channel: 'mail' }, off ? false : null),
+  ])
+  toast.success(off ? t('Toutes les notifications sont désactivées') : t('Notifications réactivées'))
+}
 
 const reasonRows = computed<Array<{ reason: NotificationReason, label: string }>>(() => [
   { reason: 'owner', label: t('Vos contenus') },
@@ -243,24 +284,28 @@ const channelOptions = computed<Array<{ value: ChannelsValue, label: string }>>(
   { value: 'none', label: t('Jamais') },
 ])
 
-const CHANNELS_BY_VALUE: Record<ChannelsValue, Array<NotificationChannel>> = {
-  both: ['app', 'mail'],
-  app: ['app'],
-  mail: ['mail'],
-  none: [],
+function reasonDefault(reason: NotificationReason) {
+  return reasonDefaults.value?.find(item => item.reason === reason)?.default ?? false
 }
 
-function channelsValue(reason: NotificationReason): ChannelsValue {
-  const channels = preferences.value?.find(preference => preference.reason === reason)?.channels ?? []
-  if (channels.includes('app')) return channels.includes('mail') ? 'both' : 'app'
-  return channels.includes('mail') ? 'mail' : 'none'
+// A reason row writes up to three rules: whether one is concerned at all, then a rule
+// per channel turned off.
+function reasonValue(reason: NotificationReason): ChannelsValue {
+  const concerned = ruleValue({ reason }) ?? reasonDefault(reason)
+  const app = ruleValue({ reason, channel: 'app' }) !== false
+  const mail = ruleValue({ reason, channel: 'mail' }) !== false
+  if (!concerned || (!app && !mail)) return 'none'
+  if (app && mail) return 'both'
+  return app ? 'app' : 'mail'
 }
 
-async function saveChannels(reason: NotificationReason, value: ChannelsValue) {
-  preferences.value = await $api<Array<NotificationPreference>>('/api/1/notifications/preferences/', {
-    method: 'PUT',
-    body: { reason, channels: CHANNELS_BY_VALUE[value] },
-  })
+async function saveReason(reason: NotificationReason, value: ChannelsValue) {
+  const concerned = value !== 'none'
+  await Promise.all([
+    setRule({ reason }, concerned === reasonDefault(reason) ? null : concerned),
+    setRule({ reason, channel: 'app' }, concerned && value === 'mail' ? false : null),
+    setRule({ reason, channel: 'mail' }, concerned && value === 'app' ? false : null),
+  ])
   toast.success(t('Préférence enregistrée'))
 }
 
@@ -270,22 +315,9 @@ const cadenceOptions = computed<Array<{ value: MailCadence, label: string }>>(()
   { value: 'weekly', label: t('Un résumé par semaine') },
 ])
 
-// Reuses and APIs are only announced in the app, discussions are the only mails to choose from.
-const mailTypes = computed<Array<{ value: DiscussionNotification['type'], label: string }>>(() => [
-  { value: 'discussion.new', label: t('Nouvelles discussions') },
-  { value: 'discussion.comment', label: t('Réponses') },
-  { value: 'discussion.closed', label: t('Discussions clôturées') },
-])
-
-async function toggleMailType(type: DiscussionNotification['type'], checked: boolean) {
-  const muted = me.value.mail_muted_types.filter(muted => muted !== type)
-  await saveMe({ mail_muted_types: checked ? muted : [...muted, type] })
-}
-
-async function saveMe(body: Partial<Pick<Me, 'mail_cadence' | 'mail_muted_types'>>) {
-  const updated = await $api<Me>('/api/1/me/', { method: 'PUT', body })
+async function saveCadence(mailCadence: MailCadence) {
+  const updated = await $api<Me>('/api/1/me/', { method: 'PUT', body: { mail_cadence: mailCadence } })
   me.value.mail_cadence = updated.mail_cadence
-  me.value.mail_muted_types = updated.mail_muted_types
   toast.success(t('Préférence enregistrée'))
 }
 
@@ -295,27 +327,31 @@ type SubjectRow = {
   title: string | null
   page: string | null
   followed: boolean
+  // The notifications the follow is restricted to, empty when it covers all of them
+  events: Array<NotificationEvent>
 }
 
-// One row per subject, grouped under its organization: unchecking an organization
-// stops following everything one worked on there.
+const isSubjectRule = (setting: NotificationSetting) => setting.scope !== null && setting.reason === null && setting.channel === null
+
+// One row per followed or ignored subject, grouped under its organization: unchecking an
+// organization stops everything one followed there.
 const groups = computed(() => {
   const rows = new Map<string, SubjectRow & { organization: OrganizationReference | null }>()
-  for (const setting of settings.value ?? []) {
-    const key = `${setting.scope.class}-${setting.scope.id}`
-    const row = rows.get(key)
-    if (row) {
-      row.followed ||= setting.enabled
-      continue
-    }
-    rows.set(key, {
+  for (const setting of (settings.value ?? []).filter(isSubjectRule)) {
+    const scope = setting.scope!
+    const key = `${scope.class}-${scope.id}`
+    const row = rows.get(key) ?? {
       key,
-      scope: setting.scope,
+      scope,
       title: setting.subject?.title ?? null,
       page: setting.subject?.page ?? null,
-      followed: setting.enabled,
+      followed: false,
+      events: [],
       organization: setting.subject?.organization ?? null,
-    })
+    }
+    row.followed ||= setting.enabled
+    if (setting.event) row.events.push(setting.event)
+    rows.set(key, row)
   }
 
   const byOrganization = new Map<string, { key: string, label: string, rows: Array<SubjectRow> }>()
@@ -329,19 +365,47 @@ const groups = computed(() => {
   return [...byOrganization.values()]
 })
 
+// Unchecking means hearing nothing more about the subject, whatever the role in its
+// organization; checking follows all of it again.
 async function followAll(rows: Array<SubjectRow>, followed: boolean) {
-  const decided = (settings.value ?? []).filter(setting => rows.some(row => row.scope.class === setting.scope.class && row.scope.id === setting.scope.id))
-  await Promise.all(decided.map(setting => decide(setting.scope, setting.event, followed)))
-  toast.success(followed ? t('Suivi réactivé') : t('Vous ne suivez plus ces contenus'))
+  for (const row of rows) {
+    const narrower = (settings.value ?? []).filter(setting => isSubjectRule(setting) && setting.event !== null && setting.scope!.class === row.scope.class && setting.scope!.id === row.scope.id)
+    await Promise.all(narrower.map(setting => setRule(setting, null)))
+    await setRule({ scope: row.scope }, followed)
+  }
+  toast.success(followed ? t('Suivi réactivé') : t('Vous ne recevrez plus rien sur ces contenus'))
 }
 
-async function disableAll() {
-  for (const row of reasonRows.value) {
-    preferences.value = await $api<Array<NotificationPreference>>('/api/1/notifications/preferences/', {
-      method: 'PUT',
-      body: { reason: row.reason, channels: [] },
-    })
-  }
-  toast.success(t('Toutes les notifications sont désactivées'))
+// The rules none of the forms above can show: set through the API, or left behind by a
+// form that changed since.
+const otherRules = computed(() => (settings.value ?? []).filter((setting) => {
+  if (isSubjectRule(setting)) return false
+  if (setting.scope || setting.event) return true
+  if (setting.reason) return false
+  return setting.channel === null || setting.enabled
+}))
+
+const EVENT_LABELS = computed<Record<NotificationEvent, string>>(() => ({
+  DiscussionEvent: t('Discussions'),
+  NewDiscussion: t('Nouvelles discussions'),
+  NewDiscussionComment: t('Réponses'),
+  DiscussionClosed: t('Discussions clôturées'),
+  DatasetReusedEvent: t('Réutilisations et API'),
+  ReuseCreated: t('Nouvelles réutilisations'),
+  DataserviceCreated: t('Nouvelles API'),
+}))
+
+function eventLabel(event: NotificationEvent) {
+  return EVENT_LABELS.value[event]
+}
+
+function describe(rule: NotificationSetting) {
+  const parts = [
+    rule.scope ? (rule.subject?.title ?? t('Contenu qui ne vous est plus accessible')) : t('Partout'),
+    rule.event ? eventLabel(rule.event) : t('Toutes les notifications'),
+  ]
+  if (rule.reason) parts.push(reasonRows.value.find(row => row.reason === rule.reason)?.label ?? rule.reason)
+  if (rule.channel) parts.push(rule.channel === 'app' ? t('Dans l\'application') : t('Par e-mail'))
+  return parts.join(' · ')
 }
 </script>

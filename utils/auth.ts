@@ -1,6 +1,6 @@
 import type { Organization, OrganizationReference, User } from '@datagouv/components-next'
 import { usePostApiWithCsrf } from './api'
-import type { MailCadence, UserNotification } from '~/types/notifications'
+import type { MailCadence } from '~/types/notifications'
 
 const UNLOGGED_SECURITY_ROUTES = [
   'login', 'register', 'reset', 'tf-validate',
@@ -15,8 +15,6 @@ export type Me = User & {
   active: boolean
   email: string
   mail_cadence: MailCadence
-  // Notifications still shown in the app but never sent by mail
-  mail_muted_types: Array<UserNotification['type']>
   metrics: {
     datasets: number
     followers: number

@@ -20,12 +20,16 @@ const props = defineProps<{
 }>()
 
 const { t } = useTranslation()
-const { load, decisionFor, decide } = useNotificationSettings()
+const { load, ruleValue, setRule } = useNotificationSettings()
 
 onMounted(load)
 
-// A follow of the whole subject, as editing it creates, covers its discussions too.
-const followed = computed(() => decisionFor(props.scope, 'DiscussionEvent') ?? decisionFor(props.scope, 'ConfigurableEvent') ?? false)
+// Following the discussions of a subject only reports the new ones: their answers come
+// from taking part in a thread, or following it.
+const followed = computed(() => ruleValue({ scope: props.scope, event: 'NewDiscussion' })
+  ?? ruleValue({ scope: props.scope, event: 'DiscussionEvent' })
+  ?? ruleValue({ scope: props.scope })
+  ?? false)
 
 const loading = ref(false)
 
@@ -33,8 +37,8 @@ async function toggle() {
   loading.value = true
   try {
     const follow = !followed.value
-    await decide(props.scope, 'DiscussionEvent', follow)
-    toast.success(follow ? t('Vous serez prévenu des nouvelles discussions et réponses') : t('Vous ne suivez plus ces discussions'))
+    await setRule({ scope: props.scope, event: 'NewDiscussion' }, follow)
+    toast.success(follow ? t('Vous serez prévenu des nouvelles discussions') : t('Vous ne suivez plus les discussions'))
   }
   finally {
     loading.value = false

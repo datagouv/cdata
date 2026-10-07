@@ -97,10 +97,8 @@ export type DataserviceCreatedNotification = CommonNotification & {
 
 export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification | DiscussionNotification | MembershipAcceptedNotification | MembershipRefusedNotification | ValidateHarvesterNotification | ReuseCreatedNotification | DataserviceCreatedNotification
 
-// The udata event classes a decision can name: a single notification, its family, or
-// `ConfigurableEvent` for all of them.
-export type NotificationEvent = 'ConfigurableEvent'
-  | 'DiscussionEvent' | 'NewDiscussion' | 'NewDiscussionComment' | 'DiscussionClosed'
+// The udata event classes a rule can name: a single notification or its family.
+export type NotificationEvent = 'DiscussionEvent' | 'NewDiscussion' | 'NewDiscussionComment' | 'DiscussionClosed'
   | 'DatasetReusedEvent' | 'ReuseCreated' | 'DataserviceCreated'
 
 export type NotificationChannel = 'app' | 'mail'
@@ -112,21 +110,6 @@ export type NotificationScope = {
   id: string
 }
 
-// What the user decided about one subject: follow it (`true`) or ignore it (`false`).
-// How they are then reached is decided by their preferences, per reason.
-export type NotificationSetting = {
-  id: string
-  scope: NotificationScope
-  event: NotificationEvent
-  enabled: boolean
-  // `null` once the subject is out of the user's reach (deleted, or turned private)
-  subject: {
-    title: string
-    page: string
-    organization: OrganizationReference | null
-  } | null
-}
-
 // Why a user is concerned by a notification. Sysadmin notifications are not configurable.
 export type NotificationReason = 'owner'
   | 'organization.admin'
@@ -135,7 +118,27 @@ export type NotificationReason = 'owner'
   | 'discussion.participant'
   | 'explicit_subscriber'
 
-export type NotificationPreference = {
+// What identifies a rule: every dimension is optional, `null` meaning "whatever it is"
+// (everywhere, every notification, whatever the reason, whether concerned at all).
+export type NotificationRuleKey = {
+  scope: NotificationScope | null
+  event: NotificationEvent | null
+  reason: NotificationReason | null
+  channel: NotificationChannel | null
+}
+
+export type NotificationSetting = NotificationRuleKey & {
+  id: string
+  enabled: boolean
+  // `null` without a scope, or once the subject is out of the user's reach
+  subject: {
+    title: string
+    page: string
+    organization: OrganizationReference | null
+  } | null
+}
+
+export type NotificationReasonDefault = {
   reason: NotificationReason
-  channels: Array<NotificationChannel>
+  default: boolean
 }

@@ -63,14 +63,14 @@ const props = defineProps<{
 }>()
 
 const { t } = useTranslation()
-const { load, decisionFor, decide } = useNotificationSettings()
+const { load, ruleValue, setRule } = useNotificationSettings()
 
 onMounted(load)
 
-const scope = computed<NotificationScope>(() => ({ class: 'Discussion', id: props.thread.id }))
+const rule = computed(() => ({ scope: { class: 'Discussion', id: props.thread.id } as NotificationScope, event: 'DiscussionEvent' as const }))
 
 const choice = computed<Choice>(() => {
-  const decision = decisionFor(scope.value, 'DiscussionEvent')
+  const decision = ruleValue(rule.value)
   if (decision === null) return 'default'
   return decision ? 'followed' : 'ignored'
 })
@@ -99,7 +99,7 @@ async function choose(value: Choice) {
   const enabled = { default: null, followed: true, ignored: false }[value]
   loading.value = true
   try {
-    await decide(scope.value, 'DiscussionEvent', enabled)
+    await setRule(rule.value, enabled)
     toast.success({
       default: t('Cette discussion suit désormais vos réglages par défaut'),
       followed: t('Vous suivez cette discussion'),

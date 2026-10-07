@@ -104,14 +104,16 @@ export default defineNuxtPlugin({
       forgetSettings()
       toast.success(t('Vous suivez maintenant ce contenu : vous serez prévenu de ses discussions.'), {
         action: {
-          label: t('Ne pas suivre'),
+          label: t('Ne rien recevoir sur ce contenu'),
           onClick: async () => {
+            // Ignoring, not just unfollowing: the user asked to hear nothing about it,
+            // including what their role in the organization would bring.
             await api('/api/1/notifications/settings/', {
               method: 'PUT',
-              body: { scope: { class: cls, id }, event: 'ConfigurableEvent', enabled: false },
+              body: { scope: { class: cls, id }, event: null, reason: null, channel: null, enabled: false },
             })
             forgetSettings()
-            toast.success(t('Vous ne suivez plus ce contenu'))
+            toast.success(t('Vous ne recevrez plus rien sur ce contenu'))
           },
         },
       })
