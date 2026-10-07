@@ -60,6 +60,7 @@
         tabindex="-1"
         @updated="onBannerUpdated"
         @refresh="onBannerRefresh"
+        @request-reposition="startReposition"
         @close="closeFlyout"
       />
     </div>

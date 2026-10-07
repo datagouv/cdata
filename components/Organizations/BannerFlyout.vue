@@ -22,7 +22,7 @@
       <p class="text-xs uppercase text-gray-medium mb-2 m-0">
         {{ $t('Couleurs prédéfinies') }}
       </p>
-      <div class="grid grid-cols-9 justify-items-center gap-y-2 mb-1">
+      <div class="grid grid-cols-[repeat(auto-fill,44px)] justify-center gap-2 sm:grid-cols-9 sm:gap-x-0 sm:gap-y-2">
         <button
           v-for="color in DSFR_BANNER_COLORS"
           :key="color.name"
@@ -30,7 +30,7 @@
           :aria-label="color.name"
           :title="color.name"
           :aria-pressed="isSelected(color.hex)"
-          class="size-11 rounded cursor-pointer border-0"
+          class="size-11 rounded cursor-pointer border-0 justify-self-center"
           :class="{ 'ring-2 ring-new-primary ring-offset-1': isSelected(color.hex) }"
           :style="{ backgroundColor: color.hex }"
           @click="applyColor(color.hex)"
@@ -90,12 +90,33 @@
         {{ $t('Dimensions minimales : 1200 × 300 px.') }}
       </p>
     </div>
+
+    <!-- Mobile-only actions: the desktop overlay (hover) already offers them,
+         but touch devices have no hover and only reach this flyout. -->
+    <div class="sm:hidden flex gap-2 justify-end px-4 pb-4">
+      <BrandedButton
+        v-if="organization.banner_image"
+        size="xs"
+        @click="$emit('requestReposition')"
+      >
+        {{ $t('Repositionner') }}
+      </BrandedButton>
+      <BrandedButton
+        v-if="hasCustomBanner"
+        size="xs"
+        color="danger"
+        :loading="pending"
+        @click="removeBanner"
+      >
+        {{ $t('Supprimer') }}
+      </BrandedButton>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { RiImageLine, RiPaletteLine } from '@remixicon/vue'
-import { SegmentedControl, toast, type Organization } from '@datagouv/components-next'
+import { BrandedButton, SegmentedControl, toast, type Organization } from '@datagouv/components-next'
 import { deleteOrganizationBanner, updateOrganizationBannerColor, uploadOrganizationBanner } from '~/api/organizations'
 import UploadGroup from '~/components/UploadGroup/UploadGroup.vue'
 import { DSFR_BANNER_COLORS, normalizeHexColor, validateBannerFile } from '~/utils/organizationBanner'
@@ -107,6 +128,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   updated: [organization: Organization]
   refresh: []
+  requestReposition: []
   close: []
 }>()
 
@@ -119,6 +141,8 @@ const selectedColor = ref<string | null>(props.organization.banner_color ?? null
 const customColor = ref(props.organization.banner_color ?? '#000091')
 const customColorError = ref(false)
 const uploadError = ref<null | 'format' | 'size' | 'dimensions'>(null)
+
+const hasCustomBanner = computed(() => !!(props.organization.banner_image || props.organization.banner_color))
 
 function isSelected(hex: string) {
   return selectedColor.value === hex
@@ -210,4 +234,25 @@ function onKeydown(event: KeyboardEvent) {
 }
 onMounted(() => document.addEventListener('keydown', onKeydown))
 onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
+
+async function removeBanner() {
+  if (pending.value) return
+  pending.value = true
+  try {
+    await deleteOrganizationBanner(props.organization.id)
+    if (props.organization.banner_color) {
+      await updateOrganizationBannerColor(props.organization.id, null)
+    }
+    selectedColor.value = null
+    customColor.value = '#000091'
+    uploadError.value = null
+    emit('refresh')
+  }
+  catch {
+    // Server errors are already toasted by the $api plugin.
+  }
+  finally {
+    pending.value = false
+  }
+}
 </script>
