@@ -54,7 +54,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { BrandedButton, toast } from '@datagouv/components-next'
 import { RiCheckLine, RiNotification3Line, RiNotificationOffLine } from '@remixicon/vue'
 import type { Thread } from '~/types/discussions'
-import type { NotificationChannel, NotificationScope } from '~/types/notifications'
+import type { NotificationScope } from '~/types/notifications'
 
 type Choice = 'default' | 'followed' | 'ignored'
 
@@ -68,21 +68,17 @@ const { load, decisionFor, decide } = useNotificationSettings()
 onMounted(load)
 
 const scope = computed<NotificationScope>(() => ({ class: 'Discussion', id: props.thread.id }))
-const CHANNELS: Array<NotificationChannel> = ['app', 'mail']
 
-// Only the decisions taken on this very discussion are known here: without one, what the
-// user receives depends on their role and on the settings of the subject or organization.
 const choice = computed<Choice>(() => {
-  const decisions = CHANNELS.map(channel => decisionFor(scope.value, 'discussions', channel))
-  if (decisions.includes(true)) return 'followed'
-  if (decisions.includes(false)) return 'ignored'
-  return 'default'
+  const decision = decisionFor(scope.value, 'DiscussionEvent')
+  if (decision === null) return 'default'
+  return decision ? 'followed' : 'ignored'
 })
 
 const options = computed<Array<{ value: Choice, label: string, description: string }>>(() => [
   { value: 'default', label: t('Par défaut'), description: t('Selon votre rôle et vos réglages de notifications') },
-  { value: 'followed', label: t('Suivre la discussion'), description: t('Être notifié de chaque nouveau message, dans l\'application et par e-mail') },
-  { value: 'ignored', label: t('Ne pas suivre'), description: t('Ne plus être notifié de cette discussion') },
+  { value: 'followed', label: t('Suivre la discussion'), description: t('Être notifié de chaque nouveau message') },
+  { value: 'ignored', label: t('Ignorer'), description: t('Ne plus être notifié de cette discussion') },
 ])
 
 const buttonTitle = computed(() => {
@@ -103,7 +99,7 @@ async function choose(value: Choice) {
   const enabled = { default: null, followed: true, ignored: false }[value]
   loading.value = true
   try {
-    await Promise.all(CHANNELS.map(channel => decide(scope.value, 'discussions', channel, enabled)))
+    await decide(scope.value, 'DiscussionEvent', enabled)
     toast.success({
       default: t('Cette discussion suit désormais vos réglages par défaut'),
       followed: t('Vous suivez cette discussion'),

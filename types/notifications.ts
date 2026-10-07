@@ -97,7 +97,11 @@ export type DataserviceCreatedNotification = CommonNotification & {
 
 export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification | DiscussionNotification | MembershipAcceptedNotification | MembershipRefusedNotification | ValidateHarvesterNotification | ReuseCreatedNotification | DataserviceCreatedNotification
 
-export type NotificationCategory = 'discussions' | 'reuses'
+// The udata event classes a decision can name: a single notification, its family, or
+// `ConfigurableEvent` for all of them.
+export type NotificationEvent = 'ConfigurableEvent'
+  | 'DiscussionEvent' | 'NewDiscussion' | 'NewDiscussionComment' | 'DiscussionClosed'
+  | 'DatasetReusedEvent' | 'ReuseCreated' | 'DataserviceCreated'
 
 export type NotificationChannel = 'app' | 'mail'
 
@@ -108,12 +112,30 @@ export type NotificationScope = {
   id: string
 }
 
-// A decision the user took. Whatever has no decision follows the defaults of the user's role.
+// What the user decided about one subject: follow it (`true`) or ignore it (`false`).
+// How they are then reached is decided by their preferences, per reason.
 export type NotificationSetting = {
   id: string
-  // `null` covers every subject the user is concerned with
-  scope: NotificationScope | null
-  category: NotificationCategory
-  channel: NotificationChannel
+  scope: NotificationScope
+  event: NotificationEvent
   enabled: boolean
+  // `null` once the subject is out of the user's reach (deleted, or turned private)
+  subject: {
+    title: string
+    page: string
+    organization: OrganizationReference | null
+  } | null
+}
+
+// Why a user is concerned by a notification. Sysadmin notifications are not configurable.
+export type NotificationReason = 'owner'
+  | 'organization.admin'
+  | 'organization.editor'
+  | 'organization.partial_editor'
+  | 'discussion.participant'
+  | 'explicit_subscriber'
+
+export type NotificationPreference = {
+  reason: NotificationReason
+  channels: Array<NotificationChannel>
 }

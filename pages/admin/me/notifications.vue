@@ -8,154 +8,340 @@
       {{ t('Notifications') }}
     </h1>
 
-    <h2 class="text-sm font-bold uppercase m-0 mb-3">
-      {{ t('Fréquence des e-mails') }}
-    </h2>
-    <PaddedContainer class="!p-5 mb-10 max-w-4xl">
-      <RadioButtons
-        v-model="cadence"
-        :label="t('À quel rythme voulez-vous recevoir les e-mails sur les discussions ?')"
-        :options="cadenceOptions"
-        stacked
-      />
-      <p class="m-0 text-xs text-gray-medium">
-        {{ t(`Les demandes qui attendent une action de votre part (adhésion, transfert, moissonneur) sont toujours envoyées immédiatement.`) }}
-      </p>
-    </PaddedContainer>
-
-    <h2 class="text-sm font-bold uppercase m-0 mb-3">
-      {{ t('Ce qui vous est notifié') }}
-    </h2>
-    <p class="text-sm text-gray-plain max-w-4xl mb-4 text-pretty">
-      {{ t(`Par défaut, vous êtes notifié de ce qui concerne vos propres contenus, ceux des organisations que vous administrez ou qui vous ont été confiés, et des discussions auxquelles vous participez. Un sujet sans réglage suit celui de son organisation, puis la ligne « Partout ».`) }}
-    </p>
-
-    <AdminTable :loading="settings === null">
-      <thead>
-        <tr>
-          <AdminTableTh rowspan="2">
-            {{ t('Sujet') }}
-          </AdminTableTh>
-          <AdminTableTh colspan="2">
-            {{ t('Discussions') }}
-          </AdminTableTh>
-          <AdminTableTh>
-            {{ t('Réutilisations et API') }}
-          </AdminTableTh>
-        </tr>
-        <tr>
-          <AdminTableTh
-            v-for="column in columns"
-            :key="`${column.category}-${column.channel}`"
-            class="w-40"
+    <div class="max-w-6xl space-y-8">
+      <PaddedContainer class="!p-0 divide-y divide-gray-default">
+        <div class="px-5 py-3 flex items-center justify-between">
+          <h2 class="m-0 text-sm font-bold">
+            {{ t('Ce qui vous concerne') }}
+          </h2>
+          <BrandedButton
+            color="tertiary"
+            size="xs"
+            @click="disableAll"
           >
-            {{ column.channel === 'app' ? t('Notifications') : t('E-mails') }}
-          </AdminTableTh>
-        </tr>
-      </thead>
-      <tbody v-if="settings !== null">
-        <tr
-          v-for="scope in scopes"
-          :key="scope ? `${scope.class}-${scope.id}` : 'everywhere'"
+            {{ t('Tout désactiver') }}
+          </BrandedButton>
+        </div>
+        <AnimatedLoader
+          v-if="preferences === null"
+          class="m-5"
+        />
+        <div
+          v-for="row in reasonRows"
+          v-else
+          :key="row.reason"
+          :class="ROW_CLASS"
         >
-          <td>
-            <NotificationScopeLabel
-              v-if="scope"
-              :scope
-            />
-            <span
-              v-else
-              class="font-bold"
-            >
-              {{ t('Partout') }}
-            </span>
-          </td>
-          <td
-            v-for="column in columns"
-            :key="`${column.category}-${column.channel}`"
+          <p
+            :id="`reason-${row.reason}`"
+            class="m-0 text-sm font-bold"
           >
-            <SelectGroup
-              class="!mb-0"
-              :label="column.label"
-              hide-label
-              hide-null-option
-              :options="decisionOptions"
-              :model-value="decisionFor(scope, column.category, column.channel)"
-              @update:model-value="(enabled) => save(scope, column.category, column.channel, enabled as boolean | null)"
-            />
-          </td>
-        </tr>
-      </tbody>
-    </AdminTable>
+            {{ row.label }}
+          </p>
+          <div
+            role="radiogroup"
+            :aria-labelledby="`reason-${row.reason}`"
+            :class="CHOICES_CLASS"
+          >
+            <div
+              v-for="option in channelOptions"
+              :key="option.value"
+              class="fr-radio-group fr-radio-group--sm"
+            >
+              <input
+                :id="`reason-${row.reason}-${option.value}`"
+                type="radio"
+                :name="`reason-${row.reason}`"
+                :checked="channelsValue(row.reason) === option.value"
+                @change="saveChannels(row.reason, option.value)"
+              >
+              <label
+                class="fr-label"
+                :for="`reason-${row.reason}-${option.value}`"
+              >
+                {{ option.label }}
+              </label>
+            </div>
+          </div>
+        </div>
+      </PaddedContainer>
+
+      <PaddedContainer class="!p-0 divide-y divide-gray-default">
+        <h2 class="m-0 px-5 py-3 text-sm font-bold">
+          {{ t('E-mails') }}
+        </h2>
+        <div :class="ROW_CLASS">
+          <p
+            id="mail-cadence"
+            class="m-0 text-sm font-bold"
+          >
+            {{ t('Rythme') }}
+          </p>
+          <div
+            role="radiogroup"
+            aria-labelledby="mail-cadence"
+            :class="CHOICES_CLASS"
+          >
+            <div
+              v-for="option in cadenceOptions"
+              :key="option.value"
+              class="fr-radio-group fr-radio-group--sm"
+            >
+              <input
+                :id="`mail-cadence-${option.value}`"
+                type="radio"
+                name="mail-cadence"
+                :checked="me.mail_cadence === option.value"
+                @change="saveMe({ mail_cadence: option.value })"
+              >
+              <label
+                class="fr-label"
+                :for="`mail-cadence-${option.value}`"
+              >
+                {{ option.label }}
+              </label>
+            </div>
+          </div>
+        </div>
+        <div :class="ROW_CLASS">
+          <p
+            id="mail-types"
+            class="m-0 text-sm font-bold"
+          >
+            {{ t('Envoyer par e-mail') }}
+          </p>
+          <div
+            role="group"
+            aria-labelledby="mail-types"
+            :class="CHOICES_CLASS"
+          >
+            <div
+              v-for="type in mailTypes"
+              :key="type.value"
+              class="fr-checkbox-group fr-checkbox-group--sm"
+            >
+              <input
+                :id="`mail-type-${type.value}`"
+                type="checkbox"
+                :checked="!me.mail_muted_types.includes(type.value)"
+                @change="toggleMailType(type.value, ($event.target as HTMLInputElement).checked)"
+              >
+              <label
+                class="fr-label"
+                :for="`mail-type-${type.value}`"
+              >
+                {{ type.label }}
+              </label>
+            </div>
+          </div>
+        </div>
+      </PaddedContainer>
+
+      <PaddedContainer
+        v-if="groups.length"
+        class="!p-0 divide-y divide-gray-default"
+      >
+        <h2 class="m-0 px-5 py-3 text-sm font-bold">
+          {{ t('Contenus suivis') }}
+        </h2>
+        <div
+          v-for="group in groups"
+          :key="group.key"
+          class="px-5 py-3 space-y-2"
+        >
+          <div class="fr-checkbox-group fr-checkbox-group--sm">
+            <input
+              :id="`group-${group.key}`"
+              type="checkbox"
+              :checked="group.rows.every(row => row.followed)"
+              :indeterminate="group.rows.some(row => row.followed) && !group.rows.every(row => row.followed)"
+              @change="followAll(group.rows, ($event.target as HTMLInputElement).checked)"
+            >
+            <label
+              class="fr-label font-bold"
+              :for="`group-${group.key}`"
+            >
+              {{ group.label }}
+            </label>
+          </div>
+          <div
+            v-for="row in group.rows"
+            :key="row.key"
+            class="fr-checkbox-group fr-checkbox-group--sm pl-6"
+          >
+            <input
+              :id="`subject-${row.key}`"
+              type="checkbox"
+              :checked="row.followed"
+              @change="followAll([row], ($event.target as HTMLInputElement).checked)"
+            >
+            <label
+              class="fr-label"
+              :for="`subject-${row.key}`"
+            >
+              <CdataLink
+                v-if="row.page"
+                :to="row.page"
+                class="link"
+              >
+                {{ row.title }}
+              </CdataLink>
+              <span
+                v-else
+                class="text-gray-medium"
+              >
+                {{ t(`Contenu qui ne vous est plus accessible`) }}
+              </span>
+            </label>
+          </div>
+        </div>
+      </PaddedContainer>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { PaddedContainer, SelectGroup, toast } from '@datagouv/components-next'
+import { AnimatedLoader, BrandedButton, PaddedContainer, toast } from '@datagouv/components-next'
+import type { OrganizationReference } from '@datagouv/components-next'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
-import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
-import NotificationScopeLabel from '~/components/Notifications/NotificationScopeLabel.vue'
-import RadioButtons from '~/components/RadioButtons.vue'
-import type { MailCadence, NotificationCategory, NotificationChannel, NotificationScope } from '~/types/notifications'
+import CdataLink from '~/components/CdataLink.vue'
+import type { Me } from '~/utils/auth'
+import type { DiscussionNotification, MailCadence, NotificationChannel, NotificationPreference, NotificationReason, NotificationScope } from '~/types/notifications'
+
+type ChannelsValue = 'both' | 'app' | 'mail' | 'none'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const me = useMe()
-const { settings, load, decisionFor, decide } = useNotificationSettings()
+const { settings, load, decide } = useNotificationSettings()
 
-onMounted(load)
+// Every setting reads as a line: its label on the left, its choices on the right.
+const ROW_CLASS = 'px-5 py-4 grid grid-cols-[14rem_1fr] items-center gap-6'
+const CHOICES_CLASS = 'flex flex-wrap gap-x-6 gap-y-2'
 
-// Reuses and dataservices are only announced in the app: the API refuses a mail decision about them.
-const columns = computed<Array<{ category: NotificationCategory, channel: NotificationChannel, label: string }>>(() => [
-  { category: 'discussions', channel: 'app', label: t('Discussions, dans l\'application') },
-  { category: 'discussions', channel: 'mail', label: t('Discussions, par e-mail') },
-  { category: 'reuses', channel: 'app', label: t('Réutilisations et API, dans l\'application') },
-])
+const preferences = ref<Array<NotificationPreference> | null>(null)
 
-const decisionOptions = computed(() => [
-  { label: t('Par défaut'), value: null },
-  { label: t('Activées'), value: true },
-  { label: t('Désactivées'), value: false },
-])
-
-const SCOPE_ORDER: Array<NotificationScope['class']> = ['Organization', 'Dataset', 'Dataservice', 'Reuse', 'Post', 'Topic', 'Discussion']
-
-// "Everywhere" first, then one row per subject the user took a decision about.
-const scopes = computed<Array<NotificationScope | null>>(() => {
-  const bySubject = new Map<string, NotificationScope>()
-  for (const setting of settings.value ?? []) {
-    if (setting.scope) bySubject.set(`${setting.scope.class}-${setting.scope.id}`, setting.scope)
-  }
-  const sorted = [...bySubject.values()].sort((a, b) => SCOPE_ORDER.indexOf(a.class) - SCOPE_ORDER.indexOf(b.class))
-  return [null, ...sorted]
+onMounted(async () => {
+  load()
+  preferences.value = await $api<Array<NotificationPreference>>('/api/1/notifications/preferences/')
 })
 
-async function save(scope: NotificationScope | null, category: NotificationCategory, channel: NotificationChannel, enabled: boolean | null) {
-  await decide(scope, category, channel, enabled)
+const reasonRows = computed<Array<{ reason: NotificationReason, label: string }>>(() => [
+  { reason: 'owner', label: t('Vos contenus') },
+  { reason: 'organization.admin', label: t('Organisations que vous administrez') },
+  { reason: 'organization.partial_editor', label: t('Contenus qui vous sont confiés') },
+  { reason: 'organization.editor', label: t('Organisations où vous êtes éditeur') },
+  { reason: 'discussion.participant', label: t('Discussions auxquelles vous participez') },
+  { reason: 'explicit_subscriber', label: t('Contenus que vous suivez') },
+])
+
+const channelOptions = computed<Array<{ value: ChannelsValue, label: string }>>(() => [
+  { value: 'both', label: t('Application et e-mail') },
+  { value: 'app', label: t('Application seulement') },
+  { value: 'mail', label: t('E-mail seulement') },
+  { value: 'none', label: t('Jamais') },
+])
+
+const CHANNELS_BY_VALUE: Record<ChannelsValue, Array<NotificationChannel>> = {
+  both: ['app', 'mail'],
+  app: ['app'],
+  mail: ['mail'],
+  none: [],
+}
+
+function channelsValue(reason: NotificationReason): ChannelsValue {
+  const channels = preferences.value?.find(preference => preference.reason === reason)?.channels ?? []
+  if (channels.includes('app')) return channels.includes('mail') ? 'both' : 'app'
+  return channels.includes('mail') ? 'mail' : 'none'
+}
+
+async function saveChannels(reason: NotificationReason, value: ChannelsValue) {
+  preferences.value = await $api<Array<NotificationPreference>>('/api/1/notifications/preferences/', {
+    method: 'PUT',
+    body: { reason, channels: CHANNELS_BY_VALUE[value] },
+  })
   toast.success(t('Préférence enregistrée'))
 }
 
-const cadenceOptions = computed<Array<{ value: MailCadence, label: string, description: string }>>(() => [
-  { value: 'immediate', label: t('Immédiatement'), description: t('Un e-mail à chaque nouveau message') },
-  { value: 'daily', label: t('Une fois par jour'), description: t('Un résumé des discussions de la journée') },
-  { value: 'weekly', label: t('Une fois par semaine'), description: t('Un résumé des discussions de la semaine') },
+const cadenceOptions = computed<Array<{ value: MailCadence, label: string }>>(() => [
+  { value: 'immediate', label: t('À chaque fois') },
+  { value: 'daily', label: t('Un résumé par jour') },
+  { value: 'weekly', label: t('Un résumé par semaine') },
 ])
 
-const cadence = computed({
-  get: () => me.value.mail_cadence,
-  set: async (mailCadence: MailCadence) => {
-    const previous = me.value.mail_cadence
-    me.value.mail_cadence = mailCadence
-    try {
-      await $api('/api/1/me/', { method: 'PUT', body: { mail_cadence: mailCadence } })
-      toast.success(t('Fréquence des e-mails enregistrée'))
+// Reuses and APIs are only announced in the app, discussions are the only mails to choose from.
+const mailTypes = computed<Array<{ value: DiscussionNotification['type'], label: string }>>(() => [
+  { value: 'discussion.new', label: t('Nouvelles discussions') },
+  { value: 'discussion.comment', label: t('Réponses') },
+  { value: 'discussion.closed', label: t('Discussions clôturées') },
+])
+
+async function toggleMailType(type: DiscussionNotification['type'], checked: boolean) {
+  const muted = me.value.mail_muted_types.filter(muted => muted !== type)
+  await saveMe({ mail_muted_types: checked ? muted : [...muted, type] })
+}
+
+async function saveMe(body: Partial<Pick<Me, 'mail_cadence' | 'mail_muted_types'>>) {
+  const updated = await $api<Me>('/api/1/me/', { method: 'PUT', body })
+  me.value.mail_cadence = updated.mail_cadence
+  me.value.mail_muted_types = updated.mail_muted_types
+  toast.success(t('Préférence enregistrée'))
+}
+
+type SubjectRow = {
+  key: string
+  scope: NotificationScope
+  title: string | null
+  page: string | null
+  followed: boolean
+}
+
+// One row per subject, grouped under its organization: unchecking an organization
+// stops following everything one worked on there.
+const groups = computed(() => {
+  const rows = new Map<string, SubjectRow & { organization: OrganizationReference | null }>()
+  for (const setting of settings.value ?? []) {
+    const key = `${setting.scope.class}-${setting.scope.id}`
+    const row = rows.get(key)
+    if (row) {
+      row.followed ||= setting.enabled
+      continue
     }
-    catch {
-      // `$api` already reported the error, the radio only has to show the cadence actually saved
-      me.value.mail_cadence = previous
+    rows.set(key, {
+      key,
+      scope: setting.scope,
+      title: setting.subject?.title ?? null,
+      page: setting.subject?.page ?? null,
+      followed: setting.enabled,
+      organization: setting.subject?.organization ?? null,
+    })
+  }
+
+  const byOrganization = new Map<string, { key: string, label: string, rows: Array<SubjectRow> }>()
+  for (const row of rows.values()) {
+    const key = row.organization?.id ?? 'none'
+    if (!byOrganization.has(key)) {
+      byOrganization.set(key, { key, label: row.organization?.name ?? t('Sans organisation'), rows: [] })
     }
-  },
+    byOrganization.get(key)!.rows.push(row)
+  }
+  return [...byOrganization.values()]
 })
+
+async function followAll(rows: Array<SubjectRow>, followed: boolean) {
+  const decided = (settings.value ?? []).filter(setting => rows.some(row => row.scope.class === setting.scope.class && row.scope.id === setting.scope.id))
+  await Promise.all(decided.map(setting => decide(setting.scope, setting.event, followed)))
+  toast.success(followed ? t('Suivi réactivé') : t('Vous ne suivez plus ces contenus'))
+}
+
+async function disableAll() {
+  for (const row of reasonRows.value) {
+    preferences.value = await $api<Array<NotificationPreference>>('/api/1/notifications/preferences/', {
+      method: 'PUT',
+      body: { reason: row.reason, channels: [] },
+    })
+  }
+  toast.success(t('Toutes les notifications sont désactivées'))
+}
 </script>

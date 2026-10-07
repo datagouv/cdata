@@ -1,13 +1,13 @@
-import type { NotificationCategory, NotificationChannel, NotificationScope, NotificationSetting } from '~/types/notifications'
+import type { NotificationEvent, NotificationScope, NotificationSetting } from '~/types/notifications'
 
 // Shared by every discussion of a page: they all read the same list, fetched once.
 let pendingLoad: Promise<void> | null = null
 
-function isSameScope(a: NotificationScope | null, b: NotificationScope | null) {
-  if (a === null || b === null) return a === b
+function isSameScope(a: NotificationScope, b: NotificationScope) {
   return a.class === b.class && a.id === b.id
 }
 
+// The subjects the user follows or ignores.
 export function useNotificationSettings() {
   const settings = useState<Array<NotificationSetting> | null>('notification-settings', () => null)
   const { $api } = useNuxtApp()
@@ -24,17 +24,17 @@ export function useNotificationSettings() {
     return pendingLoad
   }
 
-  function findSetting(scope: NotificationScope | null, category: NotificationCategory, channel: NotificationChannel) {
-    return settings.value?.find(setting => isSameScope(setting.scope, scope) && setting.category === category && setting.channel === channel)
+  function findSetting(scope: NotificationScope, event: NotificationEvent) {
+    return settings.value?.find(setting => isSameScope(setting.scope, scope) && setting.event === event)
   }
 
-  function decisionFor(scope: NotificationScope | null, category: NotificationCategory, channel: NotificationChannel): boolean | null {
-    return findSetting(scope, category, channel)?.enabled ?? null
+  function decisionFor(scope: NotificationScope, event: NotificationEvent): boolean | null {
+    return findSetting(scope, event)?.enabled ?? null
   }
 
-  // `null` withdraws the decision, so the default applies again.
-  async function decide(scope: NotificationScope | null, category: NotificationCategory, channel: NotificationChannel, enabled: boolean | null) {
-    const existing = findSetting(scope, category, channel)
+  // `null` withdraws the decision, so the user's reasons decide again.
+  async function decide(scope: NotificationScope, event: NotificationEvent, enabled: boolean | null) {
+    const existing = findSetting(scope, event)
 
     if (enabled === null) {
       if (!existing) return
@@ -45,7 +45,7 @@ export function useNotificationSettings() {
 
     const saved = await $api<NotificationSetting>('/api/1/notifications/settings/', {
       method: 'PUT',
-      body: { scope, category, channel, enabled },
+      body: { scope, event, enabled },
     })
     settings.value = [...(settings.value ?? []).filter(setting => setting.id !== saved.id), saved]
   }

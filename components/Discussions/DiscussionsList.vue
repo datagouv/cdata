@@ -76,7 +76,11 @@
             :icon="RiSearchLine"
             :placeholder="$t('Recherche')"
           />
-          <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <FollowDiscussionsButton
+              v-if="me"
+              :scope="{ class: type, id: subject.id } as NotificationScope"
+            />
             <BrandedButton
               color="secondary"
               size="xs"
@@ -162,6 +166,8 @@ import { RiAddLine, RiCloseCircleLine, RiInformationLine, RiSearchLine } from '@
 import { refDebounced } from '@vueuse/core'
 import NewDiscussionForm from './NewDiscussionForm.vue'
 import DiscussionCard from './DiscussionCard.vue'
+import FollowDiscussionsButton from './FollowDiscussionsButton.vue'
+import type { NotificationScope } from '~/types/notifications'
 import type { PaginatedArray, SortDirection } from '~/types/types'
 import type { DiscussionSortedBy, DiscussionSubject, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 import { useRouteQuery } from '@vueuse/router'

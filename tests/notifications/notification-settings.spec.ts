@@ -53,8 +53,7 @@ test('the mail cadence is saved on the account', async ({ page, request }) => {
 test('a global decision is saved and can be withdrawn', async ({ page, request }) => {
   await gotoHydrated(page, '/admin/me/notifications')
 
-  const everywhere = page.getByRole('row', { name: /Partout/ })
-  const discussionsByMail = everywhere.getByRole('combobox', { name: 'Discussions, par e-mail' })
+  const discussionsByMail = page.getByRole('combobox', { name: 'Discussions, par e-mail' })
 
   await discussionsByMail.selectOption({ label: 'Désactivées' })
   await expect(page.getByText('Préférence enregistrée')).toBeVisible()
@@ -67,7 +66,7 @@ test('a global decision is saved and can be withdrawn', async ({ page, request }
   await page.waitForLoadState('networkidle')
   await expect(discussionsByMail).toHaveValue(/false/)
 
-  await discussionsByMail.selectOption({ label: 'Par défaut' })
+  await discussionsByMail.selectOption({ label: 'Selon mon rôle' })
   await expect.poll(() => listSettings(request)).toEqual([])
 })
 
@@ -103,12 +102,31 @@ test('a discussion can be followed from its thread and shows up in the settings'
   await gotoHydrated(page, '/admin/me/notifications')
   const row = page.getByRole('row', { name: new RegExp(`Discussion à suivre ${uniqueId}`) })
   await expect(row.getByRole('link', { name: `Discussion à suivre ${uniqueId}` })).toHaveAttribute('href', new RegExp(`/discussions\\?discussion_id=${discussion.id}$`))
-  await expect(row.getByRole('combobox', { name: 'Discussions, dans l\'application' })).toHaveValue(/true/)
-  await expect(row.getByRole('combobox', { name: 'Discussions, par e-mail' })).toHaveValue(/true/)
+  await expect(row.getByText('Discussions : suivies')).toBeVisible()
 
   await gotoHydrated(page, `/datasets/${dataset.id}/discussions?discussion_id=${discussion.id}`)
   await page.getByRole('button', { name: 'Vous suivez cette discussion' }).click()
   await page.getByRole('menuitem', { name: /Par défaut/ }).click()
   await expect.poll(() => listSettings(request)).toEqual([])
   await expect(page.getByRole('button', { name: 'Notifications de cette discussion' })).toBeVisible()
+})
+
+test('a followed subject goes back to the general setting from the settings page', async ({ page, request }) => {
+  const uniqueId = Date.now()
+  const dataset = await createDataset(request, `Test retour au réglage général ${uniqueId}`, 'Dataset pour tester le retour au réglage général')
+  createdDatasets.push(dataset.id)
+  for (const [channel, enabled] of [['app', true], ['mail', false]] as const) {
+    await request.put(`${API_BASE}/api/1/notifications/settings/`, {
+      data: { scope: { class: 'Dataset', id: dataset.id }, category: 'discussions', channel, enabled },
+    })
+  }
+
+  await gotoHydrated(page, '/admin/me/notifications')
+  const row = page.getByRole('row', { name: new RegExp(`Test retour au réglage général ${uniqueId}`) })
+  await expect(row.getByText('Discussions : dans l\'application seulement')).toBeVisible()
+
+  await row.getByRole('button', { name: 'Revenir au réglage général' }).click()
+  await expect(page.getByText('Ce contenu suit de nouveau le réglage général')).toBeVisible()
+  await expect.poll(() => listSettings(request)).toEqual([])
+  await expect(row).not.toBeVisible()
 })
