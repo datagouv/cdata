@@ -2,25 +2,25 @@
   <div class="divide-y">
     <DatasetInformationSection :dataset="dataset">
       <!-- A dataset that cannot get a DOI offers no request at all rather than sending the support a demand refused in advance. -->
-      <div v-if="dataset.doi || !doiBlockedReason(dataset)">
+      <div v-if="doi || !doiBlockedReason(dataset)">
         <DescriptionListTerm>{{ $t('DOI') }}</DescriptionListTerm>
         <DescriptionListDetails
-          v-if="dataset.doi"
+          v-if="doi"
           class="flex items-center gap-2"
         >
           <a
-            :href="`https://doi.org/${dataset.doi}`"
+            :href="`https://doi.org/${doi}`"
             target="_blank"
             rel="noopener noreferrer"
             class="link"
           >
-            {{ dataset.doi }}
+            {{ doi }}
           </a>
           <CopyButton
             class="!-mt-0.5"
             :label="$t('Copier le DOI')"
             :copied-label="$t('DOI copié !')"
-            :text="dataset.doi"
+            :text="doi"
             :hide-label="true"
           />
         </DescriptionListDetails>
@@ -80,8 +80,9 @@ import { BrandedButton, CopyButton, DatasetInformationSection, DatasetTemporalit
 import { RiServerLine } from '@remixicon/vue'
 import DoiRequestModal from '~/components/Datasets/DoiRequestModal.vue'
 
-defineProps<{ dataset: DatasetV2WithFullObject }>()
+const props = defineProps<{ dataset: DatasetV2WithFullObject }>()
 
+const doi = computed(() => getDatasetDoi(props.dataset))
 const doiBlockedReason = useDoiBlockedReason()
 
 useSeoMeta({ robots: 'noindex' })

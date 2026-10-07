@@ -101,33 +101,46 @@
             :label="$t('Transférer  le jeu de données')"
           />
           <BannerAction
-            v-if="dataset.doi"
+            v-if="getDatasetDoi(dataset)"
             type="primary"
           >
             <template #title>
               {{ $t('DOI du jeu de données :') }}
               <a
-                :href="`https://doi.org/${dataset.doi}`"
+                :href="`https://doi.org/${getDatasetDoi(dataset)}`"
                 target="_blank"
                 rel="noopener noreferrer"
                 class="link"
               >
-                {{ dataset.doi }}
+                {{ getDatasetDoi(dataset) }}
               </a>
+              <AdminBadge
+                v-if="!dataset.doi"
+                size="xs"
+                type="secondary"
+                class="ml-1"
+              >
+                {{ $t('Moissonné') }}
+              </AdminBadge>
             </template>
-            {{ $t("Un jeu de données porteur d'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.") }}
+            <template v-if="dataset.doi">
+              {{ $t("Un jeu de données porteur d'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.") }}
+            </template>
+            <template v-else>
+              {{ $t("Ce DOI est déclaré par la source du moissonnage, qui en reste gestionnaire.") }}
+            </template>
 
             <template #button>
               <BrandedButton
                 :icon="doiCopied ? RiCheckLine : RiFileCopyLine"
-                @click="copyDoi(dataset.doi)"
+                @click="copyDoi(getDatasetDoi(dataset)!)"
               >
                 {{ doiCopied ? $t('DOI copié !') : $t('Copier le DOI') }}
               </BrandedButton>
             </template>
           </BannerAction>
           <BannerAction
-            v-if="!dataset.doi && isMeAdmin()"
+            v-if="!getDatasetDoi(dataset) && isMeAdmin()"
             type="primary"
             :title="$t('Créer un DOI')"
           >

@@ -40,6 +40,13 @@ export function getDatasetAdminUrl(dataset: Dataset | DatasetV2 | DatasetV2WithF
 }
 
 /**
+ * The DOI minted by udata, or else the one declared by the harvest source.
+ */
+export function getDatasetDoi(dataset: DatasetV2WithFullObject): string | null {
+  return dataset.doi ?? dataset.harvest?.doi ?? null
+}
+
+/**
  * Why this dataset cannot receive a DOI, or `null` when it can.
  *
  * Mirrors the conditions `create_doi` enforces in udata.
