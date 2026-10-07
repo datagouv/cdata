@@ -8,7 +8,6 @@
       v-model="activeTab"
       underline
       grow
-      class="mx-4"
       :options="[
         { value: 'color', label: t('Couleur'), icon: RiPaletteLine },
         { value: 'upload', label: t('Importer'), icon: RiImageLine },
