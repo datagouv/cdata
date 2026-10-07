@@ -119,6 +119,7 @@ export type NotificationReason = 'owner'
   | 'organization.partial_editor'
   | 'discussion.participant'
   | 'explicit_subscriber'
+  | 'contributor'
 
 // What identifies a rule: every dimension is optional, `null` meaning "whatever it is"
 // (everywhere, every notification, whatever the reason, whether concerned at all).
@@ -132,6 +133,8 @@ export type NotificationRuleKey = {
 export type NotificationSetting = NotificationRuleKey & {
   id: string
   enabled: boolean
+  // What made the user follow a subject: by hand, or by editing it
+  origin: 'followed' | 'edited'
   // `null` without a scope, or once the subject is out of the user's reach
   subject: {
     title: string

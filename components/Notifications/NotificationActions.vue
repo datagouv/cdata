@@ -48,6 +48,7 @@ const REASON_LABELS = computed<Record<NotificationReason, string>>(() => ({
   'organization.partial_editor': t('parce que ce contenu vous est confié'),
   'discussion.participant': t('parce que vous participez à cette discussion'),
   'explicit_subscriber': t('parce que vous suivez ce contenu'),
+  'contributor': t('parce que vous avez modifié ce contenu'),
 }))
 
 const reasonLabels = computed(() => props.notification.reasons.map(reason => REASON_LABELS.value[reason]).filter(Boolean))

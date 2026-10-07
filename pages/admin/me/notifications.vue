@@ -274,6 +274,7 @@ const reasonRows = computed<Array<{ reason: NotificationReason, label: string }>
   { reason: 'organization.partial_editor', label: t('Contenus qui vous sont confiés') },
   { reason: 'organization.editor', label: t('Organisations où vous êtes éditeur') },
   { reason: 'discussion.participant', label: t('Discussions auxquelles vous participez') },
+  { reason: 'contributor', label: t('Contenus que vous avez modifiés') },
   { reason: 'explicit_subscriber', label: t('Contenus que vous suivez') },
 ])
 
@@ -302,17 +303,22 @@ function reasonValue(reason: NotificationReason): ChannelsValue {
   return app ? 'app' : 'mail'
 }
 
+// "Never" turns both channels off rather than saying "not concerned": a rule on a
+// subject beats a rule on a reason, so a follow would bring back what "not concerned"
+// left out, whereas no rule without a channel can bring back a channel turned off.
 async function saveReason(reason: NotificationReason, value: ChannelsValue) {
-  const wanted: Record<'concerned' | NotificationChannel, boolean> = {
-    concerned: value !== 'none',
+  const concernedByDefault = defaultFor(reason, null)
+  const wanted: Record<NotificationChannel, boolean> = {
     app: value === 'both' || value === 'app',
     mail: value === 'both' || value === 'mail',
   }
+  // Silent by default: "never" is the default itself, the others first make one concerned
+  const concerned = value === 'none' ? null : concernedByDefault ? null : true
   await Promise.all([
-    setRule({ reason }, wanted.concerned === defaultFor(reason, null) ? null : wanted.concerned),
+    setRule({ reason }, concerned),
     ...(['app', 'mail'] as const).map(channel => setRule(
       { reason, channel },
-      !wanted.concerned || wanted[channel] === defaultFor(reason, channel) ? null : wanted[channel],
+      (value === 'none' && !concernedByDefault) || wanted[channel] === defaultFor(reason, channel) ? null : wanted[channel],
     )),
   ])
   toast.success(t('Préférence enregistrée'))

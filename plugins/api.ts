@@ -36,10 +36,6 @@ export default defineNuxtPlugin({
             options.query['lang'] = locale
           }
         },
-        onResponse({ response }) {
-          const followed = response.headers.get('X-Notification-Followed')
-          if (followed) announceFollow(followed)
-        },
         async onResponseError({ response, options }) {
           if (response.status === 404) {
             if (apiOptions.redirectOn404) {
@@ -91,38 +87,10 @@ export default defineNuxtPlugin({
       })
     }
 
-    const api = makeApi({ sendJson: true, redirectOn404: false })
-
-    // Editing something of one's organization makes one follow it (see udata's
-    // `follow_worked_on`): say so wherever the edit came from, and offer to undo it.
-    function announceFollow(followed: string) {
-      const [cls, id] = followed.split(':')
-      // The settings already loaded no longer say what the user follows
-      const forgetSettings = () => nuxtApp.runWithContext(() => {
-        useState('notification-settings').value = null
-      })
-      forgetSettings()
-      toast.success(t('Vous suivez maintenant ce contenu : vous serez prévenu de ses discussions.'), {
-        action: {
-          label: t('Ne rien recevoir sur ce contenu'),
-          onClick: async () => {
-            // Ignoring, not just unfollowing: the user asked to hear nothing about it,
-            // including what their role in the organization would bring.
-            await api('/api/1/notifications/settings/', {
-              method: 'PUT',
-              body: { scope: { class: cls, id }, event: null, reason: null, channel: null, enabled: false },
-            })
-            forgetSettings()
-            toast.success(t('Vous ne recevrez plus rien sur ce contenu'))
-          },
-        },
-      })
-    }
-
     // Expose to useNuxtApp().$api
     return {
       provide: {
-        api,
+        api: makeApi({ sendJson: true, redirectOn404: false }),
         fileApi: makeApi({ sendJson: false, redirectOn404: false }),
         apiWith404: makeApi({ sendJson: true, redirectOn404: true }),
       },
