@@ -68,18 +68,18 @@ test.describe('Organization presentation tab', () => {
       await expect(page.getByRole('heading', { name: 'Bienvenue' })).toBeVisible()
       await expect(page.getByRole('heading', { name: 'Nos données' })).toBeVisible()
       await expect(page.getByText('Notre présentation.')).toBeVisible()
-      // Configured but still a draft: the header CTA offers to edit or publish it.
-      await expect(page.getByRole('button', { name: 'Modifier ou publier la présentation' })).toBeVisible()
+      // Configured but still a draft: the mode switch offers editing.
+      await expect(page.getByTestId('presentation-mode-switch')).toBeVisible()
 
-      // Publishing happens in the composer: open it, flip the "public" toggle, save.
-      await page.getByRole('button', { name: 'Modifier ou publier la présentation' }).click()
+      // Publishing happens in the composer: switch to edit mode, flip the "public" toggle, save.
+      await page.getByTestId('presentation-mode-switch').getByRole('button', { name: 'Modifier' }).click()
       const publicToggle = page.getByRole('switch', { name: 'Visible par le public' })
       await expect(publicToggle).toHaveAttribute('aria-checked', 'false')
       await publicToggle.click()
       await page.getByRole('button', { name: 'Sauvegarder' }).click()
       await expect(page.getByText('Présentation sauvegardée')).toBeVisible()
-      // Once published, the header CTA updates in place and drops "ou publier".
-      await expect(page.getByRole('button', { name: 'Modifier la présentation', exact: true })).toBeVisible()
+      // The save keeps the composer open: the "Modifier" side of the switch stays active.
+      await expect(page.getByTestId('presentation-mode-switch').getByRole('button', { name: 'Modifier' })).toHaveAttribute('aria-pressed', 'true')
 
       const published = await page.request.get(`${API_BASE}/api/1/organizations/${org.id}/`, {
         headers: { 'X-Fields': '{presentation_blocs_published_at}' },
@@ -87,8 +87,7 @@ test.describe('Organization presentation tab', () => {
       expect((await published.json()).presentation_blocs_published_at).not.toBeNull()
 
       // Regression: re-saving must not unpublish. The toggle re-opens already on, so
-      // saving again keeps the publication date.
-      await page.getByRole('button', { name: 'Modifier la présentation', exact: true }).click()
+      // saving again keeps the publication date (the save keeps us in edit mode).
       await expect(page.getByRole('switch', { name: 'Visible par le public' })).toHaveAttribute('aria-checked', 'true')
       await page.getByRole('button', { name: 'Sauvegarder' }).click()
       await expect(page.getByText('Présentation sauvegardée')).toBeVisible()
@@ -104,14 +103,14 @@ test.describe('Organization presentation tab', () => {
       await expect(page).toHaveURL(new RegExp(`/organizations/${org.slug}/presentation`))
 
       // Unpublishing: open the composer, flip the toggle off, save.
-      await page.getByRole('button', { name: 'Modifier la présentation', exact: true }).click()
+      await page.getByTestId('presentation-mode-switch').getByRole('button', { name: 'Modifier' }).click()
       const unpublishToggle = page.getByRole('switch', { name: 'Visible par le public' })
       await expect(unpublishToggle).toHaveAttribute('aria-checked', 'true')
       await unpublishToggle.click()
       await page.getByRole('button', { name: 'Sauvegarder' }).click()
       await expect(page.getByText('Présentation sauvegardée')).toBeVisible()
-      // Back to a draft: the header CTA updates in place and offers "ou publier" again.
-      await expect(page.getByRole('button', { name: 'Modifier ou publier la présentation' })).toBeVisible()
+      // Still in the composer after the save.
+      await expect(page.getByTestId('presentation-mode-switch').getByRole('button', { name: 'Modifier' })).toHaveAttribute('aria-pressed', 'true')
 
       const draft = await page.request.get(`${API_BASE}/api/1/organizations/${org.id}/`, {
         headers: { 'X-Fields': '{presentation_blocs_published_at}' },

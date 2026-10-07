@@ -32,15 +32,6 @@
               </BreadcrumbItem>
             </Breadcrumb>
             <div class="flex gap-3 items-center">
-              <BrandedButton
-                v-if="isPresentationTab && canEditPresentation && !isEditingPresentation"
-                color="warning"
-                size="xs"
-                :icon="RiEdit2Line"
-                @click="editPresentation"
-              >
-                {{ hasPresentation ? $t('Modifier la présentation') : $t('Modifier ou publier la présentation') }}
-              </BrandedButton>
               <EditButton
                 v-if="organization.permissions.edit"
                 :id="organization.id"
@@ -167,8 +158,8 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, isOrganizationCertified, LoadingBlock, MarkdownViewer, OrganizationNameWithCertificate, OwnerType, ReadMore, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
-import { RiDeleteBinLine, RiEdit2Line, RiSearchLine } from '@remixicon/vue'
+import { isOrganizationCertified, LoadingBlock, MarkdownViewer, OrganizationNameWithCertificate, OwnerType, ReadMore, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
+import { RiDeleteBinLine, RiSearchLine } from '@remixicon/vue'
 import { onClickOutside, useTimeoutFn } from '@vueuse/core'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -187,7 +178,6 @@ definePageMeta({
 
 const config = useRuntimeConfig()
 const route = useRoute()
-const router = useRouter()
 const me = useMaybeMe()
 const { t } = useTranslation()
 
@@ -204,11 +194,6 @@ const canEditPresentation = computed(() => isUserOrgAdmin(me.value, organization
 // can create it.
 const showPresentationTab = computed(() => hasPresentation.value || canEditPresentation.value)
 const isPresentationTab = computed(() => route.path.endsWith('/presentation'))
-const isEditingPresentation = computed(() => isPresentationTab.value && route.query.edit === 'true')
-
-function editPresentation() {
-  router.push({ query: { ...route.query, edit: 'true' } })
-}
 
 // The presentation page saves the org on its own fetch and hands back the saved
 // version; swap it in so the header CTA, tabs… update without a reload.
