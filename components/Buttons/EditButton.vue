@@ -1,6 +1,6 @@
 <template>
   <BrandedButton
-    color="warning"
+    :color
     :href="link"
     :icon="RiEdit2Line"
     size="xs"
@@ -10,13 +10,19 @@
 </template>
 
 <script setup lang="ts">
+import type { ComponentProps } from 'vue-component-type-helpers'
 import { BrandedButton, throwOnNever } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 
-const props = defineProps<{
+type ButtonColor = ComponentProps<typeof BrandedButton>['color']
+
+const props = withDefaults(defineProps<{
   type: 'organizations' | 'users' | 'posts' | 'reuses' | 'dataservices' | 'datasets' | 'topics'
   id: string
-}>()
+  color?: ButtonColor
+}>(), {
+  color: 'warning',
+})
 
 const { t } = useTranslation()
 

@@ -106,6 +106,8 @@
               v-if="organization.permissions.edit"
               :id="organization.id"
               type="organizations"
+              color="primary"
+              class="-mt-2"
             />
           </div>
           <OwnerType
