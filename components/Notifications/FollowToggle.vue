@@ -33,45 +33,22 @@ const props = withDefaults(defineProps<{
 })
 
 const { t } = useTranslation()
-const { $api } = useNuxtApp()
-const { load, ruleValue, setRule } = useNotificationSettings()
-
-const rule = computed(() => ({ scope: props.scope, event: props.event }))
+const { resolveFollow, follow } = useNotificationSettings()
 
 const resolved = ref<NotificationResolved | null>(null)
 const followed = computed(() => (resolved.value?.channels.length ?? 0) > 0)
 const label = computed(() => followed.value ? props.unfollowLabel : props.followLabel)
 
-async function refresh() {
-  resolved.value = await $api<NotificationResolved>('/api/1/notifications/resolved/', {
-    query: { scope: `${props.scope.class}:${props.scope.id}`, event: props.event },
-  })
-}
-
-onMounted(() => Promise.all([load(), refresh()]))
+onMounted(async () => {
+  resolved.value = await resolveFollow(props.scope, props.event)
+})
 
 const loading = ref(false)
 
 async function toggle() {
   loading.value = true
   try {
-    if (!followed.value) {
-      await setRule(rule.value, true)
-    }
-    else {
-      // Withdraw one's own follow first: if nothing else brings these notifications,
-      // that is enough, and the defaults of the user's role stay untouched.
-      if (ruleValue(rule.value)) {
-        await setRule(rule.value, null)
-        await refresh()
-      }
-      // Still reached through a role or a broader follow: saying no here is what the
-      // user asks for.
-      if (followed.value) {
-        await setRule(rule.value, false)
-      }
-    }
-    await refresh()
+    resolved.value = await follow(props.scope, props.event, !followed.value)
     toast.success(followed.value ? t('Vous serez prévenu') : t('Vous ne serez plus prévenu'))
   }
   finally {

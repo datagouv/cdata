@@ -146,8 +146,11 @@ export type NotificationSetting = NotificationRuleKey & {
 }
 
 // Whether, why and where the user hears about an event on a subject, rules and
-// defaults applied.
+// defaults applied. The keys asked about are echoed, one answer per combination.
 export type NotificationResolved = {
+  scope: NotificationScope | null
+  event: NotificationEvent | null
+  reason: NotificationReason | null
   channels: Array<NotificationChannel>
   reasons: Array<NotificationReason>
 }

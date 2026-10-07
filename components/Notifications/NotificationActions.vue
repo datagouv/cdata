@@ -30,16 +30,16 @@
 
 <script setup lang="ts">
 import { BrandedButton, toast } from '@datagouv/components-next'
-import type { NotificationReason, NotificationRuleKey, UserNotification } from '~/types/notifications'
+import type { NotificationReason, NotificationScope, UserNotification } from '~/types/notifications'
 
-type Action = { label: string, rule: Partial<NotificationRuleKey> }
+type Action = { label: string, run: () => Promise<unknown> }
 
 const props = defineProps<{
   notification: UserNotification
 }>()
 
 const { t } = useTranslation()
-const { setRule } = useNotificationSettings()
+const { setRule, follow, followSubject } = useNotificationSettings()
 
 const REASON_LABELS = computed<Record<NotificationReason, string>>(() => ({
   'owner': t('en tant que propriétaire'),
@@ -55,6 +55,8 @@ const REASON_LABELS = computed<Record<NotificationReason, string>>(() => ({
 
 const reasonLabels = computed(() => props.notification.reasons.map(reason => REASON_LABELS.value[reason]).filter(Boolean))
 
+const ignoreSubject = (label: string, scope: NotificationScope): Action => ({ label, run: () => followSubject(scope, false) })
+
 // The subject-level ways out, for the notifications whose subject is known.
 function subjectActions(notification: UserNotification): Array<Action> {
   switch (notification.type) {
@@ -62,13 +64,13 @@ function subjectActions(notification: UserNotification): Array<Action> {
     case 'discussion.comment':
     case 'discussion.closed':
       return [
-        { label: t('Ne plus suivre cette discussion'), rule: { scope: { class: 'Discussion', id: notification.details.discussion.id }, event: 'discussion' } },
-        { label: t('Ne rien recevoir sur ce contenu'), rule: { scope: notification.details.discussion.subject } },
+        { label: t('Ne plus suivre cette discussion'), run: () => follow({ class: 'Discussion', id: notification.details.discussion.id }, 'discussion', false) },
+        ignoreSubject(t('Ne rien recevoir sur ce contenu'), notification.details.discussion.subject),
       ]
     case 'reuse.created':
     case 'dataservice.created':
       return [
-        { label: t('Ne rien recevoir sur ce jeu de données'), rule: { scope: { class: 'Dataset', id: notification.details.dataset.id } } },
+        ignoreSubject(t('Ne rien recevoir sur ce jeu de données'), { class: 'Dataset', id: notification.details.dataset.id }),
       ]
     case 'organization.badge.certified':
     case 'organization.badge.public-service':
@@ -78,18 +80,18 @@ function subjectActions(notification: UserNotification): Array<Action> {
     case 'organization.membership.accepted':
     case 'organization.membership.refused':
       return [
-        { label: t('Ne rien recevoir sur cette organisation'), rule: { scope: { class: 'Organization', id: notification.details.organization.id } } },
+        ignoreSubject(t('Ne rien recevoir sur cette organisation'), { class: 'Organization', id: notification.details.organization.id }),
       ]
     default:
       return []
   }
 }
 
-// Every action is a rule saying "no": on this subject when it is known, and on this
-// kind of notification anywhere.
+// Every action says "no": on this subject when it is known, and on this kind of
+// notification anywhere.
 const actions = computed<Array<Action>>(() => [
   ...subjectActions(props.notification),
-  { label: t('Ne plus recevoir ce type de notification'), rule: { event: props.notification.type } },
+  { label: t('Ne plus recevoir ce type de notification'), run: () => setRule({ event: props.notification.type }, false) },
 ])
 
 const pending = ref<string | null>(null)
@@ -97,7 +99,7 @@ const pending = ref<string | null>(null)
 async function apply(action: Action) {
   pending.value = action.label
   try {
-    await setRule(action.rule, false)
+    await action.run()
     toast.success(t('C\'est noté, vous ne recevrez plus ces notifications'))
   }
   finally {

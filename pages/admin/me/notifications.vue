@@ -236,14 +236,14 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
 import type { Me } from '~/utils/auth'
-import type { MailCadence, NotificationChannel, NotificationEvent, NotificationReason, NotificationResolved, NotificationScope, NotificationSetting } from '~/types/notifications'
+import type { MailCadence, NotificationChannel, NotificationEvent, NotificationReason, NotificationScope, NotificationSetting } from '~/types/notifications'
 
 type ChannelsValue = 'both' | 'app' | 'mail' | 'none'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const me = useMe()
-const { settings, load, ruleValue, setRule } = useNotificationSettings()
+const { settings, load, setRule, resolve, followSubject, setReasonChannels, allOff, setAllOff: writeAllOff } = useNotificationSettings()
 
 // Every setting reads as a line: its label on the left, its choices on the right.
 const ROW_CLASS = 'px-5 py-4 grid grid-cols-[14rem_1fr] items-center gap-6'
@@ -253,15 +253,8 @@ onMounted(async () => {
   await Promise.all([load(), refreshReasons()])
 })
 
-// "Turn everything off" is a rule on each channel, everywhere: a channel rule is the
-// only kind a follow cannot bring back (see udata's `resolve`).
-const allOff = computed(() => ruleValue({ channel: 'app' }) === false && ruleValue({ channel: 'mail' }) === false)
-
 async function setAllOff(off: boolean) {
-  await Promise.all([
-    setRule({ channel: 'app' }, off ? false : null),
-    setRule({ channel: 'mail' }, off ? false : null),
-  ])
+  await writeAllOff(off)
   await refreshReasons()
   toast.success(off ? t('Toutes les notifications sont désactivées') : t('Notifications réactivées'))
 }
@@ -290,10 +283,8 @@ const channelOptions = computed<Array<{ value: ChannelsValue, label: string }>>(
 const reasonChannels = ref<Partial<Record<NotificationReason, Array<NotificationChannel>>> | null>(null)
 
 async function refreshReasons() {
-  const resolved = await Promise.all(reasonRows.value.map(row =>
-    $api<NotificationResolved>('/api/1/notifications/resolved/', { query: { reason: row.reason } }),
-  ))
-  reasonChannels.value = Object.fromEntries(reasonRows.value.map((row, index) => [row.reason, resolved[index].channels]))
+  const resolved = await resolve({ reasons: reasonRows.value.map(row => row.reason) })
+  reasonChannels.value = Object.fromEntries(resolved.map(answer => [answer.reason, answer.channels]))
 }
 
 function reasonValue(reason: NotificationReason): ChannelsValue {
@@ -302,23 +293,15 @@ function reasonValue(reason: NotificationReason): ChannelsValue {
   return channels.includes('mail') ? 'mail' : 'none'
 }
 
-// A reason row writes what was chosen, whatever the default: a choice made here does
-// not follow a later change of the defaults.
-//
-// Only a channel turned off is stored, though. A channel turned on is what every reason
-// gets anyway, and storing it would beat "turn everything off", being more specific.
-// "Never" turns both channels off rather than saying "not concerned": a follow, being
-// on a subject, would beat "not concerned", whereas nothing brings back a channel
-// turned off.
+const CHANNELS_OF: Record<ChannelsValue, Array<NotificationChannel>> = {
+  both: ['app', 'mail'],
+  app: ['app'],
+  mail: ['mail'],
+  none: [],
+}
+
 async function saveReason(reason: NotificationReason, value: ChannelsValue) {
-  const wanted: Record<NotificationChannel, boolean> = {
-    app: value === 'both' || value === 'app',
-    mail: value === 'both' || value === 'mail',
-  }
-  await Promise.all([
-    setRule({ reason }, value === 'none' ? null : true),
-    ...(['app', 'mail'] as const).map(channel => setRule({ reason, channel }, wanted[channel] ? null : false)),
-  ])
+  await setReasonChannels(reason, CHANNELS_OF[value])
   await refreshReasons()
   toast.success(t('Préférence enregistrée'))
 }
@@ -382,11 +365,7 @@ const groups = computed(() => {
 // Unchecking means hearing nothing more about the subject, whatever the role in its
 // organization; checking follows all of it again.
 async function followAll(rows: Array<SubjectRow>, followed: boolean) {
-  for (const row of rows) {
-    const narrower = (settings.value ?? []).filter(setting => isSubjectRule(setting) && setting.event !== null && setting.scope!.class === row.scope.class && setting.scope!.id === row.scope.id)
-    await Promise.all(narrower.map(setting => setRule(setting, null)))
-    await setRule({ scope: row.scope }, followed)
-  }
+  await Promise.all(rows.map(row => followSubject(row.scope, followed)))
   toast.success(followed ? t('Suivi réactivé') : t('Vous ne recevrez plus rien sur ces contenus'))
 }
 
