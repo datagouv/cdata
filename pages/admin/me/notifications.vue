@@ -246,7 +246,7 @@ const me = useMe()
 const { settings, load, setRule, resolve, followSubject, setReasonChannels, allOff, setAllOff: writeAllOff } = useNotificationSettings()
 
 // Every setting reads as a line: its label on the left, its choices on the right.
-const ROW_CLASS = 'px-5 py-4 grid grid-cols-[14rem_1fr] items-center gap-6'
+const ROW_CLASS = 'px-5 py-4 grid grid-cols-[18rem_1fr] items-center gap-6'
 const CHOICES_CLASS = 'flex flex-wrap gap-x-6 gap-y-2'
 
 onMounted(async () => {
