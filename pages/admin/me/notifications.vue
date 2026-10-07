@@ -72,8 +72,10 @@
                 :checked="channelsOf(row.reason).includes(channel.value)"
                 @change="saveChannel(row.reason, channel.value, ($event.target as HTMLInputElement).checked)"
               >
+              <!-- The DSFR draws the box on the label, sized for one line of text: without
+                   visible text, the label keeps that line height so the box stays centered. -->
               <label
-                class="fr-label"
+                class="fr-label min-h-6"
                 :for="`reason-${row.reason}-${channel.value}`"
               >
                 <span class="sr-only">{{ row.label }} : {{ channel.label }}</span>
@@ -122,126 +124,75 @@
         </div>
       </PaddedContainer>
 
-      <PaddedContainer
-        v-if="groups.length"
-        class="!p-0 divide-y divide-gray-default"
+      <template
+        v-for="section in ruleSections"
+        :key="section.title"
       >
-        <div class="px-5 py-3">
-          <h2 class="m-0 text-sm font-bold">
-            {{ t('Contenus suivis') }}
+        <PaddedContainer
+          v-if="section.rows.length"
+          class="!p-0 divide-y divide-gray-default"
+        >
+          <h2 class="m-0 px-5 py-3 text-sm font-bold">
+            {{ section.title }}
           </h2>
-          <p class="m-0 text-xs text-gray-medium">
-            {{ t('Décocher un contenu : vous ne recevrez plus rien à son sujet.') }}
-          </p>
-        </div>
-        <div
-          v-for="group in groups"
-          :key="group.key"
-          class="px-5 py-3 space-y-2"
-        >
-          <div class="fr-checkbox-group fr-checkbox-group--sm">
-            <input
-              :id="`group-${group.key}`"
-              type="checkbox"
-              :checked="group.rows.every(row => row.followed)"
-              :indeterminate="group.rows.some(row => row.followed) && !group.rows.every(row => row.followed)"
-              @change="followAll(group.rows, ($event.target as HTMLInputElement).checked)"
-            >
-            <label
-              class="fr-label font-bold"
-              :for="`group-${group.key}`"
-            >
-              {{ group.label }}
-            </label>
-          </div>
           <div
-            v-for="row in group.rows"
-            :key="row.key"
-            class="fr-checkbox-group fr-checkbox-group--sm pl-6"
+            v-for="row in section.rows"
+            :key="row.rule.id"
+            class="px-5 py-3 flex items-center gap-3"
           >
-            <input
-              :id="`subject-${row.key}`"
-              type="checkbox"
-              :checked="row.followed"
-              @change="followAll([row], ($event.target as HTMLInputElement).checked)"
+            <component
+              :is="row.icon"
+              class="size-4 flex-none text-gray-medium"
+              aria-hidden="true"
+            />
+            <div class="flex-1 min-w-0">
+              <p class="m-0 text-sm font-bold truncate">
+                <CdataLink
+                  v-if="row.page"
+                  :to="row.page"
+                  class="link"
+                >
+                  {{ row.title }}
+                </CdataLink>
+                <template v-else>
+                  {{ row.title }}
+                </template>
+              </p>
+              <p
+                v-if="row.detail"
+                class="m-0 text-xs text-gray-medium"
+              >
+                {{ row.detail }}
+              </p>
+            </div>
+            <BrandedButton
+              color="tertiary"
+              size="xs"
+              @click="withdraw(row)"
             >
-            <label
-              class="fr-label"
-              :for="`subject-${row.key}`"
-            >
-              <CdataLink
-                v-if="row.page"
-                :to="row.page"
-                class="link"
-              >
-                {{ row.title }}
-              </CdataLink>
-              <span
-                v-else
-                class="text-gray-medium"
-              >
-                {{ t('Contenu qui ne vous est plus accessible') }}
-              </span>
-              <span
-                v-if="row.events.length"
-                class="text-gray-medium"
-              >
-                ({{ row.events.map(eventLabel).join(', ') }})
-              </span>
-            </label>
+              {{ row.action }}
+            </BrandedButton>
           </div>
-        </div>
-      </PaddedContainer>
-
-      <PaddedContainer
-        v-if="otherRules.length"
-        class="!p-0 divide-y divide-gray-default"
-      >
-        <h2 class="m-0 px-5 py-3 text-sm font-bold">
-          {{ t('Autres réglages') }}
-        </h2>
-        <div
-          v-for="rule in otherRules"
-          :key="rule.id"
-          class="px-5 py-2 flex items-center gap-4 text-sm"
-        >
-          <span class="flex-1">{{ describe(rule) }}</span>
-          <BrandedButton
-            color="tertiary"
-            size="xs"
-            @click="setRule(rule, !rule.enabled)"
-          >
-            {{ rule.enabled ? t('Oui') : t('Non') }}
-          </BrandedButton>
-          <BrandedButton
-            color="tertiary"
-            size="xs"
-            :icon="RiDeleteBinLine"
-            icon-only
-            :title="t('Supprimer ce réglage')"
-            keep-margins-even-without-borders
-            @click="setRule(rule, null)"
-          />
-        </div>
-      </PaddedContainer>
+        </PaddedContainer>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { AnimatedLoader, BannerAction, BrandedButton, PaddedContainer, toast } from '@datagouv/components-next'
-import type { OrganizationReference } from '@datagouv/components-next'
-import { RiDeleteBinLine } from '@remixicon/vue'
+import { RiArticleLine, RiBookmarkLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiLineChartLine, RiNotification3Line, RiServerLine, RiTerminalLine } from '@remixicon/vue'
+import type { Component } from 'vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
 import type { Me } from '~/utils/auth'
-import type { MailCadence, NotificationChannel, NotificationEvent, NotificationReason, NotificationScope, NotificationSetting } from '~/types/notifications'
+import type { MailCadence, NotificationChannel, NotificationReason, NotificationScope, NotificationSetting } from '~/types/notifications'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const me = useMe()
-const { settings, load, setRule, resolve, followSubject, setReasonChannels, allOff, setAllOff: writeAllOff } = useNotificationSettings()
+const { settings, load, setRule, resolve, setReasonChannels, allOff, setAllOff: writeAllOff } = useNotificationSettings()
 
 // Every setting reads as a line: its label on the left, its choices on the right.
 const ROW_CLASS = 'px-5 py-4 grid grid-cols-[18rem_1fr] items-center gap-6'
@@ -308,93 +259,106 @@ async function saveCadence(mailCadence: MailCadence) {
   toast.success(t('Préférence enregistrée'))
 }
 
-type SubjectRow = {
-  key: string
-  scope: NotificationScope
-  title: string | null
+// The rules set elsewhere than in the reason table and "turn everything off", each read
+// back as a sentence with the one action that undoes it: removing the rule, which brings
+// the defaults back.
+type RuleRow = {
+  rule: NotificationSetting
+  icon: Component
+  title: string
   page: string | null
-  followed: boolean
-  // The notifications the follow is restricted to, empty when it covers all of them
-  events: Array<NotificationEvent>
+  detail: string
+  action: string
+  done: string
 }
 
-const isSubjectRule = (setting: NotificationSetting) => setting.scope !== null && setting.reason === null && setting.channel === null
+const isFollow = (rule: NotificationSetting) => rule.scope !== null && rule.reason === null && rule.channel === null && rule.enabled
+const isReasonRule = (rule: NotificationSetting) => rule.reason !== null && rule.scope === null && rule.event === null
+const isAllOffRule = (rule: NotificationSetting) => allOff.value && rule.channel !== null && rule.scope === null && rule.event === null && rule.reason === null
 
-// One row per followed or ignored subject, grouped under its organization: unchecking an
-// organization stops everything one followed there.
-const groups = computed(() => {
-  const rows = new Map<string, SubjectRow & { organization: OrganizationReference | null }>()
-  for (const setting of (settings.value ?? []).filter(isSubjectRule)) {
-    const scope = setting.scope!
-    const key = `${scope.class}-${scope.id}`
-    const row = rows.get(key) ?? {
-      key,
-      scope,
-      title: setting.subject?.title ?? null,
-      page: setting.subject?.page ?? null,
-      followed: false,
-      events: [],
-      organization: setting.subject?.organization ?? null,
-    }
-    row.followed ||= setting.enabled
-    if (setting.event) row.events.push(setting.event)
-    rows.set(key, row)
-  }
+const SCOPE_ICONS: Record<NotificationScope['class'], Component> = {
+  Organization: RiBuilding2Line,
+  Discussion: RiChat3Line,
+  Dataset: RiDatabase2Line,
+  Reuse: RiLineChartLine,
+  Dataservice: RiTerminalLine,
+  Post: RiArticleLine,
+  Topic: RiBookmarkLine,
+}
 
-  const byOrganization = new Map<string, { key: string, label: string, rows: Array<SubjectRow> }>()
-  for (const row of rows.values()) {
-    const key = row.organization?.id ?? 'none'
-    if (!byOrganization.has(key)) {
-      byOrganization.set(key, { key, label: row.organization?.name ?? t('Sans organisation'), rows: [] })
-    }
-    byOrganization.get(key)!.rows.push(row)
+// By the first segment of the type, for a rule about a kind of notification anywhere.
+const EVENT_ICONS: Record<string, Component> = {
+  discussion: RiChat3Line,
+  reuse: RiLineChartLine,
+  dataservice: RiTerminalLine,
+  organization: RiBuilding2Line,
+  harvest: RiServerLine,
+}
+
+const { eventLabel } = useNotificationLabels()
+
+function subjectTitle(rule: NotificationSetting) {
+  return rule.subject?.title ?? t('Contenu qui ne vous est plus accessible')
+}
+
+// The organization a subject belongs to, unless the subject is that organization.
+function organizationOf(rule: NotificationSetting) {
+  const organization = rule.subject?.organization
+  return organization && organization.id !== rule.scope?.id ? organization.name : null
+}
+
+function followRow(rule: NotificationSetting): RuleRow {
+  return {
+    rule,
+    icon: SCOPE_ICONS[rule.scope!.class],
+    title: subjectTitle(rule),
+    page: rule.subject?.page ?? null,
+    detail: [
+      organizationOf(rule),
+      rule.event ? t('{event} seulement', { event: eventLabel(rule.event) }) : null,
+      rule.origin === 'edited' ? t('Suivi automatique : vous l\'avez modifié') : null,
+    ].filter(Boolean).join(' · '),
+    action: t('Ne plus suivre'),
+    done: t('Vous ne suivez plus ce contenu'),
   }
-  return [...byOrganization.values()]
+}
+
+function cutRow(rule: NotificationSetting): RuleRow {
+  const channel = rule.channel === 'mail' ? t('par e-mail') : rule.channel === 'app' ? t('dans l\'application') : null
+  const reason = rule.reason ? reasonRows.value.find(row => row.reason === rule.reason)?.label ?? rule.reason : null
+
+  let sentence: string
+  if (rule.scope && rule.event) sentence = t('Vous ne recevez plus : {event}', { event: eventLabel(rule.event) })
+  else if (rule.scope?.class === 'Organization') sentence = t('Vous ne recevez rien sur cette organisation')
+  else if (rule.scope?.class === 'Discussion') sentence = t('Vous ne recevez rien sur cette discussion')
+  else if (rule.scope) sentence = t('Vous ne recevez rien sur ce contenu')
+  else if (rule.event) sentence = t('Vous ne recevez plus ce type de notification')
+  else sentence = t('Vous ne recevez plus rien')
+  if (rule.enabled) sentence = t('Vous recevez toujours ces notifications')
+
+  return {
+    rule,
+    icon: rule.scope
+      ? SCOPE_ICONS[rule.scope.class]
+      : (rule.event && EVENT_ICONS[rule.event.split('.')[0]!]) || RiNotification3Line,
+    title: rule.scope ? subjectTitle(rule) : rule.event ? eventLabel(rule.event) : t('Toutes les notifications'),
+    page: rule.subject?.page ?? null,
+    detail: [rule.scope ? organizationOf(rule) : null, channel ? `${sentence} ${channel}` : sentence, reason].filter(Boolean).join(' · '),
+    action: rule.enabled ? t('Retirer') : t('Réactiver'),
+    done: rule.enabled ? t('Réglage retiré') : t('Notifications réactivées'),
+  }
+}
+
+const ruleSections = computed(() => {
+  const rules = (settings.value ?? []).filter(rule => !isReasonRule(rule) && !isAllOffRule(rule))
+  return [
+    { title: t('Contenus suivis'), rows: rules.filter(isFollow).map(followRow) },
+    { title: t('Notifications coupées'), rows: rules.filter(rule => !isFollow(rule)).map(cutRow) },
+  ]
 })
 
-// Unchecking means hearing nothing more about the subject, whatever the role in its
-// organization; checking follows all of it again.
-async function followAll(rows: Array<SubjectRow>, followed: boolean) {
-  await Promise.all(rows.map(row => followSubject(row.scope, followed)))
-  toast.success(followed ? t('Suivi réactivé') : t('Vous ne recevrez plus rien sur ces contenus'))
-}
-
-// The rules none of the forms above can show: set through the API, or left behind by a
-// form that changed since.
-const otherRules = computed(() => (settings.value ?? []).filter((setting) => {
-  if (isSubjectRule(setting)) return false
-  if (setting.scope || setting.event) return true
-  if (setting.reason) return false
-  if (setting.channel === null) return true
-  // A channel rule alone, without its pair, is not what "turn everything off" writes
-  return !allOff.value
-}))
-
-const EVENT_LABELS = computed<Record<string, string>>(() => ({
-  'discussion': t('Discussions'),
-  'discussion.new': t('Nouvelles discussions'),
-  'discussion.comment': t('Réponses'),
-  'discussion.closed': t('Discussions clôturées'),
-  'reuse.created': t('Nouvelles réutilisations'),
-  'dataservice.created': t('Nouvelles API'),
-  'organization.badge': t('Badges de l\'organisation'),
-  'organization.membership.accepted': t('Adhésions acceptées'),
-  'organization.membership.refused': t('Adhésions refusées'),
-  'harvest.source.accepted': t('Moissonneurs validés'),
-  'harvest.source.refused': t('Moissonneurs refusés'),
-}))
-
-function eventLabel(event: NotificationEvent) {
-  return EVENT_LABELS.value[event] ?? event
-}
-
-function describe(rule: NotificationSetting) {
-  const parts = [
-    rule.scope ? (rule.subject?.title ?? t('Contenu qui ne vous est plus accessible')) : t('Partout'),
-    rule.event ? eventLabel(rule.event) : t('Toutes les notifications'),
-  ]
-  if (rule.reason) parts.push(reasonRows.value.find(row => row.reason === rule.reason)?.label ?? rule.reason)
-  if (rule.channel) parts.push(rule.channel === 'app' ? t('Dans l\'application') : t('Par e-mail'))
-  return parts.join(' · ')
+async function withdraw(row: RuleRow) {
+  await setRule(row.rule, null)
+  toast.success(row.done)
 }
 </script>
