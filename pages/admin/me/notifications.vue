@@ -8,7 +8,7 @@
       {{ t('Notifications') }}
     </h1>
 
-    <AnimatedLoader v-if="settings === null || defaults === null" />
+    <AnimatedLoader v-if="settings === null || reasonChannels === null" />
     <div
       v-else
       class="max-w-6xl space-y-8"
@@ -236,7 +236,7 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
 import type { Me } from '~/utils/auth'
-import type { MailCadence, NotificationChannel, NotificationDefaultRule, NotificationEvent, NotificationReason, NotificationScope, NotificationSetting } from '~/types/notifications'
+import type { MailCadence, NotificationChannel, NotificationEvent, NotificationReason, NotificationResolved, NotificationScope, NotificationSetting } from '~/types/notifications'
 
 type ChannelsValue = 'both' | 'app' | 'mail' | 'none'
 
@@ -249,11 +249,8 @@ const { settings, load, ruleValue, setRule } = useNotificationSettings()
 const ROW_CLASS = 'px-5 py-4 grid grid-cols-[14rem_1fr] items-center gap-6'
 const CHOICES_CLASS = 'flex flex-wrap gap-x-6 gap-y-2'
 
-const defaults = ref<Array<NotificationDefaultRule> | null>(null)
-
 onMounted(async () => {
-  load()
-  defaults.value = await $api<Array<NotificationDefaultRule>>('/api/1/notifications/defaults/')
+  await Promise.all([load(), refreshReasons()])
 })
 
 // "Turn everything off" is a rule on each channel, everywhere: a channel rule is the
@@ -265,6 +262,7 @@ async function setAllOff(off: boolean) {
     setRule({ channel: 'app' }, off ? false : null),
     setRule({ channel: 'mail' }, off ? false : null),
   ])
+  await refreshReasons()
   toast.success(off ? t('Toutes les notifications sont désactivées') : t('Notifications réactivées'))
 }
 
@@ -276,6 +274,8 @@ const reasonRows = computed<Array<{ reason: NotificationReason, label: string }>
   { reason: 'discussion.participant', label: t('Discussions auxquelles vous participez') },
   { reason: 'contributor', label: t('Contenus que vous avez modifiés') },
   { reason: 'explicit_subscriber', label: t('Contenus que vous suivez') },
+  { reason: 'requester', label: t('Réponses à vos demandes') },
+  ...(isMeAdmin() ? [{ reason: 'sysadmin' as const, label: t('Administration du site') }] : []),
 ])
 
 const channelOptions = computed<Array<{ value: ChannelsValue, label: string }>>(() => [
@@ -285,42 +285,41 @@ const channelOptions = computed<Array<{ value: ChannelsValue, label: string }>>(
   { value: 'none', label: t('Jamais') },
 ])
 
-// What a reason row shows without any rule of the user: the default for this reason,
-// or the default for any reason.
-function defaultFor(reason: NotificationReason, channel: NotificationChannel | null): boolean {
-  const rules = defaults.value ?? []
-  return ruleValueIn(rules, { reason, channel }) ?? ruleValueIn(rules, { channel }) ?? false
+// What each reason row really gets, as udata resolves it: the page never resolves rules
+// by itself, so it cannot disagree with what is sent.
+const reasonChannels = ref<Partial<Record<NotificationReason, Array<NotificationChannel>>> | null>(null)
+
+async function refreshReasons() {
+  const resolved = await Promise.all(reasonRows.value.map(row =>
+    $api<NotificationResolved>('/api/1/notifications/resolved/', { query: { reason: row.reason } }),
+  ))
+  reasonChannels.value = Object.fromEntries(reasonRows.value.map((row, index) => [row.reason, resolved[index].channels]))
 }
 
-// A reason row writes up to three rules: whether one is concerned at all, then one per
-// channel. A rule equal to the default is removed rather than stored.
 function reasonValue(reason: NotificationReason): ChannelsValue {
-  const concerned = ruleValue({ reason }) ?? defaultFor(reason, null)
-  const app = ruleValue({ reason, channel: 'app' }) ?? defaultFor(reason, 'app')
-  const mail = ruleValue({ reason, channel: 'mail' }) ?? defaultFor(reason, 'mail')
-  if (!concerned || (!app && !mail)) return 'none'
-  if (app && mail) return 'both'
-  return app ? 'app' : 'mail'
+  const channels = reasonChannels.value?.[reason] ?? []
+  if (channels.includes('app')) return channels.includes('mail') ? 'both' : 'app'
+  return channels.includes('mail') ? 'mail' : 'none'
 }
 
-// "Never" turns both channels off rather than saying "not concerned": a rule on a
-// subject beats a rule on a reason, so a follow would bring back what "not concerned"
-// left out, whereas no rule without a channel can bring back a channel turned off.
+// A reason row writes what was chosen, whatever the default: a choice made here does
+// not follow a later change of the defaults.
+//
+// Only a channel turned off is stored, though. A channel turned on is what every reason
+// gets anyway, and storing it would beat "turn everything off", being more specific.
+// "Never" turns both channels off rather than saying "not concerned": a follow, being
+// on a subject, would beat "not concerned", whereas nothing brings back a channel
+// turned off.
 async function saveReason(reason: NotificationReason, value: ChannelsValue) {
-  const concernedByDefault = defaultFor(reason, null)
   const wanted: Record<NotificationChannel, boolean> = {
     app: value === 'both' || value === 'app',
     mail: value === 'both' || value === 'mail',
   }
-  // Silent by default: "never" is the default itself, the others first make one concerned
-  const concerned = value === 'none' ? null : concernedByDefault ? null : true
   await Promise.all([
-    setRule({ reason }, concerned),
-    ...(['app', 'mail'] as const).map(channel => setRule(
-      { reason, channel },
-      (value === 'none' && !concernedByDefault) || wanted[channel] === defaultFor(reason, channel) ? null : wanted[channel],
-    )),
+    setRule({ reason }, value === 'none' ? null : true),
+    ...(['app', 'mail'] as const).map(channel => setRule({ reason, channel }, wanted[channel] ? null : false)),
   ])
+  await refreshReasons()
   toast.success(t('Préférence enregistrée'))
 }
 
@@ -397,21 +396,27 @@ const otherRules = computed(() => (settings.value ?? []).filter((setting) => {
   if (isSubjectRule(setting)) return false
   if (setting.scope || setting.event) return true
   if (setting.reason) return false
-  return setting.channel === null || setting.enabled
+  if (setting.channel === null) return true
+  // A channel rule alone, without its pair, is not what "turn everything off" writes
+  return !allOff.value
 }))
 
-const EVENT_LABELS = computed<Record<NotificationEvent, string>>(() => ({
-  DiscussionEvent: t('Discussions'),
-  NewDiscussion: t('Nouvelles discussions'),
-  NewDiscussionComment: t('Réponses'),
-  DiscussionClosed: t('Discussions clôturées'),
-  DatasetReusedEvent: t('Réutilisations et API'),
-  ReuseCreated: t('Nouvelles réutilisations'),
-  DataserviceCreated: t('Nouvelles API'),
+const EVENT_LABELS = computed<Record<string, string>>(() => ({
+  'discussion': t('Discussions'),
+  'discussion.new': t('Nouvelles discussions'),
+  'discussion.comment': t('Réponses'),
+  'discussion.closed': t('Discussions clôturées'),
+  'reuse.created': t('Nouvelles réutilisations'),
+  'dataservice.created': t('Nouvelles API'),
+  'organization.badge': t('Badges de l\'organisation'),
+  'organization.membership.accepted': t('Adhésions acceptées'),
+  'organization.membership.refused': t('Adhésions refusées'),
+  'harvest.source.accepted': t('Moissonneurs validés'),
+  'harvest.source.refused': t('Moissonneurs refusés'),
 }))
 
 function eventLabel(event: NotificationEvent) {
-  return EVENT_LABELS.value[event]
+  return EVENT_LABELS.value[event] ?? event
 }
 
 function describe(rule: NotificationSetting) {

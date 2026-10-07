@@ -77,9 +77,14 @@
             :placeholder="$t('Recherche')"
           />
           <div class="flex flex-wrap items-center gap-2">
-            <FollowDiscussionsButton
+            <!-- Only the new discussions: their answers come from taking part in a
+                 thread, or following it -->
+            <FollowToggle
               v-if="me"
               :scope="{ class: type, id: subject.id } as NotificationScope"
+              event="discussion.new"
+              :follow-label="t('Suivre les discussions')"
+              :unfollow-label="t('Ne plus suivre les discussions')"
             />
             <BrandedButton
               color="secondary"
@@ -166,7 +171,7 @@ import { RiAddLine, RiCloseCircleLine, RiInformationLine, RiSearchLine } from '@
 import { refDebounced } from '@vueuse/core'
 import NewDiscussionForm from './NewDiscussionForm.vue'
 import DiscussionCard from './DiscussionCard.vue'
-import FollowDiscussionsButton from './FollowDiscussionsButton.vue'
+import FollowToggle from '../Notifications/FollowToggle.vue'
 import type { NotificationScope } from '~/types/notifications'
 import type { PaginatedArray, SortDirection } from '~/types/types'
 import type { DiscussionSortedBy, DiscussionSubject, DiscussionSubjectTypes, Thread } from '~/types/discussions'

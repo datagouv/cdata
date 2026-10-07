@@ -99,9 +99,9 @@ export type DataserviceCreatedNotification = CommonNotification & {
 
 export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification | DiscussionNotification | MembershipAcceptedNotification | MembershipRefusedNotification | ValidateHarvesterNotification | ReuseCreatedNotification | DataserviceCreatedNotification
 
-// The udata event classes a rule can name: a single notification or its family.
-export type NotificationEvent = 'DiscussionEvent' | 'NewDiscussion' | 'NewDiscussionComment' | 'DiscussionClosed'
-  | 'DatasetReusedEvent' | 'ReuseCreated' | 'DataserviceCreated'
+// What a rule can name: a notification type, or a dotted prefix of some (`discussion`
+// covers `discussion.new`, `discussion.comment`…).
+export type NotificationEvent = string
 
 export type NotificationChannel = 'app' | 'mail'
 
@@ -112,7 +112,7 @@ export type NotificationScope = {
   id: string
 }
 
-// Why a user is concerned by a notification. Sysadmin notifications are not configurable.
+// Why a user is concerned by a notification.
 export type NotificationReason = 'owner'
   | 'organization.admin'
   | 'organization.editor'
@@ -120,6 +120,8 @@ export type NotificationReason = 'owner'
   | 'discussion.participant'
   | 'explicit_subscriber'
   | 'contributor'
+  | 'requester'
+  | 'sysadmin'
 
 // What identifies a rule: every dimension is optional, `null` meaning "whatever it is"
 // (everywhere, every notification, whatever the reason, whether concerned at all).
@@ -141,11 +143,6 @@ export type NotificationSetting = NotificationRuleKey & {
     page: string
     organization: OrganizationReference | null
   } | null
-}
-
-// A rule everybody starts with, read only where the user's own rules say nothing.
-export type NotificationDefaultRule = NotificationRuleKey & {
-  enabled: boolean
 }
 
 // Whether, why and where the user hears about an event on a subject, rules and

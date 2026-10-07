@@ -49,36 +49,48 @@ const REASON_LABELS = computed<Record<NotificationReason, string>>(() => ({
   'discussion.participant': t('parce que vous participez à cette discussion'),
   'explicit_subscriber': t('parce que vous suivez ce contenu'),
   'contributor': t('parce que vous avez modifié ce contenu'),
+  'requester': t('parce que vous avez fait cette demande'),
+  'sysadmin': t('en tant qu\'administrateur du site'),
 }))
 
 const reasonLabels = computed(() => props.notification.reasons.map(reason => REASON_LABELS.value[reason]).filter(Boolean))
 
-// Every action is a rule saying "no": the ways out a notification offers depend on
-// what it is about.
-const actions = computed<Array<Action>>(() => {
-  const notification = props.notification
+// The subject-level ways out, for the notifications whose subject is known.
+function subjectActions(notification: UserNotification): Array<Action> {
   switch (notification.type) {
     case 'discussion.new':
     case 'discussion.comment':
     case 'discussion.closed':
       return [
-        { label: t('Ne plus suivre cette discussion'), rule: { scope: { class: 'Discussion', id: notification.details.discussion.id }, event: 'DiscussionEvent' } },
+        { label: t('Ne plus suivre cette discussion'), rule: { scope: { class: 'Discussion', id: notification.details.discussion.id }, event: 'discussion' } },
         { label: t('Ne rien recevoir sur ce contenu'), rule: { scope: notification.details.discussion.subject } },
       ]
     case 'reuse.created':
-      return [
-        { label: t('Ne rien recevoir sur ce jeu de données'), rule: { scope: { class: 'Dataset', id: notification.details.dataset.id } } },
-        { label: t('Ne plus être prévenu des nouvelles réutilisations'), rule: { event: 'ReuseCreated' } },
-      ]
     case 'dataservice.created':
       return [
         { label: t('Ne rien recevoir sur ce jeu de données'), rule: { scope: { class: 'Dataset', id: notification.details.dataset.id } } },
-        { label: t('Ne plus être prévenu des nouvelles API'), rule: { event: 'DataserviceCreated' } },
+      ]
+    case 'organization.badge.certified':
+    case 'organization.badge.public-service':
+    case 'organization.badge.company':
+    case 'organization.badge.association':
+    case 'organization.badge.local-authority':
+    case 'organization.membership.accepted':
+    case 'organization.membership.refused':
+      return [
+        { label: t('Ne rien recevoir sur cette organisation'), rule: { scope: { class: 'Organization', id: notification.details.organization.id } } },
       ]
     default:
       return []
   }
-})
+}
+
+// Every action is a rule saying "no": on this subject when it is known, and on this
+// kind of notification anywhere.
+const actions = computed<Array<Action>>(() => [
+  ...subjectActions(props.notification),
+  { label: t('Ne plus recevoir ce type de notification'), rule: { event: props.notification.type } },
+])
 
 const pending = ref<string | null>(null)
 

@@ -8,18 +8,10 @@ export function canMarkAsRead(notification: UserNotification) {
   return !notification.handled_at && !requireAction(notification)
 }
 
-// The notifications users can turn off (udata's `ConfigurableEvent`): only they offer a
-// way out from the list.
-const CONFIGURABLE_TYPES: Array<UserNotification['type']> = [
-  'discussion.new',
-  'discussion.comment',
-  'discussion.closed',
-  'reuse.created',
-  'dataservice.created',
-]
-
+// Every notification can be turned off but an action to take: leaving it unanswered
+// would be a bug, not a setting.
 export function isConfigurable(notification: UserNotification) {
-  return CONFIGURABLE_TYPES.includes(notification.type)
+  return !notification.requires_action
 }
 
 export function localMarkAsRead(notification: UserNotification) {

@@ -26,9 +26,13 @@
         >
           {{ $t('Marquer comme non spam') }}
         </BrandedButton>
-        <DiscussionFollowMenu
+        <FollowToggle
           v-if="me"
-          :thread
+          :scope="{ class: 'Discussion', id: thread.id }"
+          event="discussion"
+          :follow-label="$t('Suivre cette discussion')"
+          :unfollow-label="$t('Ne plus suivre cette discussion')"
+          icon-only
         />
         <EditCommentModal
           v-if="firstComment.permissions.edit"
@@ -63,7 +67,7 @@ import { RiLockLine } from '@remixicon/vue'
 import { BrandedButton, CopyButton } from '@datagouv/components-next'
 import ReportModal from '../Spam/ReportModal.vue'
 import DeleteThreadModal from './DeleteThreadModal.vue'
-import DiscussionFollowMenu from './DiscussionFollowMenu.vue'
+import FollowToggle from '../Notifications/FollowToggle.vue'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
 import EditCommentModal from './EditCommentModal.vue'
 import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'

@@ -25,12 +25,6 @@ export function ruleKey(key: Partial<NotificationRuleKey>): NotificationRuleKey 
   }
 }
 
-// The value of exactly this rule among `rules`, `null` when there is none.
-export function ruleValueIn(rules: Array<NotificationRuleKey & { enabled: boolean }>, key: Partial<NotificationRuleKey>): boolean | null {
-  const full = ruleKey(key)
-  return rules.find(rule => isSameRule(rule, full))?.enabled ?? null
-}
-
 // The rules the user set about their notifications (see udata's `NotificationSetting`).
 export function useNotificationSettings() {
   const settings = useState<Array<NotificationSetting> | null>('notification-settings', () => null)
@@ -48,8 +42,10 @@ export function useNotificationSettings() {
     return pendingLoad
   }
 
+  // The value of exactly this rule, `null` when the user never set it.
   function ruleValue(key: Partial<NotificationRuleKey>): boolean | null {
-    return ruleValueIn(settings.value ?? [], key)
+    const full = ruleKey(key)
+    return settings.value?.find(setting => isSameRule(setting, full))?.enabled ?? null
   }
 
   // `null` removes the rule, so the broader rules or the defaults apply again.
