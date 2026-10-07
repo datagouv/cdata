@@ -74,7 +74,7 @@
         <strong>
           + {{ summarize(lastValue, 2) }}
         </strong>
-        {{ t(" en ") }}
+        <span class="mx-1">{{ t("en") }}</span>
         <FormattedDate
           :date="lastMonth"
           :options="{ dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }"
@@ -151,7 +151,7 @@
       <strong class="mr-1">
         + {{ summarize(lastValue, 2) }}
       </strong>
-      {{ t(" en ") }}
+      <span class="mx-1">{{ t("en") }}</span>
       <FormattedDate
         :date="lastMonth"
         :options="{ dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }"
