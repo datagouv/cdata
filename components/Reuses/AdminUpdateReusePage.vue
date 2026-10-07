@@ -12,6 +12,12 @@
       @feature="feature"
       @submit="save"
     >
+      <template #aside>
+        <SubjectNotifications
+          :scope="{ class: 'Reuse', id: reuse.id }"
+          :subject="t('cette réutilisation')"
+        />
+      </template>
       <template #top>
         <SimpleBanner
           v-if="!reuse.permissions.edit"
@@ -169,6 +175,7 @@ import type { Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
+import SubjectNotifications from '~/components/Notifications/SubjectNotifications.vue'
 import type { ReuseForm } from '~/types/types'
 
 const { t } = useTranslation()

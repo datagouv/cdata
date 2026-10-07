@@ -58,6 +58,11 @@ export function useNotificationSettings() {
     return settings.value?.find(setting => isSameRule(setting, full))?.enabled ?? null
   }
 
+  // The user's "concerned" rules on a subject restricted to some of its notifications.
+  function narrowerRules(scope: NotificationScope) {
+    return (settings.value ?? []).filter(setting => setting.event !== null && setting.reason === null && setting.channel === null && isSameScope(setting.scope, scope))
+  }
+
   // `null` removes the rule, so the broader rules or the defaults apply again.
   async function setRule(key: Partial<NotificationRuleKey>, enabled: boolean | null) {
     const full = ruleKey(key)
@@ -66,13 +71,7 @@ export function useNotificationSettings() {
       body: { ...full, enabled },
     })
     const others = (settings.value ?? []).filter(setting => !isSameRule(setting, full))
-    if (!saved) {
-      settings.value = others
-      return
-    }
-    // Only the listing describes the subject: keep the description already known.
-    const subject = settings.value?.find(setting => isSameScope(setting.scope, saved.scope))?.subject ?? null
-    settings.value = [...others, { ...saved, subject }]
+    settings.value = saved ? [...others, saved] : others
   }
 
   // What the user gets for every combination of the given keys, in one call.
@@ -86,15 +85,15 @@ export function useNotificationSettings() {
     })
   }
 
-  // What the user gets for some notifications on a subject, batched with the other
-  // subjects asked about in the same tick.
-  async function resolveFollow(scope: NotificationScope, event: NotificationEvent): Promise<NotificationResolved> {
+  // What the user gets for some notifications on a subject (all of them without an
+  // event), batched with the other subjects asked about in the same tick.
+  async function resolveFollow(scope: NotificationScope, event: NotificationEvent | null): Promise<NotificationResolved> {
     let batch = pendingFollows.get(event)
     if (!batch) {
       const scopes: Array<NotificationScope> = []
       const answer = Promise.resolve().then(() => {
         pendingFollows.delete(event)
-        return resolve({ scopes, events: [event] })
+        return resolve({ scopes, events: event ? [event] : undefined })
       })
       batch = { scopes, answer }
       pendingFollows.set(event, batch)
@@ -108,9 +107,15 @@ export function useNotificationSettings() {
   // first: if nothing else brings these notifications, that is enough, and the defaults
   // of the user's role stay untouched. Only when a role or a broader follow still brings
   // them is "not concerned" written.
-  async function follow(scope: NotificationScope, event: NotificationEvent, followed: boolean) {
+  //
+  // Without an event, it is about everything on the subject: the follows restricted to
+  // some of its notifications go too, or they would beat the "no" being written.
+  async function follow(scope: NotificationScope, event: NotificationEvent | null, followed: boolean) {
     await load()
     const key = { scope, event }
+    if (!event && !followed) {
+      await Promise.all(narrowerRules(scope).map(setting => setRule(setting, null)))
+    }
     if (followed) {
       await setRule(key, true)
       return resolveFollow(scope, event)
@@ -128,8 +133,7 @@ export function useNotificationSettings() {
   // first: left behind, a follow restricted to its discussions would beat the "no".
   async function followSubject(scope: NotificationScope, followed: boolean) {
     await load()
-    const narrower = (settings.value ?? []).filter(setting => setting.event !== null && setting.reason === null && setting.channel === null && isSameScope(setting.scope, scope))
-    await Promise.all(narrower.map(setting => setRule(setting, null)))
+    await Promise.all(narrowerRules(scope).map(setting => setRule(setting, null)))
     await setRule({ scope }, followed)
   }
 
@@ -159,5 +163,5 @@ export function useNotificationSettings() {
     ])
   }
 
-  return { settings, load, ruleValue, setRule, resolve, resolveFollow, follow, followSubject, setReasonChannels, allOff, setAllOff }
+  return { settings, load, ruleValue, narrowerRules, setRule, resolve, resolveFollow, follow, followSubject, setReasonChannels, allOff, setAllOff }
 }

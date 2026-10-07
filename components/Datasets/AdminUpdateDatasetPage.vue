@@ -16,6 +16,12 @@
       @badges-change="pendingBadges = $event"
       @submit="save"
     >
+      <template #aside>
+        <SubjectNotifications
+          :scope="{ class: 'Dataset', id: dataset.id }"
+          :subject="t('ce jeu de données')"
+        />
+      </template>
       <template #top>
         <SimpleBanner
           v-if="!dataset.permissions.edit"
@@ -154,6 +160,7 @@ import type { Badge, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
+import SubjectNotifications from '~/components/Notifications/SubjectNotifications.vue'
 import { updateBadges } from '~/api/badges'
 import type { DatasetForm } from '~/types/types'
 
