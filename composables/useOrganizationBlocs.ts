@@ -1,5 +1,5 @@
 import { toast, type Organization, type PageBloc } from '@datagouv/components-next'
-import { updateOrganization } from '~/api/organizations'
+import { updateOrganizationPresentationBlocs } from '~/api/organizations'
 
 // Fetches and saves the editorial `presentation_blocs` of an organization.
 // `presentation_blocs` is excluded from the default read mask, so we request it
@@ -38,11 +38,11 @@ export async function useOrganizationBlocs(organization: Organization) {
   // `refresh()` below updates this composer's own blocs view; the returned value is
   // the PUT response (full org, default mask) for callers that render it elsewhere.
   async function saveBlocs(updatedBlocs: Array<PageBloc>, published: boolean) {
-    const updated = await updateOrganization({
-      ...organization,
-      presentation_blocs: updatedBlocs,
-      presentation_blocs_published_at: published ? (publishedAt.value ?? new Date().toISOString()) : null,
-    })
+    const updated = await updateOrganizationPresentationBlocs(
+      organization.id,
+      updatedBlocs,
+      published ? (publishedAt.value ?? new Date().toISOString()) : null,
+    )
     await refresh()
     toast.success(t('Présentation sauvegardée'))
     return updated
