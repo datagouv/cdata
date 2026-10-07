@@ -1,7 +1,7 @@
 <template>
   <div
     data-testid="banner-flyout"
-    class="w-[calc(100vw-32px)] sm:w-[480px] max-w-[480px] bg-white rounded shadow-2xl border border-gray-lower"
+    class="w-[calc(100vw-32px)] sm:w-[480px] max-w-[480px] bg-white rounded-[10px] shadow-2xl border border-gray-lower"
   >
     <!-- Segmented control -->
     <SegmentedControl
