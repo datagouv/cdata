@@ -49,7 +49,11 @@ const me = useMaybeMe()
 
 const canEdit = computed(() => isUserOrgAdmin(me.value, props.organization))
 
-const { blocs, isPublished, saveBlocs } = await useOrganizationBlocs(props.organization)
+// Pass a getter, not the prop value: the save spreads the organization, so it
+// must read the current props at save time — concurrent changes (banner
+// color/position from the banner flyout) replace the object in the parent,
+// and a snapshot taken here would send stale values.
+const { blocs, isPublished, saveBlocs } = await useOrganizationBlocs(() => props.organization)
 
 const isEditing = computed(() => route.query.edit === 'true')
 

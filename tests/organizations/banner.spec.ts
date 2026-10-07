@@ -49,6 +49,19 @@ test.describe('organization banner', () => {
     await expect(banner).toHaveCSS('background-color', 'rgb(0, 169, 95)')
   })
 
+  test('saving the presentation does not wipe the banner color', async ({ page }) => {
+    // The blocs save PUTs the whole organization: it must spread the CURRENT
+    // org (shared via the props getter), not a snapshot from page setup.
+    await page.goto(`/organizations/${org.id}/presentation?edit=true`)
+    await page.waitForLoadState('networkidle')
+
+    await page.getByRole('button', { name: 'Sauvegarder' }).click()
+    await expect(page.getByText('Présentation sauvegardée')).toBeVisible()
+
+    await page.goto(`/organizations/${org.id}/datasets`)
+    await expect(page.getByTestId('organization-banner')).toHaveCSS('background-color', 'rgb(0, 169, 95)')
+  })
+
   test('uploading an image sets an image banner with reposition available', async ({ page }) => {
     await page.goto(`/organizations/${org.id}/datasets`)
 

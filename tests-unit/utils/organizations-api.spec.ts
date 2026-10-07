@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { deleteOrganizationBanner, updateOrganizationBannerColor, updateOrganizationBannerPosition, updateOrganizationPresentationBlocs, uploadOrganizationBanner } from '~/api/organizations'
+import { deleteOrganizationBanner, updateOrganizationBannerColor, updateOrganizationBannerPosition, uploadOrganizationBanner } from '~/api/organizations'
 
 function stubNuxtApp() {
   const $api = vi.fn()
@@ -58,35 +58,6 @@ describe('banner API helpers', () => {
     await deleteOrganizationBanner('org-id')
     expect($api).toHaveBeenCalledWith('api/1/organizations/org-id/banner/', {
       method: 'DELETE',
-    })
-  })
-
-  it('puts only the presentation blocs fields (never spreads the org)', async () => {
-    const { $api } = stubNuxtApp()
-    const blocs = [{ type: 'markdown', content: '# Hello' }]
-    await updateOrganizationPresentationBlocs('org-id', blocs, '2026-10-07T12:00:00.000Z')
-    expect($api).toHaveBeenCalledWith('api/1/organizations/org-id/', {
-      method: 'PUT',
-      body: {
-        presentation_blocs: blocs,
-        presentation_blocs_published_at: '2026-10-07T12:00:00.000Z',
-      },
-    })
-    const sentBody = $api.mock.calls[0][1].body as Record<string, unknown>
-    expect(sentBody).not.toHaveProperty('banner_color')
-    expect(sentBody).not.toHaveProperty('banner_image_position')
-    expect(sentBody).not.toHaveProperty('banner_image')
-  })
-
-  it('puts a null publication date when unpublishing', async () => {
-    const { $api } = stubNuxtApp()
-    await updateOrganizationPresentationBlocs('org-id', [], null)
-    expect($api).toHaveBeenCalledWith('api/1/organizations/org-id/', {
-      method: 'PUT',
-      body: {
-        presentation_blocs: [],
-        presentation_blocs_published_at: null,
-      },
     })
   })
 })
