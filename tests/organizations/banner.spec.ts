@@ -96,10 +96,7 @@ test.describe('organization banner', () => {
     await page.getByRole('button', { name: 'Enregistrer' }).click()
 
     await page.reload()
-    // Read the inline style, not getComputedStyle: the Tailwind `bg-center`
-    // shorthand makes Chromium's computed background-position-y lie (it
-    // reports the shorthand value even though the inline longhand wins).
-    const position = await banner.evaluate(el => parseFloat(el.style.backgroundPositionY))
+    const position = await banner.evaluate(el => parseFloat(getComputedStyle(el).backgroundPositionY))
     expect(position).toBeGreaterThan(50)
   })
 

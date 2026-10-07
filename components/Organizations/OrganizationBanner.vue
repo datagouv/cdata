@@ -1,7 +1,7 @@
 <template>
   <div
     data-testid="organization-banner"
-    class="relative bg-cover bg-center h-40 sm:h-[230px]"
+    class="relative bg-cover h-40 sm:h-[230px]"
     :style="bannerStyle"
   >
     <div
@@ -31,9 +31,12 @@ const hasImage = computed(() => !!props.organization.banner_image)
 
 const bannerStyle = computed(() => {
   if (hasImage.value) {
+    // Full position inline, NOT the bg-center class: this build marks
+    // background-position utilities !important, which would override the
+    // inline longhand and freeze the image at 50%.
     return {
       backgroundImage: `url("${props.organization.banner_image}")`,
-      backgroundPositionY: `${props.positionOverride ?? props.organization.banner_image_position ?? 50}%`,
+      backgroundPosition: `center ${props.positionOverride ?? props.organization.banner_image_position ?? 50}%`,
     }
   }
   return { backgroundColor: props.organization.banner_color ?? BANNER_DEFAULT_COLOR }
