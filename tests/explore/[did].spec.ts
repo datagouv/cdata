@@ -339,9 +339,6 @@ test('switching resources does not pile up history entries', async ({ page, requ
   // stepping through the resources we just viewed.
   await page.goBack()
   await expect(page).toHaveURL(/\/explore$/)
-  // The URL changes as soon as the page starts loading: ending the test there lets
-  // Firefox warn that layout was forced before the stylesheets were loaded.
-  await page.waitForLoadState()
 })
 
 test('switching resources drops the filters, sort and search of the previous one', async ({ page, request }) => {

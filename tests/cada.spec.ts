@@ -629,9 +629,6 @@ test('searching and filtering do not pile up history entries', async ({ page }) 
   // Each change replaces the entry, so going back leaves the page at once
   await page.goBack()
   await expect(page).toHaveURL(/\/explore$/)
-  // The URL changes as soon as the page starts loading: ending the test there lets
-  // Firefox warn that layout was forced before the stylesheets were loaded.
-  await page.waitForLoadState()
 })
 
 test('a sort or filter on a column the resource does not have is ignored', async ({ page }) => {
