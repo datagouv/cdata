@@ -20,7 +20,10 @@
     </div>
 
     <div class="max-w-6xl space-y-8">
-      <MuteConfirmation @muted="load" />
+      <!-- No reload once it wrote its rule: it then takes its key out of the URL, and the
+           admin pages are keyed on the URL, so the page mounts again and reads its lists
+           anew. Reloading from this instance would be cancelled by its unmount. -->
+      <MuteConfirmation />
 
       <BannerAction
         v-if="paused"

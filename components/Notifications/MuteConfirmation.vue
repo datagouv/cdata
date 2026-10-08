@@ -34,10 +34,6 @@ import type { NotificationRuleKey, NotificationScope } from '~/types/notificatio
 // opening the link must not unsubscribe anyone. The query is the key of the rule to
 // write, the same as the menu of the notification in the bell writes.
 
-const emit = defineEmits<{
-  muted: []
-}>()
-
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const route = useRoute()
@@ -116,7 +112,6 @@ async function confirm() {
   try {
     await mute(key.value!)
     toast.success(done.value)
-    emit('muted')
     await dismiss()
   }
   finally {
