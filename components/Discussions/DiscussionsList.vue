@@ -11,16 +11,7 @@
         class="flex justify-between items-center"
       >
         <p class="!mb-0">
-          {{ $t('Vous consultez une discussion spécifique sur {subject}.', {
-            subject: {
-              Dataservice: $t('cette API'),
-              Dataset: $t('ce jeu de données'),
-              Reuse: $t('cette réutilisation'),
-              Post: $t('cet article'),
-              Topic: $t('ce bouquet'),
-              Organization: $t('cette organisation'),
-            }[type],
-          }) }}
+          {{ $t('Vous consultez une discussion spécifique sur {subject}.', { subject: translatedType }) }}
         </p>
         <BrandedButton
           color="tertiary"
@@ -34,6 +25,7 @@
       <DiscussionCard
         :thread="selectedDiscussion"
         :subject
+        :follow-state="threadFollows.stateOf({ class: 'Discussion', id: selectedDiscussion.id })"
         @change="updateSelectedDiscussion"
       />
     </div>
@@ -76,7 +68,19 @@
             :icon="RiSearchLine"
             :placeholder="$t('Recherche')"
           />
-          <div>
+          <div class="flex flex-wrap items-center gap-2">
+            <!-- Only the new discussions: their answers come from taking part in a
+                 thread, or following it. -->
+            <FollowToggle
+              v-if="me"
+              :scope="{ class: type, id: subject.id }"
+              event="discussion.new"
+              :state="subjectFollows.stateOf({ class: type, id: subject.id })"
+              :follow-label="t('Suivre les discussions')"
+              :unfollow-label="t('Ne plus suivre les discussions')"
+              :followed-message="t('Vous serez prévenu des nouvelles discussions')"
+              :unfollowed-message="t('Vous ne serez plus prévenu des nouvelles discussions')"
+            />
             <BrandedButton
               color="secondary"
               size="xs"
@@ -112,6 +116,7 @@
               :key="thread.id"
               :thread
               :subject
+              :follow-state="threadFollows.stateOf({ class: 'Discussion', id: thread.id })"
               @change="refresh"
             />
           </div>
@@ -162,7 +167,9 @@ import { RiAddLine, RiCloseCircleLine, RiInformationLine, RiSearchLine } from '@
 import { refDebounced } from '@vueuse/core'
 import NewDiscussionForm from './NewDiscussionForm.vue'
 import DiscussionCard from './DiscussionCard.vue'
+import FollowToggle from '../Notifications/FollowToggle.vue'
 import type { PaginatedArray, SortDirection } from '~/types/types'
+import { getSubjectDemonstrative } from '~/utils/discussions'
 import type { DiscussionSortedBy, DiscussionSubject, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 import { useRouteQuery } from '@vueuse/router'
 
@@ -202,24 +209,7 @@ function showDiscussionForm() {
   }
 }
 
-const translatedType = computed(() => {
-  switch (props.type) {
-    case 'Dataservice':
-      return t('cette api')
-    case 'Dataset':
-      return t('ce jeu de données')
-    case 'Reuse':
-      return t('cette réutilisation')
-    case 'Post':
-      return t('cet article')
-    case 'Topic':
-      return t('cette thématique')
-    case 'Organization':
-      return t('cette organisation')
-    default:
-      return ''
-  }
-})
+const translatedType = computed(() => getSubjectDemonstrative(t, props.type))
 
 const params = computed(() => {
   const query = {
@@ -267,5 +257,22 @@ watchEffect(async () => {
   else {
     selectedDiscussion.value = null
   }
+})
+
+// What the user receives on the subject and on each thread shown, read again whenever
+// they are: opening a discussion or answering in one makes the user follow it.
+const shownThreads = computed(() =>
+  [selectedDiscussion.value, ...(pageData.value?.data ?? [])]
+    .filter(thread => thread !== null)
+    .map(thread => ({ class: 'Discussion' as const, id: thread.id })),
+)
+const threadFollows = useFollowStates(shownThreads, 'discussion')
+const subjectFollows = useFollowStates(() => [{ class: props.type, id: props.subject.id }], 'discussion.new')
+onMounted(() => {
+  watch([pageData, selectedDiscussion], () => {
+    if (!me.value) return
+    threadFollows.read()
+    subjectFollows.read()
+  }, { immediate: true })
 })
 </script>

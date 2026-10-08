@@ -5,7 +5,6 @@
       :button-text="$t('Aide')"
       :on-right="true"
       :fixed="true"
-      :show-border="false"
     >
       <template #title>
         <span

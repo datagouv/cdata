@@ -16,6 +16,13 @@
       @badges-change="pendingBadges = $event"
       @submit="save"
     >
+      <template #aside>
+        <!-- Read again once saved: editing by hand makes a member follow it. -->
+        <SubjectNotifications
+          :key="dataset.last_modified"
+          :scope="{ class: 'Dataset', id: dataset.id }"
+        />
+      </template>
       <template #top>
         <SimpleBanner
           v-if="!dataset.permissions.edit"
@@ -244,6 +251,7 @@ import { RiArchiveLine, RiArrowGoBackLine, RiCheckLine, RiDeleteBin6Line, RiFile
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import ModalWithButton from '~/components/Modal/ModalWithButton.vue'
+import SubjectNotifications from '~/components/Notifications/SubjectNotifications.vue'
 import { updateBadges } from '~/api/badges'
 import type { DatasetForm } from '~/types/types'
 

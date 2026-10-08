@@ -12,6 +12,13 @@
       @feature="feature"
       @submit="save"
     >
+      <template #aside>
+        <!-- Read again once saved: editing by hand makes a member follow it. -->
+        <SubjectNotifications
+          :key="dataservice.metadata_modified_at"
+          :scope="{ class: 'Dataservice', id: dataservice.id }"
+        />
+      </template>
       <template #top>
         <SimpleBanner
           v-if="!dataservice.permissions.edit"
@@ -167,6 +174,7 @@ import type { Dataservice } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
+import SubjectNotifications from '~/components/Notifications/SubjectNotifications.vue'
 import type { DataserviceForm } from '~/types/types'
 
 const { t } = useTranslation()

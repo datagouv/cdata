@@ -1,8 +1,12 @@
 <template>
-  <div class="divide-y max-h-96 overflow-y-auto">
-    <div
+  <ul
+    class="m-0 p-0 list-none divide-y max-h-96 overflow-y-auto"
+    :aria-label="$t('Notifications')"
+  >
+    <li
       v-for="notification in notifications"
       :key="notification.id"
+      class="p-0"
     >
       <NotificationsMembershipRequest
         v-if="notification.details.class === 'MembershipRequestNotificationDetails'"
@@ -41,8 +45,8 @@
         v-else-if="notification.details.class === 'DataserviceCreatedNotificationDetails'"
         :notification="notification as DataserviceCreatedNotification"
       />
-    </div>
-  </div>
+    </li>
+  </ul>
 </template>
 
 <script setup lang="ts">

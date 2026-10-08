@@ -1,0 +1,61 @@
+import type { Page } from '@playwright/test'
+import { test, expect } from '../base'
+import { API_BASE, createDataset, gotoHydrated, openNotifications, setRule, withAccount } from '../helpers'
+
+// Both accounts sign in through the form, in this browser only: signing out of the
+// shared sessions of the other specs would sign them out too.
+async function signIn(page: Page, email: string) {
+  await page.getByLabel('Adresse email').fill(email)
+  await page.getByLabel('Mot de passe').fill('@1337Password42')
+  await page.getByRole('button', { name: 'Se connecter' }).first().click()
+  await page.waitForURL(url => url.pathname !== '/login')
+}
+
+// Signing out reloads the account, which answers 401 once signed out. udata refuses the
+// subject of a forged link with a 400.
+test.use({ allowedConsoleMessages: ['the server responded with a status of 401', 'the server responded with a status of 400'] })
+
+test('a mail link cannot make the page call another path of the API', async ({ page }) => {
+  // `..` in the id would climb from `/api/1/datasets/` to `/logout/`, with the session.
+  await gotoHydrated(page, '/login')
+  await signIn(page, 'normal@example.com')
+
+  await gotoHydrated(page, '/admin/me/notifications?scope=Dataset:..%2F..%2F..%2Flogout')
+
+  await expect(page.getByRole('button', { name: 'Confirmer' })).not.toBeVisible()
+  expect((await page.request.get(`${API_BASE}/api/1/me/`)).status()).toBe(200)
+})
+
+test('the rules of an account are not shown to the next one in the same tab', async ({ page, browser }) => {
+  const uniqueId = Date.now()
+
+  await gotoHydrated(page, '/login')
+  await signIn(page, 'admin@example.com')
+  const dataset = await createDataset(page.request, `Test changement de compte ${uniqueId}`, 'Dataset suivi par l\'admin')
+  await setRule(page.request, { scope: { class: 'Dataset', id: dataset.id }, event: null }, true)
+
+  try {
+    await gotoHydrated(page, '/admin/me/notifications')
+    await expect(page.getByRole('link', { name: `Test changement de compte ${uniqueId}` })).toBeVisible()
+
+    // From here on, only navigations inside the app: a full load would start from a
+    // fresh state, and show nothing whatever the app keeps.
+    await page.getByRole('button', { name: 'Se déconnecter' }).filter({ visible: true }).first().click()
+    await expect(page).toHaveURL(/\/$/)
+    await page.getByRole('link', { name: 'Se connecter' }).filter({ visible: true }).first().click()
+    await signIn(page, 'normal@example.com')
+    await openNotifications(page)
+    await page.getByTitle('Gérer mes notifications').click()
+
+    await expect(page).toHaveURL(/\/admin\/me\/notifications$/)
+    await expect(page.getByRole('heading', { name: 'Notifications', level: 1 })).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'E-mails' })).toBeVisible()
+    await expect(page.getByRole('link', { name: `Test changement de compte ${uniqueId}` })).not.toBeVisible()
+  }
+  finally {
+    await withAccount(browser, 'playwright/.auth/user.json', async (admin) => {
+      await setRule(admin, { scope: { class: 'Dataset', id: dataset.id }, event: null }, null)
+      await admin.delete(`${API_BASE}/api/1/datasets/${dataset.id}/`)
+    })
+  }
+})

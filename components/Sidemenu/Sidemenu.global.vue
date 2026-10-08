@@ -65,3 +65,11 @@ watchDebounced(width, () => {
   }
 }, { debounce: 200 })
 </script>
+
+<style scoped>
+/* The DSFR has no `--no-border`: the line of the right variant is drawn on the inner block. */
+.fr-sidemenu--right.fr-sidemenu--no-border :deep(.fr-sidemenu__inner) {
+  box-shadow: none;
+  border: 0;
+}
+</style>
