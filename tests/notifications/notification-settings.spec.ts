@@ -6,7 +6,6 @@ type ApiNotificationSetting = {
   id: string
   scope: { class: string, id: string } | null
   event: string | null
-  channel: string | null
   enabled: boolean
 }
 
@@ -26,9 +25,9 @@ function ruleRow(page: Page, link: Locator) {
 }
 
 async function resetNotificationPreferences(request: APIRequestContext) {
-  for (const { scope, event, channel } of await listSettings(request)) {
+  for (const { scope, event } of await listSettings(request)) {
     await request.put(`${API_BASE}/api/1/notifications/settings/`, {
-      data: { scope, event, channel, enabled: null },
+      data: { scope, event, enabled: null },
     })
   }
   await request.put(`${API_BASE}/api/1/me/`, { data: { mail_cadence: 'immediate', notifications_paused: false } })

@@ -186,7 +186,7 @@ type RuleRow = {
   done: string
 }
 
-const isFollow = (rule: NotificationSetting) => rule.scope !== null && rule.channel === null && rule.enabled
+const isFollow = (rule: NotificationSetting) => rule.scope !== null && rule.enabled
 
 const SCOPE_ICONS: Record<NotificationScope['class'], Component> = {
   Organization: RiBuilding2Line,
@@ -236,8 +236,6 @@ function followRow(rule: NotificationSetting): RuleRow {
 }
 
 function cutRow(rule: NotificationSetting): RuleRow {
-  const channel = rule.channel === 'mail' ? t('par e-mail') : rule.channel === 'app' ? t('dans l\'application') : null
-
   let sentence: string
   if (rule.scope && rule.event) sentence = t('Vous ne recevez plus : {event}', { event: eventLabel(rule.event) })
   else if (rule.scope?.class === 'Organization') sentence = t('Vous ne recevez rien sur cette organisation')
@@ -254,7 +252,7 @@ function cutRow(rule: NotificationSetting): RuleRow {
       : (rule.event && EVENT_ICONS[rule.event.split('.')[0]!]) || RiNotification3Line,
     title: rule.scope ? subjectTitle(rule) : rule.event ? eventLabel(rule.event) : t('Toutes les notifications'),
     page: rule.subject?.page ?? null,
-    detail: [rule.scope ? organizationOf(rule) : null, channel ? `${sentence} ${channel}` : sentence].filter(Boolean).join(' · '),
+    detail: [rule.scope ? organizationOf(rule) : null, sentence].filter(Boolean).join(' · '),
     action: rule.enabled ? t('Retirer') : t('Réactiver'),
     done: rule.enabled ? t('Réglage retiré') : t('Notifications réactivées'),
   }

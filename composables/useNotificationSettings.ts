@@ -16,7 +16,6 @@ function isSameScope(a: NotificationScope | null, b: NotificationScope | null) {
 export function isSameRule(setting: NotificationRuleKey, key: NotificationRuleKey) {
   return isSameScope(setting.scope, key.scope)
     && setting.event === key.event
-    && setting.channel === key.channel
 }
 
 // Every dimension left out is `null`, so that a caller only names what it decides about.
@@ -24,7 +23,6 @@ export function ruleKey(key: Partial<NotificationRuleKey>): NotificationRuleKey 
   return {
     scope: key.scope ?? null,
     event: key.event ?? null,
-    channel: key.channel ?? null,
   }
 }
 
@@ -58,7 +56,7 @@ export function useNotificationSettings() {
 
   // The user's "concerned" rules on a subject restricted to some of its notifications.
   function narrowerRules(scope: NotificationScope) {
-    return (settings.value ?? []).filter(setting => setting.event !== null && setting.channel === null && isSameScope(setting.scope, scope))
+    return (settings.value ?? []).filter(setting => setting.event !== null && isSameScope(setting.scope, scope))
   }
 
   // `null` removes the rule, so the broader rules or the defaults apply again.
