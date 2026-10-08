@@ -121,7 +121,7 @@ jobs:
         # Each (browser, shard) pair runs in its own container with its own MongoDB/Redis/udata,
         # so Playwright can keep workers=1 (shared backend state) while shards run in parallel.
         # Keep the shard count in sync with the `--shard=.../N` value in the "Run E2E tests" step.
-        shard: [1, 2]
+        shard: [1, 2, 3, 4]
         include:
           - browser: chromium
             projects: "--project=setup --project=setup-normal-user --project=chromium --project=chromium-normal-user --project=chromium-2fa-user --project=chromium-logged-out"
@@ -283,7 +283,7 @@ jobs:
           # collide between browsers (chromium 1/2 and firefox 1/2 both produce report-1.zip) when
           # the merge job downloads everything into a single directory.
           PLAYWRIGHT_BLOB_OUTPUT_NAME: report-${{ matrix.browser }}-${{ matrix.shard }}.zip
-        run: pnpm run test:e2e ${{ matrix.projects }} --shard=${{ matrix.shard }}/2
+        run: pnpm run test:e2e ${{ matrix.projects }} --shard=${{ matrix.shard }}/4
 
       - name: Kill udata server
         if: always()
