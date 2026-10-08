@@ -84,7 +84,7 @@ const question = computed(() => {
   if (scope) {
     return title.value ? t('Ne plus rien recevoir sur « {title} » ?', { title: title.value }) : t('Ne plus rien recevoir sur ce contenu ?')
   }
-  return t('Ne plus recevoir ce type de notification : {type} ?', { type: eventLabel(key.value!.event!) })
+  return t('Ne plus recevoir : {type} ?', { type: eventLabel(key.value!.event!) })
 })
 
 const done = computed(() => {

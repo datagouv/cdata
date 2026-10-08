@@ -138,7 +138,7 @@ test('the link of a mail only mutes its subject once confirmed', async ({ page, 
 test('the link of a mail about a type of notification can be dismissed', async ({ page, request }) => {
   await gotoHydrated(page, '/admin/me/notifications?event=discussion.comment')
 
-  await expect(page.getByText('Ne plus recevoir ce type de notification', { exact: false })).toBeVisible()
+  await expect(page.getByText('Ne plus recevoir : Réponses aux discussions ?')).toBeVisible()
   await page.getByRole('button', { name: 'Annuler' }).click()
 
   await expect(page).toHaveURL(/\/admin\/me\/notifications$/)

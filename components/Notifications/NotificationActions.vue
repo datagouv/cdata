@@ -72,7 +72,7 @@ const props = defineProps<{
 const { t } = useTranslation()
 const { mute } = useNotificationSettings()
 
-const { reasonsPhrase } = useNotificationLabels()
+const { reasonsPhrase, eventLabel } = useNotificationLabels()
 const reasons = computed(() => reasonsPhrase(props.notification.reasons))
 
 const ignoreSubject = (label: string, done: string, scope: NotificationScope): Action => ({ label, done, run: () => mute({ scope, event: null }) })
@@ -116,7 +116,7 @@ function subjectActions(notification: UserNotification): Array<Action> {
 const actions = computed<Array<Action>>(() => [
   ...subjectActions(props.notification),
   {
-    label: t('Ne plus recevoir ce type de notification'),
+    label: t('Ne plus recevoir : {type}', { type: eventLabel(props.notification.type) }),
     done: t('Vous ne recevrez plus ce type de notification'),
     run: () => mute({ scope: null, event: props.notification.type }),
   },
