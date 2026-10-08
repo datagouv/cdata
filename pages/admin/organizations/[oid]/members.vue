@@ -401,18 +401,11 @@ const url = computed(() => {
 
 const { refreshNotifications } = useNotifications()
 const { data: organization, status, refresh } = await useAPI<Organization>(url, { redirectOn404: true })
-const membershipRequests = ref<Array<PendingMembershipRequest> | null>(null)
-
-async function fetchPendingMembershipRequests() {
-  if (!organization.value?.permissions.members) return
-  membershipRequests.value = await $api<Array<PendingMembershipRequest>>(`/api/1/organizations/${currentOrganization.value?.id}/membership/`, {
-    query: { status: 'pending' },
-  })
-}
-
-watch(organization, () => {
-  fetchPendingMembershipRequests()
-}, { immediate: true })
+const { data: membershipRequests, refresh: refreshMembershipRequests } = await useAPI<Array<PendingMembershipRequest>>(() => `${url.value}/membership/`, {
+  query: { status: 'pending' },
+  // The API answers a 403 to whoever cannot manage the members.
+  enabled: () => Boolean(organization.value?.permissions.members),
+})
 
 const pendingRequests = computed(() => {
   if (!membershipRequests.value) return []
@@ -425,7 +418,7 @@ const pendingInvitations = computed(() => {
 })
 
 const refreshAll = async () => {
-  await Promise.all([refresh(), refreshNotifications(), fetchPendingMembershipRequests()])
+  await Promise.all([refresh(), refreshNotifications(), refreshMembershipRequests()])
 }
 
 const newRole = ref<MemberRole | null>(null)

@@ -322,7 +322,11 @@ test('switching resources does not pile up history entries', async ({ page, requ
   const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore history ${Date.now()}`, resourceTitles(3))
   createdDatasets.push(dataset.id)
 
+  // matomo.js is injected after the load event: leaving the page while it loads
+  // makes Firefox warn that the script failed to load.
+  const matomoLoaded = page.waitForResponse('**/matomo.js')
   await page.goto('/explore')
+  await matomoLoaded
   await page.goto(`/explore/${dataset.slug}`)
   await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
 
@@ -335,6 +339,9 @@ test('switching resources does not pile up history entries', async ({ page, requ
   // stepping through the resources we just viewed.
   await page.goBack()
   await expect(page).toHaveURL(/\/explore$/)
+  // The URL changes as soon as the page starts loading: ending the test there lets
+  // Firefox warn that layout was forced before the stylesheets were loaded.
+  await page.waitForLoadState()
 })
 
 test('switching resources drops the filters, sort and search of the previous one', async ({ page, request }) => {
