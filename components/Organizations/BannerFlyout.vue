@@ -29,8 +29,8 @@
           v-for="color in DSFR_BANNER_COLORS"
           :key="color.name"
           type="button"
-          :aria-label="$t(color.name)"
-          :title="$t(color.name)"
+          :aria-label="color.name"
+          :title="color.name"
           :aria-pressed="isSelected(color.hex)"
           class="size-11 rounded cursor-pointer border-0"
           :class="{ 'ring-2 ring-new-primary ring-offset-1': isSelected(color.hex) }"
@@ -211,9 +211,8 @@ async function onUpload(files: Array<File>) {
     await uploadOrganizationBanner(props.organization.id, file)
   }
   catch {
-    // Server rejection: the $api plugin already surfaces the server error
-    // detail as a toast; inline errors are reserved for client-side checks,
-    // so a single failure is never reported twice.
+    // Server errors are toasted by the $api plugin — no inline error, so a
+    // single failure is not reported twice. Skip the success path below.
     pending.value = false
     return
   }
