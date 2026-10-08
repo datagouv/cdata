@@ -112,14 +112,18 @@ function subjectActions(notification: UserNotification): Array<Action> {
   }
 }
 
+// The five badge types read as one, "Badges de l'organisation": turning them off turns
+// them all off, or the next badge of another kind would come anyway.
+const kind = computed(() => props.notification.type.startsWith('organization.badge.') ? 'organization.badge' : props.notification.type)
+
 // Every action says "no": on this subject when it is known, and on this kind of
 // notification anywhere.
 const actions = computed<Array<Action>>(() => [
   ...subjectActions(props.notification),
   {
-    label: t('Ne plus recevoir : {type}', { type: eventLabel(props.notification.type) }),
+    label: t('Ne plus recevoir : {type}', { type: eventLabel(kind.value) }),
     done: t('Vous ne recevrez plus ce type de notification'),
-    run: () => mute({ scope: null, event: props.notification.type }),
+    run: () => mute({ scope: null, event: kind.value }),
   },
 ])
 
