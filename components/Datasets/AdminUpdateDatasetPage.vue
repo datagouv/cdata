@@ -17,7 +17,9 @@
       @submit="save"
     >
       <template #aside>
+        <!-- Read again once saved: editing by hand makes a member follow it. -->
         <SubjectNotifications
+          :key="dataset.last_modified"
           :scope="{ class: 'Dataset', id: dataset.id }"
         />
       </template>

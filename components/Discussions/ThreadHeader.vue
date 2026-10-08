@@ -84,7 +84,6 @@ const props = withDefaults(defineProps<{
   followState?: FollowState
 }>(), {
   showActions: false,
-  followState: undefined,
 })
 const emit = defineEmits<{
   change: []

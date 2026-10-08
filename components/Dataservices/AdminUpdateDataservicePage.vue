@@ -13,7 +13,9 @@
       @submit="save"
     >
       <template #aside>
+        <!-- Read again once saved: editing by hand makes a member follow it. -->
         <SubjectNotifications
+          :key="dataservice.metadata_modified_at"
           :scope="{ class: 'Dataservice', id: dataservice.id }"
         />
       </template>

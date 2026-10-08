@@ -277,7 +277,8 @@ function followRow(rule: NotificationSetting): RuleRow {
     page: rule.subject?.page ?? null,
     detail: [
       rule.subject?.organization?.name,
-      rule.event ? t('{event} seulement', { event: eventLabel(rule.event) }) : null,
+      // A thread only has discussion notifications: following them is following it.
+      rule.event && rule.scope!.class !== 'Discussion' ? t('{event} seulement', { event: eventLabel(rule.event) }) : null,
       rule.origin === 'edited' ? t('Suivi automatique : vous l\'avez modifié') : null,
       rule.origin === 'discussed' ? t('Suivi automatique : vous avez participé à ses discussions') : null,
     ].filter(Boolean).join(' · '),

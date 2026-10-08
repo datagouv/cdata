@@ -167,6 +167,10 @@ export type NotificationResolved = {
   muted: boolean
   // The narrower events the user still follows on this subject
   followed_events: Array<NotificationEvent>
+  // The types asked about the user receives on this subject
+  heard_types: Array<UserNotification['type']>
+  // The user receives only some of the types that can be about this subject
+  partial: boolean
   subject: NotificationSubjectSummary
 }
 

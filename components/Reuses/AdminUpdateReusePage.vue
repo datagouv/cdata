@@ -13,7 +13,9 @@
       @submit="save"
     >
       <template #aside>
+        <!-- Read again once saved: editing by hand makes a member follow it. -->
         <SubjectNotifications
+          :key="reuse.last_modified"
           :scope="{ class: 'Reuse', id: reuse.id }"
         />
       </template>

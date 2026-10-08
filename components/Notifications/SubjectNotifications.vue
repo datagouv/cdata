@@ -54,7 +54,7 @@ import { BrandedButton, throwOnNever, toast } from '@datagouv/components-next'
 import { RiNotification3Line, RiNotificationOffLine } from '@remixicon/vue'
 import type { Component } from 'vue'
 import CdataLink from '../CdataLink.vue'
-import type { NotificationReason, NotificationResolved, NotificationScope } from '~/types/notifications'
+import type { NotificationResolved, NotificationScope } from '~/types/notifications'
 import { getSubjectDemonstrative } from '~/utils/discussions'
 
 // Whether the user hears about a subject, why, and the one thing to do about it, as
@@ -88,16 +88,11 @@ onMounted(async () => {
   }
 })
 
-// Reasons that bring nothing on a dataset, a reuse or an API by themselves: an editor
-// only hears about the badges of their organization by default.
-const SILENT_HERE: Array<NotificationReason> = ['explicit_subscriber', 'organization.editor']
-
-// Following some of its notifications only reads as not hearing about the subject as a
-// whole, when nothing else brings any: udata answers "heard" as soon as one type is. It
-// comes before "muted", which such a follow overrides.
+// Hearing only some of its notifications reads as such, before "muted", which a follow
+// of some of them overrides.
 const state = computed<'paused' | 'heard' | 'restricted' | 'muted' | 'none'>(() => {
   if (paused.value) return 'paused'
-  if (resolved.value?.followed_events.length && resolved.value.reasons.every(reason => SILENT_HERE.includes(reason))) return 'restricted'
+  if (resolved.value?.partial) return 'restricted'
   if (resolved.value?.heard) return 'heard'
   if (resolved.value?.muted) return 'muted'
   return 'none'
@@ -113,7 +108,7 @@ const sentence = computed(() => {
         reasons: reasonsPhrase(resolved.value!.reasons),
       })
     case 'restricted':
-      return t('Vous recevez seulement : {events}.', { events: humanJoin(resolved.value!.followed_events.map(eventLabel)) })
+      return t('Vous recevez seulement : {events}.', { events: humanJoin(resolved.value!.heard_types.map(eventLabel)) })
     case 'muted':
       return t('Vous avez coupé les notifications de {subject}.', { subject: subject.value })
     case 'none':
