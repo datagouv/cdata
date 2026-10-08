@@ -148,6 +148,8 @@ import type { MailCadence, NotificationScope, NotificationSetting } from '~/type
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
+
+useSeoMeta({ title: t('Notifications'), robots: 'noindex' })
 const me = useMe()
 const { settings, load, setRule, paused, setPaused } = useNotificationSettings()
 
