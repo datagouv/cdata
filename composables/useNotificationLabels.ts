@@ -13,6 +13,7 @@ export function useNotificationLabels() {
     'discussion.participant': t('parce que vous participez à cette discussion'),
     'explicit_subscriber': t('parce que vous suivez ce contenu'),
     'contributor': t('parce que vous avez modifié ce contenu'),
+    'discussant': t('parce que vous avez participé aux discussions de ce contenu'),
     'requester': t('parce que vous avez fait cette demande'),
     'sysadmin': t('en tant qu\'administrateur du site'),
   }))

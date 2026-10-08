@@ -234,6 +234,7 @@ function followRow(rule: NotificationSetting): RuleRow {
       organizationOf(rule),
       rule.event ? t('{event} seulement', { event: eventLabel(rule.event) }) : null,
       rule.origin === 'edited' ? t('Suivi automatique : vous l\'avez modifié') : null,
+      rule.origin === 'discussed' ? t('Suivi automatique : vous avez participé à ses discussions') : null,
     ].filter(Boolean).join(' · '),
     action: t('Ne plus suivre'),
     done: t('Vous ne suivez plus ce contenu'),

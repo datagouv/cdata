@@ -120,6 +120,7 @@ export type NotificationReason = 'owner'
   | 'discussion.participant'
   | 'explicit_subscriber'
   | 'contributor'
+  | 'discussant'
   | 'requester'
   | 'sysadmin'
 
@@ -134,7 +135,7 @@ export type NotificationSetting = NotificationRuleKey & {
   id: string
   enabled: boolean
   // What made the user follow a subject: by hand, or by editing it
-  origin: 'followed' | 'edited'
+  origin: 'followed' | 'edited' | 'discussed'
   // `null` without a scope, or once the subject is out of the user's reach
   subject: {
     title: string
