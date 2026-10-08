@@ -180,7 +180,9 @@ export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Datas
 }
 
 export function isGeopfSynced(resource: Resource | CommunityResource): boolean {
-  return resource.geopf?.push_status != null || typeof resource.geopf?.offering_id === 'string'
+  // 'error'/'timeout' produce no stored_data on cartes.gouv.fr so a failed push leaves nothing to protect.
+  const pushStatus = resource.geopf?.push_status
+  return pushStatus === 'pending' || pushStatus === 'done' || typeof resource.geopf?.offering_id === 'string'
 }
 
 export function resolveResourceExternalUrl<R extends Resource | CommunityResource>(
