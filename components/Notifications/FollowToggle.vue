@@ -36,7 +36,7 @@ const { t } = useTranslation()
 const { resolveFollow, follow } = useNotificationSettings()
 
 const resolved = ref<NotificationResolved | null>(null)
-const followed = computed(() => (resolved.value?.channels.length ?? 0) > 0)
+const followed = computed(() => resolved.value?.heard ?? false)
 const label = computed(() => followed.value ? props.unfollowLabel : props.followLabel)
 
 onMounted(async () => {

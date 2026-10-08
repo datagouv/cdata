@@ -125,7 +125,7 @@ export function useNotificationSettings() {
     const own = settings.value?.find(setting => isSameRule(setting, ruleKey(key)))
     if (own?.enabled) await unfollow(own)
     let resolved = await resolveFollow(scope, event)
-    if (resolved.channels.length) {
+    if (resolved.heard) {
       await setRule(key, false)
       resolved = await resolveFollow(scope, event)
     }

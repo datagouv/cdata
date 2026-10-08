@@ -103,8 +103,6 @@ export type UserNotification = MembershipRequestNotification | TransferRequestNo
 // covers `discussion.new`, `discussion.comment`…).
 export type NotificationEvent = string
 
-export type NotificationChannel = 'app' | 'mail'
-
 export type MailCadence = 'immediate' | 'daily' | 'weekly'
 
 export type NotificationScope = {
@@ -144,11 +142,11 @@ export type NotificationSetting = NotificationRuleKey & {
   } | null
 }
 
-// Whether, why and where the user hears about an event on a subject, rules and
-// defaults applied. The keys asked about are echoed, one answer per combination.
+// Whether and why the user hears about an event on a subject, rules and defaults
+// applied. The keys asked about are echoed, one answer per subject.
 export type NotificationResolved = {
-  scope: NotificationScope | null
+  scope: NotificationScope
   event: NotificationEvent | null
-  channels: Array<NotificationChannel>
+  heard: boolean
   reasons: Array<NotificationReason>
 }

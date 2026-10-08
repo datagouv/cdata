@@ -77,7 +77,7 @@ const muted = computed(() => ruleValue({ scope: props.scope }) === false)
 
 const sentence = computed(() => {
   if (paused.value) return t('Toutes vos notifications sont désactivées.')
-  if (resolved.value?.channels.length) {
+  if (resolved.value?.heard) {
     return t('Vous recevez les notifications de {subject}, {reasons}.', {
       subject: props.subject,
       reasons: reasonsPhrase(resolved.value?.reasons ?? []),
@@ -93,7 +93,7 @@ const sentence = computed(() => {
 const action = computed<Action | null>(() => {
   // Nothing to do here: "turn everything off" is undone on the settings page.
   if (paused.value) return null
-  if (resolved.value?.channels.length || restricted.value.length) {
+  if (resolved.value?.heard || restricted.value.length) {
     return {
       label: t('Ne plus recevoir'),
       icon: RiNotificationOffLine,
