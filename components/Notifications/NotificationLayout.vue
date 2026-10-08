@@ -25,22 +25,32 @@
         </p>
         <slot />
       </div>
-      <div class="flex-none flex m-0 gap-1.5">
-        <p class="m-0 text-xs">
-          <!-- Short month, to leave the room to the title. -->
-          <FormattedDate
-            :date="notification.created_at"
-            :options="{ dateStyle: 'medium' }"
+      <div class="flex-none flex flex-col items-end gap-1">
+        <div class="flex gap-1.5">
+          <p class="m-0 text-xs">
+            <!-- Short month, to leave the room to the title. -->
+            <FormattedDate
+              :date="notification.created_at"
+              :options="{ dateStyle: 'medium' }"
+            />
+          </p>
+          <AnimatedLoader
+            v-if="loading"
+            class="size-2 mt-1"
           />
-        </p>
-        <AnimatedLoader
-          v-if="loading"
-          class="size-2 mt-1"
-        />
-        <div
-          v-else-if="!notification.handled_at"
-          class="size-2 rounded-full mt-1"
-          :class="requireAction(notification) ? 'bg-danger' : 'bg-new-primary'"
+          <div
+            v-else-if="!notification.handled_at"
+            class="size-2 rounded-full mt-1"
+            :class="requireAction(notification) ? 'bg-danger' : 'bg-new-primary'"
+          />
+        </div>
+        <!-- Under the date, whatever the notification shows below its title. Above the
+             overlay link, so that it stays clickable. An action to take cannot be turned
+             off: leaving it unanswered would be a bug, not a setting. -->
+        <NotificationActions
+          v-if="!notification.requires_action"
+          class="relative z-10"
+          :notification
         />
       </div>
     </div>
@@ -52,14 +62,6 @@
       class="absolute inset-0 bg-none !bg-transparent"
       :title="$t('Marquer la notification comme lue')"
       @click="handleMarkAsRead"
-    />
-    <!-- In the corner under the date, empty on every notification: it moves nothing.
-         Above the overlay link, so that it stays clickable. An action to take cannot be
-         turned off: leaving it unanswered would be a bug, not a setting. -->
-    <NotificationActions
-      v-if="!notification.requires_action"
-      class="absolute right-2 bottom-2 z-10"
-      :notification
     />
   </div>
 </template>

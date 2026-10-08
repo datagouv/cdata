@@ -1,4 +1,4 @@
-import type { NotificationEvent, NotificationReason, NotificationRuleKey } from '~/types/notifications'
+import type { NotificationEvent, NotificationReason, NotificationRuleKey, NotificationScope } from '~/types/notifications'
 import { getSubjectDemonstrative } from '~/utils/discussions'
 
 // How notifications are spoken of to the user: why they get one, what kind it is and
@@ -64,18 +64,19 @@ export function useNotificationLabels() {
     return labelOf(name) === null ? null : name as NotificationEvent
   }
 
-  // What the toast says once a "stop" is done, wherever it was asked from, naming the
-  // subject by its title when the caller knows it.
-  function mutedMessage(key: NotificationRuleKey, title?: string | null) {
-    if (key.scope?.class === 'Discussion') {
-      return title ? t('Vous ne suivez plus la discussion « {title} »', { title }) : t('Vous ne suivez plus cette discussion')
-    }
-    if (key.scope) {
-      const subject = title ? `« ${title} »` : getSubjectDemonstrative(t, key.scope.class)
-      return t('Vous ne recevrez plus de notifications sur {subject}', { subject })
-    }
-    return t('Vous ne recevrez plus ce type de notification')
+  // A subject in a sentence: by its title when the caller knows it, "ce jeu de données"
+  // otherwise.
+  function subjectPhrase(subjectClass: NotificationScope['class'], title?: string | null) {
+    if (!title) return getSubjectDemonstrative(t, subjectClass)
+    return subjectClass === 'Discussion' ? t('la discussion « {title} »', { title }) : `« ${title} »`
   }
 
-  return { reasonsPhrase, eventLabel, knownEvent, mutedMessage }
+  // What the toast says once a "stop" is done, wherever it was asked from.
+  function mutedMessage(key: NotificationRuleKey, title?: string | null) {
+    if (key.scope?.class === 'Discussion') return t('Vous ne suivez plus {subject}', { subject: subjectPhrase('Discussion', title) })
+    if (key.scope) return t('Vous ne recevrez plus de notifications sur {subject}', { subject: subjectPhrase(key.scope.class, title) })
+    return t('Vous ne recevrez plus : {type}', { type: eventLabel(key.event!) })
+  }
+
+  return { reasonsPhrase, eventLabel, knownEvent, subjectPhrase, mutedMessage }
 }

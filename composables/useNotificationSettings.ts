@@ -53,16 +53,22 @@ export function useFollowStates(scopes: MaybeRefOrGetter<Array<NotificationScope
   const { resolveFollows } = useNotificationSettings()
   const answers = ref<Array<NotificationResolved> | null>(null)
   const failed = ref(false)
+  // Only the latest read counts: an earlier one answering last would bring back the
+  // subjects of the page before.
+  let latest = 0
 
   async function read() {
     const asked = toValue(scopes)
     if (!asked.length) return
+    const current = ++latest
     try {
-      answers.value = await resolveFollows(asked, event)
+      const read = await resolveFollows(asked, event)
+      if (current !== latest) return
+      answers.value = read
       failed.value = false
     }
     catch {
-      failed.value = true
+      if (current === latest) failed.value = true
     }
   }
 

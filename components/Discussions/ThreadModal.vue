@@ -33,9 +33,10 @@ const emit = defineEmits<{
 const opened = defineModel<boolean>()
 
 const follows = useFollowStates(() => [{ class: 'Discussion', id: props.thread.id }], 'discussion')
+// The admin table mounts it already open.
 watch(opened, (isOpened) => {
   if (isOpened) follows.read()
-})
+}, { immediate: true })
 
 function respond(close: () => void) {
   emit('responded')

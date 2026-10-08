@@ -40,7 +40,6 @@
 <script setup lang="ts">
 import { BannerAction, BrandedButton, toast } from '@datagouv/components-next'
 import type { NotificationResolved, NotificationRuleKey, NotificationScope } from '~/types/notifications'
-import { getSubjectDemonstrative } from '~/utils/discussions'
 
 // The ways out a mail offers land here rather than acting on their own: a mail scanner
 // opening the link must not unsubscribe anyone. The query is the key of the rule to
@@ -50,7 +49,7 @@ const { t } = useTranslation()
 const route = useRoute()
 const router = useRouter()
 const { mute, resolveFollows } = useNotificationSettings()
-const { eventLabel, knownEvent, mutedMessage } = useNotificationLabels()
+const { eventLabel, knownEvent, subjectPhrase, mutedMessage } = useNotificationLabels()
 
 // What the link asks to stop, before udata says whether it names anything. A type is
 // checked here, as no call is made for it alone; a subject is udata's to recognize.
@@ -84,15 +83,8 @@ onMounted(() => {
   watch(asked, readSubject, { immediate: true })
 })
 
-const key = computed<NotificationRuleKey | null>(() => asked.value?.scope ? (resolved.value && asked.value) : asked.value)
-
-// Its title when the user may still see it, "ce jeu de données" otherwise.
-const subjectName = computed(() => {
-  const scope = key.value?.scope
-  if (!scope) return ''
-  const title = resolved.value?.subject?.title
-  return title ? `« ${title} »` : getSubjectDemonstrative(t, scope.class)
-})
+// A subject is only asked about once udata recognized it.
+const key = computed<NotificationRuleKey | null>(() => asked.value?.scope && !resolved.value ? null : asked.value)
 
 // Nothing left to stop: the link was confirmed before, or nothing brings these
 // notifications any more.
@@ -100,15 +92,14 @@ const nothingToStop = computed(() => resolved.value !== null && !resolved.value.
 
 const question = computed(() => {
   const scope = key.value?.scope
-  if (scope?.class === 'Discussion') {
-    if (nothingToStop.value) return t('Vous ne suivez déjà plus cette discussion.')
-    return resolved.value?.subject ? t('Ne plus suivre la discussion {subject} ?', { subject: subjectName.value }) : t('Ne plus suivre cette discussion ?')
+  if (!scope) return t('Ne plus recevoir : {type} ?', { type: eventLabel(key.value!.event!) })
+  const subject = subjectPhrase(scope.class, resolved.value?.subject?.title)
+  if (scope.class === 'Discussion') {
+    if (nothingToStop.value) return t('Vous ne suivez déjà plus {subject}.', { subject })
+    return t('Ne plus suivre {subject} ?', { subject })
   }
-  if (scope) {
-    if (nothingToStop.value) return t('Vous ne recevez déjà rien sur {subject}.', { subject: subjectName.value })
-    return t('Ne plus rien recevoir sur {subject} ?', { subject: subjectName.value })
-  }
-  return t('Ne plus recevoir : {type} ?', { type: eventLabel(key.value!.event!) })
+  if (nothingToStop.value) return t('Vous ne recevez déjà rien sur {subject}.', { subject })
+  return t('Ne plus rien recevoir sur {subject} ?', { subject })
 })
 
 function dismiss() {

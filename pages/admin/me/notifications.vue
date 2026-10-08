@@ -13,6 +13,7 @@
         color="secondary"
         size="xs"
         :icon="RiNotificationOffLine"
+        :loading="pausing"
         @click="togglePaused(true)"
       >
         {{ t('Mettre en pause les notifications') }}
@@ -35,6 +36,7 @@
           <BrandedButton
             color="secondary"
             size="xs"
+            :loading="pausing"
             @click="togglePaused(false)"
           >
             {{ t('Réactiver') }}
@@ -42,45 +44,40 @@
         </template>
       </BannerAction>
 
-      <PaddedContainer class="!p-0 divide-y divide-gray-default">
-        <h2 class="m-0 px-5 py-3 text-base font-bold">
+      <section>
+        <h2 class="uppercase !text-sm !my-5">
           {{ t('E-mails') }}
         </h2>
-        <div class="px-5 py-4">
+        <PaddedContainer class="!p-5">
           <RadioButtons
             :label="t('Rythme')"
             :options="cadenceOptions"
             :model-value="me?.mail_cadence"
             @update:model-value="saveCadence"
           />
-        </div>
-      </PaddedContainer>
+        </PaddedContainer>
+      </section>
 
-      <template
-        v-for="section in ruleSections"
+      <!-- Only the follows hold their place while loading: the cut notifications are
+           usually none, and their section would show up only to go away. -->
+      <section
+        v-for="section in ruleSections.filter(section => section.list.status.value === 'error' || section.empty || section.list.data.value?.total)"
         :key="section.title"
       >
-        <PaddedContainer
-          v-if="section.list.status.value === 'error'"
-          class="!p-0"
-        >
-          <h2 class="m-0 px-5 py-3 text-base font-bold border-b border-gray-default">
-            {{ section.title }}
-          </h2>
-          <p class="m-0 px-5 py-4 text-sm text-gray-medium">
+        <h2 class="uppercase !text-sm !my-5">
+          {{ section.title }}
+        </h2>
+        <PaddedContainer class="!p-0">
+          <p
+            v-if="section.list.status.value === 'error'"
+            class="m-0 px-5 py-4 text-sm text-gray-medium"
+          >
             {{ t('Cette liste n\'a pas pu être chargée.') }}
           </p>
-        </PaddedContainer>
-        <!-- Only the follows hold their place while loading: the cut notifications are
-             usually none, and their section would show up only to go away. -->
-        <PaddedContainer
-          v-else-if="!section.list.data.value && section.empty"
-          class="!p-0"
-        >
-          <h2 class="m-0 px-5 py-3 text-base font-bold border-b border-gray-default">
-            {{ section.title }}
-          </h2>
-          <div class="animate-pulse-placeholder divide-y divide-gray-default">
+          <div
+            v-else-if="!section.list.data.value"
+            class="animate-pulse-placeholder divide-y divide-gray-default"
+          >
             <div
               v-for="index in 3"
               :key="index"
@@ -90,16 +87,8 @@
               <div class="bg-gray-200 h-2 w-1/3" />
             </div>
           </div>
-        </PaddedContainer>
-        <PaddedContainer
-          v-else-if="section.list.data.value && (section.list.data.value.total || section.empty)"
-          class="!p-0"
-        >
-          <h2 class="m-0 px-5 py-3 text-base font-bold border-b border-gray-default">
-            {{ section.title }}
-          </h2>
           <div
-            v-if="!section.rows.length && section.empty"
+            v-else-if="!section.rows.length && section.empty"
             class="px-5 py-8 flex flex-col items-center text-center gap-2"
           >
             <RiNotification3Line
@@ -152,6 +141,8 @@
                 class="self-center"
                 color="tertiary"
                 size="xs"
+                :loading="withdrawing === row.rule.id"
+                :disabled="withdrawing !== null"
                 @click="withdraw(row)"
               >
                 {{ row.action }}
@@ -159,7 +150,7 @@
             </li>
           </ul>
           <Pagination
-            v-if="section.list.data.value.total > PAGE_SIZE"
+            v-if="section.list.data.value && section.list.data.value.total > PAGE_SIZE"
             class="px-5 py-3 border-t border-gray-default"
             :page="section.list.page.value"
             :page-size="PAGE_SIZE"
@@ -167,7 +158,7 @@
             @change="(page: number) => section.list.page.value = page"
           />
         </PaddedContainer>
-      </template>
+      </section>
     </div>
   </div>
 </template>
@@ -225,9 +216,16 @@ async function saveMe(body: Partial<Pick<Me, 'mail_cadence' | 'notifications_pau
   me.value.notifications_paused = updated.notifications_paused
 }
 
+const pausing = ref(false)
 async function togglePaused(value: boolean) {
-  await saveMe({ notifications_paused: value })
-  toast.success(value ? t('Toutes les notifications sont désactivées') : t('Notifications réactivées'))
+  pausing.value = true
+  try {
+    await saveMe({ notifications_paused: value })
+    toast.success(value ? t('Toutes les notifications sont désactivées') : t('Notifications réactivées'))
+  }
+  finally {
+    pausing.value = false
+  }
 }
 
 const cadenceOptions = computed<Array<{ value: MailCadence, label: string }>>(() => [
@@ -265,7 +263,7 @@ const EVENT_ICONS: Record<EventFamily, Component> = {
   harvest: RiServerLine,
 }
 
-const { eventLabel } = useNotificationLabels()
+const { eventLabel, subjectPhrase } = useNotificationLabels()
 
 function subjectTitle(rule: NotificationSetting) {
   return rule.subject?.title ?? t('Contenu qui ne vous est plus accessible')
@@ -284,9 +282,7 @@ function followRow(rule: NotificationSetting): RuleRow {
       rule.origin === 'discussed' ? t('Suivi automatique : vous avez participé à ses discussions') : null,
     ].filter(Boolean).join(' · '),
     action: t('Ne plus suivre'),
-    done: t('Vous ne suivez plus {subject}', {
-      subject: rule.subject ? `« ${rule.subject.title} »` : getSubjectDemonstrative(t, rule.scope!.class),
-    }),
+    done: t('Vous ne suivez plus {subject}', { subject: subjectPhrase(rule.scope!.class, rule.subject?.title) }),
   }
 }
 
@@ -331,17 +327,26 @@ const ruleSections = computed<Array<RuleSection>>(() => [
     // is for the rest, and nothing here does not mean hearing about nothing.
     empty: {
       title: t('Aucun contenu suivi en plus'),
-      explanation: t('Pour être prévenu de ce qui se passe sur un contenu, cliquez sur « Suivre » depuis sa page de discussions ou son espace d\'administration.'),
+      explanation: t('Pour être prévenu de ce qui se passe sur un contenu, cliquez sur « Suivre » dans l\'encart « Notifications » de son espace d\'administration, ou sur « Suivre les discussions » pour ses seules nouvelles discussions.'),
     },
   },
   { title: t('Notifications coupées'), list: cuts, rows: (cuts.data.value?.data ?? []).map(cutRow), empty: null },
 ])
 
+// The rule being withdrawn, one at a time.
+const withdrawing = ref<string | null>(null)
+
 // Withdrawing an automatic follow writes a "no" rather than nothing, which udata decides:
 // the rule then moves to the cut notifications, hence both lists read again.
 async function withdraw(row: RuleRow) {
-  await setRule({ scope: row.rule.scope, event: row.rule.event }, null)
-  await Promise.all([follows.refresh(), cuts.refresh()])
-  toast.success(row.done)
+  withdrawing.value = row.rule.id
+  try {
+    await setRule({ scope: row.rule.scope, event: row.rule.event }, null)
+    await Promise.all([follows.refresh(), cuts.refresh()])
+    toast.success(row.done)
+  }
+  finally {
+    withdrawing.value = null
+  }
 }
 </script>
