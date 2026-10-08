@@ -140,6 +140,24 @@ test('opening a discussion as an editor follows the subject, without reloading t
   await expect(page.getByRole('button', { name: 'Ne plus suivre les discussions' })).toBeVisible()
 })
 
+test('an editor following the new discussions of a dataset receives those alone', async ({ page, request, browser }) => {
+  const uniqueId = Date.now()
+  const dataset = await asAdmin(browser, async (admin) => {
+    const organization = await createOrganization(admin, `Test éditeur restreint ${uniqueId}`)
+    adminOrganizations.push(organization.id)
+    await joinOrganization(admin, request, organization.id, 'editor')
+    const created = await createDataset(admin, `Test éditeur restreint ${uniqueId}`, 'Dataset de l\'organisation de l\'éditeur', { organization: organization.id })
+    adminDatasets.push(created.id)
+    return created
+  })
+  await setRule(request, { scope: { class: 'Dataset', id: dataset.id }, event: 'discussion.new' }, true)
+
+  await gotoHydrated(page, `/admin/datasets/${dataset.id}`)
+
+  await expect(page.getByText('Vous recevez seulement : Nouvelles discussions.')).toBeVisible()
+  await expect(page.getByText('en tant qu\'éditeur')).not.toBeVisible()
+})
+
 test('the menu of a discussion notification stops the thread, then the whole dataset', async ({ page, request, browser }) => {
   const uniqueId = Date.now()
   const dataset = await createDataset(request, `Test menu discussion ${uniqueId}`, 'Dataset pour tester le menu d\'une discussion')

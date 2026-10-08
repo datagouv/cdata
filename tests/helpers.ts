@@ -1,6 +1,7 @@
 import type { APIRequestContext, Browser, Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 import type { MemberRole } from '@datagouv/components-next'
+import type { DiscussionSubject } from '../types/discussions'
 import type { NotificationRuleKey, NotificationSetting } from '../types/notifications'
 
 export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
@@ -117,7 +118,7 @@ export async function createReuse(request: APIRequestContext, title: string, url
   return await response.json()
 }
 
-export async function createDiscussion(request: APIRequestContext, subject: { class: 'Dataset' | 'Dataservice', id: string }, title: string): Promise<{ id: string }> {
+export async function createDiscussion(request: APIRequestContext, subject: DiscussionSubject, title: string): Promise<{ id: string }> {
   const response = await request.post(`${API_BASE}/api/1/discussions/`, {
     data: {
       subject,

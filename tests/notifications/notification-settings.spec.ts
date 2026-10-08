@@ -178,6 +178,35 @@ test('a follow restricted to some notifications reads before a no on the whole s
   await expect(page.getByText('Vous avez coupé les notifications')).not.toBeVisible()
 })
 
+test('an owner who muted their dataset but its new discussions reads it the same way', async ({ page, request }) => {
+  // The role does not bring back what the no took away.
+  const uniqueId = Date.now()
+  const dataset = await createDataset(request, `Test propriétaire restreint ${uniqueId}`, 'Dataset de l\'admin, coupé puis restreint')
+  createdDatasets.push(dataset.id)
+  await putRule(request, { class: 'Dataset', id: dataset.id }, null, false)
+  await putRule(request, { class: 'Dataset', id: dataset.id }, 'discussion.new', true)
+
+  await gotoHydrated(page, `/admin/datasets/${dataset.id}`)
+
+  await expect(page.getByText('Vous recevez seulement : Nouvelles discussions.')).toBeVisible()
+  await expect(page.getByText('en tant que propriétaire')).not.toBeVisible()
+})
+
+test('the link of a thread mail already confirmed offers nothing to confirm', async ({ page, request }) => {
+  const uniqueId = Date.now()
+  const dataset = await createDataset(request, `Test fil déjà coupé ${uniqueId}`, 'Dataset pour tester un lien de fil déjà confirmé')
+  createdDatasets.push(dataset.id)
+  const discussion = await openDiscussion(request, dataset.id, `Fil déjà coupé ${uniqueId}`)
+  await putRule(request, { class: 'Discussion', id: discussion.id }, 'discussion', false)
+
+  await gotoHydrated(page, `/admin/me/notifications?scope=Discussion:${discussion.id}&event=discussion`)
+
+  await expect(page.getByText(`Vous ne suivez déjà plus la discussion « Fil déjà coupé ${uniqueId} ».`)).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Confirmer' })).not.toBeVisible()
+  await page.getByRole('button', { name: 'Fermer' }).click()
+  await expect(page).toHaveURL(/\/admin\/me\/notifications$/)
+})
+
 test('a followed subject is unfollowed from the settings page', async ({ page, request }) => {
   const uniqueId = Date.now()
   const dataset = await createDataset(request, `Test contenu suivi ${uniqueId}`, 'Dataset pour tester la liste des contenus suivis')
