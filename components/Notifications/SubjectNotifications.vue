@@ -56,7 +56,7 @@ type Action = { label: string, icon: Component, done: string, run: () => Promise
 
 const { t } = useTranslation()
 const { load, ruleValue, narrowerRules, setRule, resolveFollow, follow, paused } = useNotificationSettings()
-const { reasonsPhrase, eventLabel, channelsPhrase } = useNotificationLabels()
+const { reasonsPhrase, eventLabel } = useNotificationLabels()
 
 const titleId = useId()
 const resolved = ref<NotificationResolved | null>(null)
@@ -77,11 +77,9 @@ const muted = computed(() => ruleValue({ scope: props.scope }) === false)
 
 const sentence = computed(() => {
   if (paused.value) return t('Toutes vos notifications sont désactivées.')
-  const channels = resolved.value?.channels ?? []
-  if (channels.length) {
-    return t('Vous recevez les notifications de {subject} {channels}, {reasons}.', {
+  if (resolved.value?.channels.length) {
+    return t('Vous recevez les notifications de {subject}, {reasons}.', {
       subject: props.subject,
-      channels: channelsPhrase(channels),
       reasons: reasonsPhrase(resolved.value?.reasons ?? []),
     })
   }

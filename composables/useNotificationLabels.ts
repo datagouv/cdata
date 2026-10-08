@@ -1,4 +1,4 @@
-import type { NotificationChannel, NotificationEvent, NotificationReason } from '~/types/notifications'
+import type { NotificationEvent, NotificationReason } from '~/types/notifications'
 
 // How notifications are spoken of to the user: why they get one, what kind it is and
 // where it reaches them. Shared by the bell, the settings page and the subject pages.
@@ -46,11 +46,5 @@ export function useNotificationLabels() {
     return event
   }
 
-  // "dans l'application et par e-mail"
-  function channelsPhrase(channels: Array<NotificationChannel>) {
-    if (channels.includes('app') && channels.includes('mail')) return t('dans l\'application et par e-mail')
-    return channels.includes('app') ? t('dans l\'application seulement') : t('par e-mail seulement')
-  }
-
-  return { reasonsPhrase, eventLabel, channelsPhrase }
+  return { reasonsPhrase, eventLabel }
 }

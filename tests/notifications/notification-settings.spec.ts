@@ -1,6 +1,6 @@
 import type { APIRequestContext, Locator, Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, createOrganization, deleteDatasets, deleteOrganizations, gotoHydrated } from '../helpers'
+import { API_BASE, createDataset, deleteDatasets, gotoHydrated } from '../helpers'
 
 type ApiNotificationSetting = {
   id: string
@@ -14,7 +14,6 @@ type ApiNotificationSetting = {
 test.describe.configure({ mode: 'serial' })
 
 const createdDatasets: Array<string> = []
-const createdOrganizations: Array<string> = []
 
 async function listSettings(request: APIRequestContext): Promise<Array<ApiNotificationSetting>> {
   const response = await request.get(`${API_BASE}/api/1/notifications/settings/`)
@@ -42,7 +41,6 @@ test.beforeEach(async ({ request }) => {
 test.afterEach(async ({ request }) => {
   await resetNotificationPreferences(request)
   await deleteDatasets(request, createdDatasets)
-  await deleteOrganizations(request, createdOrganizations)
 })
 
 test('the mail cadence is saved on the account', async ({ page, request }) => {
@@ -59,26 +57,6 @@ test('the mail cadence is saved on the account', async ({ page, request }) => {
   await expect(page.getByLabel('Un résumé par semaine')).toBeChecked()
 })
 
-test('the channel of a kind of notification is saved and can be withdrawn', async ({ page, request }) => {
-  await gotoHydrated(page, '/admin/me/notifications')
-
-  const discussionsByMail = page.getByLabel('Discussions : E-mail')
-
-  await discussionsByMail.uncheck({ force: true })
-  await expect(page.getByText('Préférence enregistrée')).toBeVisible()
-
-  expect(await listSettings(request)).toEqual([
-    expect.objectContaining({ scope: null, event: 'discussion', channel: 'mail', enabled: false }),
-  ])
-
-  await page.reload()
-  await page.waitForLoadState('networkidle')
-  await expect(discussionsByMail).not.toBeChecked()
-
-  await discussionsByMail.check({ force: true })
-  await expect.poll(() => listSettings(request)).toEqual([])
-})
-
 test('notifications are paused and resumed from the top of the page', async ({ page, request }) => {
   await gotoHydrated(page, '/admin/me/notifications')
 
@@ -89,34 +67,6 @@ test('notifications are paused and resumed from the top of the page', async ({ p
   await page.getByRole('button', { name: 'Réactiver' }).click()
   await expect.poll(async () => (await (await request.get(`${API_BASE}/api/1/me/`)).json()).notifications_paused).toBe(false)
   await expect(page.getByRole('button', { name: 'Mettre en pause les notifications' })).toBeVisible()
-})
-
-test('an organization is set to what one follows and to its own channels', async ({ page, request }) => {
-  const organization = await createOrganization(request, `Organisation des réglages ${Date.now()}`)
-  createdOrganizations.push(organization.id)
-
-  await gotoHydrated(page, '/admin/me/notifications')
-  const level = page.getByLabel(`Notifications de ${organization.name}`)
-  const channels = page.getByLabel(`Canaux de ${organization.name}`)
-
-  // An administrator hears about everything by default: only a different choice is stored.
-  await expect(level).toHaveValue('all')
-  await level.selectOption('followed')
-  await channels.selectOption('app')
-  await expect.poll(() => listSettings(request)).toEqual(expect.arrayContaining([
-    expect.objectContaining({ scope: { class: 'Organization', id: organization.id }, event: null, channel: null, enabled: false }),
-    expect.objectContaining({ scope: { class: 'Organization', id: organization.id }, channel: 'app', enabled: true }),
-    expect.objectContaining({ scope: { class: 'Organization', id: organization.id }, channel: 'mail', enabled: false }),
-  ]))
-
-  await page.reload()
-  await page.waitForLoadState('networkidle')
-  await expect(level).toHaveValue('followed')
-  await expect(channels).toHaveValue('app')
-
-  await level.selectOption('all')
-  await channels.selectOption('inherit')
-  await expect.poll(() => listSettings(request)).toEqual([])
 })
 
 test('a discussion is muted from its thread and reactivated from the settings', async ({ page, request }) => {

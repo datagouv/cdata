@@ -1,4 +1,4 @@
-import type { NotificationChannel, NotificationEvent, NotificationResolved, NotificationRuleKey, NotificationScope, NotificationSetting } from '~/types/notifications'
+import type { NotificationEvent, NotificationResolved, NotificationRuleKey, NotificationScope, NotificationSetting } from '~/types/notifications'
 import type { Me } from '~/utils/auth'
 
 // Shared by every discussion of a page: they all read the same list, fetched once.
@@ -32,9 +32,8 @@ export function ruleKey(key: Partial<NotificationRuleKey>): NotificationRuleKey 
 // and the only place writing them.
 //
 // Reading is udata's job (`/notifications/resolved/`). Writing is not: which rule to
-// write depends on how udata ranks them, a subject beating an event,
-// and whether a rule says "concerned" or names a channel. That knowledge lives here, in
-// one function per thing a user can ask for, rather than in every button.
+// write depends on how udata ranks them, a subject beating an event. That knowledge lives
+// here, in one function per thing a user can ask for, rather than in every button.
 export function useNotificationSettings() {
   const settings = useState<Array<NotificationSetting> | null>('notification-settings', () => null)
   const { $api } = useNuxtApp()
@@ -135,29 +134,6 @@ export function useNotificationSettings() {
     await setRule({ scope }, followed)
   }
 
-  // Whether some kinds of notification reach the user through a channel. Only a channel
-  // turned off is stored: turned on is the default, and a stored "yes" would also beat
-  // the "no" of an organization's channels, being on an event.
-  function kindChannelOn(events: Array<NotificationEvent>, channel: NotificationChannel) {
-    return events.every(event => ruleValue({ event, channel }) !== false)
-  }
-
-  async function setKindChannel(events: Array<NotificationEvent>, channel: NotificationChannel, on: boolean) {
-    await Promise.all(events.map(event => setRule({ event, channel }, on ? null : false)))
-  }
-
-  // The channels of an organization replace those of the kinds of notification for
-  // everything about it; `null` keeps those.
-  function organizationChannels(scope: NotificationScope): Array<NotificationChannel> | null {
-    const chosen = (['app', 'mail'] as const).map(channel => [channel, ruleValue({ scope, channel })] as const)
-    if (chosen.every(([, enabled]) => enabled === null)) return null
-    return chosen.filter(([, enabled]) => enabled).map(([channel]) => channel)
-  }
-
-  async function setOrganizationChannels(scope: NotificationScope, channels: Array<NotificationChannel> | null) {
-    await Promise.all((['app', 'mail'] as const).map(channel => setRule({ scope, channel }, channels ? channels.includes(channel) : null)))
-  }
-
   // "Turn everything off" is a field of the user rather than a rule: no rule, however
   // precise, can bring anything back.
   const me = useMaybeMe()
@@ -168,5 +144,5 @@ export function useNotificationSettings() {
     if (me.value) me.value.notifications_paused = updated.notifications_paused
   }
 
-  return { settings, load, ruleValue, narrowerRules, setRule, resolve, resolveFollow, follow, followSubject, kindChannelOn, setKindChannel, organizationChannels, setOrganizationChannels, paused, setPaused }
+  return { settings, load, ruleValue, narrowerRules, setRule, resolveFollow, follow, followSubject, paused, setPaused }
 }
