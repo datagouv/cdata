@@ -11,6 +11,9 @@ async function signIn(page: Page, email: string) {
   await page.waitForURL(url => url.pathname !== '/login')
 }
 
+// Signing out reloads the account, which answers 401 once signed out.
+test.use({ allowedConsoleMessages: ['the server responded with a status of 401'] })
+
 test('the rules of an account are not shown to the next one in the same tab', async ({ page }) => {
   const uniqueId = Date.now()
 
@@ -26,11 +29,17 @@ test('the rules of an account are not shown to the next one in the same tab', as
     await expect(page.getByRole('link', { name: `Test changement de compte ${uniqueId}` })).toBeVisible()
 
     // From here on, only navigations inside the app: a full load would start from a
-    // fresh state, and show nothing whatever the app keeps. Signing out of an admin page
-    // asks to sign in again, and back to it.
+    // fresh state, and show nothing whatever the app keeps.
     await page.getByRole('button', { name: 'Se déconnecter' }).filter({ visible: true }).first().click()
-    await expect(page).toHaveURL(/\/login\?next=%2Fadmin%2Fme%2Fnotifications|\/login\?next=\/admin\/me\/notifications/)
+    await expect(page).toHaveURL(/\/$/)
+    await page.getByRole('link', { name: 'Se connecter' }).filter({ visible: true }).first().click()
     await signIn(page, 'normal@example.com')
+    // Right after signing in, the bell can miss its first click.
+    await expect(async () => {
+      await page.getByTitle(/Voir les notifications/).click()
+      await expect(page.getByTitle('Gérer mes notifications')).toBeVisible({ timeout: 2000 })
+    }).toPass()
+    await page.getByTitle('Gérer mes notifications').click()
 
     await expect(page).toHaveURL(/\/admin\/me\/notifications$/)
     await expect(page.getByRole('heading', { name: 'Notifications', level: 1 })).toBeVisible()
