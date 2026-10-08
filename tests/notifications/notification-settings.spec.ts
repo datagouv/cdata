@@ -67,7 +67,7 @@ test('a discussion is muted from its thread and reactivated from the settings', 
 
   // The owner of the dataset hears about its threads without having followed them.
   await page.getByTitle('Ne plus suivre cette discussion').click()
-  await expect(page.getByText('Vous ne suivez plus cette discussion')).toBeVisible()
+  await expect(page.getByText(`Vous ne suivez plus la discussion « Discussion à suivre ${uniqueId} »`)).toBeVisible()
   await expect.poll(() => rulesOn(request, discussion.id)).toEqual([
     expect.objectContaining({ scope: { class: 'Discussion', id: discussion.id }, event: 'discussion', enabled: false }),
   ])
@@ -97,7 +97,7 @@ test('stopping a thread one followed only withdraws the follow', async ({ page, 
 
   // Nothing but this follow brought the thread in: no "no" is left behind.
   await page.getByTitle('Ne plus suivre cette discussion').click()
-  await expect(page.getByText('Vous ne suivez plus cette discussion')).toBeVisible()
+  await expect(page.getByText(`Vous ne suivez plus la discussion « Fil à suivre ${uniqueId} »`)).toBeVisible()
   await expect.poll(() => rulesOn(request, discussion.id)).toEqual([])
 })
 
@@ -188,7 +188,7 @@ test('a followed subject is unfollowed from the settings page', async ({ page, r
   await expect(link).toBeVisible()
 
   await ruleRow(page, link).getByRole('button', { name: 'Ne plus suivre' }).click()
-  await expect(page.getByText('Vous ne suivez plus ce jeu de données')).toBeVisible()
+  await expect(page.getByText(`Vous ne suivez plus « Test contenu suivi ${uniqueId} »`)).toBeVisible()
   await expect.poll(() => rulesOn(request, dataset.id)).toEqual([])
   await expect(link).not.toBeVisible()
 })
@@ -205,7 +205,7 @@ test('the link of a mail only mutes its subject once confirmed', async ({ page, 
   expect(await rulesOn(request, dataset.id)).toEqual([])
 
   await page.getByRole('button', { name: 'Confirmer' }).click()
-  await expect(page.getByText('Vous ne recevrez plus de notifications sur ce jeu de données')).toBeVisible()
+  await expect(page.getByText(`Vous ne recevrez plus de notifications sur « Test lien de mail ${uniqueId} »`)).toBeVisible()
   await expect.poll(() => rulesOn(request, dataset.id)).toEqual([
     expect.objectContaining({ scope: { class: 'Dataset', id: dataset.id }, event: null, enabled: false }),
   ])
@@ -280,7 +280,7 @@ test('the link of a discussion mail stops following the thread once confirmed', 
   expect(await rulesOn(request, discussion.id)).toEqual([])
 
   await page.getByRole('button', { name: 'Confirmer' }).click()
-  await expect(page.getByText('Vous ne suivez plus cette discussion')).toBeVisible()
+  await expect(page.getByText(`Vous ne suivez plus la discussion « Fil du mail ${uniqueId} »`)).toBeVisible()
   await expect.poll(() => rulesOn(request, discussion.id)).toEqual([
     expect.objectContaining({ scope: { class: 'Discussion', id: discussion.id }, event: 'discussion', enabled: false }),
   ])

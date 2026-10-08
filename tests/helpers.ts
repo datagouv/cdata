@@ -165,6 +165,22 @@ export async function withAccount<T>(browser: Browser, storageState: string, run
   }
 }
 
+// The account of `member` joins an organization the way the site makes it: invited by an
+// administrator, then accepting. The invitation accepted is the one just made, whatever
+// else is pending.
+export async function joinOrganization(admin: APIRequestContext, member: APIRequestContext, organizationId: string, role: string): Promise<void> {
+  const me = await (await member.get(`${API_BASE}/api/1/me/`)).json()
+  const invited = await admin.post(`${API_BASE}/api/1/organizations/${organizationId}/member/`, { data: { user: me.id, role } })
+  if (!invited.ok()) {
+    throw new Error(`Failed to invite into ${organizationId}: ${invited.status()} ${(await invited.text()).slice(0, 300)}`)
+  }
+  const { id } = await invited.json()
+  const accepted = await member.post(`${API_BASE}/api/1/me/org_invitations/${id}/accept/`)
+  if (!accepted.ok()) {
+    throw new Error(`Failed to accept the invitation ${id}: ${accepted.status()} ${(await accepted.text()).slice(0, 300)}`)
+  }
+}
+
 export async function deleteReuses(request: APIRequestContext, ids: Array<string>): Promise<void> {
   for (const id of ids.splice(0)) {
     await request.delete(`${API_BASE}/api/1/reuses/${id}/`)

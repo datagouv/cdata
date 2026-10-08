@@ -1,6 +1,6 @@
 import type { APIRequestContext, Browser } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, createDiscussion, createOrganization, createReuse, deleteDatasets, deleteOrganizations, deleteReuses, gotoHydrated, listSettings, openNotifications, setRule, withAccount } from '../helpers'
+import { API_BASE, createDataset, createDiscussion, createOrganization, createReuse, deleteDatasets, deleteOrganizations, deleteReuses, gotoHydrated, joinOrganization, listSettings, openNotifications, setRule, withAccount } from '../helpers'
 
 // What changes the whole account (cadence, pause, a type turned off anywhere) lives here:
 // only one project runs the normal user, so no other test sees these changes while they
@@ -80,6 +80,12 @@ test('during a pause, the box says so and the follow buttons still work', async 
   await page.getByRole('button', { name: 'Ne plus suivre les discussions' }).click()
   await expect(page.getByText('Vous ne serez plus prévenu des nouvelles discussions')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Suivre les discussions' })).toBeVisible()
+
+  // A no on the new discussions of the dataset alone, listed as such.
+  await gotoHydrated(page, '/admin/me/notifications')
+  const row = page.getByRole('listitem').filter({ has: page.getByRole('link', { name: `Test pause ${uniqueId}` }) })
+  await expect(row).toContainText('Vous ne recevez plus : Nouvelles discussions')
+  await expect(row.getByRole('button', { name: 'Réactiver' })).toBeVisible()
 })
 
 test('an automatic follow stays stopped when the subject is edited again', async ({ page, request }) => {
@@ -94,7 +100,10 @@ test('an automatic follow stays stopped when the subject is edited again', async
   const row = page.getByRole('listitem').filter({ has: page.getByRole('link', { name: `Test suivi automatique ${uniqueId}` }) })
   await expect(row).toContainText('Suivi automatique : vous l\'avez modifié')
   await row.getByRole('button', { name: 'Ne plus suivre' }).click()
-  await expect(page.getByText('Vous ne suivez plus ce jeu de données')).toBeVisible()
+  await expect(page.getByText(`Vous ne suivez plus « Test suivi automatique ${uniqueId} »`)).toBeVisible()
+  // Withdrawn, the automatic follow becomes a no: it moves to the cut notifications.
+  await expect(row).toContainText('Vous ne recevez rien sur ce jeu de données')
+  await expect(row.getByRole('button', { name: 'Réactiver' })).toBeVisible()
 
   // Failing, the edit would not even try to follow the dataset again.
   const edit = await request.put(`${API_BASE}/api/1/datasets/${dataset.id}/`, { data: { description: 'Modifié après l\'arrêt du suivi' } })
@@ -107,18 +116,14 @@ test('an automatic follow stays stopped when the subject is edited again', async
 
 test('opening a discussion as an editor follows the subject, without reloading the page', async ({ page, request, browser }) => {
   const uniqueId = Date.now()
-  const me = await (await request.get(`${API_BASE}/api/1/me/`)).json()
   const dataset = await asAdmin(browser, async (admin) => {
     const organization = await createOrganization(admin, `Test éditeur ${uniqueId}`)
     adminOrganizations.push(organization.id)
-    const invited = await admin.post(`${API_BASE}/api/1/organizations/${organization.id}/member/`, { data: { user: me.id, role: 'editor' } })
-    expect(invited.ok()).toBe(true)
+    await joinOrganization(admin, request, organization.id, 'editor')
     const created = await createDataset(admin, `Test éditeur ${uniqueId}`, 'Dataset de l\'organisation de l\'éditeur', { organization: organization.id })
     adminDatasets.push(created.id)
     return created
   })
-  const [invitation] = await (await request.get(`${API_BASE}/api/1/me/org_invitations/`)).json()
-  expect((await request.post(`${API_BASE}/api/1/me/org_invitations/${invitation.id}/accept/`)).ok()).toBe(true)
 
   await gotoHydrated(page, `/datasets/${dataset.id}/discussions`)
   // An editor hears nothing of a dataset they never worked on.
@@ -148,7 +153,7 @@ test('the menu of a discussion notification stops the thread, then the whole dat
   await why.click()
   await expect(page.getByText('Vous recevez cette notification en tant que propriétaire.')).toBeVisible()
   await page.getByRole('button', { name: 'Ne plus suivre cette discussion' }).click()
-  await expect(page.getByText('Vous ne suivez plus cette discussion')).toBeVisible()
+  await expect(page.getByText(`Vous ne suivez plus la discussion « ${title} »`)).toBeVisible()
   await expect.poll(() => listSettings(request)).toEqual([
     expect.objectContaining({ scope: { class: 'Discussion', id: discussion.id }, event: 'discussion', enabled: false }),
   ])
@@ -165,31 +170,36 @@ test('the menu of a discussion notification stops the thread, then the whole dat
 
 test('the menu of a badge tells a partial editor why, and stops the organization', async ({ page, request, browser }) => {
   const uniqueId = Date.now()
-  const me = await (await request.get(`${API_BASE}/api/1/me/`)).json()
   const organization = await asAdmin(browser, async (admin) => {
     const created = await createOrganization(admin, `Test badge ${uniqueId}`)
     adminOrganizations.push(created.id)
-    const invited = await admin.post(`${API_BASE}/api/1/organizations/${created.id}/member/`, { data: { user: me.id, role: 'partial_editor' } })
-    expect(invited.ok()).toBe(true)
-    return created
-  })
-  const [invitation] = await (await request.get(`${API_BASE}/api/1/me/org_invitations/`)).json()
-  expect((await request.post(`${API_BASE}/api/1/me/org_invitations/${invitation.id}/accept/`)).ok()).toBe(true)
-  await asAdmin(browser, async (admin) => {
-    const badge = await admin.post(`${API_BASE}/api/1/organizations/${organization.id}/badges/`, { data: { kind: 'certified' } })
+    await joinOrganization(admin, request, created.id, 'partial_editor')
+    const badge = await admin.post(`${API_BASE}/api/1/organizations/${created.id}/badges/`, { data: { kind: 'certified' } })
     expect(badge.ok()).toBe(true)
+    return created
   })
 
   await gotoHydrated(page, '/')
+  const why = page.getByRole('list', { name: 'Notifications' }).getByRole('listitem').filter({ hasText: `Test badge ${uniqueId}` }).getByTitle('Pourquoi je reçois ça ?')
   await openNotifications(page)
-  await page.getByRole('list', { name: 'Notifications' }).getByRole('listitem').filter({ hasText: `Test badge ${uniqueId}` }).getByTitle('Pourquoi je reçois ça ?').click()
+  await why.click()
   // Nothing of a badge was assigned to them: the organization as a whole concerns them.
   await expect(page.getByText('Vous recevez cette notification en tant qu\'éditeur partiel de l\'organisation.')).toBeVisible()
   await page.getByRole('button', { name: 'Ne rien recevoir sur cette organisation' }).click()
-  await expect(page.getByText('Vous ne recevrez plus de notifications sur cette organisation')).toBeVisible()
+  await expect(page.getByText(`Vous ne recevrez plus de notifications sur « Test badge ${uniqueId} »`)).toBeVisible()
   await expect.poll(() => listSettings(request)).toEqual([
     expect.objectContaining({ scope: { class: 'Organization', id: organization.id }, event: null, enabled: false }),
   ])
+
+  // The badges as a whole, rather than the kind just received.
+  await page.keyboard.press('Escape')
+  await openNotifications(page)
+  await why.click()
+  await page.getByRole('button', { name: 'Ne plus recevoir : Badges de l\'organisation' }).click()
+  await expect(page.getByText('Vous ne recevrez plus ce type de notification')).toBeVisible()
+  await expect.poll(() => listSettings(request)).toEqual(expect.arrayContaining([
+    expect.objectContaining({ scope: null, event: 'organization.badge', enabled: false }),
+  ]))
 })
 
 test('each list of rules goes back a page once its last page is emptied', async ({ page, request }) => {
@@ -266,8 +276,30 @@ test('the menu of a notification says why it came and turns it off', async ({ pa
   await page.keyboard.press('Escape')
   await openMenu()
   await page.getByRole('button', { name: 'Ne rien recevoir sur ce jeu de données' }).click()
-  await expect(page.getByText('Vous ne recevrez plus de notifications sur ce jeu de données')).toBeVisible()
+  await expect(page.getByText(`Vous ne recevrez plus de notifications sur « Test cloche ${uniqueId} »`)).toBeVisible()
   await expect.poll(async () => (await listSettings(request)).filter(setting => setting.scope?.id === dataset.id)).toEqual([
     expect.objectContaining({ scope: { class: 'Dataset', id: dataset.id }, event: null, enabled: false }),
   ])
+})
+
+test('a subject out of reach is listed and linked to without its title', async ({ page, request, browser }) => {
+  const uniqueId = Date.now()
+  const dataset = await asAdmin(browser, async (admin) => {
+    const created = await createDataset(admin, `Test privé ${uniqueId}`, 'Dataset privé de l\'admin')
+    adminDatasets.push(created.id)
+    const hidden = await admin.put(`${API_BASE}/api/1/datasets/${created.id}/`, { data: { private: true } })
+    expect(hidden.ok()).toBe(true)
+    return created
+  })
+  await setRule(request, { scope: { class: 'Dataset', id: dataset.id }, event: null }, true)
+
+  await gotoHydrated(page, '/admin/me/notifications')
+  const row = page.getByRole('listitem').filter({ hasText: 'Contenu qui ne vous est plus accessible' })
+  await expect(row).toBeVisible()
+  await expect(row.getByRole('link')).toHaveCount(0)
+  await expect(page.getByText(`Test privé ${uniqueId}`)).not.toBeVisible()
+
+  await gotoHydrated(page, `/admin/me/notifications?scope=Dataset:${dataset.id}`)
+  await expect(page.getByText('Vous ne recevez déjà rien sur ce jeu de données.')).toBeVisible()
+  await expect(page.getByText(`Test privé ${uniqueId}`)).not.toBeVisible()
 })
