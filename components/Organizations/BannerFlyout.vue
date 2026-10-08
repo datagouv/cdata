@@ -153,15 +153,22 @@ async function applyColor(color: string) {
   customColorError.value = false
   pending.value = true
   try {
-    // Color/image are mutually exclusive (spec §2): drop the image first.
-    if (props.organization.banner_image) {
-      await deleteOrganizationBanner(props.organization.id)
-    }
+    // Color first, image deletion second: the backend lets both coexist
+    // (image wins at display), so a color pick can never destroy the image.
     const updated = await updateOrganizationBannerColor(props.organization.id, color)
     selectedColor.value = color
     customColor.value = color
     uploadError.value = null
     emit('updated', updated)
+    if (props.organization.banner_image) {
+      try {
+        await deleteOrganizationBanner(props.organization.id)
+        emit('refresh')
+      }
+      catch {
+        toast.error(t('La couleur a été appliquée, mais l\'image précédente n\'a pas pu être retirée.'))
+      }
+    }
   }
   catch {
     // Server errors are already toasted by the $api plugin.
@@ -225,24 +232,16 @@ async function onUpload(files: Array<File>) {
   emit('refresh')
 }
 
-// No close button in the panel (slim design): Escape closes it, and the parent
-// already closes on outside click.
-function onKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape') {
-    emit('close')
-  }
-}
-onMounted(() => document.addEventListener('keydown', onKeydown))
-onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
-
 async function removeBanner() {
   if (pending.value) return
   pending.value = true
   try {
-    await deleteOrganizationBanner(props.organization.id)
+    // Clear the color before deleting the image: a failed deletion then
+    // leaves the image displaying instead of data loss.
     if (props.organization.banner_color) {
       await updateOrganizationBannerColor(props.organization.id, null)
     }
+    await deleteOrganizationBanner(props.organization.id)
     selectedColor.value = null
     customColor.value = '#000091'
     uploadError.value = null

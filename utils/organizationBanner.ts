@@ -9,7 +9,7 @@ export const BANNER_DEFAULT_COLOR = '#F3F6FE'
 export const BANNER_MAX_BYTES = 4 * 1024 * 1024
 export const BANNER_MIN_WIDTH = 1200
 export const BANNER_MIN_HEIGHT = 300
-export const BANNER_ACCEPTED_EXTENSIONS = readonly(['jpeg', 'jpg', 'png'])
+export const BANNER_ACCEPTED_EXTENSIONS: ReadonlyArray<string> = ['jpeg', 'jpg', 'png']
 
 // DSFR decorative palette from the issue, in display order (first row of 9
 // then the rest). Hex values are the official artwork colors.

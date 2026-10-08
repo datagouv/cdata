@@ -300,13 +300,13 @@ onBeforeUnmount(teardownFlyoutListeners)
 
 async function deleteBanner() {
   try {
-    await deleteOrganizationBanner(organization.value!.id)
+    // Clear the color before deleting the image: a failed deletion then
+    // leaves the image displaying instead of data loss.
     if (organization.value?.banner_color) {
       organization.value = await updateOrganizationBannerColor(organization.value.id, null)
     }
-    else {
-      await refresh()
-    }
+    await deleteOrganizationBanner(organization.value!.id)
+    await refresh()
   }
   catch {
     // Server errors are already toasted by the $api plugin.
