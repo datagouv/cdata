@@ -7,7 +7,6 @@ import {
   BANNER_MIN_WIDTH,
   DSFR_BANNER_COLORS,
   backgroundCoverHeight,
-  hexToRgb,
   isDarkColor,
   normalizeHexColor,
   positionFromDrag,
@@ -29,12 +28,7 @@ describe('normalizeHexColor', () => {
   })
 })
 
-describe('hexToRgb / isDarkColor', () => {
-  it('parses hex to rgb', () => {
-    expect(hexToRgb('#000091')).toEqual({ r: 0, g: 0, b: 145 })
-    expect(hexToRgb('invalid')).toBeNull()
-  })
-
+describe('isDarkColor', () => {
   it('buckets colors for breadcrumb contrast', () => {
     expect(isDarkColor('#000000')).toBe(true)
     expect(isDarkColor('#465F9D')).toBe(true) // blue-ecume: dark
@@ -42,6 +36,7 @@ describe('hexToRgb / isDarkColor', () => {
     expect(isDarkColor('#FFFFFF')).toBe(false)
     expect(isDarkColor('#FDCF41')).toBe(false) // yellow-tournesol: light
     expect(isDarkColor('#f3f6fe')).toBe(false) // default banner: light
+    expect(isDarkColor('invalid')).toBe(true) // fails safe: dark
   })
 })
 

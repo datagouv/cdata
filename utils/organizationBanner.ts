@@ -1,3 +1,5 @@
+import { parseHex, wcagLuminance } from 'culori'
+
 // Matches the current org page top strip so non-customized orgs see no change.
 export const BANNER_DEFAULT_COLOR = '#F3F6FE'
 
@@ -30,24 +32,14 @@ export const DSFR_BANNER_COLORS: Array<DsfrBannerColor> = [
   { name: 'beige-gris-galet', hex: '#aea397' },
 ]
 
-export function hexToRgb(hex: string): { r: number, g: number, b: number } | null {
-  const match = /^#?([0-9a-f]{6})$/i.exec(hex.trim())
-  if (!match) return null
-  const value = Number.parseInt(match[1], 16)
-  return { r: (value >> 16) & 255, g: (value >> 8) & 255, b: value & 255 }
-}
-
 export function normalizeHexColor(input: string): string | null {
   const match = /^#?([0-9a-f]{6})$/i.exec(input.trim())
   return match ? `#${match[1].toLowerCase()}` : null
 }
 
-// Two-bucket luminance decision (breadcrumb text color). The weighted sum is
-// the WCAG-ish approximation; gamma expansion is unnecessary for a dark/light
-// split.
 export function isDarkColor(hex: string): boolean {
-  const { r, g, b } = hexToRgb(hex) ?? { r: 0, g: 0, b: 0 }
-  return (0.299 * r + 0.587 * g + 0.114 * b) / 255 < 0.5
+  const color = parseHex(hex.trim())
+  return color ? wcagLuminance(color) < 0.5 : true
 }
 
 export type BannerFileError = 'format' | 'size' | 'dimensions'
