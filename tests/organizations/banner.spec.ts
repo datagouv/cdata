@@ -85,13 +85,19 @@ test.describe('organization banner', () => {
     await page.getByRole('button', { name: 'Repositionner' }).click()
 
     await expect(page.getByText('Glisser pour repositionner')).toBeVisible()
-    // startReposition loads the image natural size asynchronously; dragging
-    // before onload fires would be a no-op.
-    await page.waitForTimeout(500)
     const box = (await banner.boundingBox())!
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2)
+    const cx = box.x + box.width / 2
+    const cy = box.y + box.height / 2
+    await page.mouse.move(cx, cy)
     await page.mouse.down()
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2 - 60, { steps: 5 })
+    // startReposition loads the image natural size asynchronously; retry the
+    // drag (re-issuing the move) until it applies instead of sleeping a fixed
+    // duration that races the image load.
+    await expect(async () => {
+      await page.mouse.move(cx, cy - 60)
+      const position = await banner.evaluate(el => parseFloat(el.style.backgroundPosition.split(' ')[1] ?? '50'))
+      expect(position).toBeGreaterThan(50)
+    }).toPass({ timeout: 8000, intervals: [300] })
     await page.mouse.up()
     await page.getByRole('button', { name: 'Enregistrer' }).click()
 
@@ -111,7 +117,7 @@ test.describe('organization banner', () => {
   })
 
   test('admin "Voir la page de l\'organisation" targets the presentation tab', async ({ page }) => {
-    await page.goto('/admin/organizations/6461fa1f4e1de2ee027048b7/profile')
+    await page.goto(`/admin/organizations/${org.id}/profile`)
 
     await expect(page.getByRole('link', { name: /Voir la page de l'organisation/ })).toHaveAttribute('href', /\/presentation$/)
   })

@@ -1,6 +1,6 @@
 // Organization page banner (data.gouv.fr#2049).
 // Backend contract: udata serves `banner_color` (hex string), `banner_image`
-// (URL, read-only in PATCH, managed by POST/DELETE .../banner/) and
+// (URL, writable only through POST/DELETE .../banner/) and
 // `banner_image_position` (int 0-100, CSS background-position-y semantics).
 
 // Matches the current org page top strip so non-customized orgs see no change.
