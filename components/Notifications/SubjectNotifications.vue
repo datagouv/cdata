@@ -55,18 +55,18 @@ import { RiNotification3Line, RiNotificationOffLine } from '@remixicon/vue'
 import type { Component } from 'vue'
 import CdataLink from '../CdataLink.vue'
 import type { NotificationResolved, NotificationScope } from '~/types/notifications'
+import { getSubjectDemonstrative } from '~/utils/discussions'
 
 // Whether the user hears about a subject, why, and the one thing to do about it, as
 // udata resolves it.
 const props = defineProps<{
   scope: NotificationScope
-  // "ce jeu de données", "cette réutilisation"…
-  subject: string
 }>()
 
 type Action = { label: string, icon: Component, done: string, run: () => Promise<unknown> }
 
 const { t } = useTranslation()
+const subject = computed(() => getSubjectDemonstrative(t, props.scope.class))
 const { setRule, resolveFollow, follow, paused } = useNotificationSettings()
 const { reasonsPhrase, eventLabel } = useNotificationLabels()
 
@@ -104,15 +104,15 @@ const sentence = computed(() => {
       return t('Toutes vos notifications sont désactivées.')
     case 'heard':
       return t('Vous recevez les notifications de {subject}, {reasons}.', {
-        subject: props.subject,
+        subject: subject.value,
         reasons: reasonsPhrase(resolved.value!.reasons),
       })
     case 'restricted':
       return t('Vous recevez seulement : {events}.', { events: humanJoin(resolved.value!.followed_events.map(eventLabel)) })
     case 'muted':
-      return t('Vous avez coupé les notifications de {subject}.', { subject: props.subject })
+      return t('Vous avez coupé les notifications de {subject}.', { subject: subject.value })
     case 'none':
-      return t('Vous ne recevez pas les notifications de {subject}.', { subject: props.subject })
+      return t('Vous ne recevez pas les notifications de {subject}.', { subject: subject.value })
     default:
       return throwOnNever(state.value, `Unknown state ${state.value}`)
   }
@@ -128,7 +128,7 @@ const action = computed<Action | null>(() => {
       return {
         label: t('Ne plus recevoir'),
         icon: RiNotificationOffLine,
-        done: t('Vous ne recevrez plus de notifications sur {subject}', { subject: props.subject }),
+        done: t('Vous ne recevrez plus de notifications sur {subject}', { subject: subject.value }),
         run: async () => {
           resolved.value = await follow(props.scope, null, false)
         },
@@ -147,7 +147,7 @@ const action = computed<Action | null>(() => {
       return {
         label: t('Suivre'),
         icon: RiNotification3Line,
-        done: t('Vous suivez {subject}', { subject: props.subject }),
+        done: t('Vous suivez {subject}', { subject: subject.value }),
         run: async () => {
           resolved.value = await follow(props.scope, null, true)
         },

@@ -43,25 +43,25 @@ export function useNotificationLabels() {
     ).filter(Boolean))
   }
 
-  // The label of a name, or of its closest prefix: the five badge types read as badges.
-  // `null` for a name of no known type.
-  function knownLabel(name: string): string | null {
-    const parts = name.split('.')
+  // `toString` and the like are no events.
+  function labelOf(name: string): string | null {
+    return Object.hasOwn(EVENT_LABELS.value, name) ? EVENT_LABELS.value[name as NotificationEvent]! : null
+  }
+
+  // The label of an event, or of its closest prefix: the five badge types read as badges.
+  function eventLabel(event: NotificationEvent) {
+    const parts = event.split('.')
     for (let length = parts.length; length > 0; length--) {
-      // A prefix of a type is an event name itself.
-      const label = EVENT_LABELS.value[parts.slice(0, length).join('.') as NotificationEvent]
+      const label = labelOf(parts.slice(0, length).join('.'))
       if (label) return label
     }
-    return null
+    return event
   }
 
-  function eventLabel(event: NotificationEvent) {
-    return knownLabel(event) ?? event
-  }
-
-  // A name read from outside (a link) as an event, if it is one with a label.
+  // A name read from outside (a link) as an event: one of those a link names, a type or
+  // a prefix udata accepts too, nothing that merely starts like one.
   function knownEvent(name: string): NotificationEvent | null {
-    return knownLabel(name) === null ? null : name as NotificationEvent
+    return labelOf(name) === null ? null : name as NotificationEvent
   }
 
   return { reasonsPhrase, eventLabel, knownEvent }

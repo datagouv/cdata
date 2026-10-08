@@ -5,7 +5,18 @@
     :title="question"
   >
     <template #button>
-      <div class="flex gap-2">
+      <BrandedButton
+        v-if="nothingToStop"
+        color="tertiary"
+        size="xs"
+        @click="dismiss"
+      >
+        {{ t('Fermer') }}
+      </BrandedButton>
+      <div
+        v-else
+        class="flex gap-2"
+      >
         <BrandedButton
           color="tertiary"
           size="xs"
@@ -28,69 +39,70 @@
 
 <script setup lang="ts">
 import { BannerAction, BrandedButton, toast } from '@datagouv/components-next'
-import type { NotificationRuleKey, NotificationScope } from '~/types/notifications'
+import type { NotificationResolved, NotificationRuleKey, NotificationScope } from '~/types/notifications'
+import { getSubjectDemonstrative } from '~/utils/discussions'
 
 // The ways out a mail offers land here rather than acting on their own: a mail scanner
 // opening the link must not unsubscribe anyone. The query is the key of the rule to
 // write, the same as the menu of the notification in the bell writes.
 
 const { t } = useTranslation()
-const { $api } = useNuxtApp()
 const route = useRoute()
 const router = useRouter()
-const { mute } = useNotificationSettings()
+const { mute, resolveFollow } = useNotificationSettings()
 const { eventLabel, knownEvent } = useNotificationLabels()
 
-// Topics only exist in the API v2.
-const API_PATHS: Record<NotificationScope['class'], string> = {
-  Organization: '/api/1/organizations/',
-  Discussion: '/api/1/discussions/',
-  Dataset: '/api/1/datasets/',
-  Reuse: '/api/1/reuses/',
-  Dataservice: '/api/1/dataservices/',
-  Post: '/api/1/posts/',
-  Topic: '/api/2/topics/',
-}
-
-// The links udata writes only hold object ids: anything else would end up in the path of
-// an API call made with the user's session (`..` climbing to `/logout/`).
-const OBJECT_ID = /^[0-9a-f]{24}$/
-
-// Nothing of the link is shown, nor sent, unless it is something udata writes: a known
-// type, and a known class with an object id.
-const key = computed<NotificationRuleKey | null>(() => {
+// What the link asks to stop, before udata says whether it names anything. A type is
+// checked here, as no call is made for it alone; a subject is udata's to recognize.
+const asked = computed<NotificationRuleKey | null>(() => {
   const scope = typeof route.query.scope === 'string' ? route.query.scope : null
   const name = typeof route.query.event === 'string' ? route.query.event : null
   const event = name === null ? null : knownEvent(name)
   if (name !== null && event === null) return null
   if (!scope) return event ? { scope: null, event } : null
   const [className, id] = scope.split(':')
-  if (!className || !Object.hasOwn(API_PATHS, className) || !id || !OBJECT_ID.test(id)) return null
+  if (!className || !id) return null
   return { scope: { class: className as NotificationScope['class'], id }, event }
 })
 
-// Read back from the API rather than taken from the link: a link must not be able to
-// make the page say anything.
-const title = ref<string | null>(null)
-watch(key, async (key) => {
-  title.value = null
-  if (!key?.scope) return
+// The subject is read back from udata rather than from the link, which must not be able
+// to make the page say anything: an unknown or forged one gets no banner. Asked with the
+// scope as a query value, never in a path.
+const resolved = ref<NotificationResolved | null>(null)
+watch(asked, async (asked) => {
+  resolved.value = null
+  if (!asked?.scope) return
   try {
-    const subject = await $api<{ title?: string, name?: string }>(`${API_PATHS[key.scope.class]}${key.scope.id}/`)
-    title.value = subject.title ?? subject.name ?? null
+    resolved.value = await resolveFollow(asked.scope, asked.event)
   }
   catch {
-    // Out of reach: the question stays generic.
+    // Unknown to udata: nothing to confirm.
   }
 }, { immediate: true })
+
+const key = computed<NotificationRuleKey | null>(() => asked.value?.scope ? (resolved.value && asked.value) : asked.value)
+
+// Its title when the user may still see it, "ce jeu de données" otherwise.
+const subjectName = computed(() => {
+  const scope = key.value?.scope
+  if (!scope) return ''
+  const title = resolved.value?.subject?.title
+  return title ? `« ${title} »` : getSubjectDemonstrative(t, scope.class)
+})
+
+// Nothing left to stop: the link was confirmed before, or nothing brings these
+// notifications any more.
+const nothingToStop = computed(() => resolved.value !== null && !resolved.value.heard)
 
 const question = computed(() => {
   const scope = key.value?.scope
   if (scope?.class === 'Discussion') {
-    return title.value ? t('Ne plus suivre la discussion « {title} » ?', { title: title.value }) : t('Ne plus suivre cette discussion ?')
+    if (nothingToStop.value) return t('Vous ne suivez déjà plus cette discussion.')
+    return resolved.value?.subject ? t('Ne plus suivre la discussion {subject} ?', { subject: subjectName.value }) : t('Ne plus suivre cette discussion ?')
   }
   if (scope) {
-    return title.value ? t('Ne plus rien recevoir sur « {title} » ?', { title: title.value }) : t('Ne plus rien recevoir sur ce contenu ?')
+    if (nothingToStop.value) return t('Vous ne recevez déjà rien sur {subject}.', { subject: subjectName.value })
+    return t('Ne plus rien recevoir sur {subject} ?', { subject: subjectName.value })
   }
   return t('Ne plus recevoir : {type} ?', { type: eventLabel(key.value!.event!) })
 })
@@ -98,7 +110,7 @@ const question = computed(() => {
 const done = computed(() => {
   const scope = key.value?.scope
   if (scope?.class === 'Discussion') return t('Vous ne suivez plus cette discussion')
-  if (scope) return t('Vous ne recevrez plus de notifications sur ce contenu')
+  if (scope) return t('Vous ne recevrez plus de notifications sur {subject}', { subject: getSubjectDemonstrative(t, scope.class) })
   return t('Vous ne recevrez plus ce type de notification')
 })
 

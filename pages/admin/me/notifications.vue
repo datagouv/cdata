@@ -42,7 +42,6 @@
         </template>
       </BannerAction>
 
-      <!-- When the mails leave, whatever they are about -->
       <PaddedContainer class="!p-0 divide-y divide-gray-default">
         <h2 class="m-0 px-5 py-3 text-base font-bold">
           {{ t('E-mails') }}
@@ -57,15 +56,43 @@
         </div>
       </PaddedContainer>
 
-      <LoadingBlock
+      <template
         v-for="section in ruleSections"
-        v-slot="{ data: listed }"
         :key="section.title"
-        :status="section.list.status.value"
-        :data="section.list.data.value"
       >
+        <!-- Only the follows hold their place while loading: the cut notifications are
+             usually none, and their section would show up only to go away. -->
         <PaddedContainer
-          v-if="listed.total || section.empty"
+          v-if="!section.listed && section.empty && section.list.status.value !== 'error'"
+          class="!p-0"
+        >
+          <h2 class="m-0 px-5 py-3 text-base font-bold border-b border-gray-default">
+            {{ section.title }}
+          </h2>
+          <div class="animate-pulse-placeholder divide-y divide-gray-default">
+            <div
+              v-for="index in 3"
+              :key="index"
+              class="px-5 py-4 space-y-2"
+            >
+              <div class="bg-gray-200 h-3 w-1/2" />
+              <div class="bg-gray-200 h-2 w-1/3" />
+            </div>
+          </div>
+        </PaddedContainer>
+        <PaddedContainer
+          v-else-if="section.list.status.value === 'error'"
+          class="!p-0"
+        >
+          <h2 class="m-0 px-5 py-3 text-base font-bold border-b border-gray-default">
+            {{ section.title }}
+          </h2>
+          <p class="m-0 px-5 py-4 text-sm text-gray-medium">
+            {{ t('Cette liste n\'a pas pu être chargée.') }}
+          </p>
+        </PaddedContainer>
+        <PaddedContainer
+          v-else-if="section.listed && (section.listed.total || section.empty)"
           class="!p-0"
         >
           <h2 class="m-0 px-5 py-3 text-base font-bold border-b border-gray-default">
@@ -132,21 +159,21 @@
             </li>
           </ul>
           <Pagination
-            v-if="listed.total > PAGE_SIZE"
+            v-if="section.listed.total > PAGE_SIZE"
             class="px-5 py-3 border-t border-gray-default"
             :page="section.list.page.value"
             :page-size="PAGE_SIZE"
-            :total-results="listed.total"
+            :total-results="section.listed.total"
             @change="(page: number) => section.list.page.value = page"
           />
         </PaddedContainer>
-      </LoadingBlock>
+      </template>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, LoadingBlock, PaddedContainer, Pagination, toast, type PaginatedArray } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, PaddedContainer, Pagination, toast, type PaginatedArray } from '@datagouv/components-next'
 import { RiChat3Line, RiBuilding2Line, RiLineChartLine, RiNotification3Line, RiNotificationOffLine, RiServerLine, RiTerminalLine } from '@remixicon/vue'
 import { useRouteQuery } from '@vueuse/router'
 import type { Component } from 'vue'
@@ -157,7 +184,7 @@ import MuteConfirmation from '~/components/Notifications/MuteConfirmation.vue'
 import RadioButtons from '~/components/RadioButtons.vue'
 import type { Me } from '~/utils/auth'
 import type { MailCadence, NotificationSetting } from '~/types/notifications'
-import { getSubjectTypeIcon } from '~/utils/discussions'
+import { getSubjectDemonstrative, getSubjectTypeIcon } from '~/utils/discussions'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
@@ -176,15 +203,19 @@ async function ruleList(followed: boolean, pageQuery: string) {
     '/api/1/notifications/settings/',
     { lazy: true, query: computed(() => ({ followed, page: page.value, page_size: PAGE_SIZE })) },
   )
-  // Withdrawing the last rule of the last page leaves it empty: show the one before.
-  watch(data, (listed) => {
-    const lastPage = Math.max(1, Math.ceil((listed?.total ?? 0) / PAGE_SIZE))
-    if (page.value > lastPage) page.value = lastPage
-  })
   return { page, data, status, refresh }
 }
 type RuleList = Awaited<ReturnType<typeof ruleList>>
 const [follows, cuts] = await Promise.all([ruleList(true, 'page_suivis'), ruleList(false, 'page_coupees')])
+
+// Withdrawing the last rule of the last page leaves it empty: show the one before. Here
+// rather than in `ruleList`, whose own `await` would leave the watchers to no component.
+for (const list of [follows, cuts]) {
+  watch(list.data, (listed) => {
+    const lastPage = Math.max(1, Math.ceil((listed?.total ?? 0) / PAGE_SIZE))
+    if (list.page.value > lastPage) list.page.value = lastPage
+  })
+}
 
 // Both lists: withdrawing an automatic follow moves it from one to the other.
 function load() {
@@ -256,7 +287,7 @@ function followRow(rule: NotificationSetting): RuleRow {
       rule.origin === 'discussed' ? t('Suivi automatique : vous avez participé à ses discussions') : null,
     ].filter(Boolean).join(' · '),
     action: t('Ne plus suivre'),
-    done: t('Vous ne suivez plus ce contenu'),
+    done: t('Vous ne suivez plus {subject}', { subject: getSubjectDemonstrative(t, rule.scope!.class) }),
   }
 }
 
@@ -265,8 +296,7 @@ function cutSentence(rule: NotificationSetting) {
   // A thread is muted for all of its notifications, which all are discussion ones.
   if (rule.scope?.class === 'Discussion') return t('Vous ne recevez rien sur cette discussion')
   if (rule.scope && rule.event) return t('Vous ne recevez plus : {event}', { event: eventLabel(rule.event) })
-  if (rule.scope?.class === 'Organization') return t('Vous ne recevez rien sur cette organisation')
-  if (rule.scope) return t('Vous ne recevez rien sur ce contenu')
+  if (rule.scope) return t('Vous ne recevez rien sur {subject}', { subject: getSubjectDemonstrative(t, rule.scope.class) })
   if (rule.event) return t('Vous ne recevez plus ce type de notification')
   return t('Vous ne recevez plus rien')
 }
@@ -288,6 +318,8 @@ function cutRow(rule: NotificationSetting): RuleRow {
 type RuleSection = {
   title: string
   list: RuleList
+  // `null` until loaded
+  listed: PaginatedArray<NotificationSetting> | null
   rows: Array<RuleRow>
   // `null` hides the section while empty, which is the normal state of the cut ones.
   empty: { title: string, explanation: string } | null
@@ -297,6 +329,7 @@ const ruleSections = computed<Array<RuleSection>>(() => [
   {
     title: t('Contenus suivis'),
     list: follows,
+    listed: follows.data.value ?? null,
     rows: (follows.data.value?.data ?? []).map(followRow),
     // Owning or administering something already brings its notifications: following
     // is for the rest, and nothing here does not mean hearing about nothing.
@@ -305,7 +338,7 @@ const ruleSections = computed<Array<RuleSection>>(() => [
       explanation: t('Pour être prévenu de ce qui se passe sur un contenu, cliquez sur « Suivre » depuis sa page de discussions ou son espace d\'administration.'),
     },
   },
-  { title: t('Notifications coupées'), list: cuts, rows: (cuts.data.value?.data ?? []).map(cutRow), empty: null },
+  { title: t('Notifications coupées'), list: cuts, listed: cuts.data.value ?? null, rows: (cuts.data.value?.data ?? []).map(cutRow), empty: null },
 ])
 
 // Withdrawing an automatic follow writes a "no" rather than nothing, which udata decides:

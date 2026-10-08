@@ -134,19 +134,22 @@ export type NotificationRuleKey = {
   event: NotificationEvent | null
 }
 
+// What the user may see of the subject of a rule, `null` once it is out of their reach.
+export type NotificationSubjectSummary = {
+  title: string
+  page: string
+  // The organization the subject belongs to, `null` for an organization itself
+  organization: OrganizationReference | null
+} | null
+
 export type NotificationSetting = NotificationRuleKey & {
   id: string
   enabled: boolean
   // What made the user follow a subject: by hand, by editing it, or by taking part in its
   // discussions
   origin: 'followed' | 'edited' | 'discussed'
-  // `null` without a scope, or once the subject is out of the user's reach
-  subject: {
-    title: string
-    page: string
-    // The organization the subject belongs to, `null` for an organization itself
-    organization: OrganizationReference | null
-  } | null
+  // Also `null` without a scope
+  subject: NotificationSubjectSummary
 }
 
 // Whether and why the user hears about an event on a subject, rules and defaults
@@ -160,4 +163,5 @@ export type NotificationResolved = {
   muted: boolean
   // The narrower events the user still follows on this subject
   followed_events: Array<NotificationEvent>
+  subject: NotificationSubjectSummary
 }

@@ -11,16 +11,7 @@
         class="flex justify-between items-center"
       >
         <p class="!mb-0">
-          {{ $t('Vous consultez une discussion spécifique sur {subject}.', {
-            subject: {
-              Dataservice: $t('cette API'),
-              Dataset: $t('ce jeu de données'),
-              Reuse: $t('cette réutilisation'),
-              Post: $t('cet article'),
-              Topic: $t('ce bouquet'),
-              Organization: $t('cette organisation'),
-            }[type],
-          }) }}
+          {{ $t('Vous consultez une discussion spécifique sur {subject}.', { subject: translatedType }) }}
         </p>
         <BrandedButton
           color="tertiary"
@@ -177,6 +168,7 @@ import NewDiscussionForm from './NewDiscussionForm.vue'
 import DiscussionCard from './DiscussionCard.vue'
 import FollowToggle from '../Notifications/FollowToggle.vue'
 import type { PaginatedArray, SortDirection } from '~/types/types'
+import { getSubjectDemonstrative } from '~/utils/discussions'
 import type { DiscussionSortedBy, DiscussionSubject, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 import { useRouteQuery } from '@vueuse/router'
 
@@ -216,24 +208,7 @@ function showDiscussionForm() {
   }
 }
 
-const translatedType = computed(() => {
-  switch (props.type) {
-    case 'Dataservice':
-      return t('cette api')
-    case 'Dataset':
-      return t('ce jeu de données')
-    case 'Reuse':
-      return t('cette réutilisation')
-    case 'Post':
-      return t('cet article')
-    case 'Topic':
-      return t('cette thématique')
-    case 'Organization':
-      return t('cette organisation')
-    default:
-      return ''
-  }
-})
+const translatedType = computed(() => getSubjectDemonstrative(t, props.type))
 
 const params = computed(() => {
   const query = {

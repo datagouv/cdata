@@ -1,4 +1,4 @@
-import type { NotificationEvent, NotificationResolved, NotificationRuleKey, NotificationScope, NotificationSetting } from '~/types/notifications'
+import type { NotificationEvent, NotificationResolved, NotificationRuleKey, NotificationScope } from '~/types/notifications'
 
 // The follow buttons of a page asking within the same tick, by event: one call answers
 // all of their subjects.
@@ -9,14 +9,12 @@ const pendingFollows = new Map<NotificationEvent | null, { scopes: Array<Notific
 export function useNotificationSettings() {
   const { $api } = useNuxtApp()
 
-  // `null` removes the rule, so the broader rules or the defaults apply again. Returns
-  // the rule as listed, or `null` once removed.
+  // `null` removes the rule, so the broader rules or the defaults apply again.
   async function setRule(key: NotificationRuleKey, enabled: boolean | null) {
-    const saved = await $api<NotificationSetting | ''>('/api/1/notifications/settings/', {
+    await $api('/api/1/notifications/settings/', {
       method: 'PUT',
       body: { ...key, enabled },
     })
-    return saved || null
   }
 
   // What the user gets for some notifications on a subject (all of them without an

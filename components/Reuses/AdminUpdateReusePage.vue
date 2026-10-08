@@ -15,7 +15,6 @@
       <template #aside>
         <SubjectNotifications
           :scope="{ class: 'Reuse', id: reuse.id }"
-          :subject="t('cette réutilisation')"
         />
       </template>
       <template #top>

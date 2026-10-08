@@ -19,7 +19,6 @@
       <template #aside>
         <SubjectNotifications
           :scope="{ class: 'Dataset', id: dataset.id }"
-          :subject="t('ce jeu de données')"
         />
       </template>
       <template #top>

@@ -15,7 +15,6 @@
       <template #aside>
         <SubjectNotifications
           :scope="{ class: 'Dataservice', id: dataservice.id }"
-          :subject="t('cette API')"
         />
       </template>
       <template #top>

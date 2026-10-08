@@ -55,12 +55,13 @@
 </template>
 
 <script setup lang="ts">
-import { toast } from '@datagouv/components-next'
+import { throwOnNever, toast } from '@datagouv/components-next'
 import { autoUpdate, flip, shift, useFloating } from '@floating-ui/vue'
 import { RiMoreLine, RiSettings3Line } from '@remixicon/vue'
 import { onClickOutside, useEventListener } from '@vueuse/core'
 import CdataLink from '../CdataLink.vue'
 import type { NotificationScope, UserNotification } from '~/types/notifications'
+import { getSubjectDemonstrative } from '~/utils/discussions'
 
 // `done` is what the toast says once `run` succeeded.
 type Action = { label: string, done: string, run: () => Promise<unknown> }
@@ -76,39 +77,46 @@ const { reasonsPhrase, eventLabel } = useNotificationLabels()
 // Badges and answers to membership requests are about the organization itself.
 const reasons = computed(() => reasonsPhrase(props.notification.reasons, props.notification.type.startsWith('organization.')))
 
-const ignoreSubject = (label: string, done: string, scope: NotificationScope): Action => ({ label, done, run: () => mute({ scope, event: null }) })
+function ignoreSubject(scope: NotificationScope): Action {
+  const subject = getSubjectDemonstrative(t, scope.class)
+  return {
+    label: t('Ne rien recevoir sur {subject}', { subject }),
+    done: t('Vous ne recevrez plus de notifications sur {subject}', { subject }),
+    run: () => mute({ scope, event: null }),
+  }
+}
 
-// The subject-level ways out, for the notifications whose subject is known.
+// The subject-level ways out, for the notifications whose subject is known: what they
+// carry, not their type, tells which.
 function subjectActions(notification: UserNotification): Array<Action> {
-  switch (notification.type) {
-    case 'discussion.new':
-    case 'discussion.comment':
-    case 'discussion.closed':
+  const details = notification.details
+  switch (details.class) {
+    case 'DiscussionNotificationDetails': {
+      const thread = details.discussion
       return [
         {
           label: t('Ne plus suivre cette discussion'),
           done: t('Vous ne suivez plus cette discussion'),
-          run: () => mute({ scope: { class: 'Discussion', id: notification.details.discussion.id }, event: 'discussion' }),
+          run: () => mute({ scope: { class: 'Discussion', id: thread.id }, event: 'discussion' }),
         },
-        ignoreSubject(t('Ne rien recevoir sur ce contenu'), t('Vous ne recevrez plus de notifications sur ce contenu'), notification.details.discussion.subject),
+        ignoreSubject(thread.subject),
       ]
-    case 'reuse.created':
-    case 'dataservice.created':
-      return [
-        ignoreSubject(t('Ne rien recevoir sur ce jeu de données'), t('Vous ne recevrez plus de notifications sur ce jeu de données'), { class: 'Dataset', id: notification.details.dataset.id }),
-      ]
-    case 'organization.badge.certified':
-    case 'organization.badge.public-service':
-    case 'organization.badge.company':
-    case 'organization.badge.association':
-    case 'organization.badge.local-authority':
-    case 'organization.membership.accepted':
-    case 'organization.membership.refused':
-      return [
-        ignoreSubject(t('Ne rien recevoir sur cette organisation'), t('Vous ne recevrez plus de notifications sur cette organisation'), { class: 'Organization', id: notification.details.organization.id }),
-      ]
-    default:
+    }
+    case 'ReuseCreatedNotificationDetails':
+    case 'DataserviceCreatedNotificationDetails':
+      return [ignoreSubject({ class: 'Dataset', id: details.dataset.id })]
+    case 'NewBadgeNotificationDetails':
+    case 'MembershipAcceptedNotificationDetails':
+    case 'MembershipRefusedNotificationDetails':
+      return [ignoreSubject({ class: 'Organization', id: details.organization.id })]
+    // Nothing a rule can be scoped to: a request to answer, which no rule applies to, or
+    // a harvest source.
+    case 'MembershipRequestNotificationDetails':
+    case 'TransferRequestNotificationDetails':
+    case 'ValidateHarvesterNotificationDetails':
       return []
+    default:
+      return throwOnNever(details, `Unknown notification ${notification.type}`)
   }
 }
 

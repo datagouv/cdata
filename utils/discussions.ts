@@ -1,4 +1,4 @@
-import { throwOnNever, type Dataservice, type DatasetV2, type Reuse, type TopicV2 } from '@datagouv/components-next'
+import { throwOnNever, type Dataservice, type DatasetV2, type Reuse, type TopicV2, type TranslationFunction } from '@datagouv/components-next'
 import { RiArticleLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
 import type { Comment, DiscussionSubject, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 import type { Post } from '~/types/posts'
@@ -74,6 +74,27 @@ export function getSubjectTypeIcon(subjectClass: DiscussionSubject['class'] | 'D
   };
   return throwOnNever(subjectClass, `Unknown type ${subjectClass}`)
 };
+
+// How a sentence points at a subject of this class: "ce jeu de données", "cette API"…
+export function getSubjectDemonstrative(t: TranslationFunction, subjectClass: DiscussionSubject['class'] | 'Discussion') {
+  switch (subjectClass) {
+    case 'Dataservice':
+      return t('cette API')
+    case 'Dataset':
+      return t('ce jeu de données')
+    case 'Post':
+      return t('cet article')
+    case 'Reuse':
+      return t('cette réutilisation')
+    case 'Topic':
+      return t('cette thématique')
+    case 'Organization':
+      return t('cette organisation')
+    case 'Discussion':
+      return t('cette discussion')
+  };
+  return throwOnNever(subjectClass, `Unknown type ${subjectClass}`)
+}
 
 export function getDiscussionUrl(discussionId: string, subject: DiscussionSubjectTypes | null) {
   if (!subject) {
