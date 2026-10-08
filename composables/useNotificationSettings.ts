@@ -70,12 +70,13 @@ export function useNotificationSettings() {
     settings.value = saved ? [...others, saved] : others
   }
 
-  // What the user gets for every combination of the given keys, in one call.
-  function resolve(query: { scopes?: Array<NotificationScope>, events?: Array<NotificationEvent> }) {
+  // What the user gets for some notifications (all of them without an event) on each of
+  // the given subjects, in one call.
+  function resolve(scopes: Array<NotificationScope>, event: NotificationEvent | null) {
     return $api<Array<NotificationResolved>>('/api/1/notifications/resolved/', {
       query: {
-        scope: query.scopes?.map(scope => `${scope.class}:${scope.id}`),
-        event: query.events,
+        scope: scopes.map(scope => `${scope.class}:${scope.id}`),
+        event: event ?? undefined,
       },
     })
   }
@@ -88,7 +89,7 @@ export function useNotificationSettings() {
       const scopes: Array<NotificationScope> = []
       const answer = Promise.resolve().then(() => {
         pendingFollows.delete(event)
-        return resolve({ scopes, events: event ? [event] : undefined })
+        return resolve(scopes, event)
       })
       batch = { scopes, answer }
       pendingFollows.set(event, batch)
