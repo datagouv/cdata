@@ -154,7 +154,7 @@ const { $api } = useNuxtApp()
 
 useSeoMeta({ title: t('Notifications'), robots: 'noindex' })
 const me = useMe()
-const { settings, load, setRule, paused, setPaused } = useNotificationSettings()
+const { settings, load, setRule, unfollow, paused, setPaused } = useNotificationSettings()
 
 // Every setting reads as a line: its label on the left, its choices on the right.
 const ROW_CLASS = 'px-5 py-4 grid grid-cols-[18rem_1fr] items-center gap-6'
@@ -273,7 +273,7 @@ const ruleSections = computed(() => {
 })
 
 async function withdraw(row: RuleRow) {
-  await setRule(row.rule, null)
+  await (isFollow(row.rule) ? unfollow(row.rule) : setRule(row.rule, null))
   toast.success(row.done)
 }
 </script>

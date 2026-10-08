@@ -1,6 +1,6 @@
 import type { APIRequestContext, Locator, Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, deleteDatasets, gotoHydrated } from '../helpers'
+import { API_BASE, createDataset, createOrganization, deleteDatasets, deleteOrganizations, gotoHydrated } from '../helpers'
 
 type ApiNotificationSetting = {
   id: string
@@ -13,6 +13,7 @@ type ApiNotificationSetting = {
 test.describe.configure({ mode: 'serial' })
 
 const createdDatasets: Array<string> = []
+const createdOrganizations: Array<string> = []
 
 async function listSettings(request: APIRequestContext): Promise<Array<ApiNotificationSetting>> {
   const response = await request.get(`${API_BASE}/api/1/notifications/settings/`)
@@ -40,6 +41,7 @@ test.beforeEach(async ({ request }) => {
 test.afterEach(async ({ request }) => {
   await resetNotificationPreferences(request)
   await deleteDatasets(request, createdDatasets)
+  await deleteOrganizations(request, createdOrganizations)
 })
 
 test('the mail cadence is saved on the account', async ({ page, request }) => {
@@ -114,6 +116,27 @@ test('a followed subject is unfollowed from the settings page', async ({ page, r
   await expect(page.getByText('Vous ne suivez plus ce contenu')).toBeVisible()
   await expect.poll(() => listSettings(request)).toEqual([])
   await expect(link).not.toBeVisible()
+})
+
+test('an automatic follow stays stopped when the subject is edited again', async ({ page, request }) => {
+  const uniqueId = Date.now()
+  const organization = await createOrganization(request, `Test suivi automatique ${uniqueId}`)
+  createdOrganizations.push(organization.id)
+  // Creating a dataset of one's organization by hand follows it.
+  const dataset = await createDataset(request, `Test suivi automatique ${uniqueId}`, 'Dataset pour tester l\'arrêt d\'un suivi automatique', { organization: organization.id })
+  createdDatasets.push(dataset.id)
+
+  await gotoHydrated(page, '/admin/me/notifications')
+  const link = page.getByRole('link', { name: `Test suivi automatique ${uniqueId}` })
+  await expect(ruleRow(page, link)).toContainText('Suivi automatique : vous l\'avez modifié')
+  await ruleRow(page, link).getByRole('button', { name: 'Ne plus suivre' }).click()
+  await expect(page.getByText('Vous ne suivez plus ce contenu')).toBeVisible()
+
+  await request.put(`${API_BASE}/api/1/datasets/${dataset.id}/`, { data: { description: 'Modifié après l\'arrêt du suivi' } })
+
+  await expect.poll(() => listSettings(request)).toEqual([
+    expect.objectContaining({ scope: { class: 'Dataset', id: dataset.id }, event: null, enabled: false }),
+  ])
 })
 
 test('the link of a mail only mutes its subject once confirmed', async ({ page, request }) => {

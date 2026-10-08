@@ -98,6 +98,12 @@ export function useNotificationSettings() {
     return answers.find(answer => isSameScope(answer.scope, scope))!
   }
 
+  // A follow udata made by itself, for having edited a subject or answered about it, is
+  // made again at the next edit or answer once removed: only a "no" keeps it away.
+  function unfollow(rule: NotificationSetting) {
+    return setRule(rule, rule.origin === 'followed' ? null : false)
+  }
+
   // Following is a "concerned" rule on the subject. Stopping withdraws one's own follow
   // first: if nothing else brings these notifications, that is enough, and the defaults
   // of the user's role stay untouched. Only when a role or a broader follow still brings
@@ -115,7 +121,8 @@ export function useNotificationSettings() {
       await setRule(key, true)
       return resolveFollow(scope, event)
     }
-    if (ruleValue(key)) await setRule(key, null)
+    const own = settings.value?.find(setting => isSameRule(setting, ruleKey(key)))
+    if (own?.enabled) await unfollow(own)
     let resolved = await resolveFollow(scope, event)
     if (resolved.channels.length) {
       await setRule(key, false)
@@ -151,5 +158,5 @@ export function useNotificationSettings() {
     if (me.value) me.value.notifications_paused = updated.notifications_paused
   }
 
-  return { settings, load, ruleValue, narrowerRules, setRule, resolveFollow, follow, followSubject, mute, paused, setPaused }
+  return { settings, load, ruleValue, narrowerRules, setRule, resolveFollow, follow, unfollow, followSubject, mute, paused, setPaused }
 }
