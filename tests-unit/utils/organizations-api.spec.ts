@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { deleteOrganizationBanner, updateOrganizationBannerColor, updateOrganizationBannerPosition, uploadOrganizationBanner } from '~/api/organizations'
+import type { Organization } from '@datagouv/components-next'
+import { deleteOrganizationBanner, updateOrganization, uploadOrganizationBanner } from '~/api/organizations'
 
 function stubNuxtApp() {
   const $api = vi.fn()
@@ -26,30 +27,20 @@ describe('banner API helpers', () => {
     expect($api).not.toHaveBeenCalled()
   })
 
-  it('patches the banner color', async () => {
+  it('puts the full organization with banner field overrides', async () => {
     const { $api } = stubNuxtApp()
-    await updateOrganizationBannerColor('org-id', '#a558a0')
+    vi.stubGlobal('toValue', (value: unknown) => value)
+    vi.stubGlobal('cleanSiret', (value: string) => value)
+    const org = { id: 'org-id', banner_color: null, banner_image_position: 50 } as Organization
+    await updateOrganization({ ...org, banner_color: '#a558a0' })
     expect($api).toHaveBeenCalledWith('api/1/organizations/org-id/', {
       method: 'PUT',
-      body: { banner_color: '#a558a0' },
+      body: expect.objectContaining({ id: 'org-id', banner_color: '#a558a0', banner_image_position: 50 }),
     })
-  })
-
-  it('patches a null color to clear it', async () => {
-    const { $api } = stubNuxtApp()
-    await updateOrganizationBannerColor('org-id', null)
-    expect($api).toHaveBeenCalledWith('api/1/organizations/org-id/', {
+    await updateOrganization({ ...org, banner_image_position: 25 })
+    expect($api).toHaveBeenLastCalledWith('api/1/organizations/org-id/', {
       method: 'PUT',
-      body: { banner_color: null },
-    })
-  })
-
-  it('patches the banner image position', async () => {
-    const { $api } = stubNuxtApp()
-    await updateOrganizationBannerPosition('org-id', 25)
-    expect($api).toHaveBeenCalledWith('api/1/organizations/org-id/', {
-      method: 'PUT',
-      body: { banner_image_position: 25 },
+      body: expect.objectContaining({ banner_image_position: 25 }),
     })
   })
 

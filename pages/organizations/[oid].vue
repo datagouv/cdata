@@ -100,8 +100,6 @@
                 />
               </h1>
             </div>
-            <!-- Below the banner (interim placement, pending PO feedback) so the
-                 banner actions row stays limited to the report button. -->
             <EditButton
               v-if="organization.permissions.edit"
               :id="organization.id"
@@ -175,7 +173,7 @@ import BannerFlyout from '~/components/Organizations/BannerFlyout.vue'
 import OrganizationBanner from '~/components/Organizations/OrganizationBanner.vue'
 import OrganizationBannerControls from '~/components/Organizations/OrganizationBannerControls.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
-import { deleteOrganizationBanner, updateOrganizationBannerColor, updateOrganizationBannerPosition } from '~/api/organizations'
+import { deleteOrganizationBanner, updateOrganization } from '~/api/organizations'
 import { isUserOrgAdmin, useMaybeMe } from '~/utils/auth'
 import { backgroundCoverHeight, positionFromDrag } from '~/utils/organizationBanner'
 import { keepScrollWithinPage } from '~/utils/scroll'
@@ -209,7 +207,6 @@ function onOrganizationUpdated(updated: Organization) {
   organization.value = updated
 }
 
-// --- Organization banner (data.gouv.fr#2049) ---
 const flyoutOpen = ref(false)
 const flyoutElement = ref<InstanceType<typeof BannerFlyout> | null>(null)
 const elementFocusedBeforeFlyout = ref<Element | null>(null)
@@ -248,7 +245,6 @@ function closeFlyout() {
   elementFocusedBeforeFlyout.value = null
 }
 
-// --- Flyout keyboard handling: Esc closes, Tab cycles focus inside the flyout ---
 function onFlyoutKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') {
     closeFlyout()
@@ -300,10 +296,13 @@ onBeforeUnmount(teardownFlyoutListeners)
 
 async function deleteBanner() {
   try {
-    // Clear the color before deleting the image: a failed deletion then
-    // leaves the image displaying instead of data loss.
+    // "Supprimer" restores the default banner. The DELETE endpoint only
+    // removes the image, so a set color must be cleared explicitly (a
+    // color-only banner would otherwise be undeletable). Color first, image
+    // second: a failed image deletion then leaves the image displaying —
+    // no data loss, the user retries.
     if (organization.value?.banner_color) {
-      organization.value = await updateOrganizationBannerColor(organization.value.id, null)
+      organization.value = await updateOrganization({ ...organization.value!, banner_color: null })
     }
     await deleteOrganizationBanner(organization.value!.id)
     await refresh()
@@ -332,7 +331,7 @@ function startReposition() {
 async function saveReposition() {
   savingReposition.value = true
   try {
-    organization.value = await updateOrganizationBannerPosition(organization.value!.id, draftPosition.value)
+    organization.value = await updateOrganization({ ...organization.value!, banner_image_position: draftPosition.value })
     repositioning.value = false
   }
   catch {

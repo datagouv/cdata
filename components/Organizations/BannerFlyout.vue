@@ -5,7 +5,6 @@
     role="dialog"
     :aria-label="$t('Bannière')"
   >
-    <!-- Segmented control -->
     <SegmentedControl
       v-model="activeTab"
       underline
@@ -16,7 +15,6 @@
       ]"
     />
 
-    <!-- Couleur -->
     <div
       v-if="activeTab === 'color'"
       class="p-4"
@@ -73,7 +71,6 @@
       </p>
     </div>
 
-    <!-- Importer -->
     <div
       v-else
       class="p-4"
@@ -119,7 +116,7 @@
 <script setup lang="ts">
 import { RiImageLine, RiPaletteLine } from '@remixicon/vue'
 import { BrandedButton, SegmentedControl, toast, type Organization } from '@datagouv/components-next'
-import { deleteOrganizationBanner, updateOrganizationBannerColor, uploadOrganizationBanner } from '~/api/organizations'
+import { deleteOrganizationBanner, updateOrganization, uploadOrganizationBanner } from '~/api/organizations'
 import UploadGroup from '~/components/UploadGroup/UploadGroup.vue'
 import { DSFR_BANNER_COLORS, normalizeHexColor, validateBannerFile } from '~/utils/organizationBanner'
 
@@ -136,7 +133,6 @@ const emit = defineEmits<{
 
 const { t } = useTranslation()
 
-// Open on the tab matching the current banner type (spec §2).
 const activeTab = ref(props.organization.banner_image ? 'upload' : 'color')
 const pending = ref(false)
 const selectedColor = ref<string | null>(props.organization.banner_color ?? null)
@@ -155,9 +151,7 @@ async function applyColor(color: string) {
   customColorError.value = false
   pending.value = true
   try {
-    // Color first, image deletion second: the backend lets both coexist
-    // (image wins at display), so a color pick can never destroy the image.
-    const updated = await updateOrganizationBannerColor(props.organization.id, color)
+    const updated = await updateOrganization({ ...props.organization, banner_color: color })
     selectedColor.value = color
     customColor.value = color
     uploadError.value = null
@@ -220,7 +214,7 @@ async function onUpload(files: Array<File>) {
   uploadError.value = null
   if (props.organization.banner_color) {
     try {
-      emit('updated', await updateOrganizationBannerColor(props.organization.id, null))
+      emit('updated', await updateOrganization({ ...props.organization, banner_color: null }))
       pending.value = false
       return
     }
@@ -236,10 +230,13 @@ async function removeBanner() {
   if (pending.value) return
   pending.value = true
   try {
-    // Clear the color before deleting the image: a failed deletion then
-    // leaves the image displaying instead of data loss.
+    // "Supprimer" restores the default banner. The DELETE endpoint only
+    // removes the image, so a set color must be cleared explicitly (a
+    // color-only banner would otherwise be undeletable). Color first, image
+    // second: a failed image deletion then leaves the image displaying —
+    // no data loss, the user retries.
     if (props.organization.banner_color) {
-      await updateOrganizationBannerColor(props.organization.id, null)
+      await updateOrganization({ ...props.organization, banner_color: null })
     }
     await deleteOrganizationBanner(props.organization.id)
     selectedColor.value = null

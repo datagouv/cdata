@@ -40,24 +40,6 @@ export async function uploadOrganizationBanner(oid: string, file: File) {
   return resp
 }
 
-export async function updateOrganizationBannerColor(oid: string, color: string | null) {
-  const api = useNuxtApp().$api
-  const resp = await api<Organization>(`api/1/organizations/${oid}/`, {
-    method: 'PUT',
-    body: { banner_color: color },
-  })
-  return resp
-}
-
-export async function updateOrganizationBannerPosition(oid: string, position: number) {
-  const api = useNuxtApp().$api
-  const resp = await api<Organization>(`api/1/organizations/${oid}/`, {
-    method: 'PUT',
-    body: { banner_image_position: position },
-  })
-  return resp
-}
-
 export async function deleteOrganizationBanner(oid: string) {
   const api = useNuxtApp().$api
   const resp = await api(`api/1/organizations/${oid}/banner/`, {

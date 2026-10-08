@@ -37,8 +37,8 @@ export async function useOrganizationBlocs(organization: MaybeRefOrGetter<Organi
   // public visibility: keep the existing publication date when already published,
   // stamp now when newly publishing, clear it to go back to a draft.
   //
-  // We do NOT catch errors here: the global API error handler already surfaces
-  // the detailed message (a second generic toast would just hide it), and letting the
+  // We do NOT catch errors here: the global API error handler already surfaces the
+  // detailed message (a second generic toast would just hide it), and letting the
   // error propagate keeps the composer open with the unsaved edits instead of the
   // caller silently treating the save as successful.
   // `refresh()` below updates this composer's own blocs view; the returned value is

@@ -1,5 +1,3 @@
-<!-- The edit/preview switch lives here (segmented control, top right of the tab).
-     Publishing happens through the "public" toggle in the composer save bar. -->
 <template>
   <div>
     <div
@@ -65,10 +63,8 @@ const { t } = useTranslation()
 
 const canEdit = computed(() => isUserOrgAdmin(me.value, props.organization))
 
-// Pass a getter, not the prop value: the save spreads the organization, so it
-// must read the current props at save time — concurrent changes (banner
-// color/position from the banner flyout) replace the object in the parent,
-// and a snapshot taken here would send stale values.
+// Pass a getter, not the prop: the save spreads the org, and the parent
+// swaps the object on banner changes — a snapshot would send stale values.
 const { blocs, isPublished, saveBlocs } = await useOrganizationBlocs(() => props.organization)
 
 const isEditing = computed(() => route.query.edit === 'true')
