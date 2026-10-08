@@ -54,7 +54,7 @@ import { BrandedButton, throwOnNever, toast } from '@datagouv/components-next'
 import { RiNotification3Line, RiNotificationOffLine } from '@remixicon/vue'
 import type { Component } from 'vue'
 import CdataLink from '../CdataLink.vue'
-import type { NotificationResolved, NotificationScope } from '~/types/notifications'
+import type { NotificationReason, NotificationResolved, NotificationScope } from '~/types/notifications'
 import { getSubjectDemonstrative } from '~/utils/discussions'
 
 // Whether the user hears about a subject, why, and the one thing to do about it, as
@@ -88,12 +88,17 @@ onMounted(async () => {
   }
 })
 
+// Reasons that bring nothing on a dataset, a reuse or an API by themselves: an editor
+// only hears about the badges of their organization by default.
+const SILENT_HERE: Array<NotificationReason> = ['explicit_subscriber', 'organization.editor']
+
 // Following some of its notifications only reads as not hearing about the subject as a
-// whole: it comes before "muted", which such a follow overrides.
+// whole, when nothing else brings any: udata answers "heard" as soon as one type is. It
+// comes before "muted", which such a follow overrides.
 const state = computed<'paused' | 'heard' | 'restricted' | 'muted' | 'none'>(() => {
   if (paused.value) return 'paused'
+  if (resolved.value?.followed_events.length && resolved.value.reasons.every(reason => SILENT_HERE.includes(reason))) return 'restricted'
   if (resolved.value?.heard) return 'heard'
-  if (resolved.value?.followed_events.length) return 'restricted'
   if (resolved.value?.muted) return 'muted'
   return 'none'
 })
