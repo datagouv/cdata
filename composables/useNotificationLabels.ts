@@ -1,4 +1,5 @@
-import type { NotificationEvent, NotificationReason } from '~/types/notifications'
+import type { NotificationEvent, NotificationReason, NotificationRuleKey } from '~/types/notifications'
+import { getSubjectDemonstrative } from '~/utils/discussions'
 
 // How notifications are spoken of to the user: why they get one, what kind it is and
 // where it reaches them. Shared by the bell, the settings page and the subject pages.
@@ -15,7 +16,6 @@ export function useNotificationLabels() {
     'contributor': t('parce que vous avez modifié ce contenu'),
     'discussant': t('parce que vous avez participé aux discussions de ce contenu'),
     'requester': t('parce que vous avez fait cette demande'),
-    'sysadmin': t('en tant qu\'administrateur du site'),
   }))
 
   const EVENT_LABELS = computed<Partial<Record<NotificationEvent, string>>>(() => ({
@@ -64,5 +64,18 @@ export function useNotificationLabels() {
     return labelOf(name) === null ? null : name as NotificationEvent
   }
 
-  return { reasonsPhrase, eventLabel, knownEvent }
+  // What the toast says once a "stop" is done, wherever it was asked from, naming the
+  // subject by its title when the caller knows it.
+  function mutedMessage(key: NotificationRuleKey, title?: string | null) {
+    if (key.scope?.class === 'Discussion') {
+      return title ? t('Vous ne suivez plus la discussion « {title} »', { title }) : t('Vous ne suivez plus cette discussion')
+    }
+    if (key.scope) {
+      const subject = title ? `« ${title} »` : getSubjectDemonstrative(t, key.scope.class)
+      return t('Vous ne recevrez plus de notifications sur {subject}', { subject })
+    }
+    return t('Vous ne recevrez plus ce type de notification')
+  }
+
+  return { reasonsPhrase, eventLabel, knownEvent, mutedMessage }
 }

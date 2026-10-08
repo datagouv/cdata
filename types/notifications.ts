@@ -108,6 +108,11 @@ type DottedPrefixes<Name extends string> = Name extends `${infer Head}.${infer R
 // covers `discussion.new`, `discussion.comment`…).
 export type NotificationEvent = DottedPrefixes<UserNotification['type']>
 
+type FirstSegment<Name extends string> = Name extends `${infer Head}.${string}` ? Head : Name
+
+// The first segment of a type, the family a rule can turn off as a whole.
+export type EventFamily = FirstSegment<UserNotification['type']>
+
 export type MailCadence = 'immediate' | 'daily' | 'weekly'
 
 export type NotificationScope = {
@@ -125,7 +130,6 @@ export type NotificationReason = 'owner'
   | 'contributor'
   | 'discussant'
   | 'requester'
-  | 'sysadmin'
 
 // What identifies a rule: every dimension is optional, `null` meaning "whatever it is"
 // (everywhere, every notification).
@@ -165,3 +169,7 @@ export type NotificationResolved = {
   followed_events: Array<NotificationEvent>
   subject: NotificationSubjectSummary
 }
+
+// What a follow button shows: the answer once read, `null` while it is read, `'failed'`
+// when it could not be.
+export type FollowState = NotificationResolved | null | 'failed'

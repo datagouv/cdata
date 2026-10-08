@@ -5,13 +5,7 @@
   >
     <nav
       class="fr-sidemenu mx-0"
-      :class="{
-        'fr-sidemenu--right': onRight,
-        'fr-sidemenu--no-border': !showBorder,
-        'sidemenu--right-no-border': onRight && !showBorder,
-        'fr-sidemenu--sticky': fixed,
-        'fr-sidemenu--sticky-full-height': stickyFullHeight,
-      }"
+      :class="{ 'fr-sidemenu--right': onRight, 'fr-sidemenu--no-border': !showBorder, 'fr-sidemenu--sticky': fixed, 'fr-sidemenu--sticky-full-height': stickyFullHeight }"
       :aria-labelledby="titleId"
     >
       <Disclosure
@@ -73,8 +67,8 @@ watchDebounced(width, () => {
 </script>
 
 <style scoped>
-/* The DSFR's `--no-border` leaves the line of the right variant, drawn on its inner block. */
-.sidemenu--right-no-border :deep(.fr-sidemenu__inner) {
+/* The DSFR has no `--no-border`: the line of the right variant is drawn on the inner block. */
+.fr-sidemenu--right.fr-sidemenu--no-border :deep(.fr-sidemenu__inner) {
   box-shadow: none;
   border: 0;
 }

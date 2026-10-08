@@ -25,6 +25,7 @@
       <DiscussionCard
         :thread="selectedDiscussion"
         :subject
+        :follow-state="threadFollows.stateOf({ class: 'Discussion', id: selectedDiscussion.id })"
         @change="updateSelectedDiscussion"
       />
     </div>
@@ -69,13 +70,12 @@
           />
           <div class="flex flex-wrap items-center gap-2">
             <!-- Only the new discussions: their answers come from taking part in a
-                 thread, or following it. Read again once a discussion is opened: a
-                 member opening one follows the subject. -->
+                 thread, or following it. -->
             <FollowToggle
               v-if="me"
-              :key="pageData?.total"
               :scope="{ class: type, id: subject.id }"
               event="discussion.new"
+              :state="subjectFollows.stateOf({ class: type, id: subject.id })"
               :follow-label="t('Suivre les discussions')"
               :unfollow-label="t('Ne plus suivre les discussions')"
               :followed-message="t('Vous serez prévenu des nouvelles discussions')"
@@ -116,6 +116,7 @@
               :key="thread.id"
               :thread
               :subject
+              :follow-state="threadFollows.stateOf({ class: 'Discussion', id: thread.id })"
               @change="refresh"
             />
           </div>
@@ -256,5 +257,22 @@ watchEffect(async () => {
   else {
     selectedDiscussion.value = null
   }
+})
+
+// What the user receives on the subject and on each thread shown, read again whenever
+// they are: opening a discussion or answering in one makes the user follow it.
+const shownThreads = computed(() =>
+  [selectedDiscussion.value, ...(pageData.value?.data ?? [])]
+    .filter(thread => thread !== null)
+    .map(thread => ({ class: 'Discussion' as const, id: thread.id })),
+)
+const threadFollows = useFollowStates(shownThreads, 'discussion')
+const subjectFollows = useFollowStates(() => [{ class: props.type, id: props.subject.id }], 'discussion.new')
+onMounted(() => {
+  watch([pageData, selectedDiscussion], () => {
+    if (!me.value) return
+    threadFollows.read()
+    subjectFollows.read()
+  }, { immediate: true })
 })
 </script>

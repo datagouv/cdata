@@ -26,16 +26,15 @@
         >
           {{ $t('Marquer comme non spam') }}
         </BrandedButton>
-        <!-- Read again once the thread has a new message: answering in it follows it. -->
         <FollowToggle
-          v-if="me"
-          :key="thread.discussion.length"
+          v-if="me && followState !== undefined"
           :scope="{ class: 'Discussion', id: thread.id }"
           event="discussion"
+          :state="followState"
           :follow-label="$t('Suivre cette discussion')"
           :unfollow-label="$t('Ne plus suivre cette discussion')"
           :followed-message="$t('Vous suivez cette discussion')"
-          :unfollowed-message="$t('Vous ne suivez plus cette discussion')"
+          :unfollowed-message="mutedMessage({ scope: { class: 'Discussion', id: thread.id }, event: 'discussion' }, thread.title)"
           icon-only
         />
         <EditCommentModal
@@ -75,19 +74,24 @@ import FollowToggle from '../Notifications/FollowToggle.vue'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
 import EditCommentModal from './EditCommentModal.vue'
 import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
+import type { FollowState } from '~/types/notifications'
 
 const props = withDefaults(defineProps<{
   thread: Thread
   subject: DiscussionSubjectTypes
   showActions?: boolean
+  // What its follow button shows, read by the list of threads; no button without it.
+  followState?: FollowState
 }>(), {
   showActions: false,
+  followState: undefined,
 })
 const emit = defineEmits<{
   change: []
 }>()
 
 const me = useMaybeMe()
+const { mutedMessage } = useNotificationLabels()
 const firstComment = computed(() => props.thread.discussion[0])
 
 const { $api } = useNuxtApp()

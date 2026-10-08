@@ -1,33 +1,33 @@
 <template>
   <BrandedButton
-    v-if="!failed"
+    v-if="current !== 'failed'"
     color="secondary"
     size="xs"
-    :class="{ 'animate-pulse': resolved === null }"
+    :class="{ 'animate-pulse-placeholder': current === null }"
     :icon="followed ? RiNotificationOffLine : RiNotification3Line"
     :icon-only="iconOnly"
     :title="label"
-    :disabled="resolved === null"
+    :disabled="current === null"
     :loading
     @click="toggle"
   >
-    <template v-if="!iconOnly">
-      {{ label }}
-    </template>
+    {{ label }}
   </BrandedButton>
 </template>
 
 <script setup lang="ts">
 import { BrandedButton, toast } from '@datagouv/components-next'
 import { RiNotification3Line, RiNotificationOffLine } from '@remixicon/vue'
-import type { NotificationEvent, NotificationResolved, NotificationScope } from '~/types/notifications'
+import type { FollowState, NotificationEvent, NotificationScope } from '~/types/notifications'
 
 // Follows or stops following some notifications on a subject, showing what the user
 // really receives: an owner or an administrator hears about things without having
-// followed anything, and the button says so.
+// followed anything, and the button says so. What it receives is read by the list it
+// belongs to, for all of its subjects at once.
 const props = withDefaults(defineProps<{
   scope: NotificationScope
   event: NotificationEvent
+  state: FollowState
   followLabel: string
   unfollowLabel: string
   // What the toast says once done.
@@ -38,29 +38,22 @@ const props = withDefaults(defineProps<{
   iconOnly: false,
 })
 
-const { resolveFollow, follow } = useNotificationSettings()
+const { follow } = useNotificationSettings()
 
-const resolved = ref<NotificationResolved | null>(null)
-// The answer could not be read (the API is down): the button would only mislead.
-const failed = ref(false)
-const followed = computed(() => resolved.value?.heard ?? false)
-const label = computed(() => followed.value ? props.unfollowLabel : props.followLabel)
-
-onMounted(async () => {
-  try {
-    resolved.value = await resolveFollow(props.scope, props.event)
-  }
-  catch {
-    failed.value = true
-  }
+// The answer to the last click, until the list reads them all again.
+const current = ref<FollowState>(props.state)
+watch(() => props.state, (state) => {
+  current.value = state
 })
+const followed = computed(() => current.value !== null && current.value !== 'failed' && current.value.heard)
+const label = computed(() => followed.value ? props.unfollowLabel : props.followLabel)
 
 const loading = ref(false)
 
 async function toggle() {
   loading.value = true
   try {
-    resolved.value = await follow(props.scope, props.event, !followed.value)
+    current.value = await follow(props.scope, props.event, !followed.value)
     toast.success(followed.value ? props.followedMessage : props.unfollowedMessage)
   }
   finally {

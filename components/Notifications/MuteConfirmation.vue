@@ -49,8 +49,8 @@ import { getSubjectDemonstrative } from '~/utils/discussions'
 const { t } = useTranslation()
 const route = useRoute()
 const router = useRouter()
-const { mute, resolveFollow } = useNotificationSettings()
-const { eventLabel, knownEvent } = useNotificationLabels()
+const { mute, resolveFollows } = useNotificationSettings()
+const { eventLabel, knownEvent, mutedMessage } = useNotificationLabels()
 
 // What the link asks to stop, before udata says whether it names anything. A type is
 // checked here, as no call is made for it alone; a subject is udata's to recognize.
@@ -66,19 +66,23 @@ const asked = computed<NotificationRuleKey | null>(() => {
 })
 
 // The subject is read back from udata rather than from the link, which must not be able
-// to make the page say anything: an unknown or forged one gets no banner. Asked with the
-// scope as a query value, never in a path.
+// to make the page say anything: an unknown or forged one gets no banner, and no error
+// either, a thread deleted since the mail being the common case. Asked with the scope as
+// a query value, never in a path.
 const resolved = ref<NotificationResolved | null>(null)
-watch(asked, async (asked) => {
+async function readSubject(asked: NotificationRuleKey | null) {
   resolved.value = null
   if (!asked?.scope) return
   try {
-    resolved.value = await resolveFollow(asked.scope, asked.event)
+    [resolved.value] = await resolveFollows([asked.scope], asked.event, { quiet: true })
   }
   catch {
     // Unknown to udata: nothing to confirm.
   }
-}, { immediate: true })
+}
+onMounted(() => {
+  watch(asked, readSubject, { immediate: true })
+})
 
 const key = computed<NotificationRuleKey | null>(() => asked.value?.scope ? (resolved.value && asked.value) : asked.value)
 
@@ -107,13 +111,6 @@ const question = computed(() => {
   return t('Ne plus recevoir : {type} ?', { type: eventLabel(key.value!.event!) })
 })
 
-const done = computed(() => {
-  const scope = key.value?.scope
-  if (scope?.class === 'Discussion') return t('Vous ne suivez plus cette discussion')
-  if (scope) return t('Vous ne recevrez plus de notifications sur {subject}', { subject: getSubjectDemonstrative(t, scope.class) })
-  return t('Vous ne recevrez plus ce type de notification')
-})
-
 function dismiss() {
   return router.replace({ query: {} })
 }
@@ -123,7 +120,7 @@ async function confirm() {
   saving.value = true
   try {
     await mute(key.value!)
-    toast.success(done.value)
+    toast.success(mutedMessage(key.value!, resolved.value?.subject?.title))
     await dismiss()
   }
   finally {

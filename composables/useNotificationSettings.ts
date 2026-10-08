@@ -1,8 +1,4 @@
-import type { NotificationEvent, NotificationResolved, NotificationRuleKey, NotificationScope } from '~/types/notifications'
-
-// The follow buttons of a page asking within the same tick, by event: one call answers
-// all of their subjects.
-const pendingFollows = new Map<NotificationEvent | null, { scopes: Array<NotificationScope>, answer: Promise<Array<NotificationResolved>> }>()
+import type { FollowState, NotificationEvent, NotificationResolved, NotificationRuleKey, NotificationScope } from '~/types/notifications'
 
 // What a user can ask about their notifications. Which rules that writes, and how they
 // rank, is udata's to know: the front asks and shows the answer.
@@ -17,27 +13,14 @@ export function useNotificationSettings() {
     })
   }
 
-  // What the user gets for some notifications on a subject (all of them without an
-  // event), batched with the other subjects asked about in the same tick.
-  async function resolveFollow(scope: NotificationScope, event: NotificationEvent | null): Promise<NotificationResolved> {
-    let batch = pendingFollows.get(event)
-    if (!batch) {
-      const scopes: Array<NotificationScope> = []
-      const answer = Promise.resolve().then(() => {
-        pendingFollows.delete(event)
-        return $api<Array<NotificationResolved>>('/api/1/notifications/resolved/', {
-          query: {
-            scope: scopes.map(scope => `${scope.class}:${scope.id}`),
-            event: event ?? undefined,
-          },
-        })
-      })
-      batch = { scopes, answer }
-      pendingFollows.set(event, batch)
-    }
-    batch.scopes.push(scope)
-    const answers = await batch.answer
-    return answers.find(answer => answer.scope.class === scope.class && answer.scope.id === scope.id)!
+  // What the user gets for some notifications on each subject (all of them without an
+  // event), in one call for all of them. `quiet` leaves a failure to the caller, without
+  // the error toast.
+  function resolveFollows(scopes: Array<NotificationScope>, event: NotificationEvent | null, { quiet = false } = {}) {
+    return $api<Array<NotificationResolved>>('/api/1/notifications/resolved/', {
+      query: { scope: scopes.map(scope => `${scope.class}:${scope.id}`), event: event ?? undefined },
+      ...(quiet ? { onResponseError: () => {} } : {}),
+    })
   }
 
   // Follow some notifications on a subject (all of them without an event), or stop,
@@ -61,5 +44,32 @@ export function useNotificationSettings() {
   const me = useMaybeMe()
   const paused = computed(() => me.value?.notifications_paused ?? false)
 
-  return { setRule, resolveFollow, follow, mute, paused }
+  return { setRule, resolveFollows, follow, mute, paused }
+}
+
+// The follow buttons of a list of subjects, read in one call and again with the list:
+// opening a discussion or answering in one makes the user follow it.
+export function useFollowStates(scopes: MaybeRefOrGetter<Array<NotificationScope>>, event: NotificationEvent) {
+  const { resolveFollows } = useNotificationSettings()
+  const answers = ref<Array<NotificationResolved> | null>(null)
+  const failed = ref(false)
+
+  async function read() {
+    const asked = toValue(scopes)
+    if (!asked.length) return
+    try {
+      answers.value = await resolveFollows(asked, event)
+      failed.value = false
+    }
+    catch {
+      failed.value = true
+    }
+  }
+
+  function stateOf(scope: NotificationScope): FollowState {
+    if (failed.value) return 'failed'
+    return answers.value?.find(answer => answer.scope.class === scope.class && answer.scope.id === scope.id) ?? null
+  }
+
+  return { read, stateOf }
 }

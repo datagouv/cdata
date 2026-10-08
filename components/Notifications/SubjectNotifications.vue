@@ -67,8 +67,8 @@ type Action = { label: string, icon: Component, done: string, run: () => Promise
 
 const { t } = useTranslation()
 const subject = computed(() => getSubjectDemonstrative(t, props.scope.class))
-const { setRule, resolveFollow, follow, paused } = useNotificationSettings()
-const { reasonsPhrase, eventLabel } = useNotificationLabels()
+const { setRule, resolveFollows, follow, paused } = useNotificationSettings()
+const { reasonsPhrase, eventLabel, mutedMessage } = useNotificationLabels()
 
 const titleId = useId()
 const resolved = ref<NotificationResolved | null>(null)
@@ -76,7 +76,7 @@ const failed = ref(false)
 const loading = ref(false)
 
 async function refresh() {
-  resolved.value = await resolveFollow(props.scope, null)
+  [resolved.value] = await resolveFollows([props.scope], null)
 }
 
 onMounted(async () => {
@@ -128,7 +128,7 @@ const action = computed<Action | null>(() => {
       return {
         label: t('Ne plus recevoir'),
         icon: RiNotificationOffLine,
-        done: t('Vous ne recevrez plus de notifications sur {subject}', { subject: subject.value }),
+        done: mutedMessage({ scope: props.scope, event: null }),
         run: async () => {
           resolved.value = await follow(props.scope, null, false)
         },

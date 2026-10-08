@@ -9,6 +9,7 @@
         v-if="subject"
         :thread
         :subject
+        :follow-state="follows.stateOf({ class: 'Discussion', id: thread.id })"
         respond-immediately
         @change="respond(close)"
       />
@@ -20,7 +21,7 @@
 import DiscussionCard from '~/components/Discussions/DiscussionCard.vue'
 import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
 
-defineProps<{
+const props = defineProps<{
   thread: Thread
   subject?: DiscussionSubjectTypes
 }>()
@@ -30,6 +31,11 @@ const emit = defineEmits<{
 }>()
 
 const opened = defineModel<boolean>()
+
+const follows = useFollowStates(() => [{ class: 'Discussion', id: props.thread.id }], 'discussion')
+watch(opened, (isOpened) => {
+  if (isOpened) follows.read()
+})
 
 function respond(close: () => void) {
   emit('responded')
