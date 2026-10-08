@@ -15,9 +15,10 @@ test.describe.configure({ mode: 'serial' })
 const createdDatasets: Array<string> = []
 const adminReuses: Array<string> = []
 
+// One page large enough for every rule of the account, the automatic follows included.
 async function listSettings(request: APIRequestContext): Promise<Array<ApiNotificationSetting>> {
-  const response = await request.get(`${API_BASE}/api/1/notifications/settings/`)
-  return await response.json()
+  const response = await request.get(`${API_BASE}/api/1/notifications/settings/?page_size=1000`)
+  return (await response.json()).data
 }
 
 async function resetNotificationPreferences(request: APIRequestContext) {

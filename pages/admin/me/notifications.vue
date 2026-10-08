@@ -9,7 +9,7 @@
         {{ t('Notifications') }}
       </h1>
       <BrandedButton
-        v-if="settings !== null && !paused"
+        v-if="loaded && !paused"
         color="secondary"
         size="xs"
         :icon="RiNotificationOffLine"
@@ -20,7 +20,7 @@
     </div>
 
     <div
-      v-if="settings === null"
+      v-if="!loaded"
       class="max-w-6xl space-y-8 animate-pulse-placeholder"
     >
       <div class="bg-gray-200 h-24 w-full" />
@@ -124,6 +124,14 @@
               </BrandedButton>
             </li>
           </ul>
+          <Pagination
+            v-if="section.list.listed && section.list.listed.total > PAGE_SIZE"
+            class="px-5 py-3 border-t border-gray-default"
+            :page="section.list.page"
+            :page-size="PAGE_SIZE"
+            :total-results="section.list.listed.total"
+            @change="(page: number) => changePage(section.list, page)"
+          />
         </PaddedContainer>
       </template>
     </div>
@@ -131,8 +139,9 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, PaddedContainer, toast } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, PaddedContainer, Pagination, toast, type PaginatedArray } from '@datagouv/components-next'
 import { RiChat3Line, RiBuilding2Line, RiLineChartLine, RiNotification3Line, RiNotificationOffLine, RiServerLine, RiTerminalLine } from '@remixicon/vue'
+import { useRouteQuery } from '@vueuse/router'
 import type { Component } from 'vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
@@ -152,11 +161,42 @@ const me = useMaybeMe()
 const { setRule, paused } = useNotificationSettings()
 
 // Read again on every visit rather than kept: udata writes rules too (following what one
-// edits), and another account may have signed in since.
-const settings = ref<Array<NotificationSetting> | null>(null)
+// edits), and another account may have signed in since. Each list has its own pages: the
+// follows of a busy account keep growing.
+const PAGE_SIZE = 20
 
-async function load() {
-  settings.value = await $api<Array<NotificationSetting>>('/api/1/notifications/settings/')
+function ruleList(followed: boolean, pageQuery: string) {
+  return reactive({
+    followed,
+    page: useRouteQuery(pageQuery, 1, { transform: Number }),
+    listed: null as PaginatedArray<NotificationSetting> | null,
+  })
+}
+type RuleList = ReturnType<typeof ruleList>
+const follows = ruleList(true, 'page_suivis')
+const cuts = ruleList(false, 'page_coupees')
+const loaded = computed(() => follows.listed !== null && cuts.listed !== null)
+
+async function fetchList(list: RuleList) {
+  list.listed = await $api<PaginatedArray<NotificationSetting>>('/api/1/notifications/settings/', {
+    query: { followed: list.followed, page: list.page, page_size: PAGE_SIZE },
+  })
+  // Withdrawing the last rule of the last page leaves it empty: show the one before.
+  const lastPage = Math.max(1, Math.ceil(list.listed.total / PAGE_SIZE))
+  if (list.page > lastPage) {
+    list.page = lastPage
+    await fetchList(list)
+  }
+}
+
+// Both lists: withdrawing an automatic follow moves it from one to the other.
+function load() {
+  return Promise.all([fetchList(follows), fetchList(cuts)])
+}
+
+async function changePage(list: RuleList, page: number) {
+  list.page = page
+  await fetchList(list)
 }
 
 onMounted(load)
@@ -197,8 +237,6 @@ type RuleRow = {
   action: string
   done: string
 }
-
-const isFollow = (rule: NotificationSetting) => rule.scope !== null && rule.enabled
 
 // By the first segment of the type, for a rule about a kind of notification anywhere.
 const EVENT_ICONS: Record<string, Component> = {
@@ -256,28 +294,23 @@ function cutRow(rule: NotificationSetting): RuleRow {
   }
 }
 
-const ruleSections = computed(() => {
-  const rules = settings.value ?? []
-  return [
-    {
-      title: t('Contenus suivis'),
-      rows: rules.filter(isFollow).map(followRow),
-      // Owning or administering something already brings its notifications: following
-      // is for the rest.
-      empty: t('Pour être prévenu de ce qui se passe sur un contenu, cliquez sur « Suivre » depuis sa page de discussions ou son espace d\'administration.'),
-    },
-    { title: t('Notifications coupées'), rows: rules.filter(rule => !isFollow(rule)).map(cutRow), empty: null },
-  ]
-})
+const ruleSections = computed(() => [
+  {
+    title: t('Contenus suivis'),
+    list: follows,
+    rows: (follows.listed?.data ?? []).map(followRow),
+    // Owning or administering something already brings its notifications: following
+    // is for the rest.
+    empty: t('Pour être prévenu de ce qui se passe sur un contenu, cliquez sur « Suivre » depuis sa page de discussions ou son espace d\'administration.'),
+  },
+  { title: t('Notifications coupées'), list: cuts, rows: (cuts.listed?.data ?? []).map(cutRow), empty: null },
+])
 
-// A follow udata made by itself, for having edited a subject or answered about it, is
-// made again at the next edit or answer once removed: only a "no" keeps it away.
+// Withdrawing an automatic follow writes a "no" rather than nothing, which udata decides:
+// the rule then moves to the cut notifications, hence both lists read again.
 async function withdraw(row: RuleRow) {
-  const { rule } = row
-  const enabled = isFollow(rule) && rule.origin !== 'followed' ? false : null
-  const saved = await setRule({ scope: rule.scope, event: rule.event }, enabled)
-  const others = settings.value!.filter(setting => setting.id !== rule.id)
-  settings.value = saved ? [...others, saved] : others
+  await setRule({ scope: row.rule.scope, event: row.rule.event }, null)
+  await load()
   toast.success(row.done)
 }
 </script>
