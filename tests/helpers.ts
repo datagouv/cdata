@@ -83,6 +83,16 @@ export async function gotoHydrated(page: Page, url: string): Promise<void> {
   await page.waitForLoadState('networkidle')
 }
 
+// matomo.js is injected after the load event, and webfonts are only fetched once used,
+// often after it too: leaving the page while either loads makes Firefox log the aborted
+// download. Use it on a page the test leaves right away.
+export async function gotoSettled(page: Page, url: string): Promise<void> {
+  const matomoLoaded = page.waitForResponse('**/matomo.js')
+  await page.goto(url)
+  await matomoLoaded
+  await page.evaluate(() => document.fonts.ready)
+}
+
 // The banner is the only way into the new explorer, and it only lives on the resources
 // tab: opt in from there, then navigate wherever the test needs to go.
 export async function enableNewExplorer(page: Page, url: string): Promise<void> {

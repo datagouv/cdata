@@ -48,6 +48,10 @@ export const test = base.extend<{ allowedConsoleMessages: Array<string>, assertN
     page.on('console', (msg) => {
       const text = msg.text()
       if (ignoredMessages.some(ignored => text.includes(ignored))) return
+      // Firefox blames the code Playwright evaluates in the page ("debugger eval code"),
+      // e.g. the trace snapshot taken after an action, when it lands while the next page
+      // is still loading. The same warning raised by the app's own code still fails.
+      if (text.includes('Layout was forced before the page was fully loaded') && text.includes('debugger eval code')) return
 
       const type = msg.type()
       if (type === 'warning') {
