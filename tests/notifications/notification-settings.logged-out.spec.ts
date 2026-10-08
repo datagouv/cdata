@@ -14,6 +14,17 @@ async function signIn(page: Page, email: string) {
 // Signing out reloads the account, which answers 401 once signed out.
 test.use({ allowedConsoleMessages: ['the server responded with a status of 401'] })
 
+test('a mail link cannot make the page call another path of the API', async ({ page }) => {
+  // `..` in the id would climb from `/api/1/datasets/` to `/logout/`, with the session.
+  await gotoHydrated(page, '/login')
+  await signIn(page, 'normal@example.com')
+
+  await gotoHydrated(page, '/admin/me/notifications?scope=Dataset:..%2F..%2F..%2Flogout')
+
+  await expect(page.getByRole('button', { name: 'Confirmer' })).not.toBeVisible()
+  expect((await page.request.get(`${API_BASE}/api/1/me/`)).status()).toBe(200)
+})
+
 test('the rules of an account are not shown to the next one in the same tab', async ({ page }) => {
   const uniqueId = Date.now()
 

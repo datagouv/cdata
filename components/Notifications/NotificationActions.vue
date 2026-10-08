@@ -73,7 +73,8 @@ const { t } = useTranslation()
 const { mute } = useNotificationSettings()
 
 const { reasonsPhrase, eventLabel } = useNotificationLabels()
-const reasons = computed(() => reasonsPhrase(props.notification.reasons))
+// Badges and answers to membership requests are about the organization itself.
+const reasons = computed(() => reasonsPhrase(props.notification.reasons, props.notification.type.startsWith('organization.')))
 
 const ignoreSubject = (label: string, done: string, scope: NotificationScope): Action => ({ label, done, run: () => mute({ scope, event: null }) })
 

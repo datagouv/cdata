@@ -1,25 +1,15 @@
 import type { APIRequestContext, Browser } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, deleteDatasets, deleteReuses, gotoHydrated } from '../helpers'
+import { API_BASE, createDataset, createOrganization, createReuse, deleteDatasets, deleteOrganizations, deleteReuses, gotoHydrated, listSettings, withAccount } from '../helpers'
 
-type ApiNotificationSetting = {
-  scope: { class: string, id: string } | null
-  event: string | null
-  enabled: boolean
-}
-
-// What changes the whole account (cadence, pause) lives here: only one project runs the
-// normal user, so no other test sees these changes while they last.
+// What changes the whole account (cadence, pause, a type turned off anywhere) lives here:
+// only one project runs the normal user, so no other test sees these changes while they
+// last. The normal user is no sysadmin either, and so follows what they edit.
 test.describe.configure({ mode: 'serial' })
 
 const createdDatasets: Array<string> = []
+const createdOrganizations: Array<string> = []
 const adminReuses: Array<string> = []
-
-// One page large enough for every rule of the account, the automatic follows included.
-async function listSettings(request: APIRequestContext): Promise<Array<ApiNotificationSetting>> {
-  const response = await request.get(`${API_BASE}/api/1/notifications/settings/?page_size=1000`)
-  return (await response.json()).data
-}
 
 async function resetNotificationPreferences(request: APIRequestContext) {
   for (const { scope, event } of await listSettings(request)) {
@@ -28,14 +18,8 @@ async function resetNotificationPreferences(request: APIRequestContext) {
   await request.put(`${API_BASE}/api/1/me/`, { data: { mail_cadence: 'immediate', notifications_paused: false } })
 }
 
-async function asAdmin<T>(browser: Browser, run: (request: APIRequestContext) => Promise<T>): Promise<T> {
-  const context = await browser.newContext({ storageState: 'playwright/.auth/user.json' })
-  try {
-    return await run(context.request)
-  }
-  finally {
-    await context.close()
-  }
+function asAdmin<T>(browser: Browser, run: (request: APIRequestContext) => Promise<T>) {
+  return withAccount(browser, 'playwright/.auth/user.json', run)
 }
 
 test.beforeEach(async ({ request }) => {
@@ -43,9 +27,10 @@ test.beforeEach(async ({ request }) => {
 })
 
 test.afterEach(async ({ request, browser }) => {
-  await resetNotificationPreferences(request)
   await asAdmin(browser, request => deleteReuses(request, adminReuses))
   await deleteDatasets(request, createdDatasets)
+  await deleteOrganizations(request, createdOrganizations)
+  await resetNotificationPreferences(request)
 })
 
 test('the mail cadence is saved on the account', async ({ page, request }) => {
@@ -74,18 +59,57 @@ test('notifications are paused and resumed from the top of the page', async ({ p
   await expect(page.getByRole('button', { name: 'Mettre en pause les notifications' })).toBeVisible()
 })
 
-test('a follow button keeps telling and changing the follow during a pause', async ({ page, request }) => {
+test('during a pause, the box says so and the follow buttons still work', async ({ page, request }) => {
   const uniqueId = Date.now()
   const dataset = await createDataset(request, `Test pause ${uniqueId}`, 'Dataset pour tester le suivi en pause')
   createdDatasets.push(dataset.id)
   await request.put(`${API_BASE}/api/1/me/`, { data: { notifications_paused: true } })
 
-  await gotoHydrated(page, `/datasets/${dataset.id}/discussions`)
+  await gotoHydrated(page, `/admin/datasets/${dataset.id}`)
+  await expect(page.getByText('Toutes vos notifications sont désactivées.')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Ne plus recevoir' })).not.toBeVisible()
 
+  await gotoHydrated(page, `/datasets/${dataset.id}/discussions`)
   // The owner hears about the discussions of their dataset, pause aside.
   await page.getByRole('button', { name: 'Ne plus suivre les discussions' }).click()
-  await expect(page.getByText('Vous ne serez plus prévenu')).toBeVisible()
+  await expect(page.getByText('Vous ne serez plus prévenu des nouvelles discussions')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Suivre les discussions' })).toBeVisible()
+})
+
+test('an automatic follow stays stopped when the subject is edited again', async ({ page, request }) => {
+  const uniqueId = Date.now()
+  const organization = await createOrganization(request, `Test suivi automatique ${uniqueId}`)
+  createdOrganizations.push(organization.id)
+  // Creating a dataset of one's organization by hand follows it.
+  const dataset = await createDataset(request, `Test suivi automatique ${uniqueId}`, 'Dataset pour tester l\'arrêt d\'un suivi automatique', { organization: organization.id })
+  createdDatasets.push(dataset.id)
+
+  await gotoHydrated(page, '/admin/me/notifications')
+  const row = page.getByRole('listitem').filter({ has: page.getByRole('link', { name: `Test suivi automatique ${uniqueId}` }) })
+  await expect(row).toContainText('Suivi automatique : vous l\'avez modifié')
+  await row.getByRole('button', { name: 'Ne plus suivre' }).click()
+  await expect(page.getByText('Vous ne suivez plus ce contenu')).toBeVisible()
+
+  await request.put(`${API_BASE}/api/1/datasets/${dataset.id}/`, { data: { description: 'Modifié après l\'arrêt du suivi' } })
+
+  await expect.poll(async () => (await listSettings(request)).filter(setting => setting.scope?.id === dataset.id)).toEqual([
+    expect.objectContaining({ scope: { class: 'Dataset', id: dataset.id }, event: null, enabled: false }),
+  ])
+})
+
+test('a type turned off anywhere is listed and reactivated', async ({ page, request }) => {
+  await request.put(`${API_BASE}/api/1/notifications/settings/`, {
+    data: { scope: null, event: 'organization.badge.certified', enabled: false },
+  })
+
+  await gotoHydrated(page, '/admin/me/notifications')
+
+  // The five badge types read as badges.
+  const row = page.getByRole('listitem').filter({ hasText: 'Vous ne recevez plus ce type de notification' }).filter({ hasText: 'Badges de l\'organisation' })
+  await expect(row).toBeVisible()
+  await row.getByRole('button', { name: 'Réactiver' }).click()
+  await expect(page.getByText('Notifications réactivées')).toBeVisible()
+  await expect.poll(() => listSettings(request)).toEqual([])
 })
 
 test('the menu of a notification says why it came and turns it off', async ({ page, request, browser }) => {
@@ -94,19 +118,8 @@ test('the menu of a notification says why it came and turns it off', async ({ pa
   createdDatasets.push(dataset.id)
   const reuseTitle = `Réutilisation de la cloche ${uniqueId}`
   // A reuse of one's dataset is announced at once, without any worker.
-  await asAdmin(browser, async (admin) => {
-    const response = await admin.post(`${API_BASE}/api/1/reuses/`, {
-      data: {
-        title: reuseTitle,
-        url: `https://example.org/cloche-${uniqueId}`,
-        description: 'Réutilisation créée par les tests end to end',
-        type: 'application',
-        topic: 'transport_and_mobility',
-        datasets: [dataset.id],
-      },
-    })
-    adminReuses.push((await response.json()).id)
-  })
+  const reuse = await asAdmin(browser, admin => createReuse(admin, reuseTitle, `https://example.org/cloche-${uniqueId}`, { datasets: [dataset.id] }))
+  adminReuses.push(reuse.id)
 
   await gotoHydrated(page, '/')
   const notifications = page.getByRole('list', { name: 'Notifications' })

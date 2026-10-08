@@ -4,10 +4,6 @@ import type { NotificationEvent, NotificationResolved, NotificationRuleKey, Noti
 // all of their subjects.
 const pendingFollows = new Map<NotificationEvent | null, { scopes: Array<NotificationScope>, answer: Promise<Array<NotificationResolved>> }>()
 
-function isSameScope(a: NotificationScope, b: NotificationScope) {
-  return a.class === b.class && a.id === b.id
-}
-
 // What a user can ask about their notifications. Which rules that writes, and how they
 // rank, is udata's to know: the front asks and shows the answer.
 export function useNotificationSettings() {
@@ -43,7 +39,7 @@ export function useNotificationSettings() {
     }
     batch.scopes.push(scope)
     const answers = await batch.answer
-    return answers.find(answer => isSameScope(answer.scope, scope))!
+    return answers.find(answer => answer.scope.class === scope.class && answer.scope.id === scope.id)!
   }
 
   // Follow some notifications on a subject (all of them without an event), or stop,

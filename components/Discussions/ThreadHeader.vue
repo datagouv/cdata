@@ -26,12 +26,16 @@
         >
           {{ $t('Marquer comme non spam') }}
         </BrandedButton>
+        <!-- Read again once the thread has a new message: answering in it follows it. -->
         <FollowToggle
           v-if="me"
+          :key="thread.discussion.length"
           :scope="{ class: 'Discussion', id: thread.id }"
           event="discussion"
           :follow-label="$t('Suivre cette discussion')"
           :unfollow-label="$t('Ne plus suivre cette discussion')"
+          :followed-message="$t('Vous suivez cette discussion')"
+          :unfollowed-message="$t('Vous ne suivez plus cette discussion')"
           icon-only
         />
         <EditCommentModal

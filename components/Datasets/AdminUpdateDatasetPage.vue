@@ -16,12 +16,6 @@
       @badges-change="pendingBadges = $event"
       @submit="save"
     >
-      <template #aside>
-        <SubjectNotifications
-          :scope="{ class: 'Dataset', id: dataset.id }"
-          :subject="t('ce jeu de données')"
-        />
-      </template>
       <template #top>
         <SimpleBanner
           v-if="!dataset.permissions.edit"
@@ -98,6 +92,11 @@
             </BrandedButton>
           </template>
         </BannerAction>
+        <SubjectNotifications
+          class="mb-6 pb-6 border-b border-gray-default"
+          :scope="{ class: 'Dataset', id: dataset.id }"
+          :subject="t('ce jeu de données')"
+        />
       </template>
       <template v-if="dataset.permissions.edit">
         <div class="mt-5 space-y-5">

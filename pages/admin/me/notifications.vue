@@ -9,7 +9,7 @@
         {{ t('Notifications') }}
       </h1>
       <BrandedButton
-        v-if="loaded && !paused"
+        v-if="!paused"
         color="secondary"
         size="xs"
         :icon="RiNotificationOffLine"
@@ -19,17 +19,7 @@
       </BrandedButton>
     </div>
 
-    <div
-      v-if="!loaded"
-      class="max-w-6xl space-y-8 animate-pulse-placeholder"
-    >
-      <div class="bg-gray-200 h-24 w-full" />
-      <div class="bg-gray-200 h-40 w-full" />
-    </div>
-    <div
-      v-else
-      class="max-w-6xl space-y-8"
-    >
+    <div class="max-w-6xl space-y-8">
       <MuteConfirmation @muted="load" />
 
       <BannerAction
@@ -64,23 +54,35 @@
         </div>
       </PaddedContainer>
 
-      <template
+      <LoadingBlock
         v-for="section in ruleSections"
+        v-slot="{ data: listed }"
         :key="section.title"
+        :status="section.list.status.value"
+        :data="section.list.data.value"
       >
         <PaddedContainer
-          v-if="section.rows.length || section.empty"
+          v-if="listed.total || section.empty"
           class="!p-0"
         >
           <h2 class="m-0 px-5 py-3 text-base font-bold border-b border-gray-default">
             {{ section.title }}
           </h2>
-          <p
-            v-if="!section.rows.length"
-            class="m-0 px-5 py-4 text-sm text-gray-medium"
+          <div
+            v-if="!section.rows.length && section.empty"
+            class="px-5 py-8 flex flex-col items-center text-center gap-2"
           >
-            {{ section.empty }}
-          </p>
+            <RiNotification3Line
+              class="size-6 text-gray-medium"
+              aria-hidden="true"
+            />
+            <p class="m-0 text-sm font-medium">
+              {{ section.empty.title }}
+            </p>
+            <p class="m-0 text-xs text-gray-medium max-w-md">
+              {{ section.empty.explanation }}
+            </p>
+          </div>
           <ul
             v-else
             class="m-0 p-0 list-none divide-y divide-gray-default"
@@ -88,11 +90,12 @@
             <li
               v-for="row in section.rows"
               :key="row.rule.id"
-              class="px-5 py-3 flex items-center gap-3"
+              class="px-5 py-3 flex items-start gap-3"
             >
+              <!-- On the line of the title, whether a detail follows or not -->
               <component
                 :is="row.icon"
-                class="size-4 flex-none text-gray-medium"
+                class="size-4 mt-0.5 flex-none text-gray-medium"
                 aria-hidden="true"
               />
               <div class="flex-1 min-w-0">
@@ -116,6 +119,7 @@
                 </p>
               </div>
               <BrandedButton
+                class="self-center"
                 color="tertiary"
                 size="xs"
                 @click="withdraw(row)"
@@ -125,21 +129,21 @@
             </li>
           </ul>
           <Pagination
-            v-if="section.list.listed && section.list.listed.total > PAGE_SIZE"
+            v-if="listed.total > PAGE_SIZE"
             class="px-5 py-3 border-t border-gray-default"
-            :page="section.list.page"
+            :page="section.list.page.value"
             :page-size="PAGE_SIZE"
-            :total-results="section.list.listed.total"
-            @change="(page: number) => changePage(section.list, page)"
+            :total-results="listed.total"
+            @change="(page: number) => section.list.page.value = page"
           />
         </PaddedContainer>
-      </template>
+      </LoadingBlock>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, PaddedContainer, Pagination, toast, type PaginatedArray } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, LoadingBlock, PaddedContainer, Pagination, toast, type PaginatedArray } from '@datagouv/components-next'
 import { RiChat3Line, RiBuilding2Line, RiLineChartLine, RiNotification3Line, RiNotificationOffLine, RiServerLine, RiTerminalLine } from '@remixicon/vue'
 import { useRouteQuery } from '@vueuse/router'
 import type { Component } from 'vue'
@@ -160,46 +164,29 @@ useSeoMeta({ title: t('Notifications'), robots: 'noindex' })
 const me = useMaybeMe()
 const { setRule, paused } = useNotificationSettings()
 
-// Read again on every visit rather than kept: udata writes rules too (following what one
-// edits), and another account may have signed in since. Each list has its own pages: the
-// follows of a busy account keep growing.
+// Each list has its own pages: the follows of a busy account keep growing.
 const PAGE_SIZE = 20
 
-function ruleList(followed: boolean, pageQuery: string) {
-  return reactive({
-    followed,
-    page: useRouteQuery(pageQuery, 1, { transform: Number }),
-    listed: null as PaginatedArray<NotificationSetting> | null,
-  })
-}
-type RuleList = ReturnType<typeof ruleList>
-const follows = ruleList(true, 'page_suivis')
-const cuts = ruleList(false, 'page_coupees')
-const loaded = computed(() => follows.listed !== null && cuts.listed !== null)
-
-async function fetchList(list: RuleList) {
-  list.listed = await $api<PaginatedArray<NotificationSetting>>('/api/1/notifications/settings/', {
-    query: { followed: list.followed, page: list.page, page_size: PAGE_SIZE },
-  })
+async function ruleList(followed: boolean, pageQuery: string) {
+  const page = useRouteQuery(pageQuery, 1, { transform: Number })
+  const { data, status, refresh } = await useAPI<PaginatedArray<NotificationSetting>>(
+    '/api/1/notifications/settings/',
+    { lazy: true, query: computed(() => ({ followed, page: page.value, page_size: PAGE_SIZE })) },
+  )
   // Withdrawing the last rule of the last page leaves it empty: show the one before.
-  const lastPage = Math.max(1, Math.ceil(list.listed.total / PAGE_SIZE))
-  if (list.page > lastPage) {
-    list.page = lastPage
-    await fetchList(list)
-  }
+  watch(data, (listed) => {
+    const lastPage = Math.max(1, Math.ceil((listed?.total ?? 0) / PAGE_SIZE))
+    if (page.value > lastPage) page.value = lastPage
+  })
+  return { page, data, status, refresh }
 }
+type RuleList = Awaited<ReturnType<typeof ruleList>>
+const [follows, cuts] = await Promise.all([ruleList(true, 'page_suivis'), ruleList(false, 'page_coupees')])
 
 // Both lists: withdrawing an automatic follow moves it from one to the other.
 function load() {
-  return Promise.all([fetchList(follows), fetchList(cuts)])
+  return Promise.all([follows.refresh(), cuts.refresh()])
 }
-
-async function changePage(list: RuleList, page: number) {
-  list.page = page
-  await fetchList(list)
-}
-
-onMounted(load)
 
 // The two preferences of the account itself, rather than rules.
 async function saveMe(body: Partial<Pick<Me, 'mail_cadence' | 'notifications_paused'>>) {
@@ -272,9 +259,10 @@ function followRow(rule: NotificationSetting): RuleRow {
 
 function cutSentence(rule: NotificationSetting) {
   if (rule.enabled) return t('Vous recevez toujours ces notifications')
+  // A thread is muted for all of its notifications, which all are discussion ones.
+  if (rule.scope?.class === 'Discussion') return t('Vous ne recevez rien sur cette discussion')
   if (rule.scope && rule.event) return t('Vous ne recevez plus : {event}', { event: eventLabel(rule.event) })
   if (rule.scope?.class === 'Organization') return t('Vous ne recevez rien sur cette organisation')
-  if (rule.scope?.class === 'Discussion') return t('Vous ne recevez rien sur cette discussion')
   if (rule.scope) return t('Vous ne recevez rien sur ce contenu')
   if (rule.event) return t('Vous ne recevez plus ce type de notification')
   return t('Vous ne recevez plus rien')
@@ -294,16 +282,27 @@ function cutRow(rule: NotificationSetting): RuleRow {
   }
 }
 
-const ruleSections = computed(() => [
+type RuleSection = {
+  title: string
+  list: RuleList
+  rows: Array<RuleRow>
+  // `null` hides the section while empty, which is the normal state of the cut ones.
+  empty: { title: string, explanation: string } | null
+}
+
+const ruleSections = computed<Array<RuleSection>>(() => [
   {
     title: t('Contenus suivis'),
     list: follows,
-    rows: (follows.listed?.data ?? []).map(followRow),
+    rows: (follows.data.value?.data ?? []).map(followRow),
     // Owning or administering something already brings its notifications: following
-    // is for the rest.
-    empty: t('Pour être prévenu de ce qui se passe sur un contenu, cliquez sur « Suivre » depuis sa page de discussions ou son espace d\'administration.'),
+    // is for the rest, and nothing here does not mean hearing about nothing.
+    empty: {
+      title: t('Aucun contenu suivi en plus'),
+      explanation: t('Pour être prévenu de ce qui se passe sur un contenu, cliquez sur « Suivre » depuis sa page de discussions ou son espace d\'administration.'),
+    },
   },
-  { title: t('Notifications coupées'), list: cuts, rows: (cuts.listed?.data ?? []).map(cutRow), empty: null },
+  { title: t('Notifications coupées'), list: cuts, rows: (cuts.data.value?.data ?? []).map(cutRow), empty: null },
 ])
 
 // Withdrawing an automatic follow writes a "no" rather than nothing, which udata decides:

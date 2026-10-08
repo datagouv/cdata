@@ -5,7 +5,6 @@
       :button-text="$t('Aide')"
       :on-right="true"
       :fixed="true"
-      :show-border="false"
     >
       <template #title>
         <span
@@ -160,12 +159,6 @@
           </p>
         </Accordion>
       </AccordionGroup>
-      <div
-        v-if="$slots.aside"
-        class="mt-8"
-      >
-        <slot name="aside" />
-      </div>
     </Sidemenu>
     <div class="w-full lg:w-7/12">
       <div class="fr-p-3w bg-white">

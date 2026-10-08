@@ -1,5 +1,6 @@
-import type { APIRequestContext, Page } from '@playwright/test'
+import type { APIRequestContext, Browser, Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
+import type { NotificationSetting } from '../types/notifications'
 
 export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
@@ -98,7 +99,7 @@ export async function deleteDatasets(request: APIRequestContext, ids: Array<stri
 }
 
 // `url` has to differ between reuses: udata hashes it into a unique `urlhash`.
-export async function createReuse(request: APIRequestContext, title: string, url: string): Promise<ApiReuse> {
+export async function createReuse(request: APIRequestContext, title: string, url: string, linked: { datasets?: Array<string> } = {}): Promise<ApiReuse> {
   const response = await request.post(`${API_BASE}/api/1/reuses/`, {
     data: {
       title,
@@ -106,12 +107,30 @@ export async function createReuse(request: APIRequestContext, title: string, url
       description: 'Réutilisation créée par les tests end to end',
       type: 'application',
       topic: 'transport_and_mobility',
+      datasets: linked.datasets,
     },
   })
   if (!response.ok()) {
     throw new Error(`Failed to create reuse "${title}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
   }
   return await response.json()
+}
+
+// Every rule of the account in one page, the automatic follows included.
+export async function listSettings(request: APIRequestContext): Promise<Array<NotificationSetting>> {
+  const response = await request.get(`${API_BASE}/api/1/notifications/settings/?page_size=1000`)
+  return (await response.json()).data
+}
+
+// Some calls made as another account than the page's, for the fixtures it owns.
+export async function withAccount<T>(browser: Browser, storageState: string, run: (request: APIRequestContext) => Promise<T>): Promise<T> {
+  const context = await browser.newContext({ storageState })
+  try {
+    return await run(context.request)
+  }
+  finally {
+    await context.close()
+  }
 }
 
 export async function deleteReuses(request: APIRequestContext, ids: Array<string>): Promise<void> {

@@ -137,7 +137,8 @@ export type NotificationRuleKey = {
 export type NotificationSetting = NotificationRuleKey & {
   id: string
   enabled: boolean
-  // What made the user follow a subject: by hand, or by editing it
+  // What made the user follow a subject: by hand, by editing it, or by taking part in its
+  // discussions
   origin: 'followed' | 'edited' | 'discussed'
   // `null` without a scope, or once the subject is out of the user's reach
   subject: {

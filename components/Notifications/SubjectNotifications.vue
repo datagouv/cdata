@@ -10,8 +10,14 @@
       />
       {{ t('Notifications') }}
     </h2>
+    <p
+      v-if="failed"
+      class="m-0 text-xs text-gray-medium"
+    >
+      {{ t('Vos notifications sur {subject} n\'ont pas pu être chargées.', { subject }) }}
+    </p>
     <div
-      v-if="!resolved"
+      v-else-if="!resolved"
       class="animate-pulse-placeholder space-y-3"
     >
       <div class="bg-gray-200 h-3 w-full" />
@@ -66,13 +72,21 @@ const { reasonsPhrase, eventLabel } = useNotificationLabels()
 
 const titleId = useId()
 const resolved = ref<NotificationResolved | null>(null)
+const failed = ref(false)
 const loading = ref(false)
 
 async function refresh() {
   resolved.value = await resolveFollow(props.scope, null)
 }
 
-onMounted(refresh)
+onMounted(async () => {
+  try {
+    await refresh()
+  }
+  catch {
+    failed.value = true
+  }
+})
 
 // Following some of its notifications only reads as not hearing about the subject as a
 // whole: it comes before "muted", which such a follow overrides.

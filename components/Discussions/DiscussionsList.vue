@@ -78,13 +78,17 @@
           />
           <div class="flex flex-wrap items-center gap-2">
             <!-- Only the new discussions: their answers come from taking part in a
-                 thread, or following it -->
+                 thread, or following it. Read again once a discussion is opened: a
+                 member opening one follows the subject. -->
             <FollowToggle
               v-if="me"
+              :key="pageData?.total"
               :scope="{ class: type, id: subject.id }"
               event="discussion.new"
               :follow-label="t('Suivre les discussions')"
               :unfollow-label="t('Ne plus suivre les discussions')"
+              :followed-message="t('Vous serez prévenu des nouvelles discussions')"
+              :unfollowed-message="t('Vous ne serez plus prévenu des nouvelles discussions')"
             />
             <BrandedButton
               color="secondary"

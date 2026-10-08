@@ -1,11 +1,14 @@
 <template>
   <BrandedButton
+    v-if="!failed"
     color="secondary"
     size="xs"
+    :class="{ 'animate-pulse': resolved === null }"
     :icon="followed ? RiNotificationOffLine : RiNotification3Line"
     :icon-only="iconOnly"
     :title="label"
-    :loading="loading || resolved === null"
+    :disabled="resolved === null"
+    :loading
     @click="toggle"
   >
     <template v-if="!iconOnly">
@@ -27,20 +30,29 @@ const props = withDefaults(defineProps<{
   event: NotificationEvent
   followLabel: string
   unfollowLabel: string
+  // What the toast says once done.
+  followedMessage: string
+  unfollowedMessage: string
   iconOnly?: boolean
 }>(), {
   iconOnly: false,
 })
 
-const { t } = useTranslation()
 const { resolveFollow, follow } = useNotificationSettings()
 
 const resolved = ref<NotificationResolved | null>(null)
+// The answer could not be read (the API is down): the button would only mislead.
+const failed = ref(false)
 const followed = computed(() => resolved.value?.heard ?? false)
 const label = computed(() => followed.value ? props.unfollowLabel : props.followLabel)
 
 onMounted(async () => {
-  resolved.value = await resolveFollow(props.scope, props.event)
+  try {
+    resolved.value = await resolveFollow(props.scope, props.event)
+  }
+  catch {
+    failed.value = true
+  }
 })
 
 const loading = ref(false)
@@ -49,7 +61,7 @@ async function toggle() {
   loading.value = true
   try {
     resolved.value = await follow(props.scope, props.event, !followed.value)
-    toast.success(followed.value ? t('Vous serez prévenu') : t('Vous ne serez plus prévenu'))
+    toast.success(followed.value ? props.followedMessage : props.unfollowedMessage)
   }
   finally {
     loading.value = false

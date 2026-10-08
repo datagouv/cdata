@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import { BannerAction, BrandedButton, toast } from '@datagouv/components-next'
-import type { NotificationEvent, NotificationRuleKey, NotificationScope } from '~/types/notifications'
+import type { NotificationRuleKey, NotificationScope } from '~/types/notifications'
 
 // The ways out a mail offers land here rather than acting on their own: a mail scanner
 // opening the link must not unsubscribe anyone. The query is the key of the rule to
@@ -43,7 +43,7 @@ const { $api } = useNuxtApp()
 const route = useRoute()
 const router = useRouter()
 const { mute } = useNotificationSettings()
-const { eventLabel } = useNotificationLabels()
+const { eventLabel, knownEvent } = useNotificationLabels()
 
 // Topics only exist in the API v2.
 const API_PATHS: Record<NotificationScope['class'], string> = {
@@ -56,13 +56,20 @@ const API_PATHS: Record<NotificationScope['class'], string> = {
   Topic: '/api/2/topics/',
 }
 
+// The links udata writes only hold object ids: anything else would end up in the path of
+// an API call made with the user's session (`..` climbing to `/logout/`).
+const OBJECT_ID = /^[0-9a-f]{24}$/
+
+// Nothing of the link is shown, nor sent, unless it is something udata writes: a known
+// type, and a known class with an object id.
 const key = computed<NotificationRuleKey | null>(() => {
   const scope = typeof route.query.scope === 'string' ? route.query.scope : null
-  // Checked by udata when the rule is written, which refuses a name of no type.
-  const event = typeof route.query.event === 'string' ? route.query.event as NotificationEvent : null
+  const name = typeof route.query.event === 'string' ? route.query.event : null
+  const event = name === null ? null : knownEvent(name)
+  if (name !== null && event === null) return null
   if (!scope) return event ? { scope: null, event } : null
   const [className, id] = scope.split(':')
-  if (!id || !className || !(className in API_PATHS)) return null
+  if (!className || !Object.hasOwn(API_PATHS, className) || !id || !OBJECT_ID.test(id)) return null
   return { scope: { class: className as NotificationScope['class'], id }, event }
 })
 
