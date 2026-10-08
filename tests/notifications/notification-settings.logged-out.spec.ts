@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, gotoHydrated } from '../helpers'
+import { API_BASE, createDataset, gotoHydrated, openNotifications, setRule, withAccount } from '../helpers'
 
 // Both accounts sign in through the form, in this browser only: signing out of the
 // shared sessions of the other specs would sign them out too.
@@ -11,8 +11,9 @@ async function signIn(page: Page, email: string) {
   await page.waitForURL(url => url.pathname !== '/login')
 }
 
-// Signing out reloads the account, which answers 401 once signed out.
-test.use({ allowedConsoleMessages: ['the server responded with a status of 401'] })
+// Signing out reloads the account, which answers 401 once signed out. udata refuses the
+// subject of a forged link with a 400.
+test.use({ allowedConsoleMessages: ['the server responded with a status of 401', 'the server responded with a status of 400'] })
 
 test('a mail link cannot make the page call another path of the API', async ({ page }) => {
   // `..` in the id would climb from `/api/1/datasets/` to `/logout/`, with the session.
@@ -25,15 +26,13 @@ test('a mail link cannot make the page call another path of the API', async ({ p
   expect((await page.request.get(`${API_BASE}/api/1/me/`)).status()).toBe(200)
 })
 
-test('the rules of an account are not shown to the next one in the same tab', async ({ page }) => {
+test('the rules of an account are not shown to the next one in the same tab', async ({ page, browser }) => {
   const uniqueId = Date.now()
 
   await gotoHydrated(page, '/login')
   await signIn(page, 'admin@example.com')
   const dataset = await createDataset(page.request, `Test changement de compte ${uniqueId}`, 'Dataset suivi par l\'admin')
-  await page.request.put(`${API_BASE}/api/1/notifications/settings/`, {
-    data: { scope: { class: 'Dataset', id: dataset.id }, enabled: true },
-  })
+  await setRule(page.request, { scope: { class: 'Dataset', id: dataset.id }, event: null }, true)
 
   try {
     await gotoHydrated(page, '/admin/me/notifications')
@@ -45,11 +44,7 @@ test('the rules of an account are not shown to the next one in the same tab', as
     await expect(page).toHaveURL(/\/$/)
     await page.getByRole('link', { name: 'Se connecter' }).filter({ visible: true }).first().click()
     await signIn(page, 'normal@example.com')
-    // Right after signing in, the bell can miss its first click.
-    await expect(async () => {
-      await page.getByTitle(/Voir les notifications/).click()
-      await expect(page.getByTitle('Gérer mes notifications')).toBeVisible({ timeout: 2000 })
-    }).toPass()
+    await openNotifications(page)
     await page.getByTitle('Gérer mes notifications').click()
 
     await expect(page).toHaveURL(/\/admin\/me\/notifications$/)
@@ -58,11 +53,9 @@ test('the rules of an account are not shown to the next one in the same tab', as
     await expect(page.getByRole('link', { name: `Test changement de compte ${uniqueId}` })).not.toBeVisible()
   }
   finally {
-    const admin = await page.context().browser()!.newContext({ storageState: 'playwright/.auth/user.json' })
-    await admin.request.put(`${API_BASE}/api/1/notifications/settings/`, {
-      data: { scope: { class: 'Dataset', id: dataset.id }, enabled: null },
+    await withAccount(browser, 'playwright/.auth/user.json', async (admin) => {
+      await setRule(admin, { scope: { class: 'Dataset', id: dataset.id }, event: null }, null)
+      await admin.delete(`${API_BASE}/api/1/datasets/${dataset.id}/`)
     })
-    await admin.request.delete(`${API_BASE}/api/1/datasets/${dataset.id}/`)
-    await admin.close()
   }
 })

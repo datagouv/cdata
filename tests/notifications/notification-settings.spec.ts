@@ -1,6 +1,6 @@
 import type { APIRequestContext, Browser, Locator, Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, deleteDatasets, gotoHydrated, listSettings, withAccount } from '../helpers'
+import { API_BASE, createDataset, createDiscussion, deleteDatasets, gotoHydrated, listSettings, openNotifications, setRule, withAccount } from '../helpers'
 
 // The admin account is shared with every other spec, and with the other browser when run
 // locally: each test only reads and cleans up the rules it wrote on its own subjects, and
@@ -39,23 +39,18 @@ async function normalUserDataset(browser: Browser, title: string) {
   })
 }
 
-async function openDiscussion(request: APIRequestContext, datasetId: string, title: string) {
-  const response = await request.post(`${API_BASE}/api/1/discussions/`, {
-    data: { subject: { class: 'Dataset', id: datasetId }, title, comment: 'Premier message de la discussion.' },
-  })
-  return await response.json() as { id: string }
+function openDiscussion(request: APIRequestContext, datasetId: string, title: string) {
+  return createDiscussion(request, { class: 'Dataset', id: datasetId }, title)
 }
 
 function putRule(request: APIRequestContext, scope: { class: string, id: string }, event: string | null, enabled: boolean) {
   touchedScopes.add(scope.id)
-  return request.put(`${API_BASE}/api/1/notifications/settings/`, { data: { scope, event, enabled } })
+  return setRule(request, { scope, event }, enabled)
 }
 
 test.afterEach(async ({ request, browser }) => {
   for (const { scope, event } of await listSettings(request)) {
-    if (scope && touchedScopes.has(scope.id)) {
-      await request.put(`${API_BASE}/api/1/notifications/settings/`, { data: { scope, event, enabled: null } })
-    }
+    if (scope && touchedScopes.has(scope.id)) await setRule(request, { scope, event }, null)
   }
   touchedScopes.clear()
   await deleteDatasets(request, createdDatasets)
@@ -193,7 +188,7 @@ test('a followed subject is unfollowed from the settings page', async ({ page, r
   await expect(link).toBeVisible()
 
   await ruleRow(page, link).getByRole('button', { name: 'Ne plus suivre' }).click()
-  await expect(page.getByText('Vous ne suivez plus ce contenu')).toBeVisible()
+  await expect(page.getByText('Vous ne suivez plus ce jeu de données')).toBeVisible()
   await expect.poll(() => rulesOn(request, dataset.id)).toEqual([])
   await expect(link).not.toBeVisible()
 })
@@ -210,13 +205,66 @@ test('the link of a mail only mutes its subject once confirmed', async ({ page, 
   expect(await rulesOn(request, dataset.id)).toEqual([])
 
   await page.getByRole('button', { name: 'Confirmer' }).click()
-  await expect(page.getByText('Vous ne recevrez plus de notifications sur ce contenu')).toBeVisible()
+  await expect(page.getByText('Vous ne recevrez plus de notifications sur ce jeu de données')).toBeVisible()
   await expect.poll(() => rulesOn(request, dataset.id)).toEqual([
     expect.objectContaining({ scope: { class: 'Dataset', id: dataset.id }, event: null, enabled: false }),
   ])
   await expect(page).toHaveURL(/\/admin\/me\/notifications$/)
   // The page lists the rule the banner just wrote.
-  await expect(ruleRow(page, page.getByRole('link', { name: `Test lien de mail ${uniqueId}` }))).toContainText('Vous ne recevez rien sur ce contenu')
+  await expect(ruleRow(page, page.getByRole('link', { name: `Test lien de mail ${uniqueId}` }))).toContainText('Vous ne recevez rien sur ce jeu de données')
+})
+
+test('the link of a mail about what one hears nothing of offers nothing to confirm', async ({ page, request, browser }) => {
+  // Followed from a mail, then muted: the same link opened again.
+  const uniqueId = Date.now()
+  const dataset = await normalUserDataset(browser, `Test lien déjà coupé ${uniqueId}`)
+
+  await gotoHydrated(page, `/admin/me/notifications?scope=Dataset:${dataset.id}`)
+
+  await expect(page.getByText(`Vous ne recevez déjà rien sur « Test lien déjà coupé ${uniqueId} ».`)).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Confirmer' })).not.toBeVisible()
+  await page.getByRole('button', { name: 'Fermer' }).click()
+  await expect(page).toHaveURL(/\/admin\/me\/notifications$/)
+  expect(await rulesOn(request, dataset.id)).toEqual([])
+})
+
+test('answering in a thread follows it, without reloading the page', async ({ page, browser }) => {
+  const uniqueId = Date.now()
+  const dataset = await normalUserDataset(browser, `Test réponse ${uniqueId}`)
+  const discussion = await asNormalUser(browser, normal => openDiscussion(normal, dataset.id, `Fil rejoint ${uniqueId}`))
+
+  await gotoHydrated(page, `/datasets/${dataset.id}/discussions?discussion_id=${discussion.id}`)
+  await expect(page.getByTitle('Suivre cette discussion')).toBeVisible()
+
+  await page.getByRole('button', { name: 'Répondre' }).first().click()
+  await page.getByTestId('producer-select').click()
+  await page.getByRole('option', { name: /Admin/ }).first().click()
+  await page.getByRole('textbox', { name: /Votre message/ }).fill('Réponse qui fait suivre le fil.')
+  await page.getByRole('button', { name: 'Répondre', exact: true }).click()
+
+  await expect(page.getByText('Réponse qui fait suivre le fil.')).toBeVisible()
+  await expect(page.getByTitle('Ne plus suivre cette discussion')).toBeVisible()
+})
+
+test.describe('when udata cannot say what one hears about', () => {
+  test.use({ allowedConsoleMessages: ['net::ERR_FAILED', 'CORS request did not succeed'] })
+
+  test('the box says so and no follow button is offered', async ({ page, request }) => {
+    const uniqueId = Date.now()
+    const dataset = await createDataset(request, `Test échec ${uniqueId}`, 'Dataset pour tester l\'échec des notifications')
+    createdDatasets.push(dataset.id)
+    await page.route('**/api/1/notifications/resolved/**', route => route.abort())
+
+    await gotoHydrated(page, `/admin/datasets/${dataset.id}`)
+    await expect(page.getByText(/Vos notifications sur ce jeu de données n'ont pas pu être chargées/)).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Ne plus recevoir' })).not.toBeVisible()
+
+    await gotoHydrated(page, `/datasets/${dataset.id}/discussions`)
+    // Control: the list itself is there, only the button stays away.
+    await expect(page.getByText('Il n\'y a pas encore de discussion')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Suivre les discussions' })).not.toBeVisible()
+    await expect(page.getByRole('button', { name: 'Ne plus suivre les discussions' })).not.toBeVisible()
+  })
 })
 
 test('the link of a discussion mail stops following the thread once confirmed', async ({ page, request }) => {
@@ -270,12 +318,8 @@ test('a notification asking for an action offers no way out', async ({ page, req
   }))
 
   await gotoHydrated(page, '/')
+  await openNotifications(page)
   const notifications = page.getByRole('list', { name: 'Notifications' })
-  // Right after the page loads, the bell can miss its first click.
-  await expect(async () => {
-    await page.getByTitle(/Voir les notifications/).click()
-    await expect(notifications).toBeVisible({ timeout: 2000 })
-  }).toPass()
 
   const transfer = notifications.getByRole('listitem').filter({ hasText: 'Demande de transfert' }).filter({ hasText: 'Normal User' })
   await expect(transfer.first()).toBeVisible()

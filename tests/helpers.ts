@@ -116,10 +116,42 @@ export async function createReuse(request: APIRequestContext, title: string, url
   return await response.json()
 }
 
+export async function createDiscussion(request: APIRequestContext, subject: { class: 'Dataset' | 'Dataservice', id: string }, title: string): Promise<{ id: string }> {
+  const response = await request.post(`${API_BASE}/api/1/discussions/`, {
+    data: {
+      subject,
+      title,
+      // The comment must not repeat the title: tests locate discussions by title text
+      comment: 'Premier message de la discussion.',
+    },
+  })
+  if (!response.ok()) {
+    throw new Error(`Failed to create discussion "${title}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+  return await response.json()
+}
+
 // Every rule of the account in one page, the automatic follows included.
 export async function listSettings(request: APIRequestContext): Promise<Array<NotificationSetting>> {
   const response = await request.get(`${API_BASE}/api/1/notifications/settings/?page_size=1000`)
   return (await response.json()).data
+}
+
+// `null` withdraws the rule.
+export async function setRule(request: APIRequestContext, key: { scope: { class: string, id: string } | null, event: string | null }, enabled: boolean | null): Promise<void> {
+  const response = await request.put(`${API_BASE}/api/1/notifications/settings/`, { data: { ...key, enabled } })
+  if (!response.ok()) {
+    throw new Error(`Failed to set the rule ${JSON.stringify(key)}: ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+}
+
+// Opens the bell, which can miss its first click right after the page loads or after
+// signing in. Its header is there whether or not there are notifications.
+export async function openNotifications(page: Page): Promise<void> {
+  await expect(async () => {
+    await page.getByTitle(/Voir les notifications/).click()
+    await expect(page.getByTitle('Gérer mes notifications')).toBeVisible({ timeout: 2000 })
+  }).toPass()
 }
 
 // Some calls made as another account than the page's, for the fixtures it owns.
