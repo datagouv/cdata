@@ -64,7 +64,7 @@
       </AdminBadge>
 
       <template #tooltip>
-        {{ push.error }}
+        <span class="block w-96 max-w-full whitespace-pre-line">{{ push.error }}</span>
       </template>
     </Tooltip>
 
