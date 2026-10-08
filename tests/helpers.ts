@@ -1,6 +1,7 @@
 import type { APIRequestContext, Browser, Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
-import type { NotificationSetting } from '../types/notifications'
+import type { MemberRole } from '@datagouv/components-next'
+import type { NotificationRuleKey, NotificationSetting } from '../types/notifications'
 
 export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
@@ -138,7 +139,7 @@ export async function listSettings(request: APIRequestContext): Promise<Array<No
 }
 
 // `null` withdraws the rule.
-export async function setRule(request: APIRequestContext, key: { scope: { class: string, id: string } | null, event: string | null }, enabled: boolean | null): Promise<void> {
+export async function setRule(request: APIRequestContext, key: NotificationRuleKey, enabled: boolean | null): Promise<void> {
   const response = await request.put(`${API_BASE}/api/1/notifications/settings/`, { data: { ...key, enabled } })
   if (!response.ok()) {
     throw new Error(`Failed to set the rule ${JSON.stringify(key)}: ${response.status()} ${(await response.text()).slice(0, 300)}`)
@@ -168,7 +169,7 @@ export async function withAccount<T>(browser: Browser, storageState: string, run
 // The account of `member` joins an organization the way the site makes it: invited by an
 // administrator, then accepting. The invitation accepted is the one just made, whatever
 // else is pending.
-export async function joinOrganization(admin: APIRequestContext, member: APIRequestContext, organizationId: string, role: string): Promise<void> {
+export async function joinOrganization(admin: APIRequestContext, member: APIRequestContext, organizationId: string, role: MemberRole): Promise<void> {
   const me = await (await member.get(`${API_BASE}/api/1/me/`)).json()
   const invited = await admin.post(`${API_BASE}/api/1/organizations/${organizationId}/member/`, { data: { user: me.id, role } })
   if (!invited.ok()) {

@@ -1,6 +1,7 @@
 import type { APIRequestContext, Browser, Locator, Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { API_BASE, createDataset, createDiscussion, deleteDatasets, gotoHydrated, listSettings, openNotifications, setRule, withAccount } from '../helpers'
+import type { NotificationEvent, NotificationScope } from '../../types/notifications'
 
 // The admin account is shared with every other spec, and with the other browser when run
 // locally: each test only reads and cleans up the rules it wrote on its own subjects, and
@@ -43,7 +44,7 @@ function openDiscussion(request: APIRequestContext, datasetId: string, title: st
   return createDiscussion(request, { class: 'Dataset', id: datasetId }, title)
 }
 
-function putRule(request: APIRequestContext, scope: { class: string, id: string }, event: string | null, enabled: boolean) {
+function putRule(request: APIRequestContext, scope: NotificationScope, event: NotificationEvent | null, enabled: boolean) {
   touchedScopes.add(scope.id)
   return setRule(request, { scope, event }, enabled)
 }
@@ -71,7 +72,7 @@ test('a discussion is muted from its thread and reactivated from the settings', 
   await expect.poll(() => rulesOn(request, discussion.id)).toEqual([
     expect.objectContaining({ scope: { class: 'Discussion', id: discussion.id }, event: 'discussion', enabled: false }),
   ])
-  await expect(page.getByTitle('Suivre cette discussion')).toBeVisible()
+  await expect(page.getByTitle('Suivre cette discussion', { exact: true })).toBeEnabled()
 
   await gotoHydrated(page, '/admin/me/notifications')
   const link = page.getByRole('link', { name: `Discussion à suivre ${uniqueId}` })
@@ -89,7 +90,7 @@ test('stopping a thread one followed only withdraws the follow', async ({ page, 
 
   await gotoHydrated(page, `/datasets/${dataset.id}/discussions?discussion_id=${discussion.id}`)
 
-  await page.getByTitle('Suivre cette discussion').click()
+  await page.getByTitle('Suivre cette discussion', { exact: true }).click()
   await expect(page.getByText('Vous suivez cette discussion')).toBeVisible()
   await expect.poll(() => rulesOn(request, discussion.id)).toEqual([
     expect.objectContaining({ event: 'discussion', enabled: true }),
@@ -115,9 +116,9 @@ test('the discussions of a subject are followed from their list, each thread sho
   const followedThread = page.locator('article', { hasText: `Fil suivi ${uniqueId}` })
   const otherThread = page.locator('article', { hasText: `Fil non suivi ${uniqueId}` })
   await expect(followedThread.getByTitle('Ne plus suivre cette discussion')).toBeVisible()
-  await expect(otherThread.getByTitle('Suivre cette discussion')).toBeVisible()
+  await expect(otherThread.getByTitle('Suivre cette discussion', { exact: true })).toBeEnabled()
 
-  await page.getByRole('button', { name: 'Suivre les discussions' }).click()
+  await page.getByRole('button', { name: 'Suivre les discussions', exact: true }).click()
   await expect(page.getByText('Vous serez prévenu des nouvelles discussions')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Ne plus suivre les discussions' })).toBeVisible()
   await expect.poll(() => rulesOn(request, dataset.id)).toEqual([
@@ -234,7 +235,7 @@ test('answering in a thread follows it, without reloading the page', async ({ pa
   const discussion = await asNormalUser(browser, normal => openDiscussion(normal, dataset.id, `Fil rejoint ${uniqueId}`))
 
   await gotoHydrated(page, `/datasets/${dataset.id}/discussions?discussion_id=${discussion.id}`)
-  await expect(page.getByTitle('Suivre cette discussion')).toBeVisible()
+  await expect(page.getByTitle('Suivre cette discussion', { exact: true })).toBeEnabled()
 
   await page.getByRole('button', { name: 'Répondre' }).first().click()
   await page.getByTestId('producer-select').click()

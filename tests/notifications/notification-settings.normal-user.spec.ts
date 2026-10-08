@@ -79,7 +79,7 @@ test('during a pause, the box says so and the follow buttons still work', async 
   // The owner hears about the discussions of their dataset, pause aside.
   await page.getByRole('button', { name: 'Ne plus suivre les discussions' }).click()
   await expect(page.getByText('Vous ne serez plus prévenu des nouvelles discussions')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Suivre les discussions' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Suivre les discussions', exact: true })).toBeEnabled()
 
   // A no on the new discussions of the dataset alone, listed as such.
   await gotoHydrated(page, '/admin/me/notifications')
@@ -127,7 +127,7 @@ test('opening a discussion as an editor follows the subject, without reloading t
 
   await gotoHydrated(page, `/datasets/${dataset.id}/discussions`)
   // An editor hears nothing of a dataset they never worked on.
-  await expect(page.getByRole('button', { name: 'Suivre les discussions' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Suivre les discussions', exact: true })).toBeEnabled()
 
   await page.getByRole('button', { name: 'Démarrer une nouvelle discussion' }).click()
   await page.getByTestId('producer-select').click()
@@ -196,7 +196,7 @@ test('the menu of a badge tells a partial editor why, and stops the organization
   await openNotifications(page)
   await why.click()
   await page.getByRole('button', { name: 'Ne plus recevoir : Badges de l\'organisation' }).click()
-  await expect(page.getByText('Vous ne recevrez plus ce type de notification')).toBeVisible()
+  await expect(page.getByText('Vous ne recevrez plus : Badges de l\'organisation')).toBeVisible()
   await expect.poll(() => listSettings(request)).toEqual(expect.arrayContaining([
     expect.objectContaining({ scope: null, event: 'organization.badge', enabled: false }),
   ]))
@@ -268,7 +268,7 @@ test('the menu of a notification says why it came and turns it off', async ({ pa
   await openMenu()
   await expect(page.getByText('Vous recevez cette notification en tant que propriétaire.')).toBeVisible()
   await page.getByRole('button', { name: 'Ne plus recevoir : Nouvelles réutilisations' }).click()
-  await expect(page.getByText('Vous ne recevrez plus ce type de notification')).toBeVisible()
+  await expect(page.getByText('Vous ne recevrez plus : Nouvelles réutilisations')).toBeVisible()
   await expect.poll(() => listSettings(request)).toEqual([
     expect.objectContaining({ scope: null, event: 'reuse.created', enabled: false }),
   ])

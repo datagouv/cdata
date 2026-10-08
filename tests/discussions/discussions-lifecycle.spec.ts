@@ -168,6 +168,8 @@ for (const config of SUBJECT_CONFIGS) {
       await expect(dialog.getByText('Réponse visible seulement dans la modale')).toBeVisible()
       // The trigger already said "respond": the form is open without a second click
       await expect(dialog.getByRole('textbox', { name: /Votre message/ })).toBeVisible()
+      // Mounted already open: what the owner receives on the thread is read all the same.
+      await expect(dialog.getByTitle('Ne plus suivre cette discussion')).toBeEnabled()
     })
 
     test('admin page can filter open and closed discussions', async ({ page, request }) => {
