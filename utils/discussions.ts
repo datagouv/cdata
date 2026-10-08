@@ -1,5 +1,5 @@
 import { throwOnNever, type Dataservice, type DatasetV2, type Reuse, type TopicV2 } from '@datagouv/components-next'
-import { RiArticleLine, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
+import { RiArticleLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
 import type { Comment, DiscussionSubject, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 import type { Post } from '~/types/posts'
 import type { ApiFetch } from '~/types/types'
@@ -55,7 +55,7 @@ export function getSubjectPage(subject: DiscussionSubjectTypes) {
   return throwOnNever(subject, `Unknown type ${subject}`)
 };
 
-export function getSubjectTypeIcon(subjectClass: DiscussionSubject['class']) {
+export function getSubjectTypeIcon(subjectClass: DiscussionSubject['class'] | 'Discussion') {
   switch (subjectClass) {
     case 'Dataservice':
       return RiTerminalLine
@@ -65,9 +65,14 @@ export function getSubjectTypeIcon(subjectClass: DiscussionSubject['class']) {
       return RiArticleLine
     case 'Reuse':
       return RiLineChartLine
-    default:
-      return ''
+    case 'Topic':
+      return RiBookShelfLine
+    case 'Organization':
+      return RiBuilding2Line
+    case 'Discussion':
+      return RiChat3Line
   };
+  return throwOnNever(subjectClass, `Unknown type ${subjectClass}`)
 };
 
 export function getDiscussionUrl(discussionId: string, subject: DiscussionSubjectTypes | null) {

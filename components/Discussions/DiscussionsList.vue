@@ -81,7 +81,7 @@
                  thread, or following it -->
             <FollowToggle
               v-if="me"
-              :scope="{ class: type, id: subject.id } as NotificationScope"
+              :scope="{ class: type, id: subject.id }"
               event="discussion.new"
               :follow-label="t('Suivre les discussions')"
               :unfollow-label="t('Ne plus suivre les discussions')"
@@ -172,7 +172,6 @@ import { refDebounced } from '@vueuse/core'
 import NewDiscussionForm from './NewDiscussionForm.vue'
 import DiscussionCard from './DiscussionCard.vue'
 import FollowToggle from '../Notifications/FollowToggle.vue'
-import type { NotificationScope } from '~/types/notifications'
 import type { PaginatedArray, SortDirection } from '~/types/types'
 import type { DiscussionSortedBy, DiscussionSubject, DiscussionSubjectTypes, Thread } from '~/types/discussions'
 import { useRouteQuery } from '@vueuse/router'

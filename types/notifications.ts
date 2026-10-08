@@ -1,5 +1,5 @@
 import type { DataserviceReference, DatasetReference, OrganizationReference, ReuseReference, UserReference } from '@datagouv/components-next'
-import type { Thread } from './discussions'
+import type { DiscussionSubject, Thread } from './discussions'
 import type { HarvesterSource } from './harvesters'
 
 export type CommonNotification = {
@@ -99,14 +99,19 @@ export type DataserviceCreatedNotification = CommonNotification & {
 
 export type UserNotification = MembershipRequestNotification | TransferRequestNotification | NewBadgeNotification | DiscussionNotification | MembershipAcceptedNotification | MembershipRefusedNotification | ValidateHarvesterNotification | ReuseCreatedNotification | DataserviceCreatedNotification
 
+// A dotted name and each of its prefixes: `a.b.c` gives `a`, `a.b` and `a.b.c`.
+type DottedPrefixes<Name extends string> = Name extends `${infer Head}.${infer Rest}`
+  ? Head | `${Head}.${DottedPrefixes<Rest>}`
+  : Name
+
 // What a rule can name: a notification type, or a dotted prefix of some (`discussion`
 // covers `discussion.new`, `discussion.comment`…).
-export type NotificationEvent = string
+export type NotificationEvent = DottedPrefixes<UserNotification['type']>
 
 export type MailCadence = 'immediate' | 'daily' | 'weekly'
 
 export type NotificationScope = {
-  class: 'Organization' | 'Discussion' | 'Dataset' | 'Reuse' | 'Dataservice' | 'Post' | 'Topic'
+  class: DiscussionSubject['class'] | 'Discussion'
   id: string
 }
 
@@ -138,15 +143,20 @@ export type NotificationSetting = NotificationRuleKey & {
   subject: {
     title: string
     page: string
+    // The organization the subject belongs to, `null` for an organization itself
     organization: OrganizationReference | null
   } | null
 }
 
 // Whether and why the user hears about an event on a subject, rules and defaults
-// applied. The keys asked about are echoed, one answer per subject.
+// applied, pause aside. The keys asked about are echoed, one answer per subject.
 export type NotificationResolved = {
   scope: NotificationScope
   event: NotificationEvent | null
   heard: boolean
   reasons: Array<NotificationReason>
+  // The user said no to exactly this subject and event
+  muted: boolean
+  // The narrower events the user still follows on this subject
+  followed_events: Array<NotificationEvent>
 }

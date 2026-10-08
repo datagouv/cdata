@@ -28,11 +28,15 @@
 
 <script setup lang="ts">
 import { BannerAction, BrandedButton, toast } from '@datagouv/components-next'
-import type { NotificationRuleKey, NotificationScope } from '~/types/notifications'
+import type { NotificationEvent, NotificationRuleKey, NotificationScope } from '~/types/notifications'
 
 // The ways out a mail offers land here rather than acting on their own: a mail scanner
 // opening the link must not unsubscribe anyone. The query is the key of the rule to
 // write, the same as the menu of the notification in the bell writes.
+
+const emit = defineEmits<{
+  muted: []
+}>()
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
@@ -54,7 +58,8 @@ const API_PATHS: Record<NotificationScope['class'], string> = {
 
 const key = computed<NotificationRuleKey | null>(() => {
   const scope = typeof route.query.scope === 'string' ? route.query.scope : null
-  const event = typeof route.query.event === 'string' ? route.query.event : null
+  // Checked by udata when the rule is written, which refuses a name of no type.
+  const event = typeof route.query.event === 'string' ? route.query.event as NotificationEvent : null
   if (!scope) return event ? { scope: null, event } : null
   const [className, id] = scope.split(':')
   if (!id || !className || !(className in API_PATHS)) return null
@@ -104,6 +109,7 @@ async function confirm() {
   try {
     await mute(key.value!)
     toast.success(done.value)
+    emit('muted')
     await dismiss()
   }
   finally {

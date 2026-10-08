@@ -18,7 +18,7 @@ export function useNotificationLabels() {
     'sysadmin': t('en tant qu\'administrateur du site'),
   }))
 
-  const EVENT_LABELS = computed<Record<string, string>>(() => ({
+  const EVENT_LABELS = computed<Partial<Record<NotificationEvent, string>>>(() => ({
     'discussion': t('Discussions'),
     'discussion.new': t('Nouvelles discussions'),
     'discussion.comment': t('Réponses aux discussions'),
@@ -41,7 +41,8 @@ export function useNotificationLabels() {
   function eventLabel(event: NotificationEvent) {
     const parts = event.split('.')
     for (let length = parts.length; length > 0; length--) {
-      const label = EVENT_LABELS.value[parts.slice(0, length).join('.')]
+      // A prefix of a type is an event name itself.
+      const label = EVENT_LABELS.value[parts.slice(0, length).join('.') as NotificationEvent]
       if (label) return label
     }
     return event

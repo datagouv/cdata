@@ -54,9 +54,10 @@
       @click="handleMarkAsRead"
     />
     <!-- In the corner under the date, empty on every notification: it moves nothing.
-         Above the overlay link, so that it stays clickable. -->
+         Above the overlay link, so that it stays clickable. An action to take cannot be
+         turned off: leaving it unanswered would be a bug, not a setting. -->
     <NotificationActions
-      v-if="isConfigurable(notification)"
+      v-if="!notification.requires_action"
       class="absolute right-2 bottom-2 z-10"
       :notification
     />
@@ -69,7 +70,7 @@ import type { Component } from 'vue'
 import CdataLink from '../CdataLink.vue'
 import NotificationActions from './NotificationActions.vue'
 import type { UserNotification } from '~/types/notifications'
-import { canMarkAsRead, isConfigurable, requireAction } from '~/utils/notifications'
+import { canMarkAsRead, requireAction } from '~/utils/notifications'
 
 const props = defineProps<{
   icon: Component

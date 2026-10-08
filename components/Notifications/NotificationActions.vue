@@ -34,7 +34,7 @@
         :key="action.label"
         type="button"
         class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm leading-tight text-gray-title hover:bg-gray-some disabled:opacity-50"
-        :disabled="pending !== null"
+        :disabled="pending"
         @click="apply(action)"
       >
         {{ action.label }}
@@ -122,17 +122,17 @@ const actions = computed<Array<Action>>(() => [
   },
 ])
 
-const pending = ref<string | null>(null)
+const pending = ref(false)
 
 async function apply(action: Action) {
-  pending.value = action.label
+  pending.value = true
   try {
     await action.run()
     toast.success(action.done)
     open.value = false
   }
   finally {
-    pending.value = null
+    pending.value = false
   }
 }
 
