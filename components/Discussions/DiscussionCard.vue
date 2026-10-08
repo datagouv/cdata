@@ -1,5 +1,5 @@
 <template>
-  <div class="p-4 border border-gray-default rounded space-y-3">
+  <article class="p-4 border border-gray-default rounded space-y-3">
     <ThreadHeader
       :thread
       :subject
@@ -93,7 +93,7 @@
         {{ $t('Répondre') }}
       </BrandedButton>
     </footer>
-  </div>
+  </article>
 </template>
 
 <script setup lang="ts">
