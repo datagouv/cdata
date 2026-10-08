@@ -2,7 +2,7 @@
   <!-- Must be rendered inside a `relative group` container (the parent banner
        wrapper provides the positioning context and the group-hover reveal), and
        only rendered by the parent for users with `organization.permissions.edit`. -->
-  <div v-if="organization">
+  <div>
     <template v-if="repositioning">
       <div class="absolute inset-0 z-10 flex items-center justify-center pointer-events-none">
         <span class="bg-black/60 text-white px-4 py-2 rounded-full text-sm flex items-center gap-2">

@@ -2,6 +2,8 @@
   <div
     data-testid="banner-flyout"
     class="w-[calc(100vw-32px)] sm:w-[480px] max-w-[480px] bg-white rounded-[10px] shadow-2xl border border-gray-lower"
+    role="dialog"
+    :aria-label="$t('Bannière')"
   >
     <!-- Segmented control -->
     <SegmentedControl
@@ -27,8 +29,8 @@
           v-for="color in DSFR_BANNER_COLORS"
           :key="color.name"
           type="button"
-          :aria-label="color.name"
-          :title="color.name"
+          :aria-label="$t(color.name)"
+          :title="$t(color.name)"
           :aria-pressed="isSelected(color.hex)"
           class="size-11 rounded cursor-pointer border-0"
           :class="{ 'ring-2 ring-new-primary ring-offset-1': isSelected(color.hex) }"
@@ -208,11 +210,10 @@ async function onUpload(files: Array<File>) {
   try {
     await uploadOrganizationBanner(props.organization.id, file)
   }
-  catch (error) {
+  catch {
     // Server rejection: the $api plugin already surfaces the server error
-    // detail as a toast; only the client-side checks use inline messages.
-    const { status, statusCode } = error as { status?: number, statusCode?: number }
-    uploadError.value = (status ?? statusCode) === 413 ? 'size' : 'format'
+    // detail as a toast; inline errors are reserved for client-side checks,
+    // so a single failure is never reported twice.
     pending.value = false
     return
   }
