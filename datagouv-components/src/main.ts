@@ -120,6 +120,8 @@ import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 import { ofetch } from 'ofetch'
 import { useTranslation } from './composables/useTranslation'
 
+export type { SegmentedControlOption } from './components/SegmentedControl.vue'
+
 export { Toaster, toast } from 'vue-sonner'
 
 export * from './composables/useActiveDescendant'
