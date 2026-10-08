@@ -24,6 +24,8 @@
       v-else
       class="max-w-6xl space-y-8"
     >
+      <MuteConfirmation />
+
       <BannerAction
         v-if="paused"
         type="warning"
@@ -143,6 +145,7 @@ import type { Component } from 'vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
+import MuteConfirmation from '~/components/Notifications/MuteConfirmation.vue'
 import type { Me } from '~/utils/auth'
 import type { MailCadence, NotificationScope, NotificationSetting } from '~/types/notifications'
 

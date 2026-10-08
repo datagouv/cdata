@@ -115,3 +115,33 @@ test('a followed subject is unfollowed from the settings page', async ({ page, r
   await expect.poll(() => listSettings(request)).toEqual([])
   await expect(link).not.toBeVisible()
 })
+
+test('the link of a mail only mutes its subject once confirmed', async ({ page, request }) => {
+  const uniqueId = Date.now()
+  const dataset = await createDataset(request, `Test lien de mail ${uniqueId}`, 'Dataset pour tester les liens des mails')
+  createdDatasets.push(dataset.id)
+
+  await gotoHydrated(page, `/admin/me/notifications?scope=Dataset:${dataset.id}`)
+
+  // Opening the link writes nothing: a mail scanner opening it must not unsubscribe anyone.
+  await expect(page.getByText(`Ne plus rien recevoir sur « Test lien de mail ${uniqueId} » ?`)).toBeVisible()
+  expect(await listSettings(request)).toEqual([])
+
+  await page.getByRole('button', { name: 'Confirmer' }).click()
+  await expect(page.getByText('Vous ne recevrez plus de notifications sur ce contenu')).toBeVisible()
+  await expect.poll(() => listSettings(request)).toEqual([
+    expect.objectContaining({ scope: { class: 'Dataset', id: dataset.id }, event: null, enabled: false }),
+  ])
+  await expect(page).toHaveURL(/\/admin\/me\/notifications$/)
+})
+
+test('the link of a mail about a type of notification can be dismissed', async ({ page, request }) => {
+  await gotoHydrated(page, '/admin/me/notifications?event=discussion.comment')
+
+  await expect(page.getByText('Ne plus recevoir ce type de notification', { exact: false })).toBeVisible()
+  await page.getByRole('button', { name: 'Annuler' }).click()
+
+  await expect(page).toHaveURL(/\/admin\/me\/notifications$/)
+  await expect(page.getByRole('button', { name: 'Confirmer' })).not.toBeVisible()
+  expect(await listSettings(request)).toEqual([])
+})

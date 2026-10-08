@@ -70,12 +70,12 @@ const props = defineProps<{
 }>()
 
 const { t } = useTranslation()
-const { setRule, follow, followSubject } = useNotificationSettings()
+const { mute } = useNotificationSettings()
 
 const { reasonsPhrase } = useNotificationLabels()
 const reasons = computed(() => reasonsPhrase(props.notification.reasons))
 
-const ignoreSubject = (label: string, done: string, scope: NotificationScope): Action => ({ label, done, run: () => followSubject(scope, false) })
+const ignoreSubject = (label: string, done: string, scope: NotificationScope): Action => ({ label, done, run: () => mute({ scope, event: null }) })
 
 // The subject-level ways out, for the notifications whose subject is known.
 function subjectActions(notification: UserNotification): Array<Action> {
@@ -87,7 +87,7 @@ function subjectActions(notification: UserNotification): Array<Action> {
         {
           label: t('Ne plus suivre cette discussion'),
           done: t('Vous ne suivez plus cette discussion'),
-          run: () => follow({ class: 'Discussion', id: notification.details.discussion.id }, 'discussion', false),
+          run: () => mute({ scope: { class: 'Discussion', id: notification.details.discussion.id }, event: 'discussion' }),
         },
         ignoreSubject(t('Ne rien recevoir sur ce contenu'), t('Vous ne recevrez plus de notifications sur ce contenu'), notification.details.discussion.subject),
       ]
@@ -118,7 +118,7 @@ const actions = computed<Array<Action>>(() => [
   {
     label: t('Ne plus recevoir ce type de notification'),
     done: t('Vous ne recevrez plus ce type de notification'),
-    run: () => setRule({ event: props.notification.type }, false),
+    run: () => mute({ scope: null, event: props.notification.type }),
   },
 ])
 

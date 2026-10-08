@@ -132,6 +132,15 @@ export function useNotificationSettings() {
     await setRule({ scope }, followed)
   }
 
+  // What every "stop" does, in the bell as in the mails, for the rule key it names: a
+  // thread stops being followed, a subject is ignored altogether, a type is turned off
+  // anywhere.
+  async function mute(key: NotificationRuleKey) {
+    if (key.scope?.class === 'Discussion') return follow(key.scope, key.event, false)
+    if (key.scope) return followSubject(key.scope, false)
+    return setRule({ event: key.event }, false)
+  }
+
   // "Turn everything off" is a field of the user rather than a rule: no rule, however
   // precise, can bring anything back.
   const me = useMaybeMe()
@@ -142,5 +151,5 @@ export function useNotificationSettings() {
     if (me.value) me.value.notifications_paused = updated.notifications_paused
   }
 
-  return { settings, load, ruleValue, narrowerRules, setRule, resolveFollow, follow, followSubject, paused, setPaused }
+  return { settings, load, ruleValue, narrowerRules, setRule, resolveFollow, follow, followSubject, mute, paused, setPaused }
 }
