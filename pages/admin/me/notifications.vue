@@ -58,7 +58,7 @@
           <RadioButtons
             :label="t('Rythme')"
             :options="cadenceOptions"
-            :model-value="me.mail_cadence"
+            :model-value="me?.mail_cadence"
             @update:model-value="saveCadence"
           />
         </div>
@@ -147,7 +147,8 @@ const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 useSeoMeta({ title: t('Notifications'), robots: 'noindex' })
-const me = useMe()
+// Gone while the page is still shown, on signing out from it.
+const me = useMaybeMe()
 const { setRule, paused } = useNotificationSettings()
 
 // Read again on every visit rather than kept: udata writes rules too (following what one
@@ -163,6 +164,7 @@ onMounted(load)
 // The two preferences of the account itself, rather than rules.
 async function saveMe(body: Partial<Pick<Me, 'mail_cadence' | 'notifications_paused'>>) {
   const updated = await $api<Me>('/api/1/me/', { method: 'PUT', body })
+  if (!me.value) return
   me.value.mail_cadence = updated.mail_cadence
   me.value.notifications_paused = updated.notifications_paused
 }

@@ -108,9 +108,14 @@ test('the menu of a notification says why it came and turns it off', async ({ pa
   })
 
   await gotoHydrated(page, '/')
+  const notifications = page.getByRole('list', { name: 'Notifications' })
   const openMenu = async () => {
-    await page.getByTitle(/Voir les notifications/).click()
-    const notification = page.getByRole('list', { name: 'Notifications' }).getByRole('listitem').filter({ hasText: reuseTitle })
+    // Right after the page loads, the bell can miss its first click.
+    await expect(async () => {
+      await page.getByTitle(/Voir les notifications/).click()
+      await expect(notifications).toBeVisible({ timeout: 2000 })
+    }).toPass()
+    const notification = notifications.getByRole('listitem').filter({ hasText: reuseTitle })
     await notification.getByTitle('Pourquoi je reçois ça ?').click()
   }
 
