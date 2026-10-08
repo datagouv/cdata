@@ -31,9 +31,6 @@ const hasImage = computed(() => !!props.organization.banner_image)
 
 const bannerStyle = computed(() => {
   if (hasImage.value) {
-    // Full position inline, NOT the bg-center class: this build marks
-    // background-position utilities !important, which would override the
-    // inline longhand and freeze the image at 50%.
     return {
       backgroundImage: `url("${props.organization.banner_image}")`,
       backgroundPosition: `center ${props.positionOverride ?? props.organization.banner_image_position ?? 50}%`,

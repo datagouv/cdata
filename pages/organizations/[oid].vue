@@ -1,69 +1,30 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <div>
-    <div class="relative group">
-      <div
-        ref="bannerElement"
-        class="relative"
-        :class="{ 'cursor-grab active:cursor-grabbing select-none touch-none': repositioning }"
-        @pointerdown="onPointerDown"
-        @pointermove="onPointerMove"
-        @pointerup="onPointerUp"
-        @pointercancel="onPointerUp"
-      >
-        <OrganizationBanner
-          v-if="organization"
-          :organization="organization"
-          :position-override="repositioning ? draftPosition : null"
-        >
-          <div
-            class="flex items-center justify-between"
-            :class="{ 'pointer-events-none': repositioning }"
-          >
-            <Breadcrumb>
-              <BreadcrumbItem to="/">
-                {{ $t('Accueil') }}
-              </BreadcrumbItem>
-              <BreadcrumbItem to="/organizations">
-                {{ $t('Organisations') }}
-              </BreadcrumbItem>
-              <BreadcrumbItem>
-                {{ organization.name }}
-              </BreadcrumbItem>
-            </Breadcrumb>
-            <div class="flex gap-3 items-center">
-              <ReportModal
-                v-if="!isOrganizationCertified(organization)"
-                :subject="{ id: organization.id, class: 'Organization' }"
-              />
-            </div>
-          </div>
-        </OrganizationBanner>
-        <OrganizationBannerControls
-          v-if="organization && organization.permissions.edit"
-          :organization="organization"
-          :repositioning="repositioning"
-          :saving="savingReposition"
-          :position="draftPosition"
-          @open-flyout="openFlyout"
-          @start-reposition="startReposition"
-          @save-reposition="saveReposition"
-          @cancel-reposition="cancelReposition"
-          @delete-banner="deleteBanner"
+    <OrganizationBannerEditor
+      v-if="organization"
+      :organization="organization"
+      @updated="onOrganizationUpdated"
+      @refresh="refresh"
+    >
+      <Breadcrumb>
+        <BreadcrumbItem to="/">
+          {{ $t('Accueil') }}
+        </BreadcrumbItem>
+        <BreadcrumbItem to="/organizations">
+          {{ $t('Organisations') }}
+        </BreadcrumbItem>
+        <BreadcrumbItem>
+          {{ organization.name }}
+        </BreadcrumbItem>
+      </Breadcrumb>
+      <div class="flex gap-3 items-center">
+        <ReportModal
+          v-if="!isOrganizationCertified(organization)"
+          :subject="{ id: organization.id, class: 'Organization' }"
         />
       </div>
-      <BannerFlyout
-        v-if="flyoutOpen && organization"
-        ref="flyoutElement"
-        :organization="organization"
-        class="absolute right-0 top-12 z-30"
-        tabindex="-1"
-        @updated="onBannerUpdated"
-        @refresh="onBannerRefresh"
-        @request-reposition="startReposition"
-        @close="closeFlyout"
-      />
-    </div>
+    </OrganizationBannerEditor>
     <LoadingBlock
       v-if="organization"
       v-slot="{ data: organization }"
@@ -166,16 +127,12 @@
 <script setup lang="ts">
 import { isOrganizationCertified, LoadingBlock, MarkdownViewer, OrganizationNameWithCertificate, OwnerType, ReadMore, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiSearchLine } from '@remixicon/vue'
-import { onClickOutside, useTimeoutFn } from '@vueuse/core'
+import { useTimeoutFn } from '@vueuse/core'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import BannerFlyout from '~/components/Organizations/BannerFlyout.vue'
-import OrganizationBanner from '~/components/Organizations/OrganizationBanner.vue'
-import OrganizationBannerControls from '~/components/Organizations/OrganizationBannerControls.vue'
+import OrganizationBannerEditor from '~/components/Organizations/OrganizationBannerEditor.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
-import { deleteOrganizationBanner, updateOrganization } from '~/api/organizations'
 import { isUserOrgAdmin, useMaybeMe } from '~/utils/auth'
-import { backgroundCoverHeight, positionFromDrag } from '~/utils/organizationBanner'
 import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
@@ -206,183 +163,6 @@ const isPresentationTab = computed(() => route.path.endsWith('/presentation'))
 function onOrganizationUpdated(updated: Organization) {
   organization.value = updated
 }
-
-const flyoutOpen = ref(false)
-const flyoutElement = ref<InstanceType<typeof BannerFlyout> | null>(null)
-const elementFocusedBeforeFlyout = ref<Element | null>(null)
-const repositioning = ref(false)
-const savingReposition = ref(false)
-const draftPosition = ref(50)
-const bannerElement = ref<HTMLElement | null>(null)
-const dragStartY = ref(0)
-const dragStartPosition = ref(50)
-const dragging = ref(false)
-const imageNaturalSize = ref<{ width: number, height: number } | null>(null)
-
-function onBannerUpdated(updated: Organization) {
-  organization.value = updated
-}
-
-async function onBannerRefresh() {
-  await refresh()
-}
-
-function openFlyout() {
-  // Remember where focus was so closeFlyout can restore it (a11y).
-  elementFocusedBeforeFlyout.value = document.activeElement
-  flyoutOpen.value = true
-  nextTick(() => {
-    (flyoutElement.value?.$el as HTMLElement | undefined)?.focus()
-  })
-}
-
-function closeFlyout() {
-  flyoutOpen.value = false
-  const previous = elementFocusedBeforeFlyout.value
-  if (previous instanceof HTMLElement && document.contains(previous)) {
-    previous.focus()
-  }
-  elementFocusedBeforeFlyout.value = null
-}
-
-function onFlyoutKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape') {
-    closeFlyout()
-    return
-  }
-  if (event.key !== 'Tab') return
-  const root = flyoutElement.value?.$el as HTMLElement | undefined
-  if (!root) return
-  const focusable = Array.from(root.querySelectorAll<HTMLElement>('button, input, select, textarea, a[href], [tabindex]:not([tabindex="-1"])'))
-    .filter(el => el.offsetParent !== null)
-  if (!focusable.length) {
-    event.preventDefault()
-    return
-  }
-  const first = focusable[0]
-  const last = focusable[focusable.length - 1]
-  if (event.shiftKey && document.activeElement === first) {
-    event.preventDefault()
-    last.focus()
-  }
-  else if (!event.shiftKey && document.activeElement === last) {
-    event.preventDefault()
-    first.focus()
-  }
-}
-
-// While the flyout is open: watch for outside clicks (registered after the
-// opening click has settled) and keep Tab focus trapped inside the flyout.
-const stopClickOutside = ref<(() => void) | null>(null)
-function teardownFlyoutListeners() {
-  stopClickOutside.value?.()
-  stopClickOutside.value = null
-  document.removeEventListener('keydown', onFlyoutKeydown)
-}
-watch(flyoutOpen, async (open) => {
-  if (open) {
-    document.addEventListener('keydown', onFlyoutKeydown)
-    // Defer registration past the opening click, or it would close immediately.
-    await nextTick()
-    if (flyoutElement.value) {
-      stopClickOutside.value = onClickOutside(() => flyoutElement.value?.$el as HTMLElement | undefined, closeFlyout)
-    }
-  }
-  else {
-    teardownFlyoutListeners()
-  }
-})
-onBeforeUnmount(teardownFlyoutListeners)
-
-async function deleteBanner() {
-  try {
-    // "Supprimer" restores the default banner. The DELETE endpoint only
-    // removes the image, so a set color must be cleared explicitly (a
-    // color-only banner would otherwise be undeletable). Color first, image
-    // second: a failed image deletion then leaves the image displaying —
-    // no data loss, the user retries.
-    if (organization.value?.banner_color) {
-      organization.value = await updateOrganization({ ...organization.value!, banner_color: null })
-    }
-    await deleteOrganizationBanner(organization.value!.id)
-    await refresh()
-  }
-  catch {
-    // Server errors are already toasted by the $api plugin.
-  }
-}
-
-function startReposition() {
-  if (!organization.value?.banner_image) return
-  closeFlyout()
-  draftPosition.value = organization.value.banner_image_position ?? 50
-  repositioning.value = true
-  imageNaturalSize.value = null
-  const image = new Image()
-  image.onload = () => {
-    imageNaturalSize.value = { width: image.naturalWidth, height: image.naturalHeight }
-  }
-  image.onerror = () => {
-    repositioning.value = false
-  }
-  image.src = organization.value.banner_image
-}
-
-async function saveReposition() {
-  savingReposition.value = true
-  try {
-    organization.value = await updateOrganization({ ...organization.value!, banner_image_position: draftPosition.value })
-    repositioning.value = false
-  }
-  catch {
-    // Server errors are already toasted by the $api plugin.
-  }
-  finally {
-    savingReposition.value = false
-  }
-}
-
-function cancelReposition() {
-  repositioning.value = false
-}
-
-function onPointerDown(event: PointerEvent) {
-  if (!repositioning.value) return
-  // Let the Enregistrer/Annuler buttons work: only the banner surface drags.
-  if ((event.target as HTMLElement).closest('button')) return
-  dragging.value = true
-  dragStartY.value = event.clientY
-  dragStartPosition.value = draftPosition.value
-  ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
-}
-
-function onPointerUp() {
-  dragging.value = false
-}
-
-function onPointerMove(event: PointerEvent) {
-  if (!repositioning.value) return
-  if (!dragging.value) return
-  const element = bannerElement.value
-  const size = imageNaturalSize.value
-  if (!element || !size) return
-  const overflow = Math.max(0, backgroundCoverHeight(element.clientWidth, size.width, size.height) - element.clientHeight)
-  draftPosition.value = positionFromDrag(dragStartPosition.value, event.clientY - dragStartY.value, overflow)
-}
-
-function onRepositionKeydown(event: KeyboardEvent) {
-  if (event.key === 'Escape') {
-    cancelReposition()
-  }
-}
-watch(repositioning, (active) => {
-  if (active) {
-    document.addEventListener('keydown', onRepositionKeydown)
-  }
-  else {
-    document.removeEventListener('keydown', onRepositionKeydown)
-  }
-})
 
 const tabLinks = computed(() => {
   const oid = route.params.oid
