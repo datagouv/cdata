@@ -64,7 +64,7 @@
       </AdminBadge>
 
       <template #tooltip>
-        {{ push.error }}
+        <span class="block w-96 max-w-full whitespace-pre-line">{{ push.error }}</span>
       </template>
     </Tooltip>
 
@@ -137,6 +137,8 @@ const startPush = async () => {
       emit('reauthRequired')
     }
     // Otherwise plugins/api.ts already toasted the error.
+    // The API records the push status before failing, so re-sync either way.
+    await props.refresh()
   }
   finally {
     pushing.value = false
