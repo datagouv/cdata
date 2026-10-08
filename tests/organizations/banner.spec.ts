@@ -66,7 +66,7 @@ test.describe('organization banner', () => {
     await page.goto(`/organizations/${org.id}/datasets`)
 
     const banner = page.getByTestId('organization-banner')
-    await banner.hover()
+    await banner.hover({ position: { x: 30, y: 15 } })
     await page.getByRole('button', { name: 'Modifier' }).click()
     await page.getByRole('button', { name: 'Importer' }).click()
 
@@ -81,7 +81,7 @@ test.describe('organization banner', () => {
     await page.goto(`/organizations/${org.id}/datasets`)
 
     const banner = page.getByTestId('organization-banner')
-    await banner.hover()
+    await banner.hover({ position: { x: 30, y: 15 } })
     await page.getByRole('button', { name: 'Repositionner' }).click()
 
     await expect(page.getByText('Glisser pour repositionner')).toBeVisible()
@@ -110,7 +110,7 @@ test.describe('organization banner', () => {
     await page.goto(`/organizations/${org.id}/datasets`)
 
     const banner = page.getByTestId('organization-banner')
-    await banner.hover()
+    await banner.hover({ position: { x: 30, y: 15 } })
     await page.getByRole('button', { name: 'Supprimer la bannière' }).click()
 
     await expect(banner).toHaveCSS('background-color', 'rgb(243, 246, 254)')

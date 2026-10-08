@@ -78,16 +78,17 @@ test.describe('Organization presentation tab', () => {
       await publicToggle.click()
       await page.getByRole('button', { name: 'Sauvegarder' }).click()
       await expect(page.getByText('Présentation sauvegardée')).toBeVisible()
-      // The save keeps the composer open: the "Modifier" side of the switch stays active.
-      await expect(page.getByTestId('presentation-mode-switch').getByRole('button', { name: 'Modifier' })).toHaveAttribute('aria-pressed', 'true')
+      // The save exits the composer to present the result: "Prévisualiser" is now active.
+      await expect(page.getByTestId('presentation-mode-switch').getByRole('button', { name: 'Prévisualiser' })).toHaveAttribute('aria-pressed', 'true')
 
       const published = await page.request.get(`${API_BASE}/api/1/organizations/${org.id}/`, {
         headers: { 'X-Fields': '{presentation_blocs_published_at}' },
       })
       expect((await published.json()).presentation_blocs_published_at).not.toBeNull()
 
-      // Regression: re-saving must not unpublish. The toggle re-opens already on, so
-      // saving again keeps the publication date (the save keeps us in edit mode).
+      // Regression: re-saving must not unpublish. The save dropped us back in
+      // read mode, so re-enter the composer; the toggle re-opens already on.
+      await page.getByTestId('presentation-mode-switch').getByRole('button', { name: 'Modifier' }).click()
       await expect(page.getByRole('switch', { name: 'Visible par le public' })).toHaveAttribute('aria-checked', 'true')
       await page.getByRole('button', { name: 'Sauvegarder' }).click()
       await expect(page.getByText('Présentation sauvegardée')).toBeVisible()
@@ -109,8 +110,8 @@ test.describe('Organization presentation tab', () => {
       await unpublishToggle.click()
       await page.getByRole('button', { name: 'Sauvegarder' }).click()
       await expect(page.getByText('Présentation sauvegardée')).toBeVisible()
-      // Still in the composer after the save.
-      await expect(page.getByTestId('presentation-mode-switch').getByRole('button', { name: 'Modifier' })).toHaveAttribute('aria-pressed', 'true')
+      // The save exits the composer again: "Prévisualiser" is active.
+      await expect(page.getByTestId('presentation-mode-switch').getByRole('button', { name: 'Prévisualiser' })).toHaveAttribute('aria-pressed', 'true')
 
       const draft = await page.request.get(`${API_BASE}/api/1/organizations/${org.id}/`, {
         headers: { 'X-Fields': '{presentation_blocs_published_at}' },

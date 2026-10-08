@@ -1,8 +1,3 @@
-// Organization page banner (data.gouv.fr#2049).
-// Backend contract: udata serves `banner_color` (hex string), `banner_image`
-// (URL, writable only through POST/DELETE .../banner/) and
-// `banner_image_position` (int 0-100, CSS background-position-y semantics).
-
 // Matches the current org page top strip so non-customized orgs see no change.
 export const BANNER_DEFAULT_COLOR = '#F3F6FE'
 
