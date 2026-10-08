@@ -12,6 +12,12 @@
       @feature="feature"
       @submit="save"
     >
+      <template #aside>
+        <SubjectNotifications
+          :scope="{ class: 'Reuse', id: reuse.id }"
+          :subject="t('cette réutilisation')"
+        />
+      </template>
       <template #top>
         <SimpleBanner
           v-if="!reuse.permissions.edit"
@@ -81,11 +87,6 @@
             </BrandedButton>
           </template>
         </BannerAction>
-        <SubjectNotifications
-          class="mb-6 pb-6 border-b border-gray-default"
-          :scope="{ class: 'Reuse', id: reuse.id }"
-          :subject="t('cette réutilisation')"
-        />
       </template>
       <template #button>
         <div class="flex items-center gap-3">

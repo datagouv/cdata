@@ -12,6 +12,12 @@
       @feature="feature"
       @submit="save"
     >
+      <template #aside>
+        <SubjectNotifications
+          :scope="{ class: 'Dataservice', id: dataservice.id }"
+          :subject="t('cette API')"
+        />
+      </template>
       <template #top>
         <SimpleBanner
           v-if="!dataservice.permissions.edit"
@@ -81,11 +87,6 @@
             </BrandedButton>
           </template>
         </BannerAction>
-        <SubjectNotifications
-          class="mb-6 pb-6 border-b border-gray-default"
-          :scope="{ class: 'Dataservice', id: dataservice.id }"
-          :subject="t('cette API')"
-        />
       </template>
       <template #button="attrs">
         <div class="flex items-center gap-3">
