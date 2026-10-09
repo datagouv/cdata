@@ -1,46 +1,30 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <div class="bg-blue-lightest">
-    <div class="container">
-      <div
-        v-if="organization"
-        class="flex items-center justify-between"
-      >
-        <Breadcrumb>
-          <BreadcrumbItem
-            to="/"
-          >
-            {{ $t('Accueil') }}
-          </BreadcrumbItem>
-          <BreadcrumbItem to="/organizations">
-            {{ $t('Organisations') }}
-          </BreadcrumbItem>
-          <BreadcrumbItem>
-            {{ organization.name }}
-          </BreadcrumbItem>
-        </Breadcrumb>
-        <div class="flex gap-3 items-center">
-          <BrandedButton
-            v-if="isPresentationTab && canEditPresentation && !isEditingPresentation"
-            color="warning"
-            size="xs"
-            :icon="RiEdit2Line"
-            @click="editPresentation"
-          >
-            {{ hasPresentation ? $t('Modifier la présentation') : $t('Modifier ou publier la présentation') }}
-          </BrandedButton>
-          <EditButton
-            v-if="organization.permissions.edit"
-            :id="organization.id"
-            type="organizations"
-          />
-          <ReportModal
-            v-if="!isOrganizationCertified(organization)"
-            :subject="{ id: organization.id, class: 'Organization' }"
-          />
-        </div>
+  <div>
+    <OrganizationBannerEditor
+      v-if="organization"
+      :organization="organization"
+      @updated="onOrganizationUpdated"
+      @refresh="refresh"
+    >
+      <Breadcrumb>
+        <BreadcrumbItem to="/">
+          {{ $t('Accueil') }}
+        </BreadcrumbItem>
+        <BreadcrumbItem to="/organizations">
+          {{ $t('Organisations') }}
+        </BreadcrumbItem>
+        <BreadcrumbItem>
+          {{ organization.name }}
+        </BreadcrumbItem>
+      </Breadcrumb>
+      <div class="flex gap-3 items-center">
+        <ReportModal
+          v-if="!isOrganizationCertified(organization)"
+          :subject="{ id: organization.id, class: 'Organization' }"
+        />
       </div>
-    </div>
+    </OrganizationBannerEditor>
     <LoadingBlock
       v-if="organization"
       v-slot="{ data: organization }"
@@ -48,7 +32,7 @@
       :data="organization"
     >
       <div class="container relative">
-        <div class="bg-white p-1 rounded-sm border border-gray-default object-contain size-20 -mb-10 mt-14 relative z-1">
+        <div class="bg-white p-1 rounded-sm border border-gray-default object-contain size-20 -mb-10 -mt-10 relative z-20">
           <OrganizationLogo
             :organization
             size-class="size-full"
@@ -57,23 +41,34 @@
       </div>
       <div class="bg-white">
         <div class="container pt-14 pb-4 sm:pb-6">
-          <p
-            v-if="organization.deleted"
-            class="fr-badge mb-2 flex gap-1 items-center"
-          >
-            <RiDeleteBinLine class="size-3.5" />
-            {{ $t('Supprimée') }}
-          </p>
-          <h1 class="leading-[1.2] font-extrabold text-gray-title mb-2.5">
-            <OrganizationNameWithCertificate
-              :certifier="config.public.title"
-              :organization
-              :show-acronym="true"
-              :show-type="false"
-              color-class="text-gray-title"
-              size="xl"
+          <div class="flex items-start justify-between gap-3">
+            <div>
+              <p
+                v-if="organization.deleted"
+                class="fr-badge mb-2 flex gap-1 items-center"
+              >
+                <RiDeleteBinLine class="size-3.5" />
+                {{ $t('Supprimée') }}
+              </p>
+              <h1 class="leading-[1.2] font-extrabold text-gray-title mb-2.5">
+                <OrganizationNameWithCertificate
+                  :certifier="config.public.title"
+                  :organization
+                  :show-acronym="true"
+                  :show-type="false"
+                  color-class="text-gray-title"
+                  size="xl"
+                />
+              </h1>
+            </div>
+            <EditButton
+              v-if="organization.permissions.edit"
+              :id="organization.id"
+              type="organizations"
+              color="primary"
+              class="-mt-2"
             />
-          </h1>
+          </div>
           <OwnerType
             :type
             size="base"
@@ -130,11 +125,12 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, isOrganizationCertified, LoadingBlock, MarkdownViewer, OrganizationNameWithCertificate, OwnerType, ReadMore, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
-import { RiDeleteBinLine, RiEdit2Line, RiSearchLine } from '@remixicon/vue'
+import { isOrganizationCertified, LoadingBlock, MarkdownViewer, OrganizationNameWithCertificate, OwnerType, ReadMore, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
+import { RiDeleteBinLine, RiSearchLine } from '@remixicon/vue'
 import { useTimeoutFn } from '@vueuse/core'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import OrganizationBannerEditor from '~/components/Organizations/OrganizationBannerEditor.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import { isUserOrgAdmin, useMaybeMe } from '~/utils/auth'
 import { keepScrollWithinPage } from '~/utils/scroll'
@@ -145,12 +141,11 @@ definePageMeta({
 
 const config = useRuntimeConfig()
 const route = useRoute()
-const router = useRouter()
 const me = useMaybeMe()
 const { t } = useTranslation()
 
 const url = computed(() => `/api/1/organizations/${route.params.oid}/`)
-const { data: organization, status } = await useAPI<Organization>(url, { redirectOn404: true, redirectOnSlug: 'oid' })
+const { data: organization, status, refresh } = await useAPI<Organization>(url, { redirectOn404: true, redirectOnSlug: 'oid' })
 
 // A presentation is offered to the public only once published. The publication
 // date lives in the default mask, so we read it straight from the organization
@@ -162,11 +157,6 @@ const canEditPresentation = computed(() => isUserOrgAdmin(me.value, organization
 // can create it.
 const showPresentationTab = computed(() => hasPresentation.value || canEditPresentation.value)
 const isPresentationTab = computed(() => route.path.endsWith('/presentation'))
-const isEditingPresentation = computed(() => isPresentationTab.value && route.query.edit === 'true')
-
-function editPresentation() {
-  router.push({ query: { ...route.query, edit: 'true' } })
-}
 
 // The presentation page saves the org on its own fetch and hands back the saved
 // version; swap it in so the header CTA, tabs… update without a reload.

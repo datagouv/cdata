@@ -9,11 +9,17 @@ import { updateOrganization } from '~/api/organizations'
 //
 // The shared key lets the organization layout (tab visibility) and the presentation
 // page reuse a single request instead of fetching the blocs twice.
-export async function useOrganizationBlocs(organization: Organization) {
+//
+// `organization` is a getter (not a snapshot): the save spreads the CURRENT org so
+// concurrent changes made after setup — e.g. banner color/position via the banner
+// flyout — are not overwritten by stale values (udata's PUT applies every field in
+// the body).
+export async function useOrganizationBlocs(organization: MaybeRefOrGetter<Organization>) {
   const { t } = useTranslation()
 
-  const { data: org, refresh } = await useAPI<Pick<Organization, 'presentation_blocs' | 'presentation_blocs_published_at'>>(`/api/1/organizations/${organization.id}/`, {
-    key: `org-blocs-${organization.id}`,
+  const oid = toValue(organization).id
+  const { data: org, refresh } = await useAPI<Pick<Organization, 'presentation_blocs' | 'presentation_blocs_published_at'>>(`/api/1/organizations/${oid}/`, {
+    key: `org-blocs-${oid}`,
     headers: { 'X-Fields': '{presentation_blocs,presentation_blocs_published_at}' },
   })
 
@@ -39,7 +45,7 @@ export async function useOrganizationBlocs(organization: Organization) {
   // the PUT response (full org, default mask) for callers that render it elsewhere.
   async function saveBlocs(updatedBlocs: Array<PageBloc>, published: boolean) {
     const updated = await updateOrganization({
-      ...organization,
+      ...toValue(organization),
       presentation_blocs: updatedBlocs,
       presentation_blocs_published_at: published ? (publishedAt.value ?? new Date().toISOString()) : null,
     })

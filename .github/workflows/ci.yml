@@ -156,7 +156,10 @@ jobs:
         with:
           repository: opendatateam/udata
           path: ${{ env.UDATA_WORKING_DIR }}
-          ref: main
+          # The organization banner e2e specs need the banner feature
+          # (banner_color, /banner/ endpoints), which isn't merged to udata
+          # main yet — restore `ref: main` once the udata PR lands.
+          ref: feat/organization-banner-2049
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
@@ -185,7 +188,7 @@ jobs:
       - name: Configure udata
         working-directory: ${{ env.UDATA_WORKING_DIR }}
         run: |
-          cat << 'EOF' > udata.cfg
+          cat << EOF > udata.cfg
           from udata.settings import Defaults
 
           DEBUG = True
@@ -207,7 +210,9 @@ jobs:
           URLS_RESOLVE_HOSTNAME = False
 
           PLUGINS = []
-          FS_ROOT = 'fs'
+          # Once https://github.com/etalab/flask-storage/pull/30 is merged, revert to
+          # FS_ROOT = 'fs' and quote the heredoc delimiter again (cat << 'EOF').
+          FS_ROOT = '$PWD/fs'
 
           HARVESTER_BACKENDS = ['dcat', 'csw*']
 
@@ -242,8 +247,8 @@ jobs:
 
           uv run inv i18nc
 
-          # Start udata server in background
-          uv run inv serve --port=7000 > udata.log 2>&1 &
+          # No reloader: storage writes in fs/ would restart the server mid-test.
+          uv run inv serve --port=7000 --no-reload > udata.log 2>&1 &
 
           # Wait for udata to be ready
           timeout 90 bash -c 'until curl -f http://localhost:7000/api/1/site/; do sleep 2; done'
@@ -290,7 +295,7 @@ jobs:
         working-directory: ${{ env.UDATA_WORKING_DIR }}
         run: |
           # Kill udata server to release the lock so that post setup-uv can prune the cache
-          pkill -f "uv run inv serve" || true
+          pkill -f "manage.py serve" || true
 
       - name: Show server logs
         if: always()

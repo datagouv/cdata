@@ -78,4 +78,7 @@ export type Organization = {
   // means published. Like `presentation_blocs`, only present when requested with
   // X-Fields.
   presentation_blocs_published_at?: string | null
+  banner_color?: string | null
+  banner_image?: string | null
+  banner_image_position?: number
 }
