@@ -72,6 +72,7 @@ function onContainerKeydown(event: KeyboardEvent) {
     : event.key === 'End'
       ? last
       : Math.min(last, Math.max(0, index + direction))
-  emit('update:modelValue', props.options[next].value)
+  const option = props.options[next]
+  if (option) emit('update:modelValue', option.value)
 }
 </script>
