@@ -188,7 +188,7 @@ jobs:
       - name: Configure udata
         working-directory: ${{ env.UDATA_WORKING_DIR }}
         run: |
-          cat << 'EOF' > udata.cfg
+          cat << EOF > udata.cfg
           from udata.settings import Defaults
 
           DEBUG = True
@@ -210,7 +210,8 @@ jobs:
           URLS_RESOLVE_HOSTNAME = False
 
           PLUGINS = []
-          FS_ROOT = 'fs'
+          # Relative FS_ROOT 404s: send_from_directory anchors it to app.root_path, not CWD.
+          FS_ROOT = '$PWD/fs'
 
           HARVESTER_BACKENDS = ['dcat', 'csw*']
 
