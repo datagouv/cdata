@@ -211,6 +211,8 @@ jobs:
 
           PLUGINS = []
           # Relative FS_ROOT 404s: send_from_directory anchors it to app.root_path, not CWD.
+          # Once https://github.com/etalab/flask-storage/pull/30 is merged, revert to
+          # FS_ROOT = 'fs' and quote the heredoc delimiter again (cat << 'EOF').
           FS_ROOT = '$PWD/fs'
 
           HARVESTER_BACKENDS = ['dcat', 'csw*']
