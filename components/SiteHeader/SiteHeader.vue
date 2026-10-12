@@ -631,6 +631,9 @@ onMounted(() => {
     if (message) {
       toast[message.type](message.text)
     }
+
+    // Consume the flash: strip it from the URL so it can't resurface on a later reload.
+    router.replace({ query: { ...route.query, flash: undefined, info: undefined, error: undefined } })
   }
 })
 

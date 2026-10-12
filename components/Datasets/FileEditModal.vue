@@ -16,7 +16,8 @@
         :icon="RiPencilLine"
         :color="buttonColor"
         :size="buttonSize"
-        :title="$t('Éditer le fichier')"
+        :disabled="isSyncedWithGeopf"
+        :title="isSyncedWithGeopf ? $t('Vous ne pouvez pas modifier cette ressource car elle est synchronisée avec cartes.gouv.fr') : $t('Éditer le fichier')"
         keep-margins-even-without-borders
         v-on="listeners"
       />
@@ -201,6 +202,7 @@ import DescribeResource from './DescribeResource.vue'
 import CdataLink from '../CdataLink.vue'
 import type { CommunityResourceForm, ResourceForm } from '~/types/types'
 import { useComponentsConfig } from '../../datagouv-components/src/config'
+import { isGeopfSynced } from '~/utils/geopf'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
@@ -231,6 +233,8 @@ const route = useRoute()
 const resourceForm = ref(cloneDeep(props.resource))
 const open = ref(false)
 const hasFileChanged = ref(false)
+
+const isSyncedWithGeopf = computed(() => props.resource.resource ? isGeopfSynced(props.resource.resource) : false)
 
 const hasTabularData = useHasTabularData()
 

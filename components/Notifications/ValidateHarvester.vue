@@ -25,23 +25,23 @@ const props = defineProps<{
 const { t } = useTranslation()
 
 const statusLabel = computed(() => {
-  switch (props.notification.details.status) {
-    case 'accepted':
+  switch (props.notification.type) {
+    case 'harvest.source.accepted':
       return t('Moissonneur validé')
-    case 'refused':
+    case 'harvest.source.refused':
       return t('Moissonneur refusé')
-    case 'pending':
+    case 'harvest.source.pending':
       return t('Moissonneur en attente de validation')
     default:
-      return throwOnNever(props.notification.details.status, 'No other status')
+      return throwOnNever(props.notification.type, 'No other status')
   }
 })
 
 const harvesterIcon = computed(() => {
-  switch (props.notification.details.status) {
-    case 'accepted':
+  switch (props.notification.type) {
+    case 'harvest.source.accepted':
       return RiCheckboxCircleLine
-    case 'refused':
+    case 'harvest.source.refused':
       return RiCloseCircleLine
     default:
       return RiLinkUnlink

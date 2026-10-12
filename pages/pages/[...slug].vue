@@ -53,7 +53,10 @@ const { data, status, error } = await useFetch<{
   content: string
 }>(() => `/nuxt-api/pages/${slug}`, { immediate: Boolean(slug) })
 
-if (!slug || error.value || !data.value) {
+// A request cancelled by leaving the page before it loaded has no data and no
+// error: it is not a missing page, and its 404 would cover the page the reader
+// went back to.
+if (!slug || error.value || (status.value === 'success' && !data.value)) {
   // Use `showError`, not `throw createError`: throwing here rejects the async
   // setup, and during an in-app (SPA) navigation Vue then renders this page once
   // with an empty setup context, logging "Invalid vnode type: undefined" for each
