@@ -17,7 +17,7 @@ ignoredBuiltDependencies:
   - unrs-resolver
 
 overrides:
-  shell-quote: ^1.9.0
+  shell-quote: ^1.11.0
   flatted: ^3.4.2
   browserslist: ^4.28.7
   "@humanfs/node": ^0.16.8
@@ -25,16 +25,16 @@ overrides:
   axios: ^1.16.0
   lodash: ^4.18.1
   ws: ^8.21.0
-  fast-uri: ^3.1.6
+  fast-uri: ^3.1.8
   tar: ^7.5.21
   protocol-buffers-schema: ^3.6.1
-  brace-expansion@1: ^1.1.18
-  brace-expansion@2: ^2.1.4
-  brace-expansion@5: ^5.0.9
+  brace-expansion@1: ^1.1.21
+  brace-expansion@2: ^2.1.7
+  brace-expansion@5: ^5.0.12
   postcss: ^8.5.23
-  postcss-selector-parser@6: ^6.1.3
-  postcss-selector-parser@7: ^7.1.3
-  sharp: ^0.35.0
+  postcss-selector-parser@6: ^7.1.6
+  postcss-selector-parser@7: ^7.1.6
+  sharp: ^0.35.5
   ajv@8.17.1: ^8.18.0
   "@babel/core": ^7.29.6
   esbuild: ^0.28.1
@@ -42,9 +42,17 @@ overrides:
   js-yaml@3: ^3.15.1
   js-yaml@4: ^4.3.1
   nanoid@3: ^3.3.17
-  dompurify: ^3.4.15
+  dompurify: ^3.4.16
+  simple-git: ^4.0.2
+  devalue: ^5.9.4
+  source-map-js: ^1.2.2
+  serialize-javascript: ^7.1.2
+  katex: ^0.18.2
 
 # GetCapabilities strings (layer title, abstract, attribution, metadata/legend URLs)
 # are rendered as HTML by the library: render them as text and only link http(s) URLs.
 patchedDependencies:
   geopf-extensions-openlayers@1.0.0-beta.15: patches/geopf-extensions-openlayers@1.0.0-beta.15.patch
+  # simple-git@4 (override) is ESM-only: adapt @nuxt/devtools' default import.
+  # Remove once Nuxt ships @nuxt/devtools 4.
+  "@nuxt/devtools@3.4.2": patches/@nuxt__devtools@3.4.2.patch

@@ -55,7 +55,7 @@
 import { computed, onMounted, ref, useTemplateRef } from 'vue'
 import { RiExternalLinkFill } from '@remixicon/vue'
 import { Protocol, PMTiles } from 'pmtiles'
-import maplibregl from 'maplibre-gl'
+import * as maplibregl from 'maplibre-gl'
 import DOMPurify from 'dompurify'
 import { useComponentsConfig } from '../../config'
 import { useFormatDate } from '../../functions/dates'
@@ -183,7 +183,7 @@ async function displayMap() {
             'type': typeLayer.value as 'fill' | 'circle' | 'line',
             'paint': {
               [`${typeLayer.value}-color`]: 'steelblue',
-              [`${typeLayer.value}-opacity`]: { base: 1, stops: [[0, 0.9], [10, 0.6]] },
+              [`${typeLayer.value}-opacity`]: ['interpolate', ['linear'], ['zoom'], 0, 0.9, 10, 0.6],
             },
           } as maplibregl.AddLayerObject)
           map.on('click', layer.layer, showMapPopup)
