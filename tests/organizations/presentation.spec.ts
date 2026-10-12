@@ -127,4 +127,58 @@ test.describe('Organization presentation tab', () => {
       await page.request.delete(`${API_BASE}/api/1/organizations/${org.id}/`)
     }
   })
+
+  test('admin invite banner toggles with the presentation publication state', async ({ page }) => {
+    const uniqueId = Date.now()
+    const createResp = await page.request.post(`${API_BASE}/api/1/organizations/`, {
+      data: {
+        name: `Invite banner test ${uniqueId}`,
+        description: 'Organization used to test the admin invite banner.',
+      },
+    })
+    const org = await createResp.json()
+
+    const bannerTitle = page.getByText('Personnalisez votre page de présentation')
+    try {
+      // Fresh organization: the presentation was never published, so the admin
+      // is invited to personalize it.
+      await page.goto(`/admin/organizations/${org.id}/profile`)
+      await page.waitForLoadState('networkidle')
+      await expect(bannerTitle).toBeVisible()
+      await expect(page.getByRole('link', { name: 'Personnaliser la page' })).toHaveAttribute('href', new RegExp(`/organizations/${org.slug}/presentation\\?edit=true$`))
+
+      // Publishing the presentation through the API hides the invite banner.
+      await page.request.put(`${API_BASE}/api/1/organizations/${org.id}/`, {
+        data: {
+          ...org,
+          presentation_blocs: [
+            { class: 'MarkdownBloc', title: 'Bienvenue', subtitle: null, content: 'Contenu.' },
+          ],
+          presentation_blocs_published_at: new Date().toISOString(),
+        },
+      })
+
+      await page.waitForLoadState('networkidle')
+      await page.goto(`/admin/organizations/${org.id}/profile`)
+      await expect(bannerTitle).toBeHidden()
+
+      // Unpublishing (published_at back to null) brings the invite banner back.
+      await page.request.put(`${API_BASE}/api/1/organizations/${org.id}/`, {
+        data: {
+          ...org,
+          presentation_blocs: [
+            { class: 'MarkdownBloc', title: 'Bienvenue', subtitle: null, content: 'Contenu.' },
+          ],
+          presentation_blocs_published_at: null,
+        },
+      })
+
+      await page.waitForLoadState('networkidle')
+      await page.goto(`/admin/organizations/${org.id}/profile`)
+      await expect(bannerTitle).toBeVisible()
+    }
+    finally {
+      await page.request.delete(`${API_BASE}/api/1/organizations/${org.id}/`)
+    }
+  })
 })
