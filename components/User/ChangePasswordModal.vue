@@ -62,7 +62,7 @@
             :disabled="loading"
             @click="_close"
           >
-            {{ $t("Cancel") }}
+            {{ $t("Annuler") }}
           </BrandedButton>
         </div>
         <div class="fr-col-auto">
