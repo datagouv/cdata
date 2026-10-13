@@ -76,11 +76,14 @@ describe('isGeopfSynced', () => {
     expect(isGeopfSynced({ geopf: null } as Resource)).toBe(false)
   })
 
-  it('is true once any push has been attempted, whatever its outcome', () => {
+  it('is true while a push is in flight or has succeeded', () => {
     expect(isGeopfSynced({ geopf: { push_status: 'pending' } } as Resource)).toBe(true)
     expect(isGeopfSynced({ geopf: { push_status: 'done' } } as Resource)).toBe(true)
-    expect(isGeopfSynced({ geopf: { push_status: 'error' } } as Resource)).toBe(true)
-    expect(isGeopfSynced({ geopf: { push_status: 'timeout' } } as Resource)).toBe(true)
+  })
+
+  it('is false once a push has failed, since nothing was ever stored on cartes.gouv.fr', () => {
+    expect(isGeopfSynced({ geopf: { push_status: 'error' } } as Resource)).toBe(false)
+    expect(isGeopfSynced({ geopf: { push_status: 'timeout' } } as Resource)).toBe(false)
   })
 
   it('is true for a resource pulled back as an offering', () => {
