@@ -60,6 +60,9 @@
               <OrganizationSelect
                 v-if="isEnabled('organization')"
                 v-model:id="organizationId"
+                :facets="getFacets('organization_id_with_name')"
+                :source="currentTypeConfig?.organizationSource"
+                :results-narrowed="hasQueryOrOtherFilter"
                 :style="{ order: getOrder('organization') }"
               />
               <OrganizationTypeSelect
@@ -552,6 +555,22 @@ const allFilters: Record<string, Ref<unknown>> = {
   producer_type: producerType,
   type: reuseType,
 }
+
+function isFilterActive(filterRef: Ref<unknown> | undefined) {
+  const value = filterRef?.value
+  return value !== undefined && value !== '' && value !== null
+}
+
+// Whether a query or a filter narrowed the results down, which is what makes the
+// organization facet a short and relevant shortlist rather than the global top
+// publishers. The organization filter is left out on purpose: the facet ignores it
+// (it is not self-filtered), so it stays counted after an organization is picked,
+// which is what lets the user switch to another one.
+const hasQueryOrOtherFilter = computed(() =>
+  !!qForParams.value
+  || activeFilters.value.some(filterName => filterName !== 'organization' && isFilterActive(allFilters[filterName]))
+  || Array.from(customFilterRegistry.values()).some(isCustomFilterActive),
+)
 
 // Reset page, sort and filters when changing type. Every reset below goes
 // through useRouteQuery, so VueUse coalesces them into a single router.replace
