@@ -221,6 +221,9 @@ jobs:
           MONGODB_HOST = 'mongodb://mongodb:27017/udata'
           CELERY_BROKER_URL = 'redis://redis:6379'
           CELERY_RESULT_BACKEND = 'redis://redis:6379'
+          # No worker runs here: tasks run within the request that triggers them, so that
+          # what they do (the notifications of a discussion, of a badge) can be tested.
+          CELERY_TASK_ALWAYS_EAGER = True
           EOF
 
       - name: Initialize udata
