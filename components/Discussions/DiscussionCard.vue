@@ -1,8 +1,9 @@
 <template>
-  <div class="p-4 border border-gray-default rounded space-y-3">
+  <article class="p-4 border border-gray-default rounded space-y-3">
     <ThreadHeader
       :thread
       :subject
+      :follow-state
       show-actions
       @change="$emit('change')"
     />
@@ -93,7 +94,7 @@
         {{ $t('Répondre') }}
       </BrandedButton>
     </footer>
-  </div>
+  </article>
 </template>
 
 <script setup lang="ts">
@@ -102,6 +103,7 @@ import ThreadHeader from './ThreadHeader.vue'
 import CommentBlock from './CommentBlock.vue'
 import RespondForm from './RespondForm.vue'
 import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
+import type { FollowState } from '~/types/notifications'
 
 const props = defineProps<{
   thread: Thread
@@ -109,6 +111,7 @@ const props = defineProps<{
   // For callers whose own trigger already said "respond": clicking it should not
   // land on a card where "Répondre" has to be clicked a second time.
   respondImmediately?: boolean
+  followState?: FollowState
 }>()
 defineEmits<{
   change: []
