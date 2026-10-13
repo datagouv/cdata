@@ -39,7 +39,9 @@ export function normalizeHexColor(input: string): string | null {
 
 export function isDarkColor(hex: string): boolean {
   const color = parseHex(hex.trim())
-  return color ? wcagLuminance(color) < 0.5 : true
+  // Below ~0.18 luminance white text wins; above, black text wins. At 0.5
+  // mid-tone DSFR colors (blue-cumulus 2.2:1) would get unreadable white text.
+  return color ? wcagLuminance(color) < 0.18 : true
 }
 
 export type BannerFileError = 'format' | 'size' | 'dimensions'

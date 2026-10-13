@@ -53,22 +53,7 @@
             @change="commitCustomColor"
           >
         </label>
-        <input
-          v-model="customColor"
-          type="text"
-          class="flex-1 h-9 border border-gray-default rounded px-2 text-sm font-mono"
-          :aria-label="$t('Code couleur hexadécimal')"
-          :placeholder="'#000091'"
-          @keydown.enter="commitCustomColor"
-          @blur="commitCustomColor"
-        >
       </div>
-      <p
-        v-if="customColorError"
-        class="text-sm mt-1 mb-0 text-red-500"
-      >
-        {{ $t('Format attendu : #000091') }}
-      </p>
     </div>
 
     <div
@@ -137,7 +122,6 @@ const activeTab = ref(props.organization.banner_image ? 'upload' : 'color')
 const pending = ref(false)
 const selectedColor = ref<string | null>(props.organization.banner_color ?? null)
 const customColor = ref(props.organization.banner_color ?? '#000091')
-const customColorError = ref(false)
 const uploadError = ref<null | 'format' | 'size' | 'dimensions'>(null)
 
 const hasCustomBanner = computed(() => !!(props.organization.banner_image || props.organization.banner_color))
@@ -148,7 +132,6 @@ function isSelected(hex: string) {
 
 async function applyColor(color: string) {
   if (pending.value) return
-  customColorError.value = false
   pending.value = true
   try {
     const updated = await updateOrganization({ ...props.organization, banner_color: color })
@@ -176,11 +159,7 @@ async function applyColor(color: string) {
 
 function commitCustomColor() {
   const normalized = normalizeHexColor(customColor.value)
-  if (!normalized) {
-    customColorError.value = true
-    return
-  }
-  customColorError.value = false
+  if (!normalized) return
   applyColor(normalized)
 }
 

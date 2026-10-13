@@ -20,7 +20,7 @@
     >
       <template #top>
         <BannerAction
-          v-if="!isOrganizationPresentationPublished(organization.presentation_blocs_published_at)"
+          v-if="organization.permissions.edit && !isOrganizationPresentationPublished(organization.presentation_blocs_published_at)"
           class="mb-4"
           type="primary"
           :title="$t('Personnalisez votre page de présentation')"

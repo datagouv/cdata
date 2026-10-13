@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import type { Organization } from '@datagouv/components-next'
-import { BANNER_DEFAULT_COLOR, isDarkColor } from '~/utils/organizationBanner'
+import { BANNER_DEFAULT_COLOR, isDarkColor, normalizeHexColor } from '~/utils/organizationBanner'
 
 const props = defineProps<{
   organization: Organization
@@ -29,6 +29,10 @@ const props = defineProps<{
 
 const hasImage = computed(() => !!props.organization.banner_image)
 
+// banner_color comes from the API: normalize it once so neither the SSR'd
+// style attribute (CSS injection) nor the contrast check sees the raw string.
+const bannerColor = computed(() => (props.organization.banner_color ? normalizeHexColor(props.organization.banner_color) : null) ?? BANNER_DEFAULT_COLOR)
+
 const bannerStyle = computed(() => {
   if (hasImage.value) {
     return {
@@ -36,13 +40,15 @@ const bannerStyle = computed(() => {
       backgroundPosition: `center ${props.positionOverride ?? props.organization.banner_image_position ?? 50}%`,
     }
   }
-  return { backgroundColor: props.organization.banner_color ?? BANNER_DEFAULT_COLOR }
+  return { backgroundColor: bannerColor.value }
 })
 
-// `org-banner--on-dark` flips the breadcrumb link colors (style block below).
+// `org-banner--on-dark` / `--on-light` flip the breadcrumb link colors (style
+// block below); the class must come from the same normalized color as the
+// background so text and backdrop never disagree.
 const textClass = computed(() => {
   if (hasImage.value) return 'org-banner--on-dark'
-  return isDarkColor(props.organization.banner_color ?? BANNER_DEFAULT_COLOR) ? 'org-banner--on-dark' : ''
+  return isDarkColor(bannerColor.value) ? 'org-banner--on-dark' : 'org-banner--on-light'
 })
 </script>
 
@@ -54,5 +60,12 @@ const textClass = computed(() => {
 .org-banner--on-dark .fr-breadcrumb__link[aria-current="page"],
 .org-banner--on-dark .fr-breadcrumb__link[aria-current]:not([aria-current="false"]) {
   color: #fff;
+}
+
+.org-banner--on-light .fr-breadcrumb__link,
+.org-banner--on-light .fr-breadcrumb__link:hover,
+.org-banner--on-light .fr-breadcrumb__link[aria-current="page"],
+.org-banner--on-light .fr-breadcrumb__link[aria-current]:not([aria-current="false"]) {
+  color: #161616;
 }
 </style>

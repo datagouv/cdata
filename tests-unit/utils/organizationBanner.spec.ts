@@ -29,14 +29,23 @@ describe('normalizeHexColor', () => {
 })
 
 describe('isDarkColor', () => {
-  it('buckets colors for breadcrumb contrast', () => {
+  it('treats near-black and deep DSFR colors (luminance < 0.18) as dark', () => {
     expect(isDarkColor('#000000')).toBe(true)
-    expect(isDarkColor('#465F9D')).toBe(true) // blue-ecume: dark
-    expect(isDarkColor('#A558A0')).toBe(true) // purple-glycine: dark
+    expect(isDarkColor('#465F9D')).toBe(true) // blue-ecume, luminance 0.119
+    expect(isDarkColor('#A558A0')).toBe(true) // purple-glycine, luminance 0.175
+  })
+
+  it('treats white, the default banner, and mid-tone DSFR colors (luminance ≥ 0.18) as light', () => {
     expect(isDarkColor('#FFFFFF')).toBe(false)
-    expect(isDarkColor('#FDCF41')).toBe(false) // yellow-tournesol: light
-    expect(isDarkColor('#f3f6fe')).toBe(false) // default banner: light
-    expect(isDarkColor('invalid')).toBe(true) // fails safe: dark
+    expect(isDarkColor('#FDCF41')).toBe(false) // yellow-tournesol, luminance 0.659
+    expect(isDarkColor('#7AB5E0')).toBe(false) // blue-cumulus, luminance 0.426
+    expect(isDarkColor('#00A95F')).toBe(false) // green-emeraude, luminance 0.292
+    expect(isDarkColor('#f3f6fe')).toBe(false) // default banner, luminance 0.921
+  })
+
+  it('fails closed: unparsable colors count as dark (white text)', () => {
+    expect(isDarkColor('invalid')).toBe(true)
+    expect(isDarkColor('')).toBe(true)
   })
 })
 
