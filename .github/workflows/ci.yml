@@ -251,7 +251,7 @@ jobs:
           uv run inv i18nc
 
           # No reloader: storage writes in fs/ would restart the server mid-test.
-          uv run inv serve --port=7000 --no-reload > udata.log 2>&1 &
+          uv run inv serve --port=7000 > udata.log 2>&1 &
 
           # Wait for udata to be ready
           timeout 90 bash -c 'until curl -f http://localhost:7000/api/1/site/; do sleep 2; done'
