@@ -124,6 +124,11 @@ test('the discussions of a subject are followed from their list, each thread sho
   await expect.poll(() => rulesOn(request, dataset.id)).toEqual([
     expect.objectContaining({ scope: { class: 'Dataset', id: dataset.id }, event: 'discussion.new', enabled: true }),
   ])
+
+  // An existing thread is never new again: following the new discussions brings none of it.
+  await page.reload()
+  await expect(otherThread.getByTitle('Suivre cette discussion', { exact: true })).toBeEnabled()
+  await expect(followedThread.getByTitle('Ne plus suivre cette discussion')).toBeVisible()
 })
 
 test('the notification box of a dataset says no, then takes it back', async ({ page, request }) => {
