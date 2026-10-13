@@ -156,10 +156,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: ${{ env.UDATA_WORKING_DIR }}
-          # The organization banner e2e specs need the banner feature
-          # (banner_color, /banner/ endpoints), which isn't merged to udata
-          # main yet — restore `ref: main` once the udata PR lands.
-          ref: feat/organization-banner-2049
+          ref: main
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
