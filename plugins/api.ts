@@ -41,8 +41,7 @@ export default defineNuxtPlugin({
           }
         },
         onResponse({ response, options }) {
-          const method = options.method?.toUpperCase() ?? 'GET'
-          if (method !== 'GET' && response.ok) {
+          if (options.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method.toUpperCase()) && response.ok) {
             // A new value on every write, otherwise `useCookie` sees no change and
             // does not push the new expiry to the browser.
             freshAfterWrite.value = String(Date.now())
