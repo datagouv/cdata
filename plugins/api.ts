@@ -8,6 +8,10 @@ export default defineNuxtPlugin({
     const cookie = useRequestHeader('cookie')
     const route = useRoute()
     const { t, locale } = useTranslation()
+    const freshAfterWrite = useCookie('cdata_fresh', {
+      maxAge: config.public.freshAfterWriteSeconds,
+      sameSite: 'lax',
+    })
 
     const makeApi = (apiOptions: { sendJson: boolean, redirectOn404: boolean }) => {
       return $fetch.create({
@@ -34,6 +38,14 @@ export default defineNuxtPlugin({
               options.query = {}
             }
             options.query['lang'] = locale
+          }
+        },
+        onResponse({ response, options }) {
+          const method = options.method?.toUpperCase() ?? 'GET'
+          if (method !== 'GET' && response.ok) {
+            // A new value on every write, otherwise `useCookie` sees no change and
+            // does not push the new expiry to the browser.
+            freshAfterWrite.value = String(Date.now())
           }
         },
         async onResponseError({ request, response, options }) {
