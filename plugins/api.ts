@@ -8,7 +8,7 @@ export default defineNuxtPlugin({
     const cookie = useRequestHeader('cookie')
     const route = useRoute()
     const { t, locale } = useTranslation()
-    const freshAfterWrite = useCookie('cdata_fresh', {
+    const freshAfterWrite = useCookie(config.public.freshAfterWriteCookieName, {
       maxAge: config.public.freshAfterWriteSeconds,
       sameSite: 'lax',
     })
