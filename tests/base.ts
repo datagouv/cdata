@@ -3,9 +3,10 @@ import { fakeMatomo } from './matomo'
 import { fakeMetricsApi } from './metricsApi'
 
 // `msg.text()` flattens an `Error` argument to its bare message (e.g. "Error"),
-// dropping the stack on Firefox. Resolve the args to recover `error.stack`.
+// dropping the stack on Firefox. Resolve the args to recover `error.stack`, along
+// with `String(error)`: Firefox's stack only lists the frames, without the message.
 const fullText = (msg: ConsoleMessage) =>
-  Promise.all(msg.args().map(arg => arg.evaluate(v => (v instanceof Error ? v.stack : v)).catch(() => null)))
+  Promise.all(msg.args().map(arg => arg.evaluate(v => (v instanceof Error ? `${String(v)}\n${v.stack}` : v)).catch(() => null)))
     .then(parts => parts.filter(p => p != null).join(' ') || msg.text())
 
 const IGNORED_MESSAGES = [
