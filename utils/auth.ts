@@ -35,13 +35,6 @@ export const useMaybeMe = () => {
   return useState<Me | null | undefined>('me', () => undefined)
 }
 
-export const useToken = () => {
-  return useCookie('token', {
-    secure: true,
-    sameSite: true,
-  })
-}
-
 export function isAdmin(me: Me | null | undefined): boolean {
   if (!me) return false
 
@@ -67,14 +60,13 @@ export const loadMe = async (meState: Ref<Me | null | undefined>) => {
   const config = useRuntimeConfig()
   const cookie = useRequestHeader('cookie')
 
-  const token = useToken()
   const { setCurrentOrganization, setCurrentUser } = useCurrentOwnedSetters()
 
   // The vast majority of server-side renders are for anonymous visitors, for whom
   // `/api/1/me` can only answer 401. Without any credential in the request we know
   // the answer without asking. Server-side only: session cookies are HttpOnly, so
   // the browser cannot tell whether they are set.
-  if (import.meta.server && !token.value && !config.public.devApiKey) {
+  if (import.meta.server && !config.public.devApiKey) {
     const session = useCookie(config.sessionCookieName).value || useCookie(config.rememberCookieName).value
     if (!session) {
       meState.value = null
@@ -86,9 +78,6 @@ export const loadMe = async (meState: Ref<Me | null | undefined>) => {
 
   if (cookie) {
     headers['cookie'] = cookie
-  }
-  if (token.value) {
-    headers['Authentication-Token'] = token.value
   }
   if (config.public.devApiKey) {
     headers['X-API-KEY'] = config.public.devApiKey
@@ -114,13 +103,9 @@ export const loadMe = async (meState: Ref<Me | null | undefined>) => {
 
 export function useLogout() {
   const postApiWithCsrf = usePostApiWithCsrf()
-  const token = useToken()
   const me = useMe()
 
   return async () => {
-    token.value = null
-    refreshCookie('token')
-
     const response = await postApiWithCsrf<{ proconnect_logout_url: string | null }>('/logout/', {})
 
     await loadMe(me)

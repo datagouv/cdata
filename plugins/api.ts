@@ -4,13 +4,15 @@ import { getApiErrorMessage } from '~/utils/api'
 export default defineNuxtPlugin({
   async setup(nuxtApp) {
     const config = useRuntimeConfig()
-    const token = useToken()
     const cookie = useRequestHeader('cookie')
     const route = useRoute()
     const { t, locale } = useTranslation()
-    const freshAfterWrite = useCookie(config.public.freshAfterWriteCookieName, {
+    const freshAfterWrite = useCookie<boolean>(config.public.freshAfterWriteCookieName, {
       maxAge: config.public.freshAfterWriteSeconds,
       sameSite: 'lax',
+      // Rewrite the cookie even when the value is unchanged, to push its expiry back
+      // on every write.
+      refresh: true,
     })
 
     const makeApi = (apiOptions: { sendJson: boolean, redirectOn404: boolean }) => {
@@ -27,9 +29,6 @@ export default defineNuxtPlugin({
           else {
             options.credentials = 'include'
           }
-          if (token.value) {
-            options.headers.set('Authentication-Token', token.value)
-          }
           if (cookie) {
             options.headers.set('Cookie', cookie)
           }
@@ -41,10 +40,8 @@ export default defineNuxtPlugin({
           }
         },
         onResponse({ response, options }) {
-          if (options.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method.toUpperCase()) && response.ok) {
-            // A new value on every write, otherwise `useCookie` sees no change and
-            // does not push the new expiry to the browser.
-            freshAfterWrite.value = String(Date.now())
+          if (response.ok && options.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method)) {
+            freshAfterWrite.value = true
           }
         },
         async onResponseError({ request, response, options }) {
