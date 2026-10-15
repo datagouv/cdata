@@ -26,6 +26,19 @@
       </div>
       <div class="fr-fieldset__element">
         <InputGroup
+          v-model="form.slug"
+          :label="$t(`Identifiant dans l'URL`)"
+          :required="type === 'update'"
+          :hint-text="type === 'create'
+            ? $t(`Laissez vide pour le générer à partir du titre.`)
+            : $t(`L'ancienne URL redirigera vers la nouvelle.`)"
+          :has-error="!!getFirstError('slug')"
+          :error-text="getFirstError('slug')"
+          @blur="touch('slug')"
+        />
+      </div>
+      <div class="fr-fieldset__element">
+        <InputGroup
           v-model="form.headline"
           :label="$t('Entête')"
           :has-error="!!getFirstError('headline')"
@@ -121,10 +134,10 @@ import type { PostForm } from '~/types/posts'
 
 const props = defineProps<{
   submitLabel: string
-  post: PostForm
   type: 'create' | 'update'
   loading?: boolean
 }>()
+const postForm = defineModel<PostForm>({ required: true })
 const emit = defineEmits<{
   previous: []
   submit: [PostForm]
@@ -132,8 +145,12 @@ const emit = defineEmits<{
 
 const { t } = useTranslation()
 
-const { form, touch, getFirstError, getFirstWarning, validate } = useForm(props.post, {
+const isUpdate = computed(() => props.type === 'update')
+
+const { form, touch, getFirstError, getFirstWarning, validate } = useForm(postForm, {
   name: [required()],
+  // Derived from the name when left empty at creation, but a post always has one afterwards
+  slug: [ruleIf(isUpdate, required())],
   headline: [required()],
   image: [required()],
 }, {
