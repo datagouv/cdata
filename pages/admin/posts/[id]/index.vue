@@ -82,7 +82,7 @@ const { $api, $fileApi } = useNuxtApp()
 
 const route = useRoute()
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
-const { data: post, refresh } = await useAPI<Post>(url, { redirectOn404: true, key: adminPostKey(String(route.params.id)) })
+const { data: post, refresh } = await useAPI<Post>(url, { showErrorPage: true, key: adminPostKey(String(route.params.id)) })
 // Built once, then rebuilt from the server after a save only: publishing refreshes `post`
 // too, and must not wipe what is being typed.
 const postForm = ref<PostForm | null>(post.value ? postToForm(post.value) : null)
