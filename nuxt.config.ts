@@ -434,6 +434,9 @@ export default defineNuxtConfig({
       deploy: process.env.GITHUB_REF_NAME ? { env: process.env.GITHUB_REF_NAME } : undefined,
     },
     telemetry: false,
+    // Marks every chunk of our build so `thirdPartyErrorFilterIntegration` (sentry.client.config.ts)
+    // can tell our frames from scripts the browser or its extensions inject into the page.
+    applicationKey: 'cdata',
   },
 
   sitemap: {
