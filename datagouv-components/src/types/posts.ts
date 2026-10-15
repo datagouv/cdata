@@ -3,7 +3,7 @@ import type { PageBloc } from './pages'
 import type { Reuse } from './reuses'
 import type { User } from './users'
 
-export type PostAncestor = Pick<Post, 'id' | 'name' | 'path'>
+export type PostAncestor = Pick<Post, 'id' | 'name' | 'path' | 'page'>
 
 export type Post = {
   ancestors: Array<PostAncestor>

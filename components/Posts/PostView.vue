@@ -23,7 +23,7 @@
     />
   </div>
 
-  <!-- Standard news mode -->
+  <!-- Header mode: news, and pages that are not full page blocs -->
   <div
     v-else
     class="mb-24"
@@ -183,7 +183,7 @@ const isFullPageBlocs = computed(() => props.post.kind === 'page' && props.post.
 const breadcrumb = computed(() => [
   { label: t('Accueil'), to: '/' },
   ...(props.post.kind === 'page'
-    ? props.post.ancestors.map(ancestor => ({ label: ancestor.name, to: `/pages/${ancestor.path}` }))
+    ? props.post.ancestors.map(ancestor => ({ label: ancestor.name, to: ancestor.page }))
     : [{ label: t('Articles'), to: '/posts' }]),
   { label: props.post.name, to: undefined },
 ])
@@ -209,7 +209,7 @@ useSeoMeta({
 })
 defineOgImage('MainPage.takumi', {
   title: props.post.name,
-  uri: props.post.kind === 'page' ? `/pages/${props.post.path}` : '/posts',
+  uri: props.post.kind === 'page' ? postPath(props.post) : '/posts',
 })
 useHead({
   script: [
