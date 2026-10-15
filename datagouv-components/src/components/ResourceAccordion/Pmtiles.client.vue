@@ -56,6 +56,7 @@ import { computed, onMounted, ref, useTemplateRef } from 'vue'
 import { RiExternalLinkFill } from '@remixicon/vue'
 import { Protocol, PMTiles } from 'pmtiles'
 import * as maplibregl from 'maplibre-gl'
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import DOMPurify from 'dompurify'
 import { useComponentsConfig } from '../../config'
 import { useFormatDate } from '../../functions/dates'
@@ -93,6 +94,9 @@ const lastUpdate = computed(() => {
 })
 
 const container = useTemplateRef('containerRef')
+
+// v6 with a bundler cannot resolve the worker from import.meta.url; point it at the chunk Vite emits.
+maplibregl.setWorkerUrl(maplibreWorkerUrl)
 
 const attributions = computed(() => getMapAttribution(props.dataset))
 
