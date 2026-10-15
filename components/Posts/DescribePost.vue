@@ -86,7 +86,7 @@
           :multiple="true"
           :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
           show-label
-          required
+          :required="isNews"
           :has-error="!!getFirstError('image')"
           :error-text="getFirstError('image')"
           :warning-text="getFirstWarning('image')"
@@ -146,13 +146,16 @@ const emit = defineEmits<{
 const { t } = useTranslation()
 
 const isUpdate = computed(() => props.type === 'update')
+// News are listed as cards on /posts and on the home page, laid out around their cover.
+// Pages are only reached by their URL and are fine without one.
+const isNews = computed(() => postForm.value.kind === 'news')
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(postForm, {
   name: [required()],
   // Derived from the name when left empty at creation, but a post always has one afterwards
   slug: [ruleIf(isUpdate, required())],
   headline: [required()],
-  image: [required()],
+  image: [ruleIf(isNews, required())],
 }, {
 })
 
