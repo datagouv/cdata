@@ -31,7 +31,7 @@ test.describe('Pages tree', () => {
     await expect(page.getByRole('heading', { level: 1, name: child.name })).toBeVisible()
     await expect(page.getByRole('link', { name: parent.name })).toHaveAttribute('href', `/pages/${parent.slug}`)
 
-    // The /posts URL of a page, and a path that misses its parent, redirect to the right path
+    // The /posts URL of a page, and a path that misses its parent, redirect to the canonical one
     await page.goto(`/posts/${child.slug}`)
     await expect(page).toHaveURL(new RegExp(`/pages/${parent.slug}/${child.slug}$`))
     await page.goto(`/pages/${child.slug}`)

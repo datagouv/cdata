@@ -25,7 +25,7 @@ const postForm = computed(() => post.value ? postToForm(post.value) : null)
 
 watchEffect(() => {
   if (post.value?.body_type === 'blocs') {
-    navigateTo(`/posts/${post.value.slug}?edit=true`)
+    navigateTo({ path: postPath(post.value), query: { edit: 'true' } })
   }
 })
 

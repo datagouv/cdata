@@ -1,6 +1,12 @@
 import cloneDeep from 'lodash-es/cloneDeep'
 import type { NewPostForApi, Post, PostForm } from '~/types/posts'
 
+// The canonical path of a post is decided by the API (`/pages/<path>` for a page,
+// `/posts/<slug>` for a news): its `page` URL is absolute, built on the cdata base URL.
+export function postPath(post: Pick<Post, 'page'>): string {
+  return new URL(post.page).pathname
+}
+
 export function postToForm(post: Post): PostForm {
   return {
     ...cloneDeep(post),

@@ -23,14 +23,15 @@ const lastSegment = segments.at(-1)
 
 // An edito page is found by its own slug, the last segment of the path, whatever the
 // segments before it: a page moved under another parent keeps answering at its old path
-// and gets redirected. The GitHub pages are the fallback for the paths not migrated yet.
+// and gets redirected to its canonical one. The GitHub pages are the fallback for the
+// paths not migrated yet.
 const { data: candidate, refresh: refreshPost } = await useAPI<Post>(
   () => `/api/1/posts/${encodeURIComponent(lastSegment ?? '')}/`,
   { immediate: Boolean(lastSegment) },
 )
 const post = computed(() => candidate.value?.kind === 'page' ? candidate.value : null)
 
-if (post.value && post.value.path !== slug) {
-  await navigateTo({ path: `/pages/${post.value.path}`, query: route.query }, { redirectCode: 301, replace: true })
+if (post.value && route.path !== postPath(post.value)) {
+  await navigateTo({ path: postPath(post.value), query: route.query }, { redirectCode: 301, replace: true })
 }
 </script>

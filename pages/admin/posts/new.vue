@@ -129,7 +129,7 @@ async function save(form: { content: string }) {
       })
     }
     if (newPost.value.body_type === 'blocs') {
-      await navigateTo(`/posts/${newPost.value.slug}?edit=true`)
+      await navigateTo({ path: postPath(newPost.value), query: { edit: 'true' } })
     }
     else {
       await navigateTo(`/admin/posts/${newPost.value.id}`)
