@@ -214,7 +214,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.getByText('Ajouter un lien').first().click()
   await page.waitForTimeout(300)
 
-  const linkTitle = page.locator('.text-7xl [contenteditable="true"], .text-6xl [contenteditable="true"]').first()
+  const linkTitle = page.locator('.text-3xl [contenteditable="true"]').first()
   await linkTitle.click()
   await linkTitle.fill('Documentation')
   await page.mouse.click(1, 1)
@@ -223,7 +223,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.getByText('Ajouter un lien').first().click()
   await page.waitForTimeout(300)
 
-  const linkTitle2 = page.locator('.text-7xl [contenteditable="true"], .text-6xl [contenteditable="true"]').nth(1)
+  const linkTitle2 = page.locator('.text-3xl [contenteditable="true"]').nth(1)
   await linkTitle2.click()
   await linkTitle2.fill('Guides')
   await page.mouse.click(1, 1)
@@ -276,7 +276,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.getByText('Ajouter un lien').last().click()
   await page.waitForTimeout(300)
 
-  const linkTitle3 = page.locator('.text-7xl [contenteditable="true"], .text-6xl [contenteditable="true"]').nth(2)
+  const linkTitle3 = page.locator('.text-3xl [contenteditable="true"]').nth(2)
   await linkTitle3.click()
   await linkTitle3.fill('API')
   await page.mouse.click(1, 1)
@@ -285,7 +285,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.getByText('Ajouter un lien').last().click()
   await page.waitForTimeout(300)
 
-  const linkTitle4 = page.locator('.text-7xl [contenteditable="true"], .text-6xl [contenteditable="true"]').nth(3)
+  const linkTitle4 = page.locator('.text-3xl [contenteditable="true"]').nth(3)
   await linkTitle4.click()
   await linkTitle4.fill('Support')
   await page.mouse.click(1, 1)

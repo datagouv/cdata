@@ -335,6 +335,7 @@ test('switching resources does not pile up history entries', async ({ page, requ
   // stepping through the resources we just viewed.
   await page.goBack()
   await expect(page).toHaveURL(/\/explore$/)
+  await page.waitForLoadState('networkidle')
 })
 
 test('switching resources drops the filters, sort and search of the previous one', async ({ page, request }) => {

@@ -240,15 +240,14 @@ const workingBlocs = computed(() => localBlocs.value ?? props.blocs)
 
 // Check if there are unsaved changes
 const hasUnsavedChanges = computed(() => {
-  if (!isEditing.value || !localBlocs.value) return false
-  return JSON.stringify(toRaw(localBlocs.value)) !== JSON.stringify(toRaw(props.blocs))
+  return localBlocs.value !== null && JSON.stringify(toRaw(localBlocs.value)) !== JSON.stringify(toRaw(props.blocs))
 })
 
 // Warn before leaving with unsaved changes.
 const { t } = useTranslation()
 
 const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-  if (isEditing.value && hasUnsavedChanges.value) {
+  if (hasUnsavedChanges.value) {
     e.preventDefault()
   }
 }
@@ -262,7 +261,7 @@ onUnmounted(() => {
 })
 
 onBeforeRouteLeave(() => {
-  if (!isEditing.value || !hasUnsavedChanges.value) return true
+  if (!hasUnsavedChanges.value) return true
   return window.confirm(t('Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir quitter ?'))
 })
 
@@ -298,7 +297,9 @@ async function save() {
 }
 
 function cancel() {
-  localBlocs.value = structuredClone(toRaw(props.blocs))
+  // Nulling (not re-cloning) keeps a later props.blocs refresh from making a stale
+  // clone differ and phantom-flag "unsaved changes".
+  localBlocs.value = null
   if (props.editable) {
     exitEditMode()
   }

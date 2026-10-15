@@ -404,7 +404,7 @@ test.describe('mobile', () => {
     const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
     await expect(badgeFieldset).toBeHidden()
 
-    await page.getByRole('button', { name: 'Filtres' }).click()
+    await page.getByRole('button', { name: 'Filtres', exact: true }).click()
     await expect(badgeFieldset).toBeVisible()
   })
 })
