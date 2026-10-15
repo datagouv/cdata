@@ -12,6 +12,7 @@ export type ApiHarvestSource = { id: string, name: string, backend: string, sche
 export type ApiOrganization = { id: string, name: string }
 export type ApiContactPoint = { id: string, name: string, email: string | null, contact_form: string | null, role: string }
 export type ApiReuse = { id: string, title: string, slug: string }
+export type ApiPost = { id: string, name: string, slug: string }
 
 export async function createHarvestSource(request: APIRequestContext, name: string, backend: string, config: Record<string, unknown> = {}): Promise<ApiHarvestSource> {
   const response = await request.post(`${API_BASE}/api/1/harvest/sources/`, {
@@ -116,6 +117,21 @@ export async function createReuse(request: APIRequestContext, title: string, url
     throw new Error(`Failed to create reuse "${title}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
   }
   return await response.json()
+}
+
+export async function createPost(request: APIRequestContext, data: Record<string, unknown> & { name: string }): Promise<ApiPost> {
+  const response = await request.post(`${API_BASE}/api/1/posts/`, { data })
+  if (!response.ok()) {
+    throw new Error(`Failed to create post "${data.name}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+  return await response.json()
+}
+
+// Deleted from the last created: the API refuses to delete a page that still has sub-pages.
+export async function deletePosts(request: APIRequestContext, ids: Array<string>): Promise<void> {
+  for (const id of ids.splice(0).reverse()) {
+    await request.delete(`${API_BASE}/api/1/posts/${id}/`)
+  }
 }
 
 export async function createDiscussion(request: APIRequestContext, subject: DiscussionSubject, title: string): Promise<{ id: string }> {

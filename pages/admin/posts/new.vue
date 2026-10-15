@@ -69,6 +69,7 @@ const postForm = useState<PostForm>(POST_FORM_STATE, () => ({
   credit_url: '',
   headline: '',
   kind: 'news',
+  parent: null,
   published: null,
   owner: me.value,
   tags: [],
@@ -132,7 +133,7 @@ async function save(form: { content: string }) {
       }
     }
     if (newPost.value.body_type === 'blocs') {
-      await navigateTo(`/posts/${newPost.value.slug}?edit=true`)
+      await navigateTo({ path: postPath(newPost.value), query: { edit: 'true' } })
     }
     else {
       await navigateTo(`/admin/posts/${newPost.value.id}`)
