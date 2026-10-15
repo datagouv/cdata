@@ -34,6 +34,8 @@ test.describe('Post slug', () => {
     await page.getByRole('button', { name: 'Sauvegarder' }).click()
     expect((await saved).ok()).toBeTruthy()
     await expect(slugInput).toHaveValue(`slug-modifie-${uniqueId}`)
+    // The admin layout above the form follows the new slug too
+    await expect(page.getByRole('link', { name: 'Voir la page de l\'article' })).toHaveAttribute('href', new RegExp(`/posts/slug-modifie-${uniqueId}$`))
 
     await page.goto(`/posts/slug-modifie-${uniqueId}`)
     await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible()

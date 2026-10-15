@@ -21,7 +21,7 @@
 
     <DescribePost
       v-if="currentStep === 1"
-      :post="postForm"
+      v-model="postForm"
       type="create"
       :submit-label="t('Suivant')"
       :loading
@@ -138,6 +138,9 @@ async function save(form: { content: string }) {
     else {
       await navigateTo(`/admin/posts/${newPost.value.id}`)
     }
+    // Cleared once the post exists: the next creation would otherwise start from this one,
+    // and its slug would be rejected as already used.
+    clearNuxtState(POST_FORM_STATE)
   }
   finally {
     loading.value = false

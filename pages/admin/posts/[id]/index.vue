@@ -1,11 +1,8 @@
 <template>
   <div>
-    <!-- Keyed on the last save: the form copies the post once, at mount, so remounting it
-         shows what the server kept (the slug is normalized) instead of what was typed. -->
     <DescribePost
       v-if="post && postForm"
-      :key="post.last_modified"
-      :post="postForm"
+      v-model="postForm"
       type="update"
       :submit-label="t('Sauvegarder')"
       :loading
@@ -85,8 +82,10 @@ const { $api, $fileApi } = useNuxtApp()
 
 const route = useRoute()
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
-const { data: post, refresh } = await useAPI<Post>(url, { redirectOn404: true })
-const postForm = computed(() => post.value ? postToForm(post.value) : null)
+const { data: post, refresh } = await useAPI<Post>(url, { redirectOn404: true, key: adminPostKey(String(route.params.id)) })
+// Built once, then rebuilt from the server after a save only: publishing refreshes `post`
+// too, and must not wipe what is being typed.
+const postForm = ref<PostForm | null>(post.value ? postToForm(post.value) : null)
 
 const loading = ref(false)
 
@@ -112,7 +111,9 @@ const save = async (form: PostForm) => {
 
     toast.success(t('Article mis à jour !'))
     window.scrollTo({ top: 0, left: 0, behavior: 'smooth' })
-    refresh()
+    await refresh()
+    // Shows what the server kept (the slug is normalized), not what was typed
+    if (post.value) postForm.value = postToForm(post.value)
   }
   finally {
     loading.value = false

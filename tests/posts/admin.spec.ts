@@ -1,9 +1,6 @@
-import type { Page } from '@playwright/test'
-import * as path from 'path'
 import { test, expect } from '../base'
-import { API_BASE } from '../helpers'
-
-const __dirname = import.meta.dirname
+import { API_BASE, gotoHydrated } from '../helpers'
+import { fillNewPostForm } from './helpers'
 
 const createdPosts: Array<string> = []
 
@@ -13,27 +10,10 @@ test.afterEach(async ({ request }) => {
   }
 })
 
-async function fillNewPostForm(page: Page, name: string) {
-  await page.goto('/admin/posts/new')
-  await page.waitForLoadState('networkidle')
-  await page.getByRole('textbox', { name: 'Titre de l\'article' }).fill(name)
-  await page.getByRole('textbox', { name: 'Entête' }).fill('Un article de test')
-
-  const fileChooserPromise = page.waitForEvent('filechooser')
-  await page.getByRole('button', { name: 'Parcourir' }).click()
-  const fileChooser = await fileChooserPromise
-  await fileChooser.setFiles(path.join(__dirname, '../../public/nuxt_images/onboarding/logo-ign.png'))
-
-  await page.getByRole('button', { name: 'Suivant' }).click()
-  await expect(page.getByTestId('markdown-editor')).toBeVisible({ timeout: 30000 })
-  await page.getByTestId('markdown-editor').click()
-  await page.getByTestId('markdown-editor').fill('Contenu de l\'article')
-  await page.getByTestId('markdown-editor').press('Tab')
-  await page.waitForTimeout(500)
-}
+const newPost = (title: string) => ({ title, headline: 'Un article de test', content: 'Contenu de l\'article' })
 
 test('clicking save again while the post is being created does not create it twice', async ({ page }) => {
-  await fillNewPostForm(page, `Test double création ${Date.now()}`)
+  await fillNewPostForm(page, newPost(`Test double création ${Date.now()}`))
 
   // Hold the creation request so the second click happens while it is in flight
   let createRequests = 0
@@ -65,7 +45,7 @@ test.describe('when the cover upload fails', () => {
   test.use({ allowedConsoleMessages: ['the server responded with a status of 413'] })
 
   test('the created post is opened instead of staying on the creation form', async ({ page }) => {
-    await fillNewPostForm(page, `Test couverture refusée ${Date.now()}`)
+    await fillNewPostForm(page, newPost(`Test couverture refusée ${Date.now()}`))
 
     await page.route(/\/api\/1\/posts\/[^/]+\/image\/$/, route => route.fulfill({
       status: 413,
@@ -78,6 +58,23 @@ test.describe('when the cover upload fails', () => {
     await expect(page).toHaveURL(/\/admin\/posts\/(?!new)[a-z0-9-]+$/)
     createdPosts.push(page.url().split('/').pop()!)
   })
+})
+
+test('publishing a post keeps the edits not saved yet', async ({ page, request }) => {
+  const response = await request.post(`${API_BASE}/api/1/posts/`, {
+    data: { name: `Test publication ${Date.now()}`, headline: 'Entête enregistrée', content: 'Contenu', kind: 'news' },
+  })
+  expect(response.ok()).toBeTruthy()
+  const post = await response.json()
+  createdPosts.push(post.id)
+
+  await gotoHydrated(page, `/admin/posts/${post.id}`)
+  const headline = page.getByRole('textbox', { name: 'Entête' })
+  await headline.fill('Entête en cours de saisie')
+
+  await page.getByRole('button', { name: 'Publier', exact: true }).click()
+  await expect(page.getByRole('button', { name: 'Dépublier' })).toBeVisible()
+  await expect(headline).toHaveValue('Entête en cours de saisie')
 })
 
 test('can delete a post from its admin page', async ({ page, request }) => {

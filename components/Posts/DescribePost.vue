@@ -134,10 +134,10 @@ import type { PostForm } from '~/types/posts'
 
 const props = defineProps<{
   submitLabel: string
-  post: PostForm
   type: 'create' | 'update'
   loading?: boolean
 }>()
+const postForm = defineModel<PostForm>({ required: true })
 const emit = defineEmits<{
   previous: []
   submit: [PostForm]
@@ -147,7 +147,7 @@ const { t } = useTranslation()
 
 const isUpdate = computed(() => props.type === 'update')
 
-const { form, touch, getFirstError, getFirstWarning, validate } = useForm(props.post, {
+const { form, touch, getFirstError, getFirstWarning, validate } = useForm(postForm, {
   name: [required()],
   // Derived from the name when left empty at creation, but a post always has one afterwards
   slug: [ruleIf(isUpdate, required())],
