@@ -421,16 +421,13 @@ jobs:
   publish-datagouv-components:
     needs: [quality_and_test, e2e]
     runs-on: ubuntu-latest
-    # The version is read from the `dev` dist-tag then incremented, so two overlapping runs would
-    # compute the same number and the second would get a 403. `queue: max` serializes them FIFO
-    # (up to 100 pending) instead of cancelling the pending one like the default `queue: single`.
-    concurrency:
-      group: publish-datagouv-components
-      queue: max
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          # The full history is needed to count the commits in the dev version
+          fetch-depth: 0
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -449,11 +446,15 @@ jobs:
       - name: Publish datagouv-components
         working-directory: ./datagouv-components
         run: |
-          LATEST=$(npm view @datagouv/components-next@dev version 2>/dev/null \
-            || npm view @datagouv/components-next version 2>/dev/null \
-            || echo "0.0.0")
-          echo "Using base version $LATEST"
-          pnpm version "$LATEST" --no-git-tag-version --allow-same-version
-          # Then, we increment the preprelease version number
-          pnpm version prerelease --preid=dev --no-git-tag-version
+          # The version is derived from git rather than read from the `dev` dist-tag: npm takes
+          # a while to expose a freshly published version, so a run starting right after another
+          # one would compute the same number and get a 409.
+          # The commit count orders the versions, the `g` prefix keeps an all-digit hash from
+          # being parsed as a number (a leading zero would make the version invalid).
+          # Bumped by hand rather than with `pnpm version patch`: each `pnpm version` runs the
+          # `preversion` build, and the final one below is enough.
+          BASE=$(node -p "const [major, minor, patch] = require('./package.json').version.split('.'); [major, minor, +patch + 1].join('.')")
+          VERSION="$BASE-dev.$(git rev-list --count HEAD).g$(git rev-parse --short HEAD)"
+          echo "Publishing $VERSION"
+          pnpm version "$VERSION" --no-git-tag-version
           pnpm run publish-dev --no-git-checks
