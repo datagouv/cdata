@@ -28,9 +28,13 @@
         <InputGroup
           v-model="form.slug"
           :label="$t(`Identifiant dans l'URL`)"
+          :required="type === 'update'"
           :hint-text="type === 'create'
             ? $t(`Laissez vide pour le générer à partir du titre.`)
-            : $t(`Videz le champ pour le régénérer à partir du titre. L'ancienne URL redirigera vers la nouvelle.`)"
+            : $t(`L'ancienne URL redirigera vers la nouvelle.`)"
+          :has-error="!!getFirstError('slug')"
+          :error-text="getFirstError('slug')"
+          @blur="touch('slug')"
         />
       </div>
       <div class="fr-fieldset__element">
@@ -141,6 +145,8 @@ const { t } = useTranslation()
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(props.post, {
   name: [required()],
+  // Derived from the name when left empty at creation, but a post always has one afterwards
+  slug: props.type === 'update' ? [required()] : [],
   headline: [required()],
   image: [required()],
 }, {
