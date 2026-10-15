@@ -57,6 +57,66 @@ test.describe('Report and moderation', () => {
     await expect(row).not.toBeVisible()
   })
 
+  test('cannot send a report without a reason nor a message', async ({ page, request }) => {
+    const dataset = await createDataset(request, `Test report validation ${Date.now()}`, 'Dataset pour tester la validation du signalement')
+    createdDatasets.push(dataset.id)
+
+    const reportPosts: Array<string> = []
+    page.on('request', (req) => {
+      if (req.method() === 'POST' && req.url().includes('/api/1/reports/')) reportPosts.push(req.url())
+    })
+
+    await page.goto(`/datasets/${dataset.id}/`)
+    await page.waitForLoadState('networkidle')
+
+    await page.getByRole('button', { name: 'Signalement' }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByRole('button', { name: 'Signalement' }).click()
+
+    await expect(dialog.getByText('Le champ est requis.')).toHaveCount(2)
+    await expect(dialog.getByRole('heading', { name: 'Signaler ce contenu' })).toBeVisible()
+    expect(reportPosts).toEqual([])
+  })
+
+  test('does not offer the auto-detected spam reason', async ({ page, request }) => {
+    const dataset = await createDataset(request, `Test report reasons ${Date.now()}`, 'Dataset pour tester les raisons de signalement')
+    createdDatasets.push(dataset.id)
+
+    await page.goto(`/datasets/${dataset.id}/`)
+    await page.waitForLoadState('networkidle')
+
+    await page.getByRole('button', { name: 'Signalement' }).click()
+    const select = page.getByRole('dialog').getByLabel('Raison du signalement')
+    await expect(select.locator('option[value="spam"]')).toHaveCount(1)
+    await expect(select.locator('option[value="auto_spam"]')).toHaveCount(0)
+  })
+
+  test.describe('when the API rejects the report', () => {
+    // The rejection below is the point of the test: the browser logs it.
+    test.use({ allowedConsoleMessages: ['the server responded with a status of 400'] })
+
+    test('shows an error when the report cannot be sent', async ({ page, request }) => {
+      const dataset = await createDataset(request, `Test report error ${Date.now()}`, 'Dataset pour tester l\'échec du signalement')
+      createdDatasets.push(dataset.id)
+
+      await page.route(url => url.pathname === '/api/1/reports/', route => route.request().method() === 'POST'
+        ? route.fulfill({ status: 400, json: { message: 'Validation error' } })
+        : route.fallback())
+
+      await page.goto(`/datasets/${dataset.id}/`)
+      await page.waitForLoadState('networkidle')
+
+      await page.getByRole('button', { name: 'Signalement' }).click()
+      const dialog = page.getByRole('dialog')
+      await dialog.getByLabel('Raison du signalement').selectOption('spam')
+      await dialog.getByLabel('Votre message').fill('Signalement de test E2E (échec)')
+      await dialog.getByRole('button', { name: 'Signalement' }).click()
+
+      await expect(page.getByText('Impossible d\'envoyer le signalement.')).toBeVisible()
+      await expect(dialog.getByRole('heading', { name: 'Signaler ce contenu' })).toBeVisible()
+    })
+  })
+
   test('can hide a reported object (switch to private)', async ({ page, request }) => {
     const title = `Test report hide ${Date.now()}`
     const dataset = await createDataset(request, title, 'Dataset pour tester le masquage via modération')
