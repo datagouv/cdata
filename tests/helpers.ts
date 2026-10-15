@@ -1,5 +1,8 @@
-import type { APIRequestContext, Page } from '@playwright/test'
+import type { APIRequestContext, Browser, Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
+import type { MemberRole } from '@datagouv/components-next'
+import type { DiscussionSubject } from '../types/discussions'
+import type { NotificationRuleKey, NotificationSetting } from '../types/notifications'
 
 export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
@@ -47,7 +50,8 @@ export async function createDataset(request: APIRequestContext, title: string, d
   return await response.json()
 }
 
-export async function createRemoteResource(request: APIRequestContext, datasetId: string, title: string, format = 'csv'): Promise<ApiResource> {
+export async function createRemoteResource(request: APIRequestContext, datasetId: string, title: string, options: { format?: string, extras?: Record<string, unknown> } = {}): Promise<ApiResource> {
+  const { format = 'csv', extras } = options
   const response = await request.post(`${API_BASE}/api/1/datasets/${datasetId}/resources/`, {
     data: {
       title,
@@ -55,8 +59,12 @@ export async function createRemoteResource(request: APIRequestContext, datasetId
       filetype: 'remote',
       url: `https://example.com/${datasetId}/${encodeURIComponent(title)}.${format}`,
       format,
+      ...(extras ? { extras } : {}),
     },
   })
+  if (!response.ok()) {
+    throw new Error(`Failed to create resource "${title}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
   return await response.json()
 }
 
@@ -78,6 +86,16 @@ export async function gotoHydrated(page: Page, url: string): Promise<void> {
   await page.waitForLoadState('networkidle')
 }
 
+// matomo.js is injected after the load event, and webfonts are only fetched once used,
+// often after it too: leaving the page while either loads makes Firefox log the aborted
+// download. Use it on a page the test leaves right away.
+export async function gotoSettled(page: Page, url: string): Promise<void> {
+  const matomoLoaded = page.waitForResponse('**/matomo.js')
+  await page.goto(url)
+  await matomoLoaded
+  await page.evaluate(() => document.fonts.ready)
+}
+
 // The banner is the only way into the new explorer, and it only lives on the resources
 // tab: opt in from there, then navigate wherever the test needs to go.
 export async function enableNewExplorer(page: Page, url: string): Promise<void> {
@@ -93,7 +111,7 @@ export async function deleteDatasets(request: APIRequestContext, ids: Array<stri
 }
 
 // `url` has to differ between reuses: udata hashes it into a unique `urlhash`.
-export async function createReuse(request: APIRequestContext, title: string, url: string): Promise<ApiReuse> {
+export async function createReuse(request: APIRequestContext, title: string, url: string, linked: { datasets?: Array<string> } = {}): Promise<ApiReuse> {
   const response = await request.post(`${API_BASE}/api/1/reuses/`, {
     data: {
       title,
@@ -101,12 +119,78 @@ export async function createReuse(request: APIRequestContext, title: string, url
       description: 'Réutilisation créée par les tests end to end',
       type: 'application',
       topic: 'transport_and_mobility',
+      datasets: linked.datasets,
     },
   })
   if (!response.ok()) {
     throw new Error(`Failed to create reuse "${title}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
   }
   return await response.json()
+}
+
+export async function createDiscussion(request: APIRequestContext, subject: DiscussionSubject, title: string): Promise<{ id: string }> {
+  const response = await request.post(`${API_BASE}/api/1/discussions/`, {
+    data: {
+      subject,
+      title,
+      // The comment must not repeat the title: tests locate discussions by title text
+      comment: 'Premier message de la discussion.',
+    },
+  })
+  if (!response.ok()) {
+    throw new Error(`Failed to create discussion "${title}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+  return await response.json()
+}
+
+// Every rule of the account in one page, the automatic follows included.
+export async function listSettings(request: APIRequestContext): Promise<Array<NotificationSetting>> {
+  const response = await request.get(`${API_BASE}/api/1/notifications/settings/?page_size=1000`)
+  return (await response.json()).data
+}
+
+// `null` withdraws the rule.
+export async function setRule(request: APIRequestContext, key: NotificationRuleKey, enabled: boolean | null): Promise<void> {
+  const response = await request.put(`${API_BASE}/api/1/notifications/settings/`, { data: { ...key, enabled } })
+  if (!response.ok()) {
+    throw new Error(`Failed to set the rule ${JSON.stringify(key)}: ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+}
+
+// Opens the bell, which can miss its first click right after the page loads or after
+// signing in. Its header is there whether or not there are notifications.
+export async function openNotifications(page: Page): Promise<void> {
+  await expect(async () => {
+    await page.getByTitle(/Voir les notifications/).click()
+    await expect(page.getByTitle('Gérer mes notifications')).toBeVisible({ timeout: 2000 })
+  }).toPass()
+}
+
+// Some calls made as another account than the page's, for the fixtures it owns.
+export async function withAccount<T>(browser: Browser, storageState: string, run: (request: APIRequestContext) => Promise<T>): Promise<T> {
+  const context = await browser.newContext({ storageState })
+  try {
+    return await run(context.request)
+  }
+  finally {
+    await context.close()
+  }
+}
+
+// The account of `member` joins an organization the way the site makes it: invited by an
+// administrator, then accepting. The invitation accepted is the one just made, whatever
+// else is pending.
+export async function joinOrganization(admin: APIRequestContext, member: APIRequestContext, organizationId: string, role: MemberRole): Promise<void> {
+  const me = await (await member.get(`${API_BASE}/api/1/me/`)).json()
+  const invited = await admin.post(`${API_BASE}/api/1/organizations/${organizationId}/member/`, { data: { user: me.id, role } })
+  if (!invited.ok()) {
+    throw new Error(`Failed to invite into ${organizationId}: ${invited.status()} ${(await invited.text()).slice(0, 300)}`)
+  }
+  const { id } = await invited.json()
+  const accepted = await member.post(`${API_BASE}/api/1/me/org_invitations/${id}/accept/`)
+  if (!accepted.ok()) {
+    throw new Error(`Failed to accept the invitation ${id}: ${accepted.status()} ${(await accepted.text()).slice(0, 300)}`)
+  }
 }
 
 export async function deleteReuses(request: APIRequestContext, ids: Array<string>): Promise<void> {

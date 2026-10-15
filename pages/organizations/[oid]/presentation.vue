@@ -1,41 +1,54 @@
-<!-- The edit entry point ("Modifier / publier la présentation") lives in the org
-     header (parent layout). Here we only render the blocs, plus a "public" toggle
-     in the save bar so publishing/unpublishing happens together with the save. -->
 <template>
-  <EditoBlocs
-    :blocs
-    :editable="canEdit"
-    hide-edit-button
-    for-organization
-    :empty-cta-label="$t('Configurer la présentation')"
-    :on-save="onSave"
-  >
-    <template #save-extra>
-      <ToggleSwitch
-        v-model="wantPublished"
-        :label="$t('Visible par le public')"
-        :label-true="$t('Sera publiée')"
-        :label-false="$t('Restera en brouillon')"
+  <div>
+    <div
+      v-if="canEdit"
+      class="container flex justify-end pt-5 mb-4"
+    >
+      <SegmentedControl
+        v-model="mode"
+        data-testid="presentation-mode-switch"
+        :options="[
+          { value: 'edit', label: t('Modifier'), icon: RiEditLine },
+          { value: 'preview', label: t('Prévisualiser'), icon: RiEyeLine },
+        ]"
       />
-    </template>
-    <template #empty>
-      <img
-        src="/illustrations/journal.svg"
-        class="h-20"
-        alt=""
-      >
-      <p class="fr-text--bold fr-my-3v">
-        {{ $t('Personnalisez votre page de présentation') }}
-      </p>
-      <p class="text-sm text-gray-medium mb-4 max-w-prose text-pretty">
-        {{ $t('Ajoutez des blocs de texte, des liens ou des images pour présenter votre organisation. Cette page ne sera visible par le public qu\'une fois configurée.') }}
-      </p>
-    </template>
-  </EditoBlocs>
+    </div>
+    <EditoBlocs
+      :blocs
+      :editable="canEdit"
+      hide-edit-button
+      for-organization
+      :empty-cta-label="$t('Configurer la présentation')"
+      :on-save="onSave"
+    >
+      <template #save-extra>
+        <ToggleSwitch
+          v-model="wantPublished"
+          :label="$t('Visible par le public')"
+          :label-true="$t('Sera publiée')"
+          :label-false="$t('Restera en brouillon')"
+        />
+      </template>
+      <template #empty>
+        <img
+          src="/illustrations/journal.svg"
+          class="h-20"
+          alt=""
+        >
+        <p class="fr-text--bold fr-my-3v">
+          {{ $t('Personnalisez votre page de présentation') }}
+        </p>
+        <p class="text-sm text-gray-medium mb-4 max-w-prose text-pretty">
+          {{ $t('Ajoutez des blocs de texte, des liens ou des images pour présenter votre organisation. Cette page ne sera visible par le public qu\'une fois configurée.') }}
+        </p>
+      </template>
+    </EditoBlocs>
+  </div>
 </template>
 
 <script setup lang="ts">
-import type { Organization, PageBloc } from '@datagouv/components-next'
+import { RiEyeLine, RiEditLine } from '@remixicon/vue'
+import { SegmentedControl, type Organization, type PageBloc } from '@datagouv/components-next'
 import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import { isUserOrgAdmin, useMaybeMe } from '~/utils/auth'
@@ -46,12 +59,23 @@ const props = defineProps<{
 
 const route = useRoute()
 const me = useMaybeMe()
+const { t } = useTranslation()
 
 const canEdit = computed(() => isUserOrgAdmin(me.value, props.organization))
 
-const { blocs, isPublished, saveBlocs } = await useOrganizationBlocs(props.organization)
+// Pass a getter, not the prop: the save spreads the org, and the parent
+// swaps the object on banner changes — a snapshot would send stale values.
+const { blocs, isPublished, saveBlocs } = await useOrganizationBlocs(() => props.organization)
 
 const isEditing = computed(() => route.query.edit === 'true')
+
+const router = useRouter()
+const mode = computed({
+  get: () => (isEditing.value ? 'edit' : 'preview'),
+  set: (value: string) => {
+    router.push({ query: { ...route.query, edit: value === 'edit' ? 'true' : undefined } })
+  },
+})
 
 // On an unconfigured presentation: non-admins have nothing to read, so they are
 // sent back to the datasets tab (the tab is hidden from them anyway); admins are

@@ -19,3 +19,10 @@ export type QuestionWithSegment = BaseQuestion & {
 }
 
 export type Question = QuestionWithChoices | QuestionWithAnswer | QuestionWithSegment
+
+export type SendMessageBody = {
+  email: string
+  segment: string
+  subject: string
+  body: string
+}

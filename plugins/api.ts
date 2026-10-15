@@ -4,10 +4,16 @@ import { getApiErrorMessage } from '~/utils/api'
 export default defineNuxtPlugin({
   async setup(nuxtApp) {
     const config = useRuntimeConfig()
-    const token = useToken()
     const cookie = useRequestHeader('cookie')
     const route = useRoute()
     const { t, locale } = useTranslation()
+    const freshAfterWrite = useCookie<boolean>(config.public.freshAfterWriteCookieName, {
+      maxAge: config.public.freshAfterWriteSeconds,
+      sameSite: 'lax',
+      // Rewrite the cookie even when the value is unchanged, to push its expiry back
+      // on every write.
+      refresh: true,
+    })
 
     const makeApi = (apiOptions: { sendJson: boolean, redirectOn404: boolean }) => {
       return $fetch.create({
@@ -23,9 +29,6 @@ export default defineNuxtPlugin({
           else {
             options.credentials = 'include'
           }
-          if (token.value) {
-            options.headers.set('Authentication-Token', token.value)
-          }
           if (cookie) {
             options.headers.set('Cookie', cookie)
           }
@@ -36,7 +39,15 @@ export default defineNuxtPlugin({
             options.query['lang'] = locale
           }
         },
-        async onResponseError({ response, options }) {
+        onResponse({ response, options }) {
+          // Only content writes go through `/api/`: the security views (login, logout,
+          // register…) change no rendered page, and the session they open or close
+          // already changes the nginx cache key.
+          if (response.ok && options.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method) && new URL(response.url).pathname.startsWith('/api/')) {
+            freshAfterWrite.value = true
+          }
+        },
+        async onResponseError({ request, response, options }) {
           if (response.status === 404) {
             if (apiOptions.redirectOn404) {
               await nuxtApp.runWithContext(() => showError({ statusCode: 404, statusMessage: 'Page Not Found' }))
@@ -58,6 +69,11 @@ export default defineNuxtPlugin({
             if (route.path !== path) {
               await nuxtApp.runWithContext(() => navigateTo({ path, query: { next: route.fullPath } }))
             }
+          }
+
+          if (response.status === 424 && typeof request === 'string' && request.includes('/geopf/')) {
+            // Means "not connected": callers handle this themselves (prompt to reconnect).
+            return
           }
 
           if (response.status === 429) {

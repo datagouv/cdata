@@ -314,7 +314,7 @@
                         stacked
                       />
                       <DatasetAssignmentSelector
-                        v-if="newRole === 'partial_editor' && currentOrganization"
+                        v-if="newRole === 'partial_editor' && currentOrganization && editAssignmentsLoaded"
                         v-model="editSelectedDatasetIds"
                         :organization-id="currentOrganization.id"
                       />
@@ -339,7 +339,7 @@
                           :form="editFormId"
                           :disabled="loading"
                         >
-                          {{ t("Valider") }}
+                          {{ t("Valider | Valider le changement | Valider les {n} changements", { n: assignmentChangesCount }) }}
                         </BrandedButton>
                       </div>
                       <BannerAction
@@ -401,18 +401,11 @@ const url = computed(() => {
 
 const { refreshNotifications } = useNotifications()
 const { data: organization, status, refresh } = await useAPI<Organization>(url, { redirectOn404: true })
-const membershipRequests = ref<Array<PendingMembershipRequest> | null>(null)
-
-async function fetchPendingMembershipRequests() {
-  if (!organization.value?.permissions.members) return
-  membershipRequests.value = await $api<Array<PendingMembershipRequest>>(`/api/1/organizations/${currentOrganization.value?.id}/membership/`, {
-    query: { status: 'pending' },
-  })
-}
-
-watch(organization, () => {
-  fetchPendingMembershipRequests()
-}, { immediate: true })
+const { data: membershipRequests, refresh: refreshMembershipRequests } = await useAPI<Array<PendingMembershipRequest>>(() => `${url.value}/membership/`, {
+  query: { status: 'pending' },
+  // The API answers a 403 to whoever cannot manage the members.
+  enabled: () => Boolean(organization.value?.permissions.members),
+})
 
 const pendingRequests = computed(() => {
   if (!membershipRequests.value) return []
@@ -425,7 +418,7 @@ const pendingInvitations = computed(() => {
 })
 
 const refreshAll = async () => {
-  await Promise.all([refresh(), refreshNotifications(), fetchPendingMembershipRequests()])
+  await Promise.all([refresh(), refreshNotifications(), refreshMembershipRequests()])
 }
 
 const newRole = ref<MemberRole | null>(null)
@@ -443,11 +436,15 @@ const loading = ref(false)
 
 const editSelectedDatasetIds = ref<Set<string>>(new Set())
 const editInitialDatasetIds = ref<Set<string>>(new Set())
+// The selector picks its opening tab from the selection it starts with: it must not be
+// mounted before the member's current assignments are known.
+const editAssignmentsLoaded = ref(false)
 
 const openEditModal = async (member: Member) => {
   newRole.value = member.role
   editSelectedDatasetIds.value = new Set()
   editInitialDatasetIds.value = new Set()
+  editAssignmentsLoaded.value = false
 
   if (member.role === 'partial_editor' && currentOrganization.value) {
     const assignments = await $api<Array<Assignment>>(`/api/1/organizations/${currentOrganization.value.id}/assignments/`)
@@ -457,6 +454,7 @@ const openEditModal = async (member: Member) => {
     editSelectedDatasetIds.value = new Set(userDatasetIds)
     editInitialDatasetIds.value = new Set(userDatasetIds)
   }
+  editAssignmentsLoaded.value = true
 }
 
 const removeMemberFromOrganization = async (member: Member, close: () => void) => {
@@ -481,10 +479,18 @@ const syncAssignments = async (member: Member) => {
   })
 }
 
+// Assignments are only saved for a partial editor: switching to another role leaves them untouched.
+const assignmentChangesCount = computed(() => {
+  if (newRole.value !== 'partial_editor') return 0
+  const added = [...editSelectedDatasetIds.value].filter(id => !editInitialDatasetIds.value.has(id))
+  const removed = [...editInitialDatasetIds.value].filter(id => !editSelectedDatasetIds.value.has(id))
+  return added.length + removed.length
+})
+
 const updateRole = async (member: Member, close: () => void) => {
   const roleChanged = member.role !== newRole.value
   const isPartialEditor = newRole.value === 'partial_editor'
-  const assignmentsChanged = isPartialEditor && !setsEqual(editSelectedDatasetIds.value, editInitialDatasetIds.value)
+  const assignmentsChanged = assignmentChangesCount.value > 0
 
   if (!roleChanged && !assignmentsChanged) {
     close()

@@ -30,6 +30,7 @@ import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseCo
 import { useSearchFilter } from './composables/useSearchFilter'
 import type { UseSearchFilterOptions } from './composables/useSearchFilter'
 
+import ActivityActor from './components/ActivityList/ActivityActor.vue'
 import ActivityList from './components/ActivityList/ActivityList.vue'
 import UserActivityList from './components/ActivityList/UserActivityList.vue'
 import AnimatedLoader from './components/AnimatedLoader.vue'
@@ -103,6 +104,7 @@ import Tooltip from './components/Tooltip.vue'
 import Toggletip from './components/Toggletip.vue'
 import TopicCard from './components/TopicCard.vue'
 import TranslationT from './components/TranslationT.vue'
+import SegmentedControl from './components/SegmentedControl.vue'
 import GlobalSearch from './components/Search/GlobalSearch.vue'
 import SearchInput from './components/Search/SearchInput.vue'
 import SearchableSelect from './components/Form/SearchableSelect.vue'
@@ -118,6 +120,8 @@ import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 import { ofetch } from 'ofetch'
 import { useTranslation } from './composables/useTranslation'
+
+export type { SegmentedControlOption } from './components/SegmentedControl.vue'
 
 export { Toaster, toast } from 'vue-sonner'
 
@@ -341,6 +345,7 @@ const datagouv: Plugin<PluginConfig> = {
 export {
   datagouv,
   useComponentsConfig,
+  ActivityActor,
   ActivityList,
   AnimatedLoader,
   AppLink,
@@ -419,6 +424,7 @@ export {
   TranslationT,
   UserActivityList,
   GlobalSearch,
+  SegmentedControl,
   SearchInput,
   SearchableSelect,
   SelectGroup,

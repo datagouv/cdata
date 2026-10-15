@@ -69,6 +69,9 @@ test('information tab stats accordion can be opened', async ({ page }) => {
 
 test('search navigates to search page on input', async ({ page }) => {
   await page.goto(`/organizations/${ORG_SLUG}/datasets`)
+  // The search input is v-model controlled: typing before hydration completes
+  // gets wiped. Wait for the page to settle first.
+  await page.waitForLoadState('networkidle')
 
   const searchInput = page.getByPlaceholder('Rechercher dans l\'organisation')
   await searchInput.fill('test')
@@ -78,6 +81,7 @@ test('search navigates to search page on input', async ({ page }) => {
 
 test('search from API tab sets dataservices type', async ({ page }) => {
   await page.goto(`/organizations/${ORG_SLUG}/dataservices`)
+  await page.waitForLoadState('networkidle')
 
   const searchInput = page.getByPlaceholder('Rechercher dans l\'organisation')
   await searchInput.fill('test')

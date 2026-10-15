@@ -66,9 +66,9 @@
             <p><FormattedDate :date="activities[dataservice.id].created_at" /></p>
             <p class="inline-flex items-center">
               {{ t('par ') }}
-              <AvatarWithName
+              <ActivityActor
                 class="fr-ml-1v"
-                :user="activities[dataservice.id].actor"
+                :actor="activities[dataservice.id].actor"
               />
             </p>
           </div>
@@ -108,7 +108,7 @@
 
 <script setup lang="ts">
 import type { Activity, Dataservice } from '@datagouv/components-next'
-import { AvatarWithName, BrandedButton, FormattedDate } from '@datagouv/components-next'
+import { ActivityActor, BrandedButton, FormattedDate } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'

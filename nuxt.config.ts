@@ -76,6 +76,13 @@ export default defineNuxtConfig({
       metricsApi: 'https://metric-api.data.gouv.fr',
       metricsSince: '2022-07-01',
       devApiKey: undefined,
+      // After a successful write to the API, this cookie is set for this many seconds.
+      // The nginx in front of cdata bypasses its cache while it is present, so the
+      // author sees their change on reload instead of their cached page. The name must
+      // match the nginx `proxy_cache_bypass` cookie and the duration its
+      // `proxy_cache_valid`.
+      freshAfterWriteCookieName: 'cdata_fresh',
+      freshAfterWriteSeconds: 600,
       staticUrl: 'https://static.data.gouv.fr/static/',
       maxJsonPreviewCharSize: 1000000, // (~1MB)
       maxPdfPreviewByteSize: 10000000, // (10 MB)
@@ -187,6 +194,8 @@ export default defineNuxtConfig({
       maxNumberOfResourcesToUploadInParallel: 3,
       resourceFileUploadChunk: 20 * 1000 * 1000,
       maxSortableFiles: 50,
+
+      geopfEnabled: false,
 
       maxNumberOfDatasetsForDataserviceUpdate: 200,
 
@@ -425,6 +434,9 @@ export default defineNuxtConfig({
       deploy: process.env.GITHUB_REF_NAME ? { env: process.env.GITHUB_REF_NAME } : undefined,
     },
     telemetry: false,
+    // Marks every chunk of our build so `thirdPartyErrorFilterIntegration` (sentry.client.config.ts)
+    // can tell our frames from scripts the browser or its extensions inject into the page.
+    applicationKey: 'cdata',
   },
 
   sitemap: {

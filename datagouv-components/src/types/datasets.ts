@@ -9,18 +9,20 @@ import type { Frequency } from './frequency'
 import type { Granularity, SpatialZone } from './granularity'
 import type { WithAccessType } from './access_types'
 
+// udata leaves out the criteria it cannot evaluate (the file ones without any file, the
+// update one without an expected update) and scores them as failed.
 export type Quality = {
-  all_resources_available: boolean
+  all_resources_available?: boolean
   dataset_description_quality: boolean
-  has_open_format: boolean
-  has_resources: boolean
+  has_open_format?: boolean
+  has_resources?: boolean
   license: boolean
-  resources_documentation: boolean
+  resources_documentation?: boolean
   score: number
   spatial: boolean
   temporal_coverage: boolean
   update_frequency: boolean
-  update_fulfilled_in_time: boolean
+  update_fulfilled_in_time?: boolean
 }
 
 export type DatasetReference = {
@@ -70,6 +72,7 @@ export type Dataset = BaseDataset & {
   id: DatasetReference['id']
   badges: Badges
   deleted: string | null
+  doi: string | null
   page: DatasetReference['page']
   resources: Array<Resource>
   community_resources: Array<Resource>

@@ -197,7 +197,7 @@ type CadaRow = {
 
 const adviceId = computed(() => Number(route.params.id))
 
-const { data: advice, status, error } = await useAsyncData(
+const { data: advice, status } = await useAsyncData(
   `cada-advice-${adviceId.value}`,
   async () => {
     const response = await fetchTabularData(componentsConfig, {
@@ -217,7 +217,10 @@ const { data: advice, status, error } = await useAsyncData(
 // An advice that does not exist — or a CADA base that is not configured — is a
 // real 404. Use `showError`, not `throw createError`: throwing rejects the async
 // setup, see the detailed explanation in pages/pages/[...slug].vue.
-if (!error.value && !advice.value) {
+// Only a request that succeeded tells the advice does not exist: one cancelled by
+// leaving the page before it loaded has no data either, and its 404 would cover
+// the page the reader went back to.
+if (!RESOURCE_ID || (status.value === 'success' && !advice.value)) {
   showError({ statusCode: 404, statusMessage: 'Page Not Found' })
 }
 

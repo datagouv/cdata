@@ -179,6 +179,12 @@ export function getResourceExternalUrl(dataset: Dataset | DatasetV2 | Omit<Datas
   return `${dataset.page}${isCommunityResource(resource) ? '/community-resources' : ''}?resource_id=${resource.id}`
 }
 
+export function isGeopfSynced(resource: Resource | CommunityResource): boolean {
+  // 'error'/'timeout' produce no stored_data on cartes.gouv.fr so a failed push leaves nothing to protect.
+  const pushStatus = resource.geopf?.push_status
+  return pushStatus === 'pending' || pushStatus === 'done' || typeof resource.geopf?.offering_id === 'string'
+}
+
 export function resolveResourceExternalUrl<R extends Resource | CommunityResource>(
   dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>,
   resource: R,
