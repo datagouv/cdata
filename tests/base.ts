@@ -66,8 +66,11 @@ export const test = base.extend<{ allowedConsoleMessages: Array<string>, assertN
 
     await use()
 
-    const resolvedWarnings = await Promise.all(warnings)
-    const resolvedErrors = await Promise.all(errors)
+    // Filtered again on the full text: on Firefox, `msg.text()` of an `Error` argument
+    // misses its message, so the check above cannot match it.
+    const isReported = (text: string) => !ignoredMessages.some(ignored => text.includes(ignored))
+    const resolvedWarnings = (await Promise.all(warnings)).filter(isReported)
+    const resolvedErrors = (await Promise.all(errors)).filter(isReported)
 
     for (const w of resolvedWarnings) {
       base.info().annotations.push({ type: 'warning', description: w })
