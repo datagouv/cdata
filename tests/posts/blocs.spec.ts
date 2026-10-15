@@ -1,31 +1,14 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import * as path from 'path'
-
-const __dirname = import.meta.dirname
-const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
+import { API_BASE } from '../helpers'
+import { fillPostDescription } from './helpers'
 
 async function createPostWithBlocs(page: Page, options: {
   title: string
   headline: string
   kind?: 'news' | 'page'
 }) {
-  await page.goto('/admin/posts/new')
-  await page.waitForLoadState('networkidle')
-  await page.getByRole('textbox', { name: 'Titre de l\'article' }).fill(options.title)
-  await page.getByRole('textbox', { name: 'Entête' }).fill(options.headline)
-
-  if (options.kind === 'page') {
-    await page.locator('label').filter({ hasText: /^Page$/ }).click()
-  }
-
-  await page.locator('label').filter({ hasText: /^Blocs$/ }).click()
-
-  const fileChooserPromise = page.waitForEvent('filechooser')
-  await page.getByRole('button', { name: 'Parcourir' }).click()
-  const fileChooser = await fileChooserPromise
-  await fileChooser.setFiles(path.join(__dirname, '../../public/nuxt_images/onboarding/logo-ign.png'))
-
+  await fillPostDescription(page, { ...options, bodyType: 'blocs' })
   await page.getByRole('button', { name: 'Suivant' }).click()
   await expect(page).toHaveURL(/\/posts\/[a-z0-9-]+\?edit=true/, { timeout: 10000 })
 
@@ -34,7 +17,7 @@ async function createPostWithBlocs(page: Page, options: {
 
   let postId: string | undefined
   if (postSlug) {
-    const response = await page.request.get(`${API_BASE_URL}/api/1/posts/${postSlug}/`)
+    const response = await page.request.get(`${API_BASE}/api/1/posts/${postSlug}/`)
     const postData = await response.json()
     postId = postData.id
   }
@@ -60,7 +43,7 @@ test.describe('Post with blocs', () => {
 
   test.afterEach(async ({ request }) => {
     if (postId) {
-      await request.delete(`${API_BASE_URL}/api/1/posts/${postId}/`)
+      await request.delete(`${API_BASE}/api/1/posts/${postId}/`)
       postId = undefined
     }
   })

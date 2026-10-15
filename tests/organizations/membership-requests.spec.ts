@@ -1,6 +1,6 @@
 import type { Page, Browser } from '@playwright/test'
 import { test, expect } from '../base'
-import { createOrganization, deleteOrganizations } from '../helpers'
+import { createOrganization, deleteOrganizations, gotoHydrated } from '../helpers'
 
 const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
@@ -31,7 +31,9 @@ test.describe('Membership requests', () => {
     })
 
     try {
-      await page.goto(`/admin/organizations/${org.id}/members`)
+      // The pending request is server-rendered: its button shows up before Vue
+      // hydrates it, and a click until then does nothing.
+      await gotoHydrated(page, `/admin/organizations/${org.id}/members`)
 
       const acceptButton = page.getByRole('button', { name: 'Accepter la demande' })
       await expect(acceptButton).toBeVisible({ timeout: 10000 })
@@ -53,7 +55,7 @@ test.describe('Membership requests', () => {
     const org = await organizationWithPendingRequest(page, browser, 'Invite applicant test')
 
     try {
-      await page.goto(`/admin/organizations/${org.id}/members`)
+      await gotoHydrated(page, `/admin/organizations/${org.id}/members`)
       await expect(page.getByRole('button', { name: 'Accepter la demande' })).toBeVisible({ timeout: 10000 })
 
       await page.getByRole('button', { name: 'Inviter un membre' }).click()

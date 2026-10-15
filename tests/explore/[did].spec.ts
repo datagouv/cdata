@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import type { APIRequestContext, Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, createDatasetWithRemoteResources, createRemoteResource, deleteDatasets, enableNewExplorer } from '../helpers'
+import { API_BASE, createDataset, createDatasetWithRemoteResources, createRemoteResource, deleteDatasets, enableNewExplorer, gotoSettled } from '../helpers'
 import { RESOURCE_ID as TABULAR_RESOURCE_ID } from '../visualizations/fixtures'
 
 const createdDatasets: Array<string> = []
@@ -322,11 +322,7 @@ test('switching resources does not pile up history entries', async ({ page, requ
   const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore history ${Date.now()}`, resourceTitles(3))
   createdDatasets.push(dataset.id)
 
-  // Both ends of this test are full page loads: wait for networkidle before leaving
-  // /explore and before ending on it, otherwise Firefox warns about matomo.js being
-  // aborted or about layout forced on a page still loading.
-  await page.goto('/explore')
-  await page.waitForLoadState('networkidle')
+  await gotoSettled(page, '/explore')
   await page.goto(`/explore/${dataset.slug}`)
   await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
 

@@ -1,21 +1,19 @@
 import { test, expect } from '../base'
-import * as path from 'path'
-
-const __dirname = import.meta.dirname
+import { API_BASE } from '../helpers'
+import { createMarkdownPost } from './helpers'
 
 test.describe('Post kind filter', () => {
   let newsPostId: string | undefined
   let pagePostId: string | undefined
-  const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
   test.afterEach(async ({ request }) => {
     // Cleanup created posts to avoid affecting other tests (like homepage screenshot)
     if (newsPostId) {
-      await request.delete(`${API_BASE_URL}/api/1/posts/${newsPostId}/`)
+      await request.delete(`${API_BASE}/api/1/posts/${newsPostId}/`)
       newsPostId = undefined
     }
     if (pagePostId) {
-      await request.delete(`${API_BASE_URL}/api/1/posts/${pagePostId}/`)
+      await request.delete(`${API_BASE}/api/1/posts/${pagePostId}/`)
       pagePostId = undefined
     }
   })
@@ -23,28 +21,12 @@ test.describe('Post kind filter', () => {
   test('page posts should not appear in public news list, admin should show type and filter', async ({ page }) => {
     const uniqueId = Date.now()
 
-    // Create a news post via form
-    await page.goto('/admin/posts/new')
-    await page.waitForLoadState('networkidle')
-    await page.getByRole('textbox', { name: 'Titre de l\'article' }).fill(`Test News ${uniqueId}`)
-    await page.getByRole('textbox', { name: 'Entête' }).fill('Une actualité de test')
-    await page.getByText('Actualité', { exact: true }).click()
-
-    const fileChooserPromise1 = page.waitForEvent('filechooser')
-    await page.getByRole('button', { name: 'Parcourir' }).click()
-    const fileChooser1 = await fileChooserPromise1
-    await fileChooser1.setFiles(path.join(__dirname, '../../public/nuxt_images/onboarding/logo-ign.png'))
-
-    await page.getByRole('button', { name: 'Suivant' }).click()
-    await expect(page.getByTestId('markdown-editor')).toBeVisible({ timeout: 30000 })
-    await page.getByTestId('markdown-editor').click()
-    await page.getByTestId('markdown-editor').fill('Contenu de l\'actualité')
-    await page.getByTestId('markdown-editor').press('Tab')
-    await page.waitForTimeout(500)
-
-    await page.getByRole('button', { name: 'Sauvegarder' }).click()
-    await expect(page).toHaveURL(/\/admin\/posts\/(?!new)[a-z0-9-]+$/)
-    newsPostId = page.url().split('/').pop()
+    newsPostId = await createMarkdownPost(page, {
+      title: `Test News ${uniqueId}`,
+      headline: 'Une actualité de test',
+      content: 'Contenu de l\'actualité',
+      kind: 'news',
+    })
 
     // Publish the news post
     const publishButton = page.getByRole('button', { name: 'Publier', exact: true })
@@ -52,29 +34,12 @@ test.describe('Post kind filter', () => {
     await publishButton.click()
     await expect(page.getByRole('button', { name: 'Dépublier' })).toBeVisible({ timeout: 10000 })
 
-    // Create a page post via form
-    await page.goto('/admin/posts/new')
-    await page.waitForLoadState('networkidle')
-
-    await page.getByRole('textbox', { name: 'Titre de l\'article' }).fill(`Test Page ${uniqueId}`)
-    await page.getByRole('textbox', { name: 'Entête' }).fill('Une page de test')
-    await page.locator('label').filter({ hasText: /^Page$/ }).click()
-
-    const fileChooserPromise2 = page.waitForEvent('filechooser')
-    await page.getByRole('button', { name: 'Parcourir' }).click()
-    const fileChooser2 = await fileChooserPromise2
-    await fileChooser2.setFiles(path.join(__dirname, '../../public/nuxt_images/onboarding/logo-ign.png'))
-
-    await page.getByRole('button', { name: 'Suivant' }).click()
-    await expect(page.getByTestId('markdown-editor')).toBeVisible({ timeout: 30000 })
-    await page.getByTestId('markdown-editor').click()
-    await page.getByTestId('markdown-editor').fill('Contenu de la page')
-    await page.getByTestId('markdown-editor').press('Tab')
-    await page.waitForTimeout(500)
-
-    await page.getByRole('button', { name: 'Sauvegarder' }).click()
-    await expect(page).toHaveURL(/\/admin\/posts\/(?!new)[a-z0-9-]+$/)
-    pagePostId = page.url().split('/').pop()
+    pagePostId = await createMarkdownPost(page, {
+      title: `Test Page ${uniqueId}`,
+      headline: 'Une page de test',
+      content: 'Contenu de la page',
+      kind: 'page',
+    })
 
     // Publish the page post
     const publishButton2 = page.getByRole('button', { name: 'Publier', exact: true })

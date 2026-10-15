@@ -21,7 +21,7 @@
 
     <DescribePost
       v-if="currentStep === 1"
-      :post="postForm"
+      v-model="postForm"
       type="create"
       :submit-label="t('Suivant')"
       :loading
@@ -62,6 +62,7 @@ const POST_FORM_STATE = 'post-form'
 
 const postForm = useState<PostForm>(POST_FORM_STATE, () => ({
   name: '',
+  slug: '',
   body_type: 'markdown',
   blocs: [],
   content: '',
@@ -142,6 +143,13 @@ async function save(form: { content: string }) {
     loading.value = false
   }
 }
+
+// Once the post exists, the next creation must start from scratch: its slug would otherwise
+// be rejected as already used. Cleared when leaving the page, not right after the creation:
+// an emptied form sends the step watcher below back to the first step.
+onUnmounted(() => {
+  if (newPost.value) clearNuxtState([POST_FORM_STATE, 'new-post'])
+})
 
 watchEffect(() => {
   if (!isCurrentStepValid.value) {
