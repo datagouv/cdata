@@ -118,6 +118,7 @@
       </BrandedButton>
       <BrandedButton
         color="primary"
+        :loading
         @click="submit"
       >
         {{ submitLabel }}
@@ -135,6 +136,7 @@ const props = defineProps<{
   submitLabel: string
   post: PostForm
   type: 'create' | 'update'
+  loading?: boolean
 }>()
 const emit = defineEmits<{
   previous: []

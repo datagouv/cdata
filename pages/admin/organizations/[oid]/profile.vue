@@ -41,7 +41,7 @@
         </div>
         <div class="fr-col-auto">
           <BrandedButton
-            :href="organization.page"
+            :href="`${organization.page}/presentation`"
             new-tab
             color="secondary"
             :icon="RiEyeLine"
