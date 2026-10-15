@@ -18,8 +18,6 @@ test.describe('Fresh-after-write cookie', () => {
   test('is set by writes only, and each write pushes its expiry back', async ({ page, context, request }) => {
     const dataset = await createDataset(request, `Test fresh cookie dataset ${Date.now()}`, 'Dataset pour tester le cookie cdata_fresh')
     createdDatasets.push(dataset.id)
-    // The login of the auth setup is a write too, so the stored state already has it.
-    await context.clearCookies({ name: FRESH_COOKIE })
 
     await page.goto(`/datasets/${dataset.id}/`)
     await page.waitForLoadState('networkidle')
@@ -53,7 +51,6 @@ test.describe('Fresh-after-write cookie', () => {
     test('is not set', async ({ page, context, request }) => {
       const dataset = await createDataset(request, `Test fresh cookie failed write ${Date.now()}`, 'Dataset pour tester le cookie cdata_fresh')
       createdDatasets.push(dataset.id)
-      await context.clearCookies({ name: FRESH_COOKIE })
 
       await page.route(url => url.pathname.endsWith('/followers/'), route =>
         route.request().method() === 'POST'

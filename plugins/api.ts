@@ -40,7 +40,10 @@ export default defineNuxtPlugin({
           }
         },
         onResponse({ response, options }) {
-          if (response.ok && options.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method)) {
+          // Only content writes go through `/api/`: the security views (login, logout,
+          // register…) change no rendered page, and the session they open or close
+          // already changes the nginx cache key.
+          if (response.ok && options.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method) && new URL(response.url).pathname.startsWith('/api/')) {
             freshAfterWrite.value = true
           }
         },
