@@ -108,10 +108,40 @@ jobs:
         run: pnpm run lint
 
   # ============================================
+  # JOB 2b: Pick the udata ref the E2E tests run against
+  # ============================================
+  # A PR depending on an unmerged udata PR links it in its description: the first linked udata PR
+  # still open is used, `main` otherwise (no link, only merged PRs, push on main). The description
+  # is fetched rather than read from the event payload, which a re-run would replay unchanged.
+  udata_ref:
+    runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ steps.resolve.outputs.ref }}
+    steps:
+      - name: Resolve udata ref
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          ref=main
+          if [ -n "$PR_NUMBER" ]; then
+            body=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json body -q .body)
+            for pr in $(printf '%s' "$body" | grep -oP 'opendatateam/udata/pull/\K\d+' | uniq); do
+              if [ "$(gh pr view "$pr" --repo opendatateam/udata --json state -q .state)" = "OPEN" ]; then
+                ref="refs/pull/$pr/head"
+                break
+              fi
+            done
+          fi
+          echo "Using udata $ref"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+  # ============================================
   # JOB 3: E2E Tests (runs in parallel with quality)
   # ============================================
   e2e:
-    needs: build
+    needs: [build, udata_ref]
     timeout-minutes: 30
     runs-on: ubuntu-latest
     strategy:
@@ -156,7 +186,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: ${{ env.UDATA_WORKING_DIR }}
-          ref: main
+          ref: ${{ needs.udata_ref.outputs.ref }}
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
