@@ -1,7 +1,10 @@
 <template>
   <div>
+    <!-- Keyed on the last save: the form copies the post once, at mount, so remounting it
+         shows what the server kept (the slug is normalized) instead of what was typed. -->
     <DescribePost
       v-if="post && postForm"
+      :key="post.last_modified"
       :post="postForm"
       type="update"
       :submit-label="t('Sauvegarder')"

@@ -23,9 +23,6 @@ export async function createMarkdownPost(page: Page, options: {
   if (options.kind === 'page') {
     await page.locator('label').filter({ hasText: /^Page$/ }).click()
   }
-  else {
-    await page.getByText('Actualité', { exact: true }).click()
-  }
 
   const fileChooserPromise = page.waitForEvent('filechooser')
   await page.getByRole('button', { name: 'Parcourir' }).click()

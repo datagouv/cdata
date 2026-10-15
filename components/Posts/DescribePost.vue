@@ -143,10 +143,12 @@ const emit = defineEmits<{
 
 const { t } = useTranslation()
 
+const isUpdate = computed(() => props.type === 'update')
+
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(props.post, {
   name: [required()],
   // Derived from the name when left empty at creation, but a post always has one afterwards
-  slug: props.type === 'update' ? [required()] : [],
+  slug: [ruleIf(isUpdate, required())],
   headline: [required()],
   image: [required()],
 }, {

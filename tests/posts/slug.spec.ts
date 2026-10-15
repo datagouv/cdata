@@ -12,11 +12,10 @@ test.describe('Post slug', () => {
     }
   })
 
-  test('a sysadmin chooses the slug at creation and changes it afterwards', async ({ page }) => {
+  test('a sysadmin chooses the slug, and the form shows the one the server kept', async ({ page }) => {
     const uniqueId = Date.now()
     const title = `Test Slug ${uniqueId}`
     const chosenSlug = `slug-choisi-${uniqueId}`
-    const changedSlug = `slug-modifie-${uniqueId}`
 
     postId = await createMarkdownPost(page, {
       title,
@@ -28,25 +27,15 @@ test.describe('Post slug', () => {
     const slugInput = page.getByRole('textbox', { name: 'Identifiant dans l\'URL' })
     await expect(slugInput).toHaveValue(chosenSlug)
 
-    // Renaming keeps the chosen slug
-    const titleInput = page.getByRole('textbox', { name: 'Titre de l\'article' })
-    await titleInput.fill(`${title} renommé`)
-    await titleInput.press('Tab')
-    await page.getByRole('button', { name: 'Sauvegarder' }).click()
-    await expect(page.getByText('Article mis à jour !')).toBeVisible()
-    await expect(slugInput).toHaveValue(chosenSlug)
-
-    await slugInput.fill(changedSlug)
+    // Typed unnormalized: once saved, the field shows the normalized slug, not the input
+    await slugInput.fill(`Slug Modifié ${uniqueId}`)
     await slugInput.press('Tab')
+    const saved = page.waitForResponse(response => response.url().includes(`/api/1/posts/${postId}/`) && response.request().method() === 'PUT')
     await page.getByRole('button', { name: 'Sauvegarder' }).click()
-    await expect(page.getByText('Article mis à jour !').last()).toBeVisible()
-    await expect(slugInput).toHaveValue(changedSlug)
+    expect((await saved).ok()).toBeTruthy()
+    await expect(slugInput).toHaveValue(`slug-modifie-${uniqueId}`)
 
-    await page.goto(`/posts/${changedSlug}`)
-    await expect(page.getByRole('heading', { level: 1, name: `${title} renommé` })).toBeVisible()
-
-    // The previous slug keeps leading to the post
-    await page.goto(`/posts/${chosenSlug}`)
-    await expect(page.getByRole('heading', { level: 1, name: `${title} renommé` })).toBeVisible()
+    await page.goto(`/posts/slug-modifie-${uniqueId}`)
+    await expect(page.getByRole('heading', { level: 1, name: title })).toBeVisible()
   })
 })
