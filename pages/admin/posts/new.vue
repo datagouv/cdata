@@ -138,14 +138,18 @@ async function save(form: { content: string }) {
     else {
       await navigateTo(`/admin/posts/${newPost.value.id}`)
     }
-    // Cleared once the post exists: the next creation would otherwise start from this one,
-    // and its slug would be rejected as already used.
-    clearNuxtState(POST_FORM_STATE)
   }
   finally {
     loading.value = false
   }
 }
+
+// Once the post exists, the next creation must start from scratch: its slug would otherwise
+// be rejected as already used. Cleared when leaving the page, not right after the creation:
+// an emptied form sends the step watcher below back to the first step.
+onUnmounted(() => {
+  if (newPost.value) clearNuxtState([POST_FORM_STATE, 'new-post'])
+})
 
 watchEffect(() => {
   if (!isCurrentStepValid.value) {
