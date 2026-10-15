@@ -400,7 +400,7 @@ const url = computed(() => {
 })
 
 const { refreshNotifications } = useNotifications()
-const { data: organization, status, refresh } = await useAPI<Organization>(url, { redirectOn404: true })
+const { data: organization, status, refresh } = await useAPI<Organization>(url, { showErrorPage: true })
 const { data: membershipRequests, refresh: refreshMembershipRequests } = await useAPI<Array<PendingMembershipRequest>>(() => `${url.value}/membership/`, {
   query: { status: 'pending' },
   // The API answers a 403 to whoever cannot manage the members.

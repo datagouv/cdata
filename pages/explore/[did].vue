@@ -24,7 +24,7 @@ definePageMeta({ layout: false })
 
 const url = computed(() => `/api/2/datasets/${route.params.did}/`)
 const { data: dataset } = await useAPI<DatasetV2>(url, {
-  redirectOn404: true,
+  showErrorPage: true,
   redirectOnSlug: 'did',
 })
 

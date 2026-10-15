@@ -6,7 +6,7 @@ import type { ApiFetch, PaginatedArray } from '~/types/types'
 */
 export async function useAPI<T, U = T>(
   url: MaybeRefOrGetter<string>,
-  options?: UseFetchOptions<T, U> & { redirectOn404?: boolean, redirectOnSlug?: string, raw?: boolean },
+  options?: UseFetchOptions<T, U> & { showErrorPage?: boolean, redirectOnSlug?: string, raw?: boolean },
 ) {
   const { setCurrentOrganization, setCurrentUser } = useCurrentOwned()
   const isAdmin = isMeAdmin()
@@ -16,12 +16,12 @@ export async function useAPI<T, U = T>(
   // for the useFetch())…
   const nuxtApp = useNuxtApp()
 
-  const redirectOn404 = options && 'redirectOn404' in options && options.redirectOn404
+  const showErrorPage = options && 'showErrorPage' in options && options.showErrorPage
   const redirectOnSlug = options && 'redirectOnSlug' in options && options.redirectOnSlug
   const isRaw = options?.raw
   const fetchOptions = { ...options }
   if (!isRaw) {
-    fetchOptions.$fetch = redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api
+    fetchOptions.$fetch = showErrorPage ? useNuxtApp().$apiWithErrorPage : useNuxtApp().$api
   }
   const response = await useFetch(url, fetchOptions)
 

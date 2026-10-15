@@ -104,7 +104,7 @@ const { $api } = useNuxtApp()
 const { t } = useTranslation()
 
 const sourceUrl = computed(() => `/api/1/harvest/source/${route.params.id}`)
-const { data: harvester, refresh } = await useAPI<HarvesterSource>(sourceUrl, { redirectOn404: true })
+const { data: harvester, refresh } = await useAPI<HarvesterSource>(sourceUrl, { showErrorPage: true })
 
 const loading = ref(false)
 
