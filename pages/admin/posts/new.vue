@@ -67,6 +67,7 @@ const postForm = useState<PostForm>(POST_FORM_STATE, () => ({
   credit_url: '',
   headline: '',
   kind: 'news',
+  parent: null,
   published: null,
   owner: me.value,
   tags: [],

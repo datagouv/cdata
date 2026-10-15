@@ -14,5 +14,7 @@ export function postToApi(form: PostForm): NewPostForApi {
     ...form,
     tags: form.tags.map(({ text }) => text),
     image: null,
+    // A parent picked before switching the kind to news would be rejected by the API.
+    parent: form.kind === 'page' ? form.parent : null,
   }
 }
