@@ -26,6 +26,15 @@
       </div>
       <div class="fr-fieldset__element">
         <InputGroup
+          v-model="form.slug"
+          :label="$t(`Identifiant dans l'URL`)"
+          :hint-text="type === 'create'
+            ? $t(`Laissez vide pour le générer à partir du titre.`)
+            : $t(`Videz le champ pour le régénérer à partir du titre. L'ancienne URL redirigera vers la nouvelle.`)"
+        />
+      </div>
+      <div class="fr-fieldset__element">
+        <InputGroup
           v-model="form.headline"
           :label="$t('Entête')"
           :has-error="!!getFirstError('headline')"

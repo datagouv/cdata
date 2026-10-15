@@ -60,6 +60,7 @@ const POST_FORM_STATE = 'post-form'
 
 const postForm = useState<PostForm>(POST_FORM_STATE, () => ({
   name: '',
+  slug: '',
   body_type: 'markdown',
   blocs: [],
   content: '',
