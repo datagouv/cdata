@@ -48,11 +48,12 @@ overrides:
   source-map-js: ^1.2.2
   serialize-javascript: ^7.1.2
   katex: ^0.18.2
+  # 3.4.3 dropped the simple-git import that the ESM-only simple-git@4 override
+  # broke under 3.4.2, letting us delete the patch. Forced via override until
+  # Nuxt's own range reaches it; installable from 2026-10-18 (minimum-release-age).
+  "@nuxt/devtools": ^3.4.3
 
 # GetCapabilities strings (layer title, abstract, attribution, metadata/legend URLs)
 # are rendered as HTML by the library: render them as text and only link http(s) URLs.
 patchedDependencies:
   geopf-extensions-openlayers@1.0.0-beta.15: patches/geopf-extensions-openlayers@1.0.0-beta.15.patch
-  # simple-git@4 (override) is ESM-only: adapt @nuxt/devtools' default import.
-  # Remove once Nuxt ships @nuxt/devtools 4.
-  "@nuxt/devtools@3.4.2": patches/@nuxt__devtools@3.4.2.patch
