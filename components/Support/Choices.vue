@@ -100,7 +100,7 @@
 
 <script setup lang="ts">
 import { useActiveDescendant, BrandedButton, MarkdownViewer, SimpleBanner, toast } from '@datagouv/components-next'
-import type { Question, QuestionWithSegment } from '~/types/support'
+import type { Question, QuestionWithSegment, SendMessageBody } from '~/types/support'
 
 const emit = defineEmits<{
   select: [id: string | undefined]
@@ -155,7 +155,7 @@ async function submit(question: QuestionWithSegment) {
         segment: question.segment,
         subject: form.value.subject,
         body: form.value.body,
-      },
+      } satisfies SendMessageBody,
     })
     messageSent.value = true
   }

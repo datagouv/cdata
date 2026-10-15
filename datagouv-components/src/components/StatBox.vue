@@ -74,7 +74,7 @@
         <strong>
           + {{ summarize(lastValue, 2) }}
         </strong>
-        {{ t(" en ") }}
+        {{ t("en") }}
         <FormattedDate
           :date="lastMonth"
           :options="{ dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }"
@@ -146,12 +146,12 @@
     </div>
     <p
       v-if="lastValue && lastMonth"
-      class="mt-2 font-normal normal-case fr-badge fr-badge--no-icon fr-badge--success"
+      class="mt-2 gap-1 font-normal normal-case fr-badge fr-badge--no-icon fr-badge--success"
     >
-      <strong class="mr-1">
+      <strong>
         + {{ summarize(lastValue, 2) }}
       </strong>
-      {{ t(" en ") }}
+      {{ t("en") }}
       <FormattedDate
         :date="lastMonth"
         :options="{ dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }"

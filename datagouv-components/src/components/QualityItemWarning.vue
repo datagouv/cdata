@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 defineProps<{
-  qualityItem: boolean
+  qualityItem?: boolean
   message: string
 }>()
 </script>

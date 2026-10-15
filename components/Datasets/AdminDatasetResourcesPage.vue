@@ -78,7 +78,7 @@
       :schemas="schemas ?? []"
       :dataset
       @submit="updateResource"
-      @delete="refreshResources"
+      @delete="refreshAfterMutation"
     />
 
     <LoadingBlock
@@ -187,7 +187,7 @@
                 :loading
                 :resource="resourceToForm(resource, schemas ?? [])"
                 @submit="updateResource"
-                @delete="refreshResources"
+                @delete="refreshAfterMutation"
               />
             </td>
           </tr>
@@ -214,6 +214,7 @@ import AdminTableTh from '../AdminTable/Table/AdminTableTh.vue'
 import UploadResourceModal from './UploadResourceModal.vue'
 import FileEditModal from './FileEditModal.vue'
 import FileEditModalFromQueryStringClient from './FileEditModalFromQueryString.client.vue'
+import { geopfEligibilityRefreshKey } from './geopfEligibilityRefreshKey'
 import type { AdminBadgeType, CommunityResourceForm, PaginatedArray, ResourceForm } from '~/types/types'
 
 const route = useRoute()
@@ -247,6 +248,14 @@ const refreshResources = async () => {
 }
 watchEffect(async () => await refreshResources())
 
+// Kept off `refreshResources`, which the watchEffect above also runs on every
+// pagination change.
+const refreshGeopfEligibility = inject(geopfEligibilityRefreshKey, () => {})
+const refreshAfterMutation = async () => {
+  await refreshResources()
+  refreshGeopfEligibility()
+}
+
 const { t } = useTranslation()
 
 const resourceForms = ref<Array<ResourceForm>>([])
@@ -271,7 +280,7 @@ const saveFirstNewFile = async (closeModal: () => void, form: ResourceForm | Com
   removeFirstNewFile()
 
   page.value = 1
-  refreshResources()
+  refreshAfterMutation()
 }
 const updateResource = async (closeModal: () => void, resourceForm: ResourceForm | CommunityResourceForm) => {
   if (!dataset.value) return
@@ -279,7 +288,7 @@ const updateResource = async (closeModal: () => void, resourceForm: ResourceForm
 
   try {
     await saveResourceForm(dataset.value, resourceForm)
-    await refreshResources()
+    await refreshAfterMutation()
     closeModal()
   }
   finally {

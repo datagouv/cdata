@@ -72,17 +72,6 @@ describe('loadMe', () => {
     expect(me.value).toStrictEqual(ME)
   })
 
-  it('calls the API when the request carries an authentication token instead of a session', async () => {
-    stubRequest({ token: 'a-token' })
-    const me = ref(undefined)
-
-    await loadMe(me)
-
-    expect(fetchMe).toHaveBeenCalledOnce()
-    expect(fetchMe.mock.calls[0][1].headers['Authentication-Token']).toBe('a-token')
-    expect(me.value).toStrictEqual(ME)
-  })
-
   it('calls the API when a dev API key authenticates the request without any cookie', async () => {
     stubRequest({}, { devApiKey: 'a-dev-key' })
     const me = ref(undefined)

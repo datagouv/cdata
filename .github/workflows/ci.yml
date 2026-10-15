@@ -121,7 +121,7 @@ jobs:
         # Each (browser, shard) pair runs in its own container with its own MongoDB/Redis/udata,
         # so Playwright can keep workers=1 (shared backend state) while shards run in parallel.
         # Keep the shard count in sync with the `--shard=.../N` value in the "Run E2E tests" step.
-        shard: [1, 2]
+        shard: [1, 2, 3, 4]
         include:
           - browser: chromium
             projects: "--project=setup --project=setup-normal-user --project=chromium --project=chromium-normal-user --project=chromium-2fa-user --project=chromium-logged-out"
@@ -185,7 +185,7 @@ jobs:
       - name: Configure udata
         working-directory: ${{ env.UDATA_WORKING_DIR }}
         run: |
-          cat << 'EOF' > udata.cfg
+          cat << EOF > udata.cfg
           from udata.settings import Defaults
 
           DEBUG = True
@@ -207,7 +207,9 @@ jobs:
           URLS_RESOLVE_HOSTNAME = False
 
           PLUGINS = []
-          FS_ROOT = 'fs'
+          # Once https://github.com/etalab/flask-storage/pull/30 is merged, revert to
+          # FS_ROOT = 'fs' and quote the heredoc delimiter again (cat << 'EOF').
+          FS_ROOT = '$PWD/fs'
 
           HARVESTER_BACKENDS = ['dcat', 'csw*']
 
@@ -221,6 +223,9 @@ jobs:
           MONGODB_HOST = 'mongodb://mongodb:27017/udata'
           CELERY_BROKER_URL = 'redis://redis:6379'
           CELERY_RESULT_BACKEND = 'redis://redis:6379'
+          # No worker runs here: tasks run within the request that triggers them, so that
+          # what they do (the notifications of a discussion, of a badge) can be tested.
+          CELERY_TASK_ALWAYS_EAGER = True
           EOF
 
       - name: Initialize udata
@@ -242,7 +247,7 @@ jobs:
 
           uv run inv i18nc
 
-          # Start udata server in background
+          # No reloader: storage writes in fs/ would restart the server mid-test.
           uv run inv serve --port=7000 > udata.log 2>&1 &
 
           # Wait for udata to be ready
@@ -261,6 +266,7 @@ jobs:
           NUXT_SITE_URL: http://localhost:3000
           NUXT_PUBLIC_CHARTS_API_BASE: http://localhost:7000
           NUXT_PUBLIC_CADA_RESOURCE_ID: 3a6d6fe3-8548-43ed-ad09-72052771447c
+          NUXT_PUBLIC_GEOPF_ENABLED: "true"
           NUXT_PUBLIC_TABULAR_API_PREVIEW_RESOURCES_ID: 982d9dd0-365a-4c4b-8a83-75dec40c36bb
           NUXT_PUBLIC_TABULAR_API_PREVIEW_STATS_ID: 33cf9a65-3f77-4d88-acd1-bca420d83e60
           NUXT_PUBLIC_EXPLORER_FEEDBACK_URL: https://example.com/feedback
@@ -282,14 +288,14 @@ jobs:
           # collide between browsers (chromium 1/2 and firefox 1/2 both produce report-1.zip) when
           # the merge job downloads everything into a single directory.
           PLAYWRIGHT_BLOB_OUTPUT_NAME: report-${{ matrix.browser }}-${{ matrix.shard }}.zip
-        run: pnpm run test:e2e ${{ matrix.projects }} --shard=${{ matrix.shard }}/2
+        run: pnpm run test:e2e ${{ matrix.projects }} --shard=${{ matrix.shard }}/4
 
       - name: Kill udata server
         if: always()
         working-directory: ${{ env.UDATA_WORKING_DIR }}
         run: |
           # Kill udata server to release the lock so that post setup-uv can prune the cache
-          pkill -f "uv run inv serve" || true
+          pkill -f "manage.py serve" || true
 
       - name: Show server logs
         if: always()

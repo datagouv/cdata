@@ -289,9 +289,21 @@
                       {{ pendingNotifications.total }}
                       <template #toggletip="{ close }">
                         <div class="flex justify-between border-b border-gray-default">
-                          <h5 class="fr-text--sm fr-my-0 fr-p-2v">
+                          <h5 class="fr-text--sm fr-my-0 fr-p-2v flex-1">
                             {{ t("Notifications") }}
                           </h5>
+                          <NuxtLink
+                            to="/admin/me/notifications"
+                            :title="t('Gérer mes notifications')"
+                            class="bg-none border-l border-gray-default close-button flex items-center justify-center"
+                            @click="close"
+                          >
+                            <RiSettings3Line
+                              class="size-4"
+                              aria-hidden="true"
+                            />
+                            <span class="sr-only">{{ t('Gérer mes notifications') }}</span>
+                          </NuxtLink>
                           <button
                             type="button"
                             :title="t('Fermer')"
@@ -631,6 +643,9 @@ onMounted(() => {
     if (message) {
       toast[message.type](message.text)
     }
+
+    // Consume the flash: strip it from the URL so it can't resurface on a later reload.
+    router.replace({ query: { ...route.query, flash: undefined, info: undefined, error: undefined } })
   }
 })
 

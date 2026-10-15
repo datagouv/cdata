@@ -66,15 +66,14 @@
           <template v-if="!edit">
             <h3>
               <CdataLink
-                class="hyphens-auto inline-flex items-start relative font-extrabold text-(--link-color) no-underline hover:underline fr-raw-link"
-                :class="[bloc.paragraph ? 'text-6xl' : 'text-7xl']"
+                class="hyphens-auto inline-flex items-start relative font-extrabold text-3xl text-(--link-color) no-underline hover:underline fr-raw-link"
                 :style="{
                   '--link-color': link.color,
                 }"
                 :href="link.url"
               >
                 {{ link.title }}
-                <RiArrowRightUpLine class="size-9" />
+                <RiArrowRightUpLine class="size-6" />
               </CdataLink>
             </h3>
           </template>
@@ -100,8 +99,7 @@
                 </button>
               </div>
               <div
-                class="hyphens-auto inline-flex items-start font-extrabold"
-                :class="[bloc.paragraph ? 'text-6xl' : 'text-7xl']"
+                class="hyphens-auto inline-flex items-start font-extrabold text-3xl"
                 :style="{ color: link.color ?? '#000091' }"
               >
                 <EditableText
@@ -110,7 +108,7 @@
                   class="min-w-[2ch] caret-current"
                   @update:model-value="link.title = $event"
                 />
-                <RiArrowRightUpLine class="size-9 flex-shrink-0" />
+                <RiArrowRightUpLine class="size-6 flex-shrink-0" />
               </div>
               <input
                 v-model="link.url"

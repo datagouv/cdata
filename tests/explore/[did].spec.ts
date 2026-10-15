@@ -122,7 +122,7 @@ test('only resources with a preview are labelled explorable in the sidebar', asy
   createdDatasets.push(dataset.id)
   // An unanalysed remote CSV has no preview, a PDF always has one.
   const withoutPreview = await createRemoteResource(request, dataset.id, 'Fichier sans apercu')
-  const withPreview = await createRemoteResource(request, dataset.id, 'Fichier avec apercu', 'pdf')
+  const withPreview = await createRemoteResource(request, dataset.id, 'Fichier avec apercu', { format: 'pdf' })
 
   await page.goto(`/explore/${dataset.id}`)
   await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
@@ -141,7 +141,7 @@ test('the full-width list labels explorable resources on the row, without a hove
   const dataset = await createDataset(request, `Test explore expanded preview mark ${Date.now()}`, 'Dataset de test E2E')
   createdDatasets.push(dataset.id)
   const withoutPreview = await createRemoteResource(request, dataset.id, 'Fichier sans apercu')
-  const withPreview = await createRemoteResource(request, dataset.id, 'Fichier avec apercu', 'pdf')
+  const withPreview = await createRemoteResource(request, dataset.id, 'Fichier avec apercu', { format: 'pdf' })
 
   await page.goto(`/explore/${dataset.id}`)
   await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
@@ -322,7 +322,11 @@ test('switching resources does not pile up history entries', async ({ page, requ
   const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test explore history ${Date.now()}`, resourceTitles(3))
   createdDatasets.push(dataset.id)
 
+  // Both ends of this test are full page loads: wait for networkidle before leaving
+  // /explore and before ending on it, otherwise Firefox warns about matomo.js being
+  // aborted or about layout forced on a page still loading.
   await page.goto('/explore')
+  await page.waitForLoadState('networkidle')
   await page.goto(`/explore/${dataset.slug}`)
   await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
 
@@ -335,6 +339,7 @@ test('switching resources does not pile up history entries', async ({ page, requ
   // stepping through the resources we just viewed.
   await page.goBack()
   await expect(page).toHaveURL(/\/explore$/)
+  await page.waitForLoadState('networkidle')
 })
 
 test('switching resources drops the filters, sort and search of the previous one', async ({ page, request }) => {

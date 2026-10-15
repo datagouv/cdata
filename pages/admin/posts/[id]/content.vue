@@ -5,6 +5,7 @@
       :post="postForm"
       type="update"
       :submit-label="t('Sauvegarder')"
+      :loading
       @submit="save"
     />
   </div>
