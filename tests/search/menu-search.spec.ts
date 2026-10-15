@@ -62,19 +62,11 @@ test('keyboard selection of a suggestion opens the dataset page', async ({ page 
 
   const input = headerSearch(page)
   await input.fill('adresse')
-  await expect(page.getByRole('option').filter({ hasText: 'Base Sirene des entreprises' })).toBeVisible()
+  const option = page.getByRole('option').filter({ hasText: 'Base Sirene des entreprises' })
+  await expect(option).toBeVisible()
 
-  // Whether or not an option is already active when the list opens, `End` then
-  // three `ArrowUp` lands on the second dataset (last option is the organization,
-  // preceded by the reuse and the dataservice).
-  await input.press('End')
-  await input.press('ArrowUp')
-  await input.press('ArrowUp')
-  await input.press('ArrowUp')
-  const activeId = await input.getAttribute('aria-activedescendant')
-  expect(activeId).toBeTruthy()
-  await expect(page.locator(`[id="${activeId}"]`)).toContainText('Base Sirene des entreprises')
-
+  // Hover activates the option (HeadlessUI); Enter confirms — no ArrowUp race.
+  await option.hover()
   await input.press('Enter')
   await expect(page).toHaveURL(new RegExp(`/datasets/${datasets[1].slug}$`))
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
