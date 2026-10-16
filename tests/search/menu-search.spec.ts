@@ -64,9 +64,19 @@ test('keyboard selection of a suggestion opens the dataset page', async ({ page 
   await input.fill('adresse')
   const option = page.getByRole('option').filter({ hasText: 'Base Sirene des entreprises' })
   await expect(option).toBeVisible()
+  const optionId = await option.getAttribute('id')
+  expect(optionId).toBeTruthy()
 
-  // Hover activates the option (HeadlessUI); Enter confirms — no ArrowUp race.
-  await option.hover()
+  // ArrowDown one step at a time, waiting for the active option to change:
+  // HeadlessUI applies goToOption in requestAnimationFrame and cancels the previous frame.
+  for (let i = 0; i < 15; i++) {
+    const before = await input.getAttribute('aria-activedescendant')
+    if (before === optionId) break
+    await input.press('ArrowDown')
+    await expect.poll(() => input.getAttribute('aria-activedescendant')).not.toBe(before)
+  }
+  await expect(input).toHaveAttribute('aria-activedescendant', optionId!)
+
   await input.press('Enter')
   await expect(page).toHaveURL(new RegExp(`/datasets/${datasets[1].slug}$`))
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
