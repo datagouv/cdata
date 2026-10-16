@@ -316,7 +316,7 @@ export default defineNuxtConfig({
         'unist-util-find-all-between', // CJS
         'vue',
         'vue-router',
-        'maplibre-gl', // CJS
+        'maplibre-gl',
         'geopf-extensions-openlayers',
         'vue3-xml-viewer', // CJS
         'uqr',
