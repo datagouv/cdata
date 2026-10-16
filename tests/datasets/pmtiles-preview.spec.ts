@@ -103,7 +103,11 @@ async function createDatasetWithPmtilesResource(request: import('@playwright/tes
 // the headless GL driver reports ReadPixels stalls; both are expected noise.
 test.use({ allowedConsoleMessages: ['Bounds of PMTiles archive', 'GL Driver Message'] })
 
-test('the PMTiles map preview loads the archive and opens a popup on click', async ({ page, context, request }) => {
+test('the PMTiles map preview loads the archive and opens a popup on click', async ({ page, context, request, browserName }) => {
+  // Headless firefox cannot create WebGL contexts (AllowWebgl2:false) and
+  // maplibre v6 requires WebGL2, so no map can render there.
+  test.skip(browserName === 'firefox', 'headless firefox has no WebGL2')
+
   const archive = await fakePmtilesArchive(context)
   await fakeBaseMap(context)
 
