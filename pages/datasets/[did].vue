@@ -537,7 +537,7 @@ const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
   headers: {
     'X-Get-Datasets-Full-Objects': 'True',
   },
-  redirectOn404: true,
+  showErrorPage: true,
   redirectOnSlug: 'did',
 })
 
