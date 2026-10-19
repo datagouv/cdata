@@ -1,5 +1,6 @@
 import type { Page, Response } from '@playwright/test'
 import { test, expect } from './base'
+import { gotoSettled } from './helpers'
 
 // The CADA explore runs against the real Tabular API, so no assertion pins an
 // absolute row count: a filtered count is always compared to the unfiltered one.
@@ -610,11 +611,7 @@ test('clearing everything goes back to the default sort, not to no sort at all',
 })
 
 test('searching and filtering do not pile up history entries', async ({ page }) => {
-  // matomo.js is injected after the load event: leaving the page while it loads
-  // makes Firefox warn that the script failed to load.
-  const matomoLoaded = page.waitForResponse('**/matomo.js')
-  await page.goto('/explore')
-  await matomoLoaded
+  await gotoSettled(page, '/explore')
   await gotoExplore(page)
 
   const searchInput = page.getByPlaceholder('Rechercher par objet, administration, thème, mots-clés…')

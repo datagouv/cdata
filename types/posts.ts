@@ -2,7 +2,7 @@ import type { Post, PostAncestor } from '@datagouv/components-next'
 
 export type { Post, PostAncestor }
 
-export type NewPostForApi = Omit<Post, 'id' | 'last_modified' | 'created_at' | 'datasets' | 'reuses' | 'page' | 'slug' | 'url' | 'ancestors' | 'path'>
+export type NewPostForApi = Omit<Post, 'id' | 'last_modified' | 'created_at' | 'datasets' | 'reuses' | 'page' | 'url' | 'ancestors' | 'path'>
 
 export type PostForm = Omit<NewPostForApi, 'image' | 'tags' | 'datasets' | 'reuses'> & {
   image: string | File | null

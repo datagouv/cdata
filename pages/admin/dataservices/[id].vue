@@ -123,7 +123,7 @@ const { t } = useTranslation()
 const route = useRoute()
 const me = useMe()
 const url = computed(() => `/api/1/dataservices/${route.params.id}`)
-const { data: dataservice } = await useAPI<Dataservice>(url, { redirectOn404: true })
+const { data: dataservice } = await useAPI<Dataservice>(url, { showErrorPage: true })
 const { data: activities } = await useAPI<PaginatedArray<Activity>>('/api/1/activity/', {
   params: {
     related_to: route.params.id,

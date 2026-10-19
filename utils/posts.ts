@@ -17,6 +17,12 @@ export async function redirectToCanonicalPost(post: Pick<Post, 'page'>, route: R
   }
 }
 
+// Shared by the admin post layout and its metadata tab, so both read one useAsyncData
+// entry: saving the metadata refreshes the title and the "Voir la page" link of the layout.
+export function adminPostKey(postId: string): string {
+  return `admin-post-${postId}`
+}
+
 export function postToForm(post: Post): PostForm {
   return {
     ...cloneDeep(post),

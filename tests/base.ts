@@ -3,9 +3,10 @@ import { fakeMatomo } from './matomo'
 import { fakeMetricsApi } from './metricsApi'
 
 // `msg.text()` flattens an `Error` argument to its bare message (e.g. "Error"),
-// dropping the stack on Firefox. Resolve the args to recover `error.stack`.
+// dropping the stack on Firefox. Resolve the args to recover `error.stack`, along
+// with `String(error)`: Firefox's stack only lists the frames, without the message.
 const fullText = (msg: ConsoleMessage) =>
-  Promise.all(msg.args().map(arg => arg.evaluate(v => (v instanceof Error ? v.stack : v)).catch(() => null)))
+  Promise.all(msg.args().map(arg => arg.evaluate(v => (v instanceof Error ? `${String(v)}\n${v.stack}` : v)).catch(() => null)))
     .then(parts => parts.filter(p => p != null).join(' ') || msg.text())
 
 const IGNORED_MESSAGES = [
@@ -48,6 +49,10 @@ export const test = base.extend<{ allowedConsoleMessages: Array<string>, assertN
     page.on('console', (msg) => {
       const text = msg.text()
       if (ignoredMessages.some(ignored => text.includes(ignored))) return
+      // Firefox blames the code Playwright evaluates in the page ("debugger eval code"),
+      // e.g. the trace snapshot taken after an action, when it lands while the next page
+      // is still loading. The same warning raised by the app's own code still fails.
+      if (text.includes('Layout was forced before the page was fully loaded') && text.includes('debugger eval code')) return
 
       const type = msg.type()
       if (type === 'warning') {
@@ -65,8 +70,11 @@ export const test = base.extend<{ allowedConsoleMessages: Array<string>, assertN
 
     await use()
 
-    const resolvedWarnings = await Promise.all(warnings)
-    const resolvedErrors = await Promise.all(errors)
+    // Filtered again on the full text: on Firefox, `msg.text()` of an `Error` argument
+    // misses its message, so the check above cannot match it.
+    const isReported = (text: string) => !ignoredMessages.some(ignored => text.includes(ignored))
+    const resolvedWarnings = (await Promise.all(warnings)).filter(isReported)
+    const resolvedErrors = (await Promise.all(errors)).filter(isReported)
 
     for (const w of resolvedWarnings) {
       base.info().annotations.push({ type: 'warning', description: w })

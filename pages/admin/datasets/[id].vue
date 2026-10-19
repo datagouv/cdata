@@ -162,7 +162,7 @@ const config = useRuntimeConfig()
 const route = useRoute()
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset } = await useAPI<DatasetV2WithFullObject>(url, {
-  redirectOn404: true,
+  showErrorPage: true,
   headers: {
     'X-Get-Datasets-Full-Objects': 'True',
   },

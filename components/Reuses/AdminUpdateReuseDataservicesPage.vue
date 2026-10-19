@@ -37,7 +37,7 @@ const { $api } = useNuxtApp()
 
 const route = useRoute()
 const url = computed(() => `/api/1/reuses/${route.params.id}`)
-const { data: reuse } = await useAPI<Reuse>(url, { redirectOn404: true })
+const { data: reuse } = await useAPI<Reuse>(url, { showErrorPage: true })
 const canEdit = computed(() => reuse.value?.permissions.edit ?? false)
 const dataservices = ref<Array<Dataservice>>([])
 watchEffect(async () => {

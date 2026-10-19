@@ -26,6 +26,19 @@
       </div>
       <div class="fr-fieldset__element">
         <InputGroup
+          v-model="form.slug"
+          :label="$t(`Identifiant dans l'URL`)"
+          :required="type === 'update'"
+          :hint-text="type === 'create'
+            ? $t(`Laissez vide pour le générer à partir du titre.`)
+            : $t(`L'ancienne URL redirigera vers la nouvelle.`)"
+          :has-error="!!getFirstError('slug')"
+          :error-text="getFirstError('slug')"
+          @blur="touch('slug')"
+        />
+      </div>
+      <div class="fr-fieldset__element">
+        <InputGroup
           v-model="form.headline"
           :label="$t('Entête')"
           :has-error="!!getFirstError('headline')"
@@ -88,7 +101,7 @@
           :multiple="true"
           :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
           show-label
-          required
+          :required="isNews"
           :has-error="!!getFirstError('image')"
           :error-text="getFirstError('image')"
           :warning-text="getFirstWarning('image')"
@@ -120,6 +133,7 @@
       </BrandedButton>
       <BrandedButton
         color="primary"
+        :loading
         @click="submit"
       >
         {{ submitLabel }}
@@ -136,9 +150,10 @@ import type { Post, PostAncestor, PostForm } from '~/types/posts'
 
 const props = defineProps<{
   submitLabel: string
-  post: PostForm
   type: 'create' | 'update'
+  loading?: boolean
 }>()
+const postForm = defineModel<PostForm>({ required: true })
 const emit = defineEmits<{
   previous: []
   submit: [PostForm]
@@ -154,10 +169,17 @@ async function suggestParentPages(query: string): Promise<Array<PostAncestor>> {
   return pages.data
 }
 
-const { form, touch, getFirstError, getFirstWarning, validate } = useForm(props.post, {
+const isUpdate = computed(() => props.type === 'update')
+// News are listed as cards on /posts and on the home page, laid out around their cover.
+// Pages are only reached by their URL and are fine without one.
+const isNews = computed(() => postForm.value.kind === 'news')
+
+const { form, touch, getFirstError, getFirstWarning, validate } = useForm(postForm, {
   name: [required()],
+  // Derived from the name when left empty at creation, but a post always has one afterwards
+  slug: [ruleIf(isUpdate, required())],
   headline: [required()],
-  image: [required()],
+  image: [ruleIf(isNews, required())],
 }, {
 })
 

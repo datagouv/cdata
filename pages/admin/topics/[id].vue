@@ -41,5 +41,5 @@ definePageMeta({
 })
 
 const route = useRoute()
-const { data: topic, refresh } = await useAPI<TopicV2>(`api/2/topics/${route.params.id}/`, { redirectOn404: true })
+const { data: topic, refresh } = await useAPI<TopicV2>(`api/2/topics/${route.params.id}/`, { showErrorPage: true })
 </script>
