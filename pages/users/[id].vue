@@ -230,6 +230,7 @@ const title = computed(() => user.value ? `${user.value.first_name} ${user.value
 useSeoMeta({
   robots: 'noindex, nofollow',
   title,
+  ogTitle: title,
 })
 defineOgImage('ObjectPage.takumi', {
   ownerName: user.value ? `${user.value.first_name} ${user.value.last_name}` : null,

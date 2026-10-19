@@ -194,6 +194,8 @@ useSeoMeta({
   title: name,
   description: () => post.value?.headline || undefined,
   robots: robots,
+  ogTitle: name,
+  ogDescription: () => post.value?.headline || undefined,
 })
 defineOgImage('MainPage.takumi', {
   title: post.value?.name ?? 'Articles',

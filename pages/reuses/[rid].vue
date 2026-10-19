@@ -196,6 +196,8 @@ useSeoMeta({
   title,
   description,
   robots,
+  ogTitle: title,
+  ogDescription: description,
 })
 defineOgImage('ObjectPage.takumi', {
   objectTitle: reuse.value?.title,

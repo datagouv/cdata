@@ -326,7 +326,8 @@ const switchTab = (index: number) => {
 }
 
 const { t } = useTranslation()
-useSeoMeta({ title: card.value ? ' Produit ' + card.value.product : t('Produit') })
+const title = computed(() => card.value ? ' Produit ' + card.value.product : t('Produit'))
+useSeoMeta({ title, ogTitle: title })
 defineOgImage('MainPage.takumi', {
   title: card.value?.product ?? 'Produit',
   uri: `/products/${route.params.id}`,

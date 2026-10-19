@@ -125,7 +125,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, LoadingBlock, MarkdownViewer, OrganizationNameWithCertificate, OwnerType, ReadMore, getOrganizationType, type Organization, OrganizationLogo } from '@datagouv/components-next'
+import { isOrganizationCertified, LoadingBlock, MarkdownViewer, OrganizationNameWithCertificate, OwnerType, ReadMore, getOrganizationType, type Organization, OrganizationLogo, getDescriptionShort } from '@datagouv/components-next'
 import { RiDeleteBinLine, RiSearchLine } from '@remixicon/vue'
 import { useTimeoutFn } from '@vueuse/core'
 import EditButton from '~/components/Buttons/EditButton.vue'
@@ -177,10 +177,14 @@ const tabLinks = computed(() => {
 
 const title = computed(() => `Organisation - ${organization.value?.name} | ${config.public.title}`)
 const robots = computed(() => organization.value && !organization.value.metrics.dataservices && !organization.value.metrics.datasets && !organization.value.metrics.reuses ? 'noindex, nofollow' : 'all')
+const description = computed(() => organization.value ? getDescriptionShort(organization.value) : '')
 
 useSeoMeta({
   title,
   robots,
+  description,
+  ogTitle: title,
+  ogDescription: description,
 })
 defineOgImage('ObjectPage.takumi', {
   orgName: organization.value?.name,
