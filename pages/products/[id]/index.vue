@@ -327,7 +327,10 @@ const switchTab = (index: number) => {
 
 const { t } = useTranslation()
 const title = computed(() => card.value ? ' Produit ' + card.value.product : t('Produit'))
-useSeoMeta({ title, ogTitle: title })
+// Products are fetched client-side from Grist, so this stays undefined during SSR
+// and the site-wide default meta description applies until hydration.
+const description = computed(() => card.value?.description || undefined)
+useSeoMeta({ title, description, ogTitle: title, ogDescription: description })
 defineOgImage('MainPage.takumi', {
   title: card.value?.product ?? 'Produit',
   uri: `/products/${route.params.id}`,
