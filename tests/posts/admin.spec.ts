@@ -77,6 +77,33 @@ test('publishing a post keeps the edits not saved yet', async ({ page, request }
   await expect(headline).toHaveValue('Entête en cours de saisie')
 })
 
+test('a page without cover can be updated', async ({ page, request }) => {
+  const response = await request.post(`${API_BASE}/api/1/posts/`, {
+    data: { name: `Test page sans couverture ${Date.now()}`, headline: 'Entête', content: 'Contenu', kind: 'page' },
+  })
+  expect(response.ok()).toBeTruthy()
+  const post = await response.json()
+  createdPosts.push(post.id)
+
+  await gotoHydrated(page, `/admin/posts/${post.id}`)
+  await page.getByRole('textbox', { name: 'Entête' }).fill('Entête modifiée')
+  await page.getByRole('button', { name: 'Sauvegarder' }).click()
+
+  await expect(page.getByText('Article mis à jour !')).toBeVisible()
+  const updated = await request.get(`${API_BASE}/api/1/posts/${post.id}/`)
+  expect((await updated.json()).headline).toBe('Entête modifiée')
+})
+
+test('a news cannot be created without cover', async ({ page }) => {
+  await gotoHydrated(page, '/admin/posts/new')
+  await page.getByRole('textbox', { name: 'Titre de l\'article' }).fill(`Test actualité sans couverture ${Date.now()}`)
+  await page.getByRole('textbox', { name: 'Entête' }).fill('Entête')
+  await page.getByRole('button', { name: 'Suivant' }).click()
+
+  await expect(page.getByText('Le champ est requis.')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Suivant' })).toBeVisible()
+})
+
 test('can delete a post from its admin page', async ({ page, request }) => {
   const name = `Test suppression ${Date.now()}`
   const response = await request.post(`${API_BASE}/api/1/posts/`, {
