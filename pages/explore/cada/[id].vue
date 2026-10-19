@@ -230,8 +230,8 @@ const meanings = computed(() => splitCadaValues(advice.value?.['Sens et motivati
 const tags = computed(() => splitCadaValues(advice.value?.['Mots clés']))
 
 const title = computed(() => t('Avis CADA {id}', { id: adviceId.value }))
-// Meta tags are dropped when their content is empty or spans several lines, so
-// fall back to the site-wide default description instead of an empty string.
+// Meta tags with empty content are dropped by the head renderer, so return
+// undefined to fall back to the site-wide default description.
 const description = computed(() => {
   if (!advice.value) return t('Avis non trouvé')
   return advice.value.Objet?.replace(/\s+/g, ' ').trim() || undefined

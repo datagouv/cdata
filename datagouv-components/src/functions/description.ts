@@ -13,8 +13,7 @@ export const AI_SUGGESTION_MIN_DESCRIPTION_LENGTH = 200 // min `description` len
  * Returns the short description to display.
  * If description_short is provided, it is used.
  * Otherwise, the first DESCRIPTION_SHORT_MAX_LENGTH characters of description are used.
- * Whitespace runs are collapsed: the output feeds HTML meta tags, which the head
- * renderer drops entirely when their content contains a raw newline.
+ * Whitespace runs are collapsed to keep the output single-line: it feeds HTML meta tags.
  */
 export function getDescriptionShort({ description, descriptionShort }: {
   description: string | null | undefined
