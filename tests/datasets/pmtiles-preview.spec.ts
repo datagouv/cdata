@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import type { BrowserContext } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, deleteDatasets, type ApiResource } from '../helpers'
+import { createDataset, createRemoteResource, deleteDatasets, type ApiResource } from '../helpers'
 
 const createdDatasets: Array<string> = []
 
@@ -75,22 +75,13 @@ async function fakeBaseMap(context: BrowserContext) {
 async function createDatasetWithPmtilesResource(request: import('@playwright/test').APIRequestContext, archiveUrl: string): Promise<{ resource: ApiResource, datasetId: string }> {
   const dataset = await createDataset(request, `Test PMTiles preview ${Date.now()}`, 'Dataset de test E2E')
   createdDatasets.push(dataset.id)
-  const response = await request.post(`${API_BASE}/api/1/datasets/${dataset.id}/resources/`, {
-    data: {
-      title: 'paris-thevenot.pmtiles',
-      type: 'main',
-      filetype: 'remote',
-      url: archiveUrl,
-      extras: {
-        'analysis:parsing:pmtiles_url': archiveUrl,
-        'analysis:parsing:finished_at': '2026-10-15T09:00:00',
-      },
+  const resource = await createRemoteResource(request, dataset.id, 'paris-thevenot', {
+    format: 'pmtiles',
+    extras: {
+      'analysis:parsing:pmtiles_url': archiveUrl,
+      'analysis:parsing:finished_at': '2026-10-15T09:00:00',
     },
-  })
-  if (!response.ok()) {
-    throw new Error(`Failed to create resource: ${response.status()} ${(await response.text()).slice(0, 300)}`)
-  }
-  const resource = await response.json() as ApiResource & { extras: Record<string, string> }
+  }) as ApiResource & { extras: Record<string, string> }
   // Reserved extras are admin-writable through the v1 resource form
   // (udata forms/fields.py can_write). If this assertion fails, udata closed
   // that path: fake the extras by intercepting the dataset API response
