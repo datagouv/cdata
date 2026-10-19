@@ -1,20 +1,6 @@
 import { type ChatResponse, createChatCompletion, useAlbertConfig } from '~/server/utils/albert-api-client'
 
 /**
- * Validates that Albert API is properly configured
- * @throws {Error} If Albert API key is not configured
- */
-export function validateAlbertConfig() {
-  const runtimeConfig = useRuntimeConfig()
-  if (!runtimeConfig.albertApiKey) {
-    throw createError({
-      statusCode: 400,
-      statusMessage: 'Albert API is not configured',
-    })
-  }
-}
-
-/**
  * Calls Albert API with the given messages and model
  * @param messages - Array of chat messages (system and user prompts)
  * @param model - Model to use for generation (default: 'openweight-small')

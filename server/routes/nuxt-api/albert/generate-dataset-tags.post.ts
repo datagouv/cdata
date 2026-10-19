@@ -1,4 +1,4 @@
-import { validateAlbertConfig, callAlbertAPI, parseTags } from './utils/albert-helpers'
+import { callAlbertAPI, parseTags } from './utils/albert-helpers'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -10,8 +10,6 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Title and description are required',
     })
   }
-
-  validateAlbertConfig()
 
   const messages = [
     {
