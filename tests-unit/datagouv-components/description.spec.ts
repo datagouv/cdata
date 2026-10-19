@@ -21,4 +21,24 @@ describe('getDescriptionShort', () => {
     expect(result).toHaveLength(DESCRIPTION_SHORT_MAX_LENGTH)
     expect(result.endsWith('…')).toBe(true)
   })
+
+  it('keeps markdown input single-line (the production bug path)', () => {
+    const markdown = '## Titre\n\nUn paragraphe\nsur plusieurs lignes.\n\n- item 1\n- item 2'
+    const result = getDescriptionShort({ description: markdown, descriptionShort: null })
+    expect(result).not.toContain('\n')
+    expect(result).toContain('Titre')
+    expect(result).toContain('paragraphe')
+  })
+
+  it('returns an empty string for a whitespace-only description', () => {
+    expect(getDescriptionShort({ description: '  \n\n  ', descriptionShort: null })).toBe('')
+    expect(getDescriptionShort({ description: null, descriptionShort: '  ' })).toBe('')
+  })
+
+  it('does not truncate at exactly the short limit', () => {
+    const exact = 'b'.repeat(DESCRIPTION_SHORT_MAX_LENGTH)
+    const result = getDescriptionShort({ description: exact, descriptionShort: null })
+    expect(result).toHaveLength(DESCRIPTION_SHORT_MAX_LENGTH)
+    expect(result.endsWith('…')).toBe(false)
+  })
 })
