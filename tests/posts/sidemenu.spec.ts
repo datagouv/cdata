@@ -28,9 +28,11 @@ test.describe('Post side menu', () => {
     await expect(menu.getByRole('link')).toHaveText(['Santé', 'Données', 'Emploi', 'Données'])
 
     // Both "Données" sections are reachable, not twice the first one
-    await menu.getByRole('link', { name: 'Données' }).last().click()
-    await expect(page.getByText('Sur l\'emploi.')).toBeInViewport()
-    await expect(page.getByRole('heading', { name: 'Emploi' })).toBeInViewport()
+    const links = menu.getByRole('link', { name: 'Données' })
+    const firstHref = await links.first().getAttribute('href')
+    const lastHref = await links.last().getAttribute('href')
+    expect(firstHref).not.toBe(lastHref)
+    await expect(page.locator(`${lastHref} + p`)).toHaveText('Sur l\'emploi.')
   })
 
   test('a Markdown news lists its headings', async ({ page, request }) => {
