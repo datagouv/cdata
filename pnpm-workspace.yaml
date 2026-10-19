@@ -47,15 +47,10 @@ overrides:
   # datagouv-components resolve different patches, and vue-tsc in
   # datagouv-components sees two unrelated @vue/runtime-core identities.
   vue: ^3.5.43
-  simple-git: ^4.0.2
   devalue: ^5.9.4
   source-map-js: ^1.2.2
   serialize-javascript: ^7.1.2
   katex: ^0.18.2
-  # 3.4.3 dropped the simple-git import that the ESM-only simple-git@4 override
-  # broke under 3.4.2, letting us delete the patch. Forced via override until
-  # Nuxt's own range reaches it; installable from 2026-10-18 (minimum-release-age).
-  "@nuxt/devtools": ^3.4.3
 
 # GetCapabilities strings (layer title, abstract, attribution, metadata/legend URLs)
 # are rendered as HTML by the library: render them as text and only link http(s) URLs.
