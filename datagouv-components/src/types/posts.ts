@@ -26,6 +26,7 @@ export type Post = {
   path: string
   published: string | null
   reuses: Array<Pick<Reuse, 'id' | 'image' | 'image_thumbnail' | 'page' | 'title' | 'uri'>>
+  sidemenu: boolean
   slug: string
   tags: Array<string>
   url: string

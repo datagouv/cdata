@@ -72,6 +72,7 @@ const postForm = useState<PostForm>(POST_FORM_STATE, () => ({
   kind: 'news',
   parent: null,
   published: null,
+  sidemenu: false,
   owner: me.value,
   tags: [],
   image: null,
