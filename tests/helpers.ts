@@ -94,6 +94,11 @@ export async function gotoSettled(page: Page, url: string): Promise<void> {
   await page.goto(url)
   await matomoLoaded
   await page.evaluate(() => document.fonts.ready)
+  // Visible links are prefetched once the page is idle, which comes right after: Nuxt loads
+  // the layout and middleware of the target route without catching the rejection, so an
+  // aborted prefetch surfaces on Firefox as an uncaught "error loading dynamically imported
+  // module" (e.g. the header links to /admin when logged in).
+  await page.waitForLoadState('networkidle')
 }
 
 // The banner is the only way into the new explorer, and it only lives on the resources
