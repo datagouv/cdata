@@ -5,17 +5,15 @@
          is dropped and causes a hydration mismatch. -->
     <ClientOnly>
       <Teleport
-        v-if="downloadStatsUrl"
+        v-if="metrics"
         to="#metrics-actions"
       >
         <BrandedButton
           color="secondary"
-          :disabled="!downloadStatsUrl"
-          :href="downloadStatsUrl || ''"
           :title="$t('Télécharger le fichier')"
-          download="stats.csv"
           :icon="RiDownloadLine"
           size="xs"
+          @click="downloadStats"
         >
           {{ $t('Télécharger les statistiques agrégées') }}
         </BrandedButton>
@@ -114,5 +112,5 @@ const props = defineProps<{
   user?: User | null
 }>()
 
-const { metrics, error: metricsError, downloadStatsUrl } = useOrganizationMetrics(() => props.organization)
+const { metrics, error: metricsError, downloadStats } = useOrganizationMetrics(() => props.organization)
 </script>

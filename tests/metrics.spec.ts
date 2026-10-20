@@ -1,7 +1,8 @@
+import { readFile } from 'node:fs/promises'
 import type { APIRequestContext, Page, Route } from '@playwright/test'
 import { test, expect } from './base'
 import { createDataset, createOrganization, createReuse, deleteDatasets, deleteOrganizations, deleteReuses } from './helpers'
-import { CORS_HEADERS, METRICS_API } from './metricsApi'
+import { CORS_HEADERS, METRICS_API, metricMonth } from './metricsApi'
 
 // `tests/metricsApi.ts` answers for the metrics API in every test of the suite, so no test
 // depends on that third-party service. The tests below override it with their own answers:
@@ -65,6 +66,42 @@ test.describe('all-time totals', () => {
 
     await expect(page.getByText('Téléchargements des données')).toBeVisible()
     await expect(page.getByText('432', { exact: true })).toBeVisible()
+  })
+})
+
+// The organization CSV is built in the browser and served as a `blob:` URL. Given to a link as
+// `href`, `NuxtLink` drops it and the button renders as an anchor that can't be clicked.
+test.describe('aggregated statistics download', () => {
+  async function expectAggregatedStatsDownload(page: Page, buttonName: string, organizationSlug: string) {
+    const downloadPromise = page.waitForEvent('download')
+    await page.getByRole('button', { name: buttonName }).click()
+    const download = await downloadPromise
+
+    expect(download.suggestedFilename()).toBe(`${organizationSlug}-stats.csv`)
+    const lines = (await readFile(await download.path(), 'utf-8')).trim().split('\n')
+    expect(lines[0]).toBe('month,visit_datasets,download_resource,visit_dataservice,visit_reuse')
+    // Values of the current month served by tests/metricsApi.ts, one per metric.
+    expect(lines[1]).toBe(`${metricMonth(0)},122,121,123,124`)
+    expect(lines).toHaveLength(13)
+  }
+
+  test('downloads the CSV from the organization page', async ({ page, request }) => {
+    const organization = await createOrganization(request, `Test metrics download ${Date.now()}`)
+    createdOrganizations.push(organization.id)
+
+    await page.goto(`/organizations/${organization.id}/information`)
+    await page.getByRole('button', { name: 'Voir les statistiques' }).click()
+
+    await expectAggregatedStatsDownload(page, 'Télécharger les statistiques au format CSV', organization.slug)
+  })
+
+  test('downloads the CSV from the organization admin metrics page', async ({ page, request }) => {
+    const organization = await createOrganization(request, `Test metrics download ${Date.now()}`)
+    createdOrganizations.push(organization.id)
+
+    await page.goto(`/admin/organizations/${organization.id}/metrics`)
+
+    await expectAggregatedStatsDownload(page, 'Télécharger les statistiques agrégées', organization.slug)
   })
 })
 

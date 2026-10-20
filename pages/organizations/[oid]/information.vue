@@ -7,11 +7,10 @@
       <template #buttons>
         <BrandedButton
           color="secondary"
-          :disabled="!downloadStatsUrl"
-          :href="downloadStatsUrl || ''"
-          download="stats.csv"
+          :disabled="!metrics"
           :icon="RiDownloadLine"
           size="xs"
+          @click="downloadStats"
         >
           {{ $t('Télécharger les statistiques au format CSV') }}
         </BrandedButton>
@@ -299,7 +298,7 @@ const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
 const me = useMaybeMe()
 
-const { metrics, error: metricsError, downloadStatsUrl } = useOrganizationMetrics(() => props.organization)
+const { metrics, error: metricsError, downloadStats } = useOrganizationMetrics(() => props.organization)
 
 const reason = ref('')
 

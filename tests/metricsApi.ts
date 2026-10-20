@@ -24,7 +24,7 @@ const MONTHS_COUNT = 12
 const METRICS = ['visit', 'download_resource', 'visit_dataset', 'visit_dataservice', 'visit_reuse']
 
 /** `YYYY-MM` of the month `monthsAgo` months before the current one. */
-function metricMonth(monthsAgo: number): string {
+export function metricMonth(monthsAgo: number): string {
   const now = new Date()
   const month = new Date(now.getFullYear(), now.getMonth() - monthsAgo, 1)
   return `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`

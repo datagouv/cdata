@@ -281,12 +281,7 @@ const downloadStats = async () => {
   if (!props.organization) return
   isDownloadingStats.value = true
   try {
-    const url = await createDatasetsForOrganizationMetricsUrl(props.organization.id)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = `${props.organization.slug}-datasets-traffic.csv`
-    link.click()
-    URL.revokeObjectURL(url)
+    downloadObjectUrl(await createDatasetsForOrganizationMetricsUrl(props.organization.id), `${props.organization.slug}-datasets-traffic.csv`)
   }
   catch {
     toast.error(t(`Erreur de téléchargement des statistiques par mois !`))

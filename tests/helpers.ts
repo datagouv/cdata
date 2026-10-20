@@ -9,7 +9,7 @@ export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:70
 export type ApiDataset = { id: string, title: string, slug: string }
 export type ApiResource = { id: string, title: string, latest: string, url: string }
 export type ApiHarvestSource = { id: string, name: string, backend: string, schedule: string | null, config: Record<string, unknown> }
-export type ApiOrganization = { id: string, name: string }
+export type ApiOrganization = { id: string, name: string, slug: string }
 export type ApiContactPoint = { id: string, name: string, email: string | null, contact_form: string | null, role: string }
 export type ApiReuse = { id: string, title: string, slug: string }
 
