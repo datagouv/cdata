@@ -6,7 +6,7 @@
   >
     <PostView
       :post
-      @refresh="refreshPost"
+      :on-refresh="refreshPost"
     />
   </LoadingBlock>
 </template>

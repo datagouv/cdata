@@ -156,9 +156,7 @@ import type { Post } from '~/types/posts'
 
 const props = defineProps<{
   post: Post
-}>()
-const emit = defineEmits<{
-  refresh: []
+  onRefresh: () => Promise<unknown>
 }>()
 
 const config = useRuntimeConfig()
@@ -195,7 +193,7 @@ async function saveBlocs(blocs: Array<PageBloc>) {
       method: 'PUT',
       body: { blocs },
     })
-    emit('refresh')
+    await props.onRefresh()
     toast.success(t('Page sauvegardée'))
   }
   catch {
