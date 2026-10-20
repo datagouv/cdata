@@ -37,19 +37,24 @@ test.describe('Pages content', () => {
     })
   })
 
-  test('an API failure on the edito page shows an error, not the 404 of the GitHub fallback', async ({ page }) => {
-    await page.goto('/pages/legal/licences')
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  test.describe('when the posts API fails', () => {
+    // The 500 below is the point of the test: the browser logs it.
+    test.use({ allowedConsoleMessages: ['the server responded with a status of 500'] })
 
-    // Intercepted in the browser only, hence the in-app navigation: the server
-    // rendering would call the API directly.
-    // A regex, not a glob: the API calls carry a `?lang=` query the glob would not match
-    await page.route(/\/api\/1\/posts\/cgu\/(\?|$)/, route => route.fulfill({ status: 500 }))
-    await page.locator('footer').getByRole('link', { name: 'Modalités d\'utilisation' }).click()
-    await page.waitForURL('**/pages/legal/cgu')
+    test('an API failure on the edito page shows an error, not the 404 of the GitHub fallback', async ({ page }) => {
+      await page.goto('/pages/legal/licences')
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
 
-    await expect(page.getByText('Une erreur est survenue lors du chargement.')).toBeVisible()
-    await expect(page.getByRole('heading', { name: '404' })).toHaveCount(0)
+      // Intercepted in the browser only, hence the in-app navigation: the server
+      // rendering would call the API directly.
+      // A regex, not a glob: the API calls carry a `?lang=` query the glob would not match
+      await page.route(/\/api\/1\/posts\/cgu\/(\?|$)/, route => route.fulfill({ status: 500 }))
+      await page.locator('footer').getByRole('link', { name: 'Modalités d\'utilisation' }).click()
+      await page.waitForURL('**/pages/legal/cgu')
+
+      await expect(page.getByText('Une erreur est survenue lors du chargement.')).toBeVisible()
+      await expect(page.getByRole('heading', { name: '404' })).toHaveCount(0)
+    })
   })
 
   test('going back before the next page is loaded shows the previous one, not a 404', async ({ page }) => {
