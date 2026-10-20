@@ -17,7 +17,7 @@
     <span
       data-testid="row-count"
       class="font-mono tabular-nums"
-    >{{ (tableData?.meta.total ?? 0).toLocaleString() }}/{{ totalLines.toLocaleString() }}</span>
+    >{{ (tableData?.meta.total ?? 0).toLocaleString() }} / {{ totalLines.toLocaleString() }}</span>
   </span>
 </template>
 
