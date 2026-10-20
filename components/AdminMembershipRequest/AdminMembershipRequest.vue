@@ -184,7 +184,7 @@
               <BrandedButton
                 type="submit"
                 color="primary"
-                :disabled="loading || !refuseComment"
+                :disabled="loading"
                 :form="refuseFormId"
               >
                 {{ t("Refuser la demande") }}
