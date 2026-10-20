@@ -3,6 +3,8 @@ import { expect, test } from '@playwright/test'
 import type { MemberRole } from '@datagouv/components-next'
 import type { DiscussionSubject } from '../types/discussions'
 import type { NotificationRuleKey, NotificationSetting } from '../types/notifications'
+import type { PageBloc } from '../types/pages'
+import type { Post } from '../types/posts'
 
 export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
@@ -134,7 +136,14 @@ export async function createReuse(request: APIRequestContext, title: string, url
   return await response.json()
 }
 
-export async function createPost(request: APIRequestContext, data: Record<string, unknown> & { name: string }): Promise<ApiPost> {
+export async function createPost(request: APIRequestContext, data: {
+  name: string
+  kind: Post['kind']
+  content?: string
+  body_type?: Post['body_type']
+  blocs?: Array<PageBloc>
+  parent?: string
+}): Promise<ApiPost> {
   const response = await request.post(`${API_BASE}/api/1/posts/`, { data })
   if (!response.ok()) {
     throw new Error(`Failed to create post "${data.name}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
