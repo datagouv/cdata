@@ -1,34 +1,11 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <!-- Full page blocs mode: no header, just the blocs (and the breadcrumb of a sub-page) -->
-  <div v-if="isFullPageBlocs">
+  <div>
+    <!-- A full page blocs page shows the breadcrumb only when it is a sub-page -->
     <div
-      v-if="post.ancestors.length"
+      v-if="!isFullPageBlocs || post.ancestors.length"
       class="container"
     >
-      <Breadcrumb>
-        <BreadcrumbItem
-          v-for="crumb in breadcrumb"
-          :key="crumb.to ?? 'current'"
-          :to="crumb.to"
-        >
-          {{ crumb.label }}
-        </BreadcrumbItem>
-      </Breadcrumb>
-    </div>
-    <EditoBlocs
-      :blocs="post.blocs ?? []"
-      editable
-      :on-save="saveBlocs"
-    />
-  </div>
-
-  <!-- Header mode: news, and pages that are not full page blocs -->
-  <div
-    v-else
-    class="mb-24"
-  >
-    <div class="container">
       <div class="flex items-center">
         <Breadcrumb class="flex-1">
           <BreadcrumbItem
@@ -41,7 +18,7 @@
         </Breadcrumb>
 
         <div
-          v-if="isMeAdmin()"
+          v-if="!isFullPageBlocs && isMeAdmin()"
           class="flex gap-2"
         >
           <EditButton
@@ -59,89 +36,106 @@
           </BrandedButton>
         </div>
       </div>
-      <div class="max-w-4xl">
-        <h1 class="text-4.5xl font-extrabold text-gray-title mb-0">
-          {{ post.name }}
-        </h1>
-        <template v-if="post.published || isMeAdmin()">
-          <TranslationT
-            v-if="post.published"
-            tag="p"
-            class="text-xs mt-2 mb-0"
-            keypath="Publié le {date}"
-          >
-            <template #date>
-              <FormattedDate :date="post.published" />
-            </template>
-          </TranslationT>
-          <p
-            v-else
-            class="text-xs mb-0"
-          >
-            {{ $t('Pas encore publié') }}
-          </p>
-          <p class="mt-4 mb-6">
-            {{ post.headline }}
-          </p>
-          <img
-            v-if="post.image"
-            :src="post.image"
-            class="w-full h-auto mb-2"
-          >
-        </template>
-        <template v-else>
-          {{ $t(`Cet article n'est pas encore publié`) }}
-        </template>
-      </div>
     </div>
-    <template v-if="post.published || isMeAdmin()">
-      <!-- Blocs render full-width so the striped backgrounds reach the screen edges
+
+    <!-- Full page blocs mode: no header, just the blocs -->
+    <EditoBlocs
+      v-if="isFullPageBlocs"
+      :blocs="post.blocs ?? []"
+      editable
+      :on-save="saveBlocs"
+    />
+
+    <!-- Header mode: news, and pages that are not full page blocs -->
+    <div
+      v-else
+      class="mb-24"
+    >
+      <div class="container">
+        <div class="max-w-4xl">
+          <h1 class="text-4.5xl font-extrabold text-gray-title mb-0">
+            {{ post.name }}
+          </h1>
+          <template v-if="post.published || isMeAdmin()">
+            <TranslationT
+              v-if="post.published"
+              tag="p"
+              class="text-xs mt-2 mb-0"
+              keypath="Publié le {date}"
+            >
+              <template #date>
+                <FormattedDate :date="post.published" />
+              </template>
+            </TranslationT>
+            <p
+              v-else
+              class="text-xs mb-0"
+            >
+              {{ $t('Pas encore publié') }}
+            </p>
+            <p class="mt-4 mb-6">
+              {{ post.headline }}
+            </p>
+            <img
+              v-if="post.image"
+              :src="post.image"
+              class="w-full h-auto mb-2"
+            >
+          </template>
+          <template v-else>
+            {{ $t(`Cet article n'est pas encore publié`) }}
+          </template>
+        </div>
+      </div>
+      <template v-if="post.published || isMeAdmin()">
+        <!-- Blocs render full-width so the striped backgrounds reach the screen edges
            and the bloc toolbar sits in the side margins instead of over the content.
            pt-24 keeps the first striped band from hugging the header image, matching
            the vertical rhythm between consecutive blocs. -->
-      <div
-        v-if="post.body_type === 'blocs'"
-        ref="blocsSection"
-        class="pt-24"
-      >
-        <EditoBlocs
-          :blocs="post.blocs ?? []"
-          editable
-          hide-edit-button
-          :on-save="saveBlocs"
-        />
-      </div>
-      <div
-        v-else-if="post.body_type === 'markdown'"
-        class="container"
-      >
-        <MarkdownViewer
-          :content="post.content"
-          :min-heading="2"
-          size="md"
-          class="max-w-4xl"
-        />
-      </div>
-      <div
-        v-else
-        class="container"
-      >
         <div
-          class="max-w-4xl"
-          :class="markdownClasses"
-          v-html="post.content"
-        />
-      </div>
+          v-if="post.body_type === 'blocs'"
+          ref="blocsSection"
+          class="pt-24"
+        >
+          <EditoBlocs
+            :blocs="post.blocs ?? []"
+            editable
+            hide-edit-button
+            :on-save="saveBlocs"
+          />
+        </div>
+        <div
+          v-else-if="post.body_type === 'markdown'"
+          class="container"
+        >
+          <MarkdownViewer
+            :content="post.content"
+            :min-heading="2"
+            size="md"
+            class="max-w-4xl"
+          />
+        </div>
+        <div
+          v-else
+          class="container"
+        >
+          <div
+            class="max-w-4xl"
+            :class="markdownClasses"
+            v-html="post.content"
+          />
+        </div>
 
-      <div class="container">
-        <DiscussionsList
-          v-if="config.public.allowDiscussionsInPosts"
-          class="mt-16 max-w-4xl"
-          type="Post"
-          :subject="post"
-        />
-      </div>
-    </template>
+        <div class="container">
+          <DiscussionsList
+            v-if="config.public.allowDiscussionsInPosts"
+            class="mt-16 max-w-4xl"
+            type="Post"
+            :subject="post"
+          />
+        </div>
+      </template>
+    </div>
   </div>
 </template>
 
