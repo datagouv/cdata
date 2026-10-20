@@ -2,16 +2,10 @@ import cloneDeep from 'lodash-es/cloneDeep'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import type { NewPostForApi, Post, PostForm } from '~/types/posts'
 
-// The canonical path of a post is decided by the API (`/pages/<path>` for a page,
-// `/posts/<slug>` for a news): its `page` URL is absolute, built on the cdata base URL.
-export function postPath(post: Pick<Post, 'page'>): string {
-  return new URL(post.page).pathname
-}
-
 // Any URL leading to the post but its canonical one redirects there: a page reached by
 // its /posts URL or a stale path, a news reached through a previous slug.
 export async function redirectToCanonicalPost(post: Pick<Post, 'page'>, route: RouteLocationNormalizedLoaded) {
-  const path = postPath(post)
+  const path = useAbsoluteUrlToRelative()(post.page)
   if (route.path !== path) {
     await navigateTo({ path, query: route.query }, { redirectCode: 301, replace: true })
   }

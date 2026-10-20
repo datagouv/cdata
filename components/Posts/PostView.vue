@@ -167,6 +167,7 @@ const route = useRoute()
 const router = useRouter()
 const { $api } = useNuxtApp()
 const { t } = useTranslation()
+const absoluteUrlToRelative = useAbsoluteUrlToRelative()
 
 const blocsSection = ref<HTMLElement | null>(null)
 
@@ -209,7 +210,7 @@ useSeoMeta({
 })
 defineOgImage('MainPage.takumi', {
   title: props.post.name,
-  uri: props.post.kind === 'page' ? postPath(props.post) : '/posts',
+  uri: props.post.kind === 'page' ? absoluteUrlToRelative(props.post.page) : '/posts',
 })
 useHead({
   script: [

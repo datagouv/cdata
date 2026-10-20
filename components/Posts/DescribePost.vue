@@ -69,7 +69,7 @@
           :hint-text="t(`L'adresse de la page reprend celle de sa page parente, par exemple /pages/elections/municipales.`)"
           :placeholder="t('Aucune, la page est à la racine')"
           :suggest="suggestParentPages"
-          :display-value="(page: PostAncestor) => `${page.name} (/pages/${page.path})`"
+          :display-value="(page: PostAncestor) => `${page.name} (${absoluteUrlToRelative(page.page)})`"
           :get-option-id="(page: PostAncestor) => page.id"
           :multiple="false"
         />
@@ -161,6 +161,7 @@ const emit = defineEmits<{
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
+const absoluteUrlToRelative = useAbsoluteUrlToRelative()
 
 async function suggestParentPages(query: string): Promise<Array<PostAncestor>> {
   const pages = await $api<PaginatedArray<Post>>('/api/1/posts/', {
