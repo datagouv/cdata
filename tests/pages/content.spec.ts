@@ -43,7 +43,8 @@ test.describe('Pages content', () => {
 
     // Intercepted in the browser only, hence the in-app navigation: the server
     // rendering would call the API directly.
-    await page.route('**/api/1/posts/cgu/', route => route.fulfill({ status: 500 }))
+    // A regex, not a glob: the API calls carry a `?lang=` query the glob would not match
+    await page.route(/\/api\/1\/posts\/cgu\/(\?|$)/, route => route.fulfill({ status: 500 }))
     await page.locator('footer').getByRole('link', { name: 'Modalités d\'utilisation' }).click()
     await page.waitForURL('**/pages/legal/cgu')
 
