@@ -7,7 +7,7 @@ import type { NewPostForApi, Post, PostForm } from '~/types/posts'
 export async function redirectToCanonicalPost(post: Pick<Post, 'page'>, route: RouteLocationNormalizedLoaded) {
   const path = useAbsoluteUrlToRelative()(post.page)
   if (route.path !== path) {
-    await navigateTo({ path, query: route.query }, { redirectCode: 301, replace: true })
+    await navigateTo({ path, query: route.query, hash: route.hash }, { redirectCode: 301, replace: true })
   }
 }
 
