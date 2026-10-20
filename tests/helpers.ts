@@ -139,6 +139,7 @@ export async function createReuse(request: APIRequestContext, title: string, url
 export async function createPost(request: APIRequestContext, data: {
   name: string
   kind: Post['kind']
+  slug?: string
   content?: string
   body_type?: Post['body_type']
   blocs?: Array<PageBloc>

@@ -1,4 +1,5 @@
 import { test, expect } from '../base'
+import { createPost, deletePosts } from '../helpers'
 
 // Pages are stored in the datagouvfr-pages GitHub repository, either as a
 // Markdown or as an HTML file, and the server route has to find out which one
@@ -15,6 +16,24 @@ test.describe('Pages content', () => {
       expect(response?.status()).toBe(200)
       await expect(page.getByLabel('Vous êtes ici :')).toContainText(title)
       await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible()
+    })
+  })
+
+  test.describe('with a news sharing the slug of a page', () => {
+    const createdIds: Array<string> = []
+
+    test.afterEach(async ({ request }) => {
+      await deletePosts(request, createdIds)
+    })
+
+    test('the page path still renders the page, not the news', async ({ page, request }) => {
+      const news = await createPost(request, { name: 'Actualité CGU', kind: 'news', slug: 'cgu', content: 'Contenu' })
+      createdIds.push(news.id)
+
+      const response = await page.goto('/pages/legal/cgu')
+      expect(response?.status()).toBe(200)
+      await expect(page).toHaveURL(/\/pages\/legal\/cgu$/)
+      await expect(page.getByRole('heading', { level: 1, name: 'Modalités d’utilisation' })).toBeVisible()
     })
   })
 
