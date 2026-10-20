@@ -37,6 +37,20 @@ test.describe('Pages content', () => {
     })
   })
 
+  test('an API failure on the edito page shows an error, not the 404 of the GitHub fallback', async ({ page }) => {
+    await page.goto('/pages/legal/licences')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+
+    // Intercepted in the browser only, hence the in-app navigation: the server
+    // rendering would call the API directly.
+    await page.route('**/api/1/posts/cgu/', route => route.fulfill({ status: 500 }))
+    await page.locator('footer').getByRole('link', { name: 'Modalités d\'utilisation' }).click()
+    await page.waitForURL('**/pages/legal/cgu')
+
+    await expect(page.getByText('Une erreur est survenue lors du chargement.')).toBeVisible()
+    await expect(page.getByRole('heading', { name: '404' })).toHaveCount(0)
+  })
+
   test('going back before the next page is loaded shows the previous one, not a 404', async ({ page }) => {
     await page.goto('/pages/legal/licences')
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
