@@ -1,8 +1,10 @@
 <template>
   <div class="flex h-full flex-col">
-    <PreviewUnavailable v-if="hasError">
-      {{ t("L'aperçu cartographique de ce fichier n'a pas pu être chargé.") }}
-    </PreviewUnavailable>
+    <PreviewError
+      v-if="hasError"
+      :resource="resource"
+      :message="t('L\'aperçu cartographique de ce fichier n\'a pas pu être chargé.')"
+    />
     <div
       v-else
       class="flex min-h-0 flex-1 flex-col"
@@ -64,7 +66,7 @@ import type { Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 import BrandedButton from '../BrandedButton.vue'
 import styleVector from '../../../assets/json/vector.json'
-import PreviewUnavailable from './PreviewUnavailable.vue'
+import PreviewError from './PreviewError.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
 import { getMapAttribution } from '../../functions/owned'

@@ -1,7 +1,9 @@
 <template>
-  <PreviewUnavailable v-if="hasError">
-    {{ t("L'aperçu cartographique de ce fichier n'a pas pu être chargé.") }}
-  </PreviewUnavailable>
+  <PreviewError
+    v-if="hasError"
+    :resource="resource"
+    :message="t('L\'aperçu cartographique de ce fichier n\'a pas pu être chargé.')"
+  />
   <div
     v-else
     ref="mapRef"
@@ -11,7 +13,7 @@
 
 <script setup lang = "ts">
 import { onMounted, ref, useTemplateRef } from 'vue'
-import PreviewUnavailable from './PreviewUnavailable.vue'
+import PreviewError from './PreviewError.vue'
 import type { Resource } from '../../types/resources'
 import { useTranslation } from '../../composables/useTranslation'
 

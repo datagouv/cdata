@@ -119,20 +119,11 @@
                   v-else-if="previewKind === 'openapi'"
                   :url="resource.extras['apidocUrl'] as string"
                 />
-                <PreviewUnavailable v-else>
-                  <!-- "File too large to download" is the only analysis:error value from hydra for now -->
-                  <template v-if="resource.extras['analysis:error'] === 'File too large to download'">
-                    {{ t("Ce fichier est trop volumineux pour être analysé et prévisualisé. Téléchargez-le avec le bouton Télécharger.") }}
-                  </template>
-                  <template v-else-if="resource.extras['analysis:parsing:error']">
-                    {{ t("L'analyse de ce fichier a rencontré une erreur, l'aperçu n'est pas disponible. Téléchargez-le avec le bouton Télécharger.") }}
-                    <br>
-                    <span class="text-gray-medium text-xs">{{ resource.extras['analysis:parsing:error'] }}</span>
-                  </template>
-                  <template v-else>
-                    {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le avec le bouton Télécharger.") }}
-                  </template>
-                </PreviewUnavailable>
+                <PreviewError
+                  v-else
+                  :resource="resource"
+                  :show-producer-cta="isProducerView"
+                />
               </div>
             </div>
             <div v-if="tab.key === 'description'">
@@ -175,6 +166,7 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import PreviewError from '../ResourceAccordion/PreviewError.vue'
 import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
 import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
@@ -238,6 +230,7 @@ const props = withDefaults(defineProps<{
   // bottom, and hide the inline download/visit/copy actions — they're shown in the
   // dataset context bar above. Inline mode (dataset page) shows them in the header.
   fullscreen?: boolean
+  isProducerView?: boolean
 }>(), {
   fullscreen: false,
 })
