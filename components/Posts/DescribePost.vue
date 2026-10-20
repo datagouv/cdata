@@ -152,6 +152,7 @@ const props = defineProps<{
   submitLabel: string
   type: 'create' | 'update'
   loading?: boolean
+  postId?: string
 }>()
 const postForm = defineModel<PostForm>({ required: true })
 const emit = defineEmits<{
@@ -167,7 +168,8 @@ async function suggestParentPages(query: string): Promise<Array<PostAncestor>> {
   const pages = await $api<PaginatedArray<Post>>('/api/1/posts/', {
     query: { kind: 'page', q: query, with_drafts: true, page_size: 10 },
   })
-  return pages.data
+  // The page itself and its sub-pages would make a cycle, which the API refuses
+  return pages.data.filter(page => page.id !== props.postId && !page.ancestors.some(ancestor => ancestor.id === props.postId))
 }
 
 const isUpdate = computed(() => props.type === 'update')

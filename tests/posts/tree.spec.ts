@@ -1,5 +1,5 @@
 import { test, expect } from '../base'
-import { createPost, deletePosts } from '../helpers'
+import { createPost, deletePosts, gotoHydrated } from '../helpers'
 import { createMarkdownPost, fillPostContent, fillPostDescription, saveNewPost } from './helpers'
 
 test.describe('Pages tree', () => {
@@ -57,6 +57,25 @@ test.describe('Pages tree', () => {
 
     await page.goto(`/posts/${childId}`)
     await expect(page).toHaveURL(new RegExp(`/pages/${parent.slug}/enfant-${uniqueId}$`))
+  })
+
+  test('the parent picker of a page proposes neither the page nor its sub-pages', async ({ page, request }) => {
+    const uniqueId = Date.now()
+    const parent = await createPost(request, { name: `Parent ${uniqueId}`, content: 'Contenu', kind: 'page' })
+    createdIds.push(parent.id)
+    const child = await createPost(request, { name: `Enfant ${uniqueId}`, content: 'Contenu', kind: 'page', parent: parent.id })
+    createdIds.push(child.id)
+    const other = await createPost(request, { name: `Autre ${uniqueId}`, content: 'Contenu', kind: 'page' })
+    createdIds.push(other.id)
+
+    await gotoHydrated(page, `/admin/posts/${parent.id}`)
+    await page.getByTestId('searchable-select-page-parente').click()
+    await page.getByPlaceholder('Aucune, la page est à la racine').fill(String(uniqueId))
+
+    // The other page shows the suggestions are loaded
+    await expect(page.getByRole('option', { name: new RegExp(other.name) })).toBeVisible()
+    await expect(page.getByRole('option', { name: new RegExp(parent.name) })).toHaveCount(0)
+    await expect(page.getByRole('option', { name: new RegExp(child.name) })).toHaveCount(0)
   })
 
   test('switching a page back to a news drops the parent picked for it', async ({ page, request }) => {
