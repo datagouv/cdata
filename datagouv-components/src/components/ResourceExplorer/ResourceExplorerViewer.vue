@@ -47,11 +47,13 @@
                 v-if="ogcWms"
                 :resource="resource"
               />
-              <PreviewUnavailable v-if="!hasPmtiles && !ogcWms && hasPmtilesError">
-                {{ t("La carte n'a pas pu être générée automatiquement pour ce fichier.") }}
-                <br>
+              <PreviewError
+                v-if="!hasPmtiles && !ogcWms && hasPmtilesError"
+                :resource="resource"
+                :message="t('La carte n\'a pas pu être générée automatiquement pour ce fichier.')"
+              >
                 <span class="text-gray-medium text-xs">{{ pmtilesError }}</span>
-              </PreviewUnavailable>
+              </PreviewError>
             </div>
             <div
               v-if="tab.key === 'data'"
@@ -167,7 +169,6 @@
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PreviewError from '../ResourceAccordion/PreviewError.vue'
-import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
 import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
 import TabGroup from '../Tabs/TabGroup.vue'

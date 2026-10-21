@@ -1,14 +1,10 @@
 <template>
   <div class="text-xs">
-    <PreviewUnavailable v-if="!isSizeAllowed">
-      {{ fileSizeBytes
-        ? t("Le fichier {fileType} est trop volumineux pour être prévisualisé. Téléchargez-le pour le consulter.", { fileType })
-        : t("La taille du fichier est inconnue, l'aperçu n'est pas disponible. Téléchargez-le pour le consulter.")
-      }}
-    </PreviewUnavailable>
-    <PreviewUnavailable v-else-if="hasError">
-      {{ t("L'aperçu de ce fichier n'a pas pu être chargé. Téléchargez-le pour le consulter.") }}
-    </PreviewUnavailable>
+    <PreviewError
+      v-if="!isSizeAllowed || hasError"
+      :resource="resource"
+      :message="errorMessage"
+    />
     <img
       v-else
       :src="resource.url"
@@ -21,7 +17,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from 'vue'
-import PreviewUnavailable from './PreviewUnavailable.vue'
+import PreviewError from './PreviewError.vue'
 import type { Resource } from '../../types/resources'
 import { getResourceFilesize } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
@@ -44,5 +40,14 @@ const isSizeAllowed = computed(() => {
   const max = config.maxImagePreviewByteSize
   if (!size || !max) return false
   return size <= max
+})
+
+const errorMessage = computed(() => {
+  if (!isSizeAllowed.value) {
+    return fileSizeBytes.value
+      ? t('Le fichier {fileType} est trop volumineux pour être prévisualisé. Téléchargez-le pour le consulter.', { fileType: fileType.value })
+      : t('La taille du fichier est inconnue, l\'aperçu n\'est pas disponible. Téléchargez-le pour le consulter.')
+  }
+  return t('L\'aperçu de ce fichier n\'a pas pu être chargé. Téléchargez-le pour le consulter.')
 })
 </script>

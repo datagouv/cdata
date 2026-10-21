@@ -42,6 +42,7 @@
     </div>
 
     <BrandedButton
+      v-if="resource"
       :href="resource.latest"
       :icon="RiDownloadLine"
       rel="ugc nofollow noopener"
@@ -71,7 +72,9 @@ import { trackEvent } from '../../functions/matomo'
 import { RiDownloadLine } from '@remixicon/vue'
 
 const props = defineProps<{
-  resource: Resource
+  // Optional: some callers (e.g. the tabular explorer) only know the resource id,
+  // so they pass a message instead and get no diagnostics or download button.
+  resource?: Resource
   showProducerCta?: boolean
   message?: string
 }>()
@@ -83,15 +86,26 @@ const emit = defineEmits<{
 
 const { t } = useTranslation()
 
-const errorInfo = computed(() => getPreviewErrorInfo(props.resource))
+const errorInfo = computed(() => {
+  if (!props.resource) {
+    return {
+      type: 'none' as const,
+      message: '',
+      isProducerFault: false,
+    }
+  }
+  return getPreviewErrorInfo(props.resource)
+})
 
 const handleUserCta = () => {
+  if (!props.resource) return
   trackEvent('Aperçu', 'Demande de prévisualisation', props.resource.title || props.resource.id)
   toast.info(t('Votre demande a bien été enregistrée.'))
   emit('userCta')
 }
 
 const handleProducerCta = () => {
+  if (!props.resource) return
   trackEvent('Aperçu', 'Demande de prévisualisation producteur', props.resource.title || props.resource.id)
   toast.info(t('Votre demande a bien été enregistrée.'))
   emit('producerCta')
