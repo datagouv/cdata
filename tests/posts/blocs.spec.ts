@@ -235,6 +235,35 @@ test.describe('Sections and grids', () => {
     return (await response.json()).blocs
   }
 
+  test('nothing moves in the page while dragging, an indicator shows where the bloc lands', async ({ page, request }) => {
+    const post = await createGridPage(request, [
+      { width: '1/2', texts: ['Gauche A', 'Gauche B'] },
+      { width: '1/2', texts: ['Droite', 'Droite B'] },
+    ])
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    const cells = page.getByTestId('grid-cell')
+    const target = cells.nth(1).getByTestId('bloc-MarkdownBloc').first()
+    const targetBefore = (await target.boundingBox())!
+    const handle = await focusedDragHandle(cells.nth(0).getByTestId('bloc-MarkdownBloc').first())
+    const from = (await handle.boundingBox())!
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(targetBefore.x + targetBefore.width / 2, targetBefore.y + 10, { steps: 20 })
+
+    await expect(page.getByTestId('drop-indicator')).toBeVisible()
+    const indicator = (await page.getByTestId('drop-indicator').boundingBox())!
+    // Above the target, across its cell
+    expect(Math.abs(indicator.y - targetBefore.y)).toBeLessThan(12)
+    expect(await target.boundingBox()).toEqual(targetBefore)
+
+    await page.keyboard.press('Escape')
+    await expect(page.getByTestId('drop-indicator')).toHaveCount(0)
+    await page.mouse.up()
+    await expect(cells.nth(0).getByTestId('bloc-MarkdownBloc')).toHaveCount(2)
+  })
+
   test('a bloc is dragged by its handle from a cell to another', async ({ page, request }) => {
     // The cell receiving it stacks two blocs already: a cell of a single bloc is that bloc,
     // what is dropped on it becomes a cell next to it (see below)

@@ -15,27 +15,30 @@
       </BrandedButton>
     </div>
 
-    <div ref="sortableRef">
-      <!-- No `<template v-for>`: a fragment would leave behind the nodes delimiting it when
-           a section is dragged away. -->
+    <div
+      ref="listRef"
+      data-drop-list
+    >
       <EditItem
         v-for="{ bloc, index } in shownBlocs"
         :key="bloc.id"
         :edit="isEditing"
         :label="labels[bloc.class] ?? bloc.class"
-        group="sections"
+        draggable
         band
         class="group/section"
         :class="bloc.class === 'SectionBloc' && (striped ? 'py-24 odd:bg-gray-some even:bg-white' : 'py-12')"
         :data-testid="`page-${bloc.class}`"
-        data-sortable-item
+        data-drop-item
         @delete="workingBlocs.splice(index, 1)"
-        @keyboard-move="moveWithKeyboard($event, index)"
+        @drag-start="startBlocsDrag($event, { list: listRef!, index, kind: 'band', classes: [bloc.class], label: labels[bloc.class] ?? bloc.class })"
+        @keyboard-move="moveWithKeyboard(workingBlocs, $event, index)"
       >
         <!-- Add button above the bloc (absolute positioned), shown on hover -->
         <div
           v-if="isEditing"
           class="absolute -top-4 left-0 right-0 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 focus-within:opacity-100 transition-opacity delay-400 group-hover/section:delay-0 focus-within:delay-0"
+          data-edit-control
         >
           <AddBlocDropdown
             level="page"
@@ -72,6 +75,7 @@
         <div
           v-if="isEditing && index === workingBlocs.length - 1"
           class="absolute -bottom-4 left-0 right-0 flex items-center justify-center z-20"
+          data-edit-control
         >
           <AddBlocDropdown
             level="page"
@@ -90,6 +94,8 @@
         </div>
       </EditItem>
     </div>
+
+    <BlocsDragLayer v-if="isEditing" />
 
     <!-- Empty state. In edit mode it invites adding a first bloc; in view mode it
          is only shown when the host opts in via `emptyCtaLabel` (e.g. an org admin
@@ -160,12 +166,14 @@ import type { ComponentProps } from 'vue-component-type-helpers'
 import { BrandedButton } from '@datagouv/components-next'
 import { RiAddLine, RiEdit2Line } from '@remixicon/vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
+import BlocsDragLayer from './BlocsDragLayer.vue'
 import BlocsList from './BlocsList.vue'
 import EditItem from './EditItem.vue'
 import HeroBloc from './HeroBloc.vue'
 import type { HeroBloc as HeroBlocType, PageBloc, SectionBloc } from '~/types/pages'
 import { isMeAdmin } from '~/utils/auth'
 import { BLOCS_MAIN_COLOR, normalizeBlocs, type LegacyBloc } from '~/utils/blocs'
+import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 const props = withDefaults(defineProps<{
   blocs: Array<PageBloc | LegacyBloc>
@@ -252,11 +260,14 @@ onBeforeRouteLeave(() => {
 
 const labels = useBlocLabels()
 
-const { sortableRef, moveWithKeyboard } = useBlocSortable(
-  () => workingBlocs.value,
-  isEditing,
-  { group: 'sections' },
-)
+// Sections and heroes only move among themselves.
+const listRef = ref<HTMLElement | null>(null)
+useDropList(listRef, {
+  orientation: 'vertical',
+  items: () => workingBlocs.value,
+  accepts: dragged => dragged.kind === 'band',
+  receive: item => [item],
+})
 
 // Edit mode management
 function enterEditMode() {

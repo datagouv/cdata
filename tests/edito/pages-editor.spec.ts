@@ -73,7 +73,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.waitForLoadState('networkidle')
 
   // === Step 0: Delete all existing sections to start fresh ===
-  const pageBlocs = page.locator('[data-testid^="page-"][data-sortable-item]')
+  const pageBlocs = page.locator('[data-testid^="page-"][data-drop-item]')
   while (await pageBlocs.count() > 0) {
     const before = await pageBlocs.count()
     await deleteEditItem(pageBlocs.first())

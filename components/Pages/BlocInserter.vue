@@ -2,7 +2,10 @@
   <!-- The whole gap is the hover area; the line and its button show where the new bloc
        will land. Neither z-index nor transform on the way to the menu: they would trap it
        under the page's other controls. -->
-  <div class="group/inserter flex items-center justify-center">
+  <div
+    class="group/inserter flex items-center justify-center"
+    data-edit-control
+  >
     <div class="absolute inset-x-0 top-1/2 h-0.5 -mt-px bg-new-primary opacity-0 group-hover/inserter:opacity-100 group-focus-within/inserter:opacity-100 transition-opacity delay-400 group-hover/inserter:delay-0 group-focus-within/inserter:delay-0" />
     <AddBlocDropdown
       :level

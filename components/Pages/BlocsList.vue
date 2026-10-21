@@ -2,20 +2,20 @@
   <div class="relative">
     <!-- `min-h` keeps an empty list a drop target -->
     <div
-      ref="sortableRef"
+      ref="listRef"
       :data-blocs-level="level"
-      :data-merged-with-cell="mergedWithCell ? '' : undefined"
+      data-drop-list
       :class="{ 'min-h-8': edit }"
     >
-      <!-- One element per bloc, holding the bloc and the inserter above it: a fragment
-           would leave behind the nodes delimiting it when the bloc is dragged away. -->
+      <!-- One element per bloc, holding the bloc and the inserter above it: the drop item,
+           whose position decides where a dragged item lands. -->
       <div
         v-for="(bloc, index) in blocs"
         :key="bloc.id"
         class="relative"
         :class="spacingBefore(index)"
         :data-bloc-class="bloc.class"
-        data-sortable-item
+        data-drop-item
       >
         <!-- In the gap above the bloc (its top margin): a new bloc lands right here -->
         <BlocInserter
@@ -31,11 +31,12 @@
         <EditItem
           :edit="edit && !mergedWithCell"
           :label="labels[bloc.class] ?? bloc.class"
-          group="blocs"
+          draggable
           :container="bloc.class === 'GridBloc' || bloc.class === 'AccordionListBloc'"
           :data-testid="`bloc-${bloc.class}`"
           @delete="blocs.splice(index, 1)"
-          @keyboard-move="moveWithKeyboard($event, index)"
+          @drag-start="startBlocsDrag($event, { list: listRef!, index, kind: 'bloc', classes: [bloc.class], label: labels[bloc.class] ?? bloc.class })"
+          @keyboard-move="moveWithKeyboard(blocs, $event, index)"
         >
           <component
             :is="BLOC_COMPONENTS[bloc.class]"
@@ -92,7 +93,8 @@ import BlocInserter from './BlocInserter.vue'
 import EditItem from './EditItem.vue'
 import MissingObjectBloc from './MissingObjectBloc.vue'
 import type { GridCell, SectionContentBloc } from '~/types/pages'
-import { BLOC_COMPONENTS, acceptsDroppedItem, type BlocsLevel } from '~/utils/pages'
+import { BLOC_COMPONENTS, acceptsDropped, type BlocsLevel } from '~/utils/pages'
+import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 const props = defineProps<{
   edit: boolean
@@ -107,18 +109,17 @@ const labels = useBlocLabels()
 // A cell holding a single bloc is that bloc for the editor: one tab, not two.
 const mergedWithCell = computed(() => props.level === 'cell' && blocs.value.length === 1)
 
-// One group for every list of blocs, so that a bloc moves between sections, cells and
-// accordion items, where it is allowed. A grid cell dropped here leaves its blocs: that is
-// how a bloc alone in its cell (dragged with the cell's handle) moves out of the grid.
-const { sortableRef, moveWithKeyboard } = useBlocSortable(
-  () => blocs.value,
-  toRef(props, 'edit'),
-  {
-    group: 'blocs',
-    accepts: acceptsDroppedItem,
-    receive: (item, fromGroup) => fromGroup === 'cells' ? (item as GridCell).blocs : [item],
-  },
-)
+// A bloc moves between sections, cells and accordion items, where it is allowed. A grid cell
+// dropped here leaves its blocs: that is how a bloc alone in its cell (dragged with the
+// cell's handle) moves out of the grid. A cell holding a single bloc is that bloc: what is
+// dropped on it lands next to it, as a cell of the grid, not inside it.
+const listRef = ref<HTMLElement | null>(null)
+useDropList(listRef, {
+  orientation: 'vertical',
+  items: () => blocs.value,
+  accepts: dragged => !mergedWithCell.value && acceptsDropped(props.level, dragged),
+  receive: (item, dragged) => dragged.kind === 'cell' ? (item as GridCell).blocs : [item],
+})
 
 watchEffect(() => {
   for (const bloc of blocs.value) {

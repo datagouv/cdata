@@ -2,6 +2,7 @@ import type { Component } from 'vue'
 import { RiDatabase2Line, RiHeading, RiLayoutColumnLine, RiLayoutRowLine, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine, RiWindow2Line } from '@remixicon/vue'
 import { v4 as uuidv4 } from 'uuid'
 import type { AccordionListBloc, GridBloc, GridCellWidth, HeroBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionBloc, TitleBloc } from '~/types/pages'
+import type { Dragged } from '~/composables/useBlocsDrag'
 import TitleBlocComponent from '~/components/Pages/TitleBloc.vue'
 import MarkdownBlocComponent from '~/components/Pages/MarkdownBloc.vue'
 import LinksListBlocComponent from '~/components/Pages/LinksListBloc.vue'
@@ -46,21 +47,13 @@ const ACCEPTED_BLOCS: Record<Exclude<BlocsLevel, 'page'>, Array<string>> = {
   cell: LEAF_BLOCS,
 }
 
-// Whether an item dragged from another list can be dropped in this one (`data-blocs-level`,
-// `grid` for the cells of a grid). The item is a bloc (`data-bloc-class`), which a grid
-// takes as a new cell, or a cell (`data-cell-blocs`), which a list of blocs takes as the
-// blocs it holds, so all of them must be allowed there.
-export function acceptsDroppedItem(item: HTMLElement, list: HTMLElement): boolean {
-  const level = list.dataset.blocsLevel as Exclude<BlocsLevel, 'page'> | 'grid' | undefined
-  // A cell holding a single bloc is that bloc: what is dropped on it lands next to it, as a
-  // cell of the grid, not inside it.
-  if (!level || list.dataset.mergedWithCell !== undefined) return false
-  const cellBlocs = item.dataset.cellBlocs
-  if (level === 'grid') {
-    return cellBlocs !== undefined || LEAF_BLOCS.includes(item.dataset.blocClass ?? '')
-  }
-  const classes = cellBlocs !== undefined ? cellBlocs.split(',').filter(Boolean) : [item.dataset.blocClass ?? '']
-  return classes.every(name => ACCEPTED_BLOCS[level].includes(name))
+// Whether a dragged bloc or cell can be dropped in a list of blocs (`section`, `accordion`,
+// `cell`) or among the cells of a grid (`grid`). A grid takes a bloc as a new cell; a list
+// of blocs takes a cell as the blocs it holds, so all of them must be allowed there.
+export function acceptsDropped(level: Exclude<BlocsLevel, 'page'> | 'grid', dragged: Dragged): boolean {
+  if (dragged.kind !== 'bloc' && dragged.kind !== 'cell') return false
+  if (level === 'grid') return dragged.kind === 'cell' || LEAF_BLOCS.includes(dragged.classes[0])
+  return dragged.classes.every(name => ACCEPTED_BLOCS[level].includes(name))
 }
 
 // Name of a bloc in the editor, on the tab shown when it is hovered.

@@ -1,15 +1,19 @@
 <template>
   <AccordionGroup>
-    <div ref="sortableRef">
+    <div
+      ref="listRef"
+      data-drop-list
+    >
       <EditItem
         v-for="(item, itemIndex) in bloc.items"
         :key="itemIndex"
         :edit
         :label="labels.AccordionItem"
-        group="accordion-items"
-        data-sortable-item
+        draggable
+        data-drop-item
         @delete="bloc.items.splice(itemIndex, 1)"
-        @keyboard-move="moveWithKeyboard($event, itemIndex)"
+        @drag-start="startBlocsDrag($event, { list: listRef!, index: itemIndex, kind: 'accordion-item', classes: [], label: labels.AccordionItem })"
+        @keyboard-move="moveWithKeyboard(bloc.items, $event, itemIndex)"
       >
         <Accordion
           :id="`accordion-${bloc.id}-${itemIndex}`"
@@ -69,8 +73,9 @@ import EditableText from './EditableText.vue'
 import BlocsList from './BlocsList.vue'
 import EditItem from './EditItem.vue'
 import type { AccordionListBloc } from '~/types/pages'
+import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
-const props = defineProps<{
+defineProps<{
   edit: boolean
 }>()
 
@@ -78,11 +83,14 @@ const bloc = defineModel<AccordionListBloc>({ required: true })
 
 const labels = useBlocLabels()
 
-const { sortableRef, moveWithKeyboard } = useBlocSortable(
-  () => bloc.value.items,
-  toRef(props, 'edit'),
-  { group: 'accordion-items' },
-)
+// Items move between accordions, and nowhere else.
+const listRef = ref<HTMLElement | null>(null)
+useDropList(listRef, {
+  orientation: 'vertical',
+  items: () => bloc.value.items,
+  accepts: dragged => dragged.kind === 'accordion-item',
+  receive: item => [item],
+})
 
 const newItemTitle = ref('')
 const newItemKey = ref(0)

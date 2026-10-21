@@ -16,8 +16,8 @@
     >
       <div class="flex items-center gap-0.5 rounded-md bg-new-primary text-white text-xs shadow-sm p-0.5">
         <DragHandle
-          v-if="group"
-          :group
+          v-if="draggable"
+          @drag-start="emit('dragStart', $event)"
           @keyboard-move="emit('keyboardMove', $event)"
         />
         <span class="px-1 select-none whitespace-nowrap">{{ label }}</span>
@@ -62,8 +62,8 @@ defineProps<{
   // Without it, only the content is rendered: the page as visitors see it.
   edit: boolean
   label: string
-  // Drag group of the list holding the item (see `useBlocSortable`); no handle without it.
-  group?: string
+  // Shows the drag handle, which starts a drag (see `startBlocsDrag`).
+  draggable?: boolean
   // A full width band of the page (section, hero), framed from the inside.
   band?: boolean
   // An item holding other items (grid, accordion, cell stacking several blocs).
@@ -72,17 +72,18 @@ defineProps<{
 
 const emit = defineEmits<{
   delete: []
+  dragStart: [PointerEvent]
   keyboardMove: [KeyboardEvent]
 }>()
 </script>
 
 <style>
 /* Only the innermost hovered (or focused) item shows its outline and its tab: the editor
-   stays as quiet as the page, whatever the nesting. */
-/* Shown at once, but hidden after a grace delay, during which it stays usable: leaving the
-   item by a few pixels on the way to its tab must not take the tab away. `allow-discrete`
-   delays the switch of `pointer-events` too. Not `visibility`: a hidden button cannot take
-   the keyboard focus, which is what shows the tab to keyboard users. */
+   stays as quiet as the page, whatever the nesting.
+   A tab shows at once, but hides after a grace delay, during which it stays usable: leaving
+   the item by a few pixels on the way to its tab must not take the tab away.
+   `allow-discrete` delays the switch of `pointer-events` too. Not `visibility`: a hidden
+   button cannot take the keyboard focus, which is what shows the tab to keyboard users. */
 [data-edit-tab] {
   opacity: 0;
   pointer-events: none;
@@ -108,9 +109,29 @@ const emit = defineEmits<{
   transition: opacity 100ms, pointer-events 0s;
 }
 
-/* No grace delay inside the active item: a grid and its first cell share their top left
-   corner, so the lingering tab of the cell would catch the click meant for the grid's. */
+/* No grace delay inside the active item: the lingering tab of an item inside it could sit
+   where the pointer is heading, and catch the click meant for another. */
 [data-edit-item]:is(:hover, :focus-within):not(:has([data-edit-item]:is(:hover, :focus-within))) [data-edit-item] > [data-edit-tab] {
   transition: opacity 100ms, pointer-events 0s;
+}
+
+/* While dragging, only the drop indicator shows: no tab, outline or "add" control popping
+   up under the pointer on its way (see `startBlocsDrag`). */
+:root[data-blocs-dragging] {
+  cursor: grabbing;
+  user-select: none;
+}
+
+:root[data-blocs-dragging] [data-edit-tab],
+:root[data-blocs-dragging] [data-edit-control] {
+  visibility: hidden;
+}
+
+:root[data-blocs-dragging] [data-edit-item] {
+  outline: none !important;
+}
+
+[data-drag-source] {
+  opacity: 0.4;
 }
 </style>

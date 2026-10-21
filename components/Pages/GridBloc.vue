@@ -1,25 +1,25 @@
 <template>
   <div class="relative">
     <div
-      ref="sortableRef"
+      ref="listRef"
       class="flex flex-wrap gap-(--grid-gap) [--grid-gap:1.25rem]"
-      data-blocs-level="grid"
+      data-drop-list
     >
       <EditItem
         v-for="(cell, index) in bloc.cells"
         :key="cell.id"
         :edit
-        :label="cell.blocs.length === 1 ? labels[cell.blocs[0].class] ?? labels.GridCell : labels.GridCell"
-        group="cells"
+        :label="cellLabel(cell)"
+        draggable
         :container="cell.blocs.length > 1"
         class="group/cell"
         :class="[cellClass(cell), { 'rounded-lg outline-1 outline-dashed outline-gray-300 p-3': edit && !cell.blocs.length }]"
         :style="cellStyle(cell)"
         data-testid="grid-cell"
-        :data-cell-blocs="cell.blocs.map(cellBloc => cellBloc.class).join(',')"
-        data-sortable-item
+        data-drop-item
         @delete="bloc.cells.splice(index, 1)"
-        @keyboard-move="moveWithKeyboard($event, index)"
+        @drag-start="startBlocsDrag($event, { list: listRef!, index, kind: 'cell', classes: cell.blocs.map(cellBloc => cellBloc.class), label: cellLabel(cell) })"
+        @keyboard-move="moveWithKeyboard(bloc.cells, $event, index)"
       >
         <template
           v-if="cell.width"
@@ -50,6 +50,7 @@
         <div
           v-if="edit"
           class="hidden sm:block absolute inset-y-0 left-full w-(--grid-gap) group/boundary"
+          data-edit-control
         >
           <div
             role="separator"
@@ -126,9 +127,10 @@ import AddBlocDropdown from './AddBlocDropdown.vue'
 import BlocsList from './BlocsList.vue'
 import EditItem from './EditItem.vue'
 import type { GridBloc, GridCell, GridCellWidth, LeafBloc, SectionContentBloc } from '~/types/pages'
-import { OBJECT_CELL_WIDTH, acceptsDroppedItem } from '~/utils/pages'
+import { OBJECT_CELL_WIDTH, acceptsDropped } from '~/utils/pages'
+import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
-const props = defineProps<{
+defineProps<{
   edit: boolean
 }>()
 
@@ -162,18 +164,21 @@ function cellStyle(cell: GridCell) {
   return cell.width ? { '--cell-fraction': FRACTIONS[cell.width] } : undefined
 }
 
+// A cell holding a single bloc goes by the name of that bloc: for the editor, it is the bloc.
+function cellLabel(cell: GridCell) {
+  return cell.blocs.length === 1 ? labels[cell.blocs[0].class] ?? labels.GridCell : labels.GridCell
+}
+
 // A bloc dropped between the cells becomes a cell of its own, at the automatic width.
-const { sortableRef, moveWithKeyboard } = useBlocSortable(
-  () => bloc.value.cells,
-  toRef(props, 'edit'),
-  {
-    group: 'cells',
-    accepts: acceptsDroppedItem,
-    receive: (item, fromGroup): Array<GridCell> => fromGroup === 'blocs'
-      ? [{ id: uuidv4(), width: null, blocs: [item as LeafBloc] }]
-      : [item as GridCell],
-  },
-)
+const listRef = ref<HTMLElement | null>(null)
+useDropList(listRef, {
+  orientation: 'horizontal',
+  items: () => bloc.value.cells,
+  accepts: dragged => acceptsDropped('grid', dragged),
+  receive: (item, dragged): Array<GridCell> => dragged.kind === 'bloc'
+    ? [{ id: uuidv4(), width: null, blocs: [item as LeafBloc] }]
+    : [item as GridCell],
+})
 
 // Each picked bloc gets a cell of its own, inserted at `at`: an object at the width of its
 // former list of cards, anything else like the cell before (automatic in a row of
@@ -196,14 +201,14 @@ function nearestWidth(fraction: number): GridCellWidth {
 
 // Share of the row the cell takes on screen, whether it has a width or not.
 function renderedFraction(cellElement: HTMLElement, right: number) {
-  const row = sortableRef.value!
+  const row = listRef.value!
   const gap = Number.parseFloat(getComputedStyle(row).columnGap) || 0
   return (right - cellElement.getBoundingClientRect().left + gap) / (row.getBoundingClientRect().width + gap)
 }
 
 function startResize(event: PointerEvent, index: number) {
   const handle = event.currentTarget as HTMLElement
-  const cellElement = handle.closest<HTMLElement>('[data-sortable-item]')!
+  const cellElement = handle.closest<HTMLElement>('[data-drop-item]')!
 
   handle.setPointerCapture(event.pointerId)
   resizing.value = index
@@ -227,7 +232,7 @@ function resizeWithKeyboard(event: KeyboardEvent, index: number) {
   if (!step) return
   event.preventDefault()
   const cell = bloc.value.cells[index]
-  const cellElement = (event.currentTarget as HTMLElement).closest<HTMLElement>('[data-sortable-item]')!
+  const cellElement = (event.currentTarget as HTMLElement).closest<HTMLElement>('[data-drop-item]')!
   // An automatic cell starts from the width it has on screen.
   const current = cell.width ?? nearestWidth(renderedFraction(cellElement, cellElement.getBoundingClientRect().right))
   const next = WIDTHS[WIDTHS.indexOf(current) + step]
