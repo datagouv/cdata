@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createPost, deletePosts, dragEditItem, gotoHydrated } from '../helpers'
+import { API_BASE, createPost, deletePosts, dragEditItem, focusedDragHandle, gotoHydrated } from '../helpers'
 import { fillPostDescription } from './helpers'
 import type { GridCellWidth, MarkdownBloc } from '~/types/pages'
 
@@ -253,6 +253,49 @@ test.describe('Sections and grids', () => {
     const [left, right] = section.blocs[1].cells
     expect(left.blocs.map((bloc: { content: string }) => bloc.content)).toEqual(['Gauche B'])
     expect(right.blocs.map((bloc: { content: string }) => bloc.content).sort()).toEqual(['Droite', 'Gauche A'])
+  })
+
+  test('a bloc alone in its cell moves up into the section, the cell going with it', async ({ page, request }) => {
+    const post = await createGridPage(request, [
+      { width: null, texts: ['Seul'] },
+      { width: null, texts: ['Droite'] },
+    ])
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    // The cell holding a single bloc is dragged by its own handle
+    await dragEditItem(page.getByTestId('grid-cell').first(), page.getByTestId('bloc-MarkdownBloc').filter({ hasText: 'Avant la grille' }))
+    await expect(page.getByTestId('grid-cell')).toHaveCount(1)
+
+    // The text left the grid for the section (next to the text it was dropped on), the
+    // grid keeping its other cell
+    const [section] = await saveAndFetchBlocs(page, post.slug)
+    const texts = section.blocs.filter((bloc: { class: string }) => bloc.class === 'MarkdownBloc')
+    expect(texts.map((bloc: { content: string }) => bloc.content).sort()).toEqual(['Avant la grille', 'Seul'])
+    const grid = section.blocs.find((bloc: { class: string }) => bloc.class === 'GridBloc')
+    expect(grid.cells.map((cell: { blocs: Array<{ content: string }> }) => cell.blocs[0].content)).toEqual(['Droite'])
+  })
+
+  test('a bloc dropped on the free space of a row becomes a cell', async ({ page, request }) => {
+    const post = await createGridPage(request, [{ width: '1/2', texts: ['Gauche'] }])
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    const handle = await focusedDragHandle(page.getByTestId('bloc-MarkdownBloc').filter({ hasText: 'Avant la grille' }))
+    const from = (await handle.boundingBox())!
+    const cell = (await page.getByTestId('grid-cell').first().boundingBox())!
+    // On the right half of the row, which the 1/2 cell leaves empty
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(cell.x + cell.width * 1.5, cell.y + cell.height / 2, { steps: 20 })
+    await page.mouse.up()
+    await expect(page.getByTestId('grid-cell')).toHaveCount(2)
+
+    const [section] = await saveAndFetchBlocs(page, post.slug)
+    expect(section.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['GridBloc'])
+    const cells = section.blocs[0].cells
+    expect(cells.map((c: { blocs: Array<{ content: string }> }) => c.blocs[0].content)).toEqual(['Gauche', 'Avant la grille'])
+    expect(cells[1].width).toBeNull()
   })
 
   test('a grid moves within its section but cannot be dropped in a cell', async ({ page, request }) => {

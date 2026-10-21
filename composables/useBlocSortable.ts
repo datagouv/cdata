@@ -1,19 +1,28 @@
 import Sortable, { type SortableEvent } from 'sortablejs'
 
-// The array each sortable list element renders, so that an item dropped in another list
-// can be moved between the two arrays.
-const listItems = new WeakMap<HTMLElement, () => unknown[]>()
+type SortableList = {
+  items: () => unknown[]
+  group: string
+  receive?: (item: unknown, fromGroup: string) => unknown[]
+}
+
+// What each sortable list element renders, so that an item dropped in another list can be
+// moved between the two arrays.
+const lists = new WeakMap<HTMLElement, SortableList>()
 
 type SortableOptions = {
-  // Lists of the same group exchange their items (e.g. every grid cell of the page).
+  // Lists of the same group exchange their items as they are (e.g. every grid cell of the
+  // page). Lists of other groups only send theirs when `accepts` lets them in.
   group: string
   // Refuses to receive an item: its element and the list element receiving it.
   accepts?: (item: HTMLElement, list: HTMLElement) => boolean
+  // Turns an item of another group into the items of this list (e.g. a bloc into a cell).
+  receive?: (item: unknown, fromGroup: string) => unknown[]
 }
 
 /**
  * Sorts the items of a list with a drag handle (`[data-drag-handle="<group>"]`), and moves
- * them to the other lists of the same group. Items are the children marked with
+ * them to the other lists that accept them. Items are the children marked with
  * `data-sortable-item`; the handle is a button, moving its item with the arrow keys
  * (see `moveWithKeyboard`).
  */
@@ -27,7 +36,7 @@ export function useBlocSortable<T>(items: () => T[], edit: Ref<boolean>, options
 
     if (!el || !isEditing) return
 
-    listItems.set(el, items)
+    lists.set(el, { items, group: options.group, receive: options.receive })
     sortableInstance = Sortable.create(el, {
       animation: 150,
       ghostClass: 'opacity-50',
@@ -40,22 +49,27 @@ export function useBlocSortable<T>(items: () => T[], edit: Ref<boolean>, options
       handle: `[data-drag-handle="${options.group}"]`,
       group: {
         name: options.group,
-        put: (to, _from, dragEl) => !options.accepts || options.accepts(dragEl, to.el),
+        put: (to, from, dragEl) => {
+          const source = lists.get(from.el)
+          if (source?.group !== options.group && !options.receive) return false
+          return !options.accepts || options.accepts(dragEl, to.el)
+        },
       },
       onEnd: (evt: SortableEvent) => {
         const oldIndex = evt.oldDraggableIndex
         const newIndex = evt.newDraggableIndex
         if (oldIndex === undefined || newIndex === undefined) return
         if (evt.from === evt.to && oldIndex === newIndex) return
-        const from = listItems.get(evt.from)
-        const to = listItems.get(evt.to)
+        const from = lists.get(evt.from)
+        const to = lists.get(evt.to)
         if (!from || !to) return
 
         // Vue owns the DOM: put the element back where Sortable took it, then move the
         // data and let Vue render the result.
         evt.from.insertBefore(evt.item, evt.from.children[evt.oldIndex!] ?? null)
-        const [moved] = from().splice(oldIndex, 1)
-        to().splice(newIndex, 0, moved)
+        const [moved] = from.items().splice(oldIndex, 1)
+        const received = from.group === to.group || !to.receive ? [moved] : to.receive(moved, from.group)
+        to.items().splice(newIndex, 0, ...received)
       },
     })
   }, { immediate: true })

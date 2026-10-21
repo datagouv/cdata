@@ -3,6 +3,7 @@
     <div
       ref="sortableRef"
       class="flex flex-wrap gap-(--grid-gap) [--grid-gap:1.25rem]"
+      data-blocs-level="grid"
     >
       <EditItem
         v-for="(cell, index) in bloc.cells"
@@ -14,6 +15,7 @@
         :class="[cellClass(cell), { 'rounded-lg outline-1 outline-dashed outline-gray-300 p-3': edit && !cell.blocs.length }]"
         :style="cellStyle(cell)"
         data-testid="grid-cell"
+        :data-cell-blocs="cell.blocs.map(cellBloc => cellBloc.class).join(',')"
         data-sortable-item
         @delete="bloc.cells.splice(index, 1)"
         @keyboard-move="moveWithKeyboard($event, index)"
@@ -51,7 +53,7 @@
           :aria-label="$t('Largeur de la cellule')"
           :aria-valuetext="widthLabel(cell.width)"
           :title="$t('Glisser pour redimensionner, double-clic pour la largeur automatique')"
-          class="hidden sm:flex absolute -right-[calc(var(--grid-gap)/2+0.375rem)] top-0 bottom-0 w-3 cursor-col-resize items-center justify-center z-20 touch-none opacity-0 group-hover/cell:opacity-100 focus-visible:opacity-100"
+          class="hidden sm:flex absolute -right-[calc(var(--grid-gap)/2+0.375rem)] top-0 bottom-0 w-3 cursor-col-resize items-center justify-center z-20 touch-none opacity-0 group-hover/cell:opacity-100 focus-visible:opacity-100 transition-opacity delay-400 group-hover/cell:delay-0 focus-visible:delay-0"
           :class="{ 'opacity-100': resizing === index }"
           data-testid="grid-cell-resize"
           @pointerdown="startResize($event, index)"
@@ -73,7 +75,7 @@
          is created with its content -->
     <div
       v-if="edit"
-      class="absolute right-0 -bottom-3.5 opacity-0 group-hover/grid:opacity-100 focus-within:opacity-100 transition-opacity"
+      class="absolute right-0 -bottom-3.5 opacity-0 group-hover/grid:opacity-100 focus-within:opacity-100 transition-opacity delay-400 group-hover/grid:delay-0 focus-within:delay-0"
       :class="{ 'opacity-100': !bloc.cells.length }"
     >
       <AddBlocDropdown
@@ -102,7 +104,7 @@ import AddBlocDropdown from './AddBlocDropdown.vue'
 import BlocsList from './BlocsList.vue'
 import EditItem from './EditItem.vue'
 import type { GridBloc, GridCell, GridCellWidth, LeafBloc, SectionContentBloc } from '~/types/pages'
-import { OBJECT_CELL_WIDTH } from '~/utils/pages'
+import { OBJECT_CELL_WIDTH, acceptsDroppedItem } from '~/utils/pages'
 
 const props = defineProps<{
   edit: boolean
@@ -138,10 +140,17 @@ function cellStyle(cell: GridCell) {
   return cell.width ? { '--cell-fraction': FRACTIONS[cell.width] } : undefined
 }
 
+// A bloc dropped between the cells becomes a cell of its own, at the automatic width.
 const { sortableRef, moveWithKeyboard } = useBlocSortable(
   () => bloc.value.cells,
   toRef(props, 'edit'),
-  { group: 'cells' },
+  {
+    group: 'cells',
+    accepts: acceptsDroppedItem,
+    receive: (item, fromGroup): Array<GridCell> => fromGroup === 'blocs'
+      ? [{ id: uuidv4(), width: null, blocs: [item as LeafBloc] }]
+      : [item as GridCell],
+  },
 )
 
 // Each picked bloc gets a cell of its own: an object at the width of its former list of

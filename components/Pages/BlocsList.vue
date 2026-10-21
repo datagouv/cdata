@@ -70,8 +70,8 @@ import { RiAddLine } from '@remixicon/vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
 import EditItem from './EditItem.vue'
 import MissingObjectBloc from './MissingObjectBloc.vue'
-import type { SectionContentBloc } from '~/types/pages'
-import { BLOC_COMPONENTS, acceptsDroppedBloc, type BlocsLevel } from '~/utils/pages'
+import type { GridCell, SectionContentBloc } from '~/types/pages'
+import { BLOC_COMPONENTS, acceptsDroppedItem, type BlocsLevel } from '~/utils/pages'
 
 const props = defineProps<{
   edit: boolean
@@ -87,11 +87,16 @@ const labels = useBlocLabels()
 const mergedWithCell = computed(() => props.level === 'cell' && blocs.value.length === 1)
 
 // One group for every list of blocs, so that a bloc moves between sections, cells and
-// accordion items, where it is allowed.
+// accordion items, where it is allowed. A grid cell dropped here leaves its blocs: that is
+// how a bloc alone in its cell (dragged with the cell's handle) moves out of the grid.
 const { sortableRef, moveWithKeyboard } = useBlocSortable(
   () => blocs.value,
   toRef(props, 'edit'),
-  { group: 'blocs', accepts: acceptsDroppedBloc },
+  {
+    group: 'blocs',
+    accepts: acceptsDroppedItem,
+    receive: (item, fromGroup) => fromGroup === 'cells' ? (item as GridCell).blocs : [item],
+  },
 )
 
 watchEffect(() => {
@@ -112,13 +117,15 @@ function spacingBefore(index: number) {
 </script>
 
 <style>
-/* Same rule as the tabs of `EditItem`: only the innermost hovered (or focused) list. */
+/* Same rule as the tabs of `EditItem`: only the innermost hovered (or focused) list, and
+   the same grace delay before hiding. */
 [data-add-bloc] {
   opacity: 0;
-  transition: opacity 100ms;
+  transition: opacity 150ms 400ms;
 }
 
 [data-blocs-list]:is(:hover, :focus-within):not(:has([data-blocs-list]:is(:hover, :focus-within))) > [data-add-bloc] {
   opacity: 1;
+  transition: opacity 100ms;
 }
 </style>

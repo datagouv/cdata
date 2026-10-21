@@ -37,7 +37,7 @@
           <!-- Add button above the bloc (absolute positioned), shown on hover -->
           <div
             v-if="isEditing"
-            class="absolute -top-4 left-0 right-0 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 focus-within:opacity-100 transition-opacity"
+            class="absolute -top-4 left-0 right-0 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 focus-within:opacity-100 transition-opacity delay-400 group-hover/section:delay-0 focus-within:delay-0"
           >
             <AddBlocDropdown
               level="page"

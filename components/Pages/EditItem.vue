@@ -76,10 +76,15 @@ const emit = defineEmits<{
 <style>
 /* Only the innermost hovered (or focused) item shows its outline and its tab: the editor
    stays as quiet as the page, whatever the nesting. */
+/* Shown at once, but hidden after a grace delay, during which it stays usable: leaving the
+   item by a few pixels on the way to its tab must not take the tab away. `allow-discrete`
+   delays the switch of `pointer-events` too. Not `visibility`: a hidden button cannot take
+   the keyboard focus, which is what shows the tab to keyboard users. */
 [data-edit-tab] {
   opacity: 0;
   pointer-events: none;
-  transition: opacity 100ms;
+  transition: opacity 150ms 400ms, pointer-events 0s 550ms;
+  transition-behavior: allow-discrete;
 }
 
 [data-edit-item]:is(:hover, :focus-within):not(:has([data-edit-item]:is(:hover, :focus-within))) {
@@ -97,5 +102,12 @@ const emit = defineEmits<{
 [data-edit-item]:is(:hover, :focus-within):not(:has([data-edit-item]:is(:hover, :focus-within))) > [data-edit-tab] {
   opacity: 1;
   pointer-events: auto;
+  transition: opacity 100ms, pointer-events 0s;
+}
+
+/* No grace delay inside the active item: a grid and its first cell share their top left
+   corner, so the lingering tab of the cell would catch the click meant for the grid's. */
+[data-edit-item]:is(:hover, :focus-within):not(:has([data-edit-item]:is(:hover, :focus-within))) [data-edit-item] > [data-edit-tab] {
+  transition: opacity 100ms, pointer-events 0s;
 }
 </style>

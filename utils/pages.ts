@@ -46,11 +46,19 @@ const ACCEPTED_BLOCS: Record<Exclude<BlocsLevel, 'page'>, Array<string>> = {
   cell: LEAF_BLOCS,
 }
 
-// Whether a bloc dragged from another list (`data-bloc-class`) can be dropped in this one
-// (`data-blocs-level`).
-export function acceptsDroppedBloc(item: HTMLElement, list: HTMLElement): boolean {
-  const level = list.dataset.blocsLevel as Exclude<BlocsLevel, 'page'> | undefined
-  return !!level && !!item.dataset.blocClass && ACCEPTED_BLOCS[level].includes(item.dataset.blocClass)
+// Whether an item dragged from another list can be dropped in this one (`data-blocs-level`,
+// `grid` for the cells of a grid). The item is a bloc (`data-bloc-class`), which a grid
+// takes as a new cell, or a cell (`data-cell-blocs`), which a list of blocs takes as the
+// blocs it holds, so all of them must be allowed there.
+export function acceptsDroppedItem(item: HTMLElement, list: HTMLElement): boolean {
+  const level = list.dataset.blocsLevel as Exclude<BlocsLevel, 'page'> | 'grid' | undefined
+  if (!level) return false
+  const cellBlocs = item.dataset.cellBlocs
+  if (level === 'grid') {
+    return cellBlocs !== undefined || LEAF_BLOCS.includes(item.dataset.blocClass ?? '')
+  }
+  const classes = cellBlocs !== undefined ? cellBlocs.split(',').filter(Boolean) : [item.dataset.blocClass ?? '']
+  return classes.every(name => ACCEPTED_BLOCS[level].includes(name))
 }
 
 // Name of a bloc in the editor, on the tab shown when it is hovered.
