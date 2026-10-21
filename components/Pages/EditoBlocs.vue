@@ -26,6 +26,7 @@
           :edit="isEditing"
           :label="labels[bloc.class] ?? bloc.class"
           group="sections"
+          band
           class="group/section"
           :class="bloc.class === 'SectionBloc' && (striped ? 'py-24 odd:bg-gray-some even:bg-white' : 'py-12')"
           :data-testid="`page-${bloc.class}`"

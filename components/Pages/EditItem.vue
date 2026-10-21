@@ -1,14 +1,17 @@
 <template>
   <div
-    :data-edit-item="edit ? '' : undefined"
+    :data-edit-item="edit ? (band ? 'band' : '') : undefined"
     class="relative"
   >
     <!-- Above the item, so that it never covers the item's own controls. The bottom padding
-         bridges the gap down to the outline: the pointer stays on the item on its way up. -->
+         bridges the gap down to the outline: the pointer stays on the item on its way up.
+         A band has no room above it (that is the previous band, or the page header): its
+         tab goes in its own top left corner, empty as its content sits in the container. -->
     <div
       v-if="edit"
       data-edit-tab
-      class="absolute bottom-full -left-1.5 z-30 pb-1.5"
+      class="absolute z-30"
+      :class="band ? 'top-2 left-2' : 'bottom-full -left-1.5 pb-1.5'"
     >
       <div class="flex items-center gap-0.5 rounded-md bg-new-primary text-white text-xs shadow-sm p-0.5">
         <DragHandle
@@ -60,6 +63,8 @@ defineProps<{
   label: string
   // Drag group of the list holding the item (see `useBlocSortable`); no handle without it.
   group?: string
+  // A full width band of the page (section, hero), framed from the inside.
+  band?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -81,6 +86,12 @@ const emit = defineEmits<{
   outline: 2px solid var(--color-new-primary);
   outline-offset: 6px;
   border-radius: 2px;
+}
+
+/* Outside a band, the outline would sit on the edges of the screen and on its neighbours. */
+[data-edit-item="band"]:is(:hover, :focus-within):not(:has([data-edit-item]:is(:hover, :focus-within))) {
+  outline-offset: -2px;
+  border-radius: 0;
 }
 
 [data-edit-item]:is(:hover, :focus-within):not(:has([data-edit-item]:is(:hover, :focus-within))) > [data-edit-tab] {
