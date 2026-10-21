@@ -348,7 +348,7 @@ const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
 const { data: dataservice, status } = await useAPI<Dataservice>(url, { showErrorPage: true, redirectOnSlug: 'did' })
 
 const title = computed(() => `API - ${dataservice.value?.title} | ${config.public.title}`)
-const description = computed(() => dataservice.value ? getDescriptionShort(dataservice.value) : '')
+const description = computed(() => dataservice.value ? getDescriptionShort(dataservice.value) : undefined)
 const robots = computed(() => dataservice.value && dataservice.value.archived_at ? 'noindex' : 'all')
 
 useSeoMeta({

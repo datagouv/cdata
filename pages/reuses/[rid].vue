@@ -189,7 +189,7 @@ const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
 const { data: reuse, status } = await useAPI<Reuse>(url, { showErrorPage: true, redirectOnSlug: 'rid' })
 
 const title = computed(() => `Réutilisation - ${reuse.value?.title} | ${config.public.title}`)
-const description = computed(() => reuse.value ? getDescriptionShort(reuse.value) : '')
+const description = computed(() => reuse.value ? getDescriptionShort(reuse.value) : undefined)
 const robots = computed(() => reuse.value && !reuse.value.metrics.datasets && !reuse.value.metrics.datasets ? 'noindex, nofollow' : 'all')
 
 useSeoMeta({

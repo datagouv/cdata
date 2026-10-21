@@ -177,7 +177,7 @@ const tabLinks = computed(() => {
 
 const title = computed(() => `Organisation - ${organization.value?.name} | ${config.public.title}`)
 const robots = computed(() => organization.value && !organization.value.metrics.dataservices && !organization.value.metrics.datasets && !organization.value.metrics.reuses ? 'noindex, nofollow' : 'all')
-const description = computed(() => organization.value ? getDescriptionShort(organization.value) : '')
+const description = computed(() => organization.value ? getDescriptionShort(organization.value) : undefined)
 
 useSeoMeta({
   title,
