@@ -1,7 +1,8 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createPost, deletePosts, gotoHydrated } from '../helpers'
+import { API_BASE, createPost, deletePosts, focusedDragHandle, gotoHydrated } from '../helpers'
 import { fillPostDescription } from './helpers'
+import type { GridCellWidth, MarkdownBloc } from '~/types/pages'
 
 async function createPostWithBlocs(page: Page, options: {
   title: string
@@ -195,5 +196,134 @@ test.describe('Sections and grids', () => {
     const wideMobile = await sections.first().getByTestId('grid-cell').nth(1).boundingBox()
     expect(narrowMobile!.width).toBeCloseTo(wideMobile!.width, 0)
     expect(wideMobile!.y).toBeGreaterThan(narrowMobile!.y)
+  })
+
+  function markdown(content: string): MarkdownBloc {
+    return { class: 'MarkdownBloc', id: crypto.randomUUID(), content }
+  }
+
+  // A section holding a text, then a grid with a text per line of each cell
+  async function createGridPage(
+    request: Parameters<typeof createPost>[0],
+    cells: Array<{ width: GridCellWidth | null, texts: Array<string> }>,
+  ) {
+    const post = await createPost(request, {
+      name: `Grid ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [{
+        class: 'SectionBloc',
+        id: crypto.randomUUID(),
+        blocs: [
+          markdown('Avant la grille'),
+          {
+            class: 'GridBloc',
+            id: crypto.randomUUID(),
+            cells: cells.map(cell => ({ id: crypto.randomUUID(), width: cell.width, blocs: cell.texts.map(markdown) })),
+          },
+        ],
+      }],
+    })
+    createdIds.push(post.id)
+    return post
+  }
+
+  async function saveAndFetchBlocs(page: Page, slug: string) {
+    await page.getByRole('button', { name: 'Sauvegarder' }).click()
+    await expect(page.getByText('Page sauvegardée')).toBeVisible()
+    const response = await page.request.get(`${API_BASE}/api/1/posts/${slug}/`)
+    return (await response.json()).blocs
+  }
+
+  test('a bloc is dragged by its handle from a cell to another', async ({ page, request }) => {
+    const post = await createGridPage(request, [
+      { width: '1/2', texts: ['Gauche A', 'Gauche B'] },
+      { width: '1/2', texts: ['Droite'] },
+    ])
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    const cells = page.getByTestId('grid-cell')
+    const handle = await focusedDragHandle(cells.nth(0).getByTestId('bloc-MarkdownBloc').first())
+    await handle.dragTo(cells.nth(1).getByTestId('bloc-MarkdownBloc'))
+
+    await expect(cells.nth(0).getByTestId('bloc-MarkdownBloc')).toHaveCount(1)
+    await expect(cells.nth(1).getByTestId('bloc-MarkdownBloc')).toHaveCount(2)
+
+    const [section] = await saveAndFetchBlocs(page, post.slug)
+    const [left, right] = section.blocs[1].cells
+    expect(left.blocs.map((bloc: { content: string }) => bloc.content)).toEqual(['Gauche B'])
+    expect(right.blocs.map((bloc: { content: string }) => bloc.content).sort()).toEqual(['Droite', 'Gauche A'])
+  })
+
+  test('a grid cannot be dropped in a cell', async ({ page, request }) => {
+    const post = await createGridPage(request, [
+      { width: '1/2', texts: ['Gauche'] },
+      { width: '1/2', texts: ['Droite'] },
+    ])
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    const handle = await focusedDragHandle(page.getByTestId('bloc-GridBloc'))
+    await handle.dragTo(page.getByTestId('grid-cell').nth(1).getByTestId('bloc-MarkdownBloc'))
+
+    // The grid is still where it was, after the text of the section
+    const [saved] = await saveAndFetchBlocs(page, post.slug)
+    expect(saved.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['MarkdownBloc', 'GridBloc'])
+    expect(saved.blocs[1].cells.map((cell: { blocs: Array<unknown> }) => cell.blocs.length)).toEqual([1, 1])
+  })
+
+  test('a cell is resized with its handle, snapping to the allowed widths', async ({ page, request }) => {
+    const post = await createGridPage(request, [
+      { width: '1/3', texts: ['Gauche'] },
+      { width: '1/3', texts: ['Droite'] },
+    ])
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    const firstCell = page.getByTestId('grid-cell').first()
+    const handle = firstCell.getByTestId('grid-cell-resize')
+    const grid = await page.getByTestId('bloc-GridBloc').boundingBox()
+    const start = await handle.boundingBox()
+
+    // Dragged to about the middle of the grid: the cell snaps to a half
+    await page.mouse.move(start!.x + start!.width / 2, start!.y + start!.height / 2)
+    await page.mouse.down()
+    await page.mouse.move(grid!.x + grid!.width * 0.48, start!.y + start!.height / 2, { steps: 10 })
+    await page.mouse.up()
+    await expect(handle).toHaveAttribute('aria-valuetext', '1/2')
+
+    // The arrow keys go to the next allowed width
+    await handle.press('ArrowRight')
+    await expect(handle).toHaveAttribute('aria-valuetext', '2/3')
+
+    const [section] = await saveAndFetchBlocs(page, post.slug)
+    expect(section.blocs[1].cells.map((cell: { width: string }) => cell.width)).toEqual(['2/3', '1/3'])
+  })
+
+  test('a cell without width takes what the others leave, and a double click gives it back', async ({ page, request }) => {
+    const post = await createGridPage(request, [
+      { width: '2/3', texts: ['Large'] },
+      { width: null, texts: ['Automatique'] },
+    ])
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    const cells = page.getByTestId('grid-cell')
+    const large = await cells.nth(0).boundingBox()
+    const automatic = await cells.nth(1).boundingBox()
+    // Same row, the automatic cell taking the remaining third
+    expect(Math.abs(large!.y - automatic!.y)).toBeLessThan(1)
+    expect(large!.width / automatic!.width).toBeGreaterThan(1.8)
+    expect(large!.width / automatic!.width).toBeLessThan(2.3)
+
+    await cells.nth(0).getByTestId('grid-cell-resize').dblclick()
+    await expect(cells.nth(0).getByTestId('grid-cell-resize')).toHaveAttribute('aria-valuetext', 'Automatique')
+    const left = await cells.nth(0).boundingBox()
+    const right = await cells.nth(1).boundingBox()
+    expect(left!.width).toBeCloseTo(right!.width, 0)
+
+    const [section] = await saveAndFetchBlocs(page, post.slug)
+    expect(section.blocs[1].cells.map((cell: { width: string | null }) => cell.width)).toEqual([null, null])
   })
 })

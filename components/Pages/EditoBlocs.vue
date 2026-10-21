@@ -15,102 +15,83 @@
       </BrandedButton>
     </div>
 
-    <template
-      v-for="(bloc, index) in workingBlocs"
-      :key="bloc.id"
-    >
-      <!-- An empty section is only a placeholder for the editor -->
-      <div
-        v-if="isEditing || bloc.class !== 'SectionBloc' || bloc.blocs.length"
-        class="relative"
-        :class="bloc.class === 'SectionBloc' && (striped ? 'py-24 odd:bg-gray-some even:bg-white' : 'py-12')"
-        :data-testid="`page-${bloc.class}`"
+    <div ref="sortableRef">
+      <template
+        v-for="(bloc, index) in workingBlocs"
+        :key="bloc.id"
       >
-        <!-- Add button above the bloc (absolute positioned) -->
-        <div
-          v-if="isEditing"
-          class="absolute -top-4 left-0 right-0 flex items-center justify-center z-20"
-        >
-          <AddBlocDropdown
-            level="page"
-            :for-organization="forOrganization"
-            @new-blocs="workingBlocs.splice(index, 0, ...($event as Array<PageBloc>))"
-          >
-            <BrandedButton
-              color="tertiary"
-              size="xs"
-              class="bg-white shadow-sm"
-              :icon="RiAddLine"
-            >
-              {{ $t('Ajouter une section') }}
-            </BrandedButton>
-          </AddBlocDropdown>
-        </div>
-        <!-- Section toolbar in edit mode -->
-        <div
-          v-if="isEditing"
-          class="absolute left-4 top-4 flex flex-row gap-2 z-10 min-[1530px]:left-8 min-[1530px]:top-1/2 min-[1530px]:-translate-y-1/2 min-[1530px]:flex-col"
-        >
-          <BrandedButton
-            color="tertiary"
-            :icon="RiArrowUpLine"
-            :disabled="index === 0"
-            :title="$t('Monter')"
-            @click="moveBloc(index, -1)"
-          />
-          <BrandedButton
-            color="tertiary"
-            :icon="RiArrowDownLine"
-            :disabled="index === workingBlocs.length - 1"
-            :title="$t('Descendre')"
-            @click="moveBloc(index, 1)"
-          />
-          <BrandedButton
-            color="tertiary"
-            :icon="RiDeleteBinLine"
-            :title="$t('Supprimer')"
-            @click="workingBlocs.splice(index, 1)"
-          />
-        </div>
-
-        <HeroBloc
-          v-if="bloc.class === 'HeroBloc'"
-          v-model="(workingBlocs[index] as HeroBlocType)"
+        <!-- An empty section is only a placeholder for the editor -->
+        <EditItem
+          v-if="isEditing || bloc.class !== 'SectionBloc' || bloc.blocs.length"
           :edit="isEditing"
-        />
-        <div
-          v-else
-          class="container"
+          :label="labels[bloc.class] ?? bloc.class"
+          group="sections"
+          class="group/section"
+          :class="bloc.class === 'SectionBloc' && (striped ? 'py-24 odd:bg-gray-some even:bg-white' : 'py-12')"
+          :data-testid="`page-${bloc.class}`"
+          data-sortable-item
+          @delete="workingBlocs.splice(index, 1)"
+          @keyboard-move="moveWithKeyboard($event, index)"
         >
-          <BlocsList
-            v-model="(workingBlocs[index] as SectionBloc).blocs"
-            :edit="isEditing"
-            level="section"
-          />
-        </div>
-
-        <!-- Add button below the last bloc -->
-        <div
-          v-if="isEditing && index === workingBlocs.length - 1"
-          class="absolute -bottom-4 left-0 right-0 flex items-center justify-center z-20"
-        >
-          <AddBlocDropdown
-            level="page"
-            :for-organization="forOrganization"
-            @new-blocs="workingBlocs.push(...($event as Array<PageBloc>))"
+          <!-- Add button above the bloc (absolute positioned), shown on hover -->
+          <div
+            v-if="isEditing"
+            class="absolute -top-4 left-0 right-0 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 focus-within:opacity-100 transition-opacity"
           >
-            <BrandedButton
-              color="tertiary"
-              size="xs"
-              class="bg-white shadow-sm"
-              :icon="RiAddLine"
+            <AddBlocDropdown
+              level="page"
+              :for-organization="forOrganization"
+              @new-blocs="workingBlocs.splice(index, 0, ...($event as Array<PageBloc>))"
             >
-              {{ $t('Ajouter une section') }}
-            </BrandedButton>
-          </AddBlocDropdown>
-        </div>
-      </div>
-    </template>
+              <BrandedButton
+                color="tertiary"
+                size="xs"
+                class="bg-white shadow-sm"
+                :icon="RiAddLine"
+              >
+                {{ $t('Ajouter une section') }}
+              </BrandedButton>
+            </AddBlocDropdown>
+          </div>
+          <HeroBloc
+            v-if="bloc.class === 'HeroBloc'"
+            v-model="(workingBlocs[index] as HeroBlocType)"
+            :edit="isEditing"
+          />
+          <div
+            v-else
+            class="container"
+          >
+            <BlocsList
+              v-model="(workingBlocs[index] as SectionBloc).blocs"
+              :edit="isEditing"
+              level="section"
+            />
+          </div>
+
+          <!-- Add button below the last bloc, always shown: the way to grow the page -->
+          <div
+            v-if="isEditing && index === workingBlocs.length - 1"
+            class="absolute -bottom-4 left-0 right-0 flex items-center justify-center z-20"
+          >
+            <AddBlocDropdown
+              level="page"
+              :for-organization="forOrganization"
+              @new-blocs="workingBlocs.push(...($event as Array<PageBloc>))"
+            >
+              <BrandedButton
+                color="tertiary"
+                size="xs"
+                class="bg-white shadow-sm"
+                :icon="RiAddLine"
+              >
+                {{ $t('Ajouter une section') }}
+              </BrandedButton>
+            </AddBlocDropdown>
+          </div>
+        </EditItem>
+      </template>
+    </div>
 
     <!-- Empty state. In edit mode it invites adding a first bloc; in view mode it
          is only shown when the host opts in via `emptyCtaLabel` (e.g. an org admin
@@ -179,9 +160,10 @@
 <script setup lang="ts">
 import type { ComponentProps } from 'vue-component-type-helpers'
 import { BrandedButton } from '@datagouv/components-next'
-import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine, RiEdit2Line } from '@remixicon/vue'
+import { RiAddLine, RiEdit2Line } from '@remixicon/vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
 import BlocsList from './BlocsList.vue'
+import EditItem from './EditItem.vue'
 import HeroBloc from './HeroBloc.vue'
 import type { HeroBloc as HeroBlocType, PageBloc, SectionBloc } from '~/types/pages'
 import { isMeAdmin } from '~/utils/auth'
@@ -264,16 +246,13 @@ onBeforeRouteLeave(() => {
   return window.confirm(t('Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir quitter ?'))
 })
 
-// Bloc manipulation functions
-function moveBloc(index: number, direction: -1 | 1) {
-  const newIndex = index + direction
-  if (newIndex < 0 || newIndex >= workingBlocs.value.length) return
+const labels = useBlocLabels()
 
-  const blocs = workingBlocs.value
-  const temp = blocs[index]
-  blocs[index] = blocs[newIndex]
-  blocs[newIndex] = temp
-}
+const { sortableRef, moveWithKeyboard } = useBlocSortable(
+  () => workingBlocs.value,
+  isEditing,
+  { group: 'sections' },
+)
 
 // Edit mode management
 function enterEditMode() {

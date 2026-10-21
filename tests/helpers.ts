@@ -1,4 +1,4 @@
-import type { APIRequestContext, Browser, Page } from '@playwright/test'
+import type { APIRequestContext, Browser, Locator, Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 import type { MemberRole } from '@datagouv/components-next'
 import type { DiscussionSubject } from '../types/discussions'
@@ -87,6 +87,26 @@ export async function createDatasetWithRemoteResources(request: APIRequestContex
 export async function gotoHydrated(page: Page, url: string): Promise<void> {
   await page.goto(url)
   await page.waitForLoadState('networkidle')
+}
+
+// The tab of an item of the blocs editor (`EditItem`) only reacts once the item is hovered
+// or focused: focusing one of its buttons is what a keyboard user does.
+function editTab(item: Locator): Locator {
+  return item.locator(':scope > [data-edit-tab]')
+}
+
+export async function deleteEditItem(item: Locator): Promise<void> {
+  const actions = editTab(item).getByRole('button', { name: /^Actions sur/ })
+  await actions.focus()
+  await actions.press('Enter')
+  await item.page().getByRole('menuitem', { name: 'Supprimer' }).click()
+}
+
+// The drag handle of an item, focused so that the mouse can grab it
+export async function focusedDragHandle(item: Locator): Promise<Locator> {
+  const handle = editTab(item).locator('[data-drag-handle]')
+  await handle.focus()
+  return handle
 }
 
 // matomo.js is injected after the load event, and webfonts are only fetched once used,

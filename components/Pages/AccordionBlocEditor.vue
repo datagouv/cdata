@@ -1,23 +1,16 @@
 <template>
   <AccordionGroup>
     <div ref="sortableRef">
-      <div
+      <EditItem
         v-for="(item, itemIndex) in bloc.items"
         :key="itemIndex"
-        class="relative"
-        :class="{ 'cursor-grab active:cursor-grabbing': edit }"
+        :edit
+        :label="labels.AccordionItem"
+        group="accordion-items"
+        data-sortable-item
+        @delete="bloc.items.splice(itemIndex, 1)"
+        @keyboard-move="moveWithKeyboard($event, itemIndex)"
       >
-        <!-- Delete button in edit mode -->
-        <button
-          v-if="edit"
-          type="button"
-          class="absolute -left-8 top-3 text-gray-500 hover:text-gray-700 z-10"
-          :title="$t('Supprimer')"
-          @click="bloc.items.splice(itemIndex, 1)"
-        >
-          <RiDeleteBinLine class="size-5" />
-        </button>
-
         <Accordion
           :id="`accordion-${bloc.id}-${itemIndex}`"
           :title="item.title || $t('Titre de l\'élément')"
@@ -40,7 +33,7 @@
             level="accordion"
           />
         </Accordion>
-      </div>
+      </EditItem>
     </div>
 
     <!-- New accordion placeholder in edit mode -->
@@ -72,9 +65,9 @@
 </template>
 
 <script setup lang="ts">
-import { RiDeleteBinLine } from '@remixicon/vue'
 import EditableText from './EditableText.vue'
 import BlocsList from './BlocsList.vue'
+import EditItem from './EditItem.vue'
 import type { AccordionListBloc } from '~/types/pages'
 
 const props = defineProps<{
@@ -83,9 +76,12 @@ const props = defineProps<{
 
 const bloc = defineModel<AccordionListBloc>({ required: true })
 
-const { sortableRef } = useBlocSortable(
-  computed(() => bloc.value.items),
+const labels = useBlocLabels()
+
+const { sortableRef, moveWithKeyboard } = useBlocSortable(
+  () => bloc.value.items,
   toRef(props, 'edit'),
+  { group: 'accordion-items' },
 )
 
 const newItemTitle = ref('')

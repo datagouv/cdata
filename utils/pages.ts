@@ -1,7 +1,7 @@
 import type { Component } from 'vue'
 import { RiDatabase2Line, RiHeading, RiLayoutColumnLine, RiLayoutRowLine, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine, RiWindow2Line } from '@remixicon/vue'
 import { v4 as uuidv4 } from 'uuid'
-import type { AccordionListBloc, GridBloc, HeroBloc, LinksListBloc, MarkdownBloc, SectionBloc, TitleBloc } from '~/types/pages'
+import type { AccordionListBloc, GridBloc, GridCellWidth, HeroBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionBloc, TitleBloc } from '~/types/pages'
 import TitleBlocComponent from '~/components/Pages/TitleBloc.vue'
 import MarkdownBlocComponent from '~/components/Pages/MarkdownBloc.vue'
 import LinksListBlocComponent from '~/components/Pages/LinksListBloc.vue'
@@ -26,9 +26,52 @@ export const BLOC_COMPONENTS: Record<string, Component> = {
 
 export type ObjectType = 'dataset' | 'dataservice' | 'reuse'
 
+// Same widths as the former lists of cards: reuses fit three per row, the others two.
+export const OBJECT_CELL_WIDTH: Record<ObjectBloc['class'], GridCellWidth> = {
+  DatasetBloc: '1/2',
+  DataserviceBloc: '1/2',
+  ReuseBloc: '1/3',
+}
+
 // Where blocs live: the page itself (sections and heroes), a section, an accordion item
 // or a grid cell. Each level only accepts some blocs (see `AddBlocDropdown`).
 export type BlocsLevel = 'page' | 'section' | 'accordion' | 'cell'
+
+// Mirrors the layout udata enforces (`check_blocs_layout`).
+const LEAF_BLOCS = ['TitleBloc', 'MarkdownBloc', 'LinksListBloc', 'ExploreBloc', 'DatasetBloc', 'DataserviceBloc', 'ReuseBloc']
+const ACCEPTED_BLOCS: Record<Exclude<BlocsLevel, 'page'>, Array<string>> = {
+  section: [...LEAF_BLOCS, 'GridBloc', 'AccordionListBloc'],
+  // The explorer is too wide for an accordion.
+  accordion: [...LEAF_BLOCS.filter(name => name !== 'ExploreBloc'), 'GridBloc'],
+  cell: LEAF_BLOCS,
+}
+
+// Whether a bloc dragged from another list (`data-bloc-class`) can be dropped in this one
+// (`data-blocs-level`).
+export function acceptsDroppedBloc(item: HTMLElement, list: HTMLElement): boolean {
+  const level = list.dataset.blocsLevel as Exclude<BlocsLevel, 'page'> | undefined
+  return !!level && !!item.dataset.blocClass && ACCEPTED_BLOCS[level].includes(item.dataset.blocClass)
+}
+
+// Name of a bloc in the editor, on the tab shown when it is hovered.
+export function useBlocLabels(): Record<string, string> {
+  const { t } = useTranslation()
+  return {
+    HeroBloc: t('Hero'),
+    SectionBloc: t('Section'),
+    GridBloc: t('Grille'),
+    GridCell: t('Cellule'),
+    AccordionListBloc: t('Accordéon'),
+    AccordionItem: t('Élément'),
+    TitleBloc: t('Titre'),
+    MarkdownBloc: t('Texte'),
+    LinksListBloc: t('Liens'),
+    ExploreBloc: t('Explorateur'),
+    DatasetBloc: t('Jeu de données'),
+    DataserviceBloc: t('API'),
+    ReuseBloc: t('Réutilisation'),
+  }
+}
 
 export type BlocChoice = {
   key: string
@@ -85,14 +128,8 @@ export function useBlocChoices() {
       icon: RiLayoutColumnLine,
       name: t('Grille'),
       description: t('Disposer des blocs en colonnes'),
-      create: (): GridBloc => ({
-        class: 'GridBloc',
-        id: uuidv4(),
-        cells: [
-          { id: uuidv4(), width: '1/2', blocs: [] },
-          { id: uuidv4(), width: '1/2', blocs: [] },
-        ],
-      }),
+      // Cells are added with their content, see `GridBloc`.
+      create: (): GridBloc => ({ class: 'GridBloc', id: uuidv4(), cells: [] }),
     },
     AccordionListBloc: {
       key: 'AccordionListBloc',

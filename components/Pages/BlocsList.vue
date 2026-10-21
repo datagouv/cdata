@@ -1,58 +1,50 @@
 <template>
-  <div>
+  <div
+    class="relative"
+    :data-blocs-list="edit ? '' : undefined"
+  >
+    <!-- `min-h` keeps an empty list a drop target -->
     <div
-      v-for="(bloc, index) in blocs"
-      :key="bloc.id"
-      class="relative"
-      :class="[spacingBefore(index), { 'pt-10': edit }]"
-      :data-testid="`bloc-${bloc.class}`"
+      ref="sortableRef"
+      :data-blocs-level="level"
+      :class="{ 'min-h-8': edit }"
     >
-      <!-- Inside the bloc's own box, so it never covers a neighbouring cell or toolbar -->
-      <div
-        v-if="edit"
-        class="absolute top-0 right-0 z-10 flex gap-1"
+      <!-- Alone in its cell, the bloc is edited as the cell (see `GridBloc`) -->
+      <EditItem
+        v-for="(bloc, index) in blocs"
+        :key="bloc.id"
+        :edit="edit && !mergedWithCell"
+        :label="labels[bloc.class] ?? bloc.class"
+        group="blocs"
+        :class="spacingBefore(index)"
+        :data-testid="`bloc-${bloc.class}`"
+        :data-bloc-class="bloc.class"
+        data-sortable-item
+        @delete="blocs.splice(index, 1)"
+        @keyboard-move="moveWithKeyboard($event, index)"
       >
-        <BrandedButton
-          color="tertiary"
-          size="xs"
-          :icon="RiArrowUpLine"
-          :disabled="index === 0"
-          :title="$t('Monter')"
-          @click="move(index, -1)"
+        <component
+          :is="BLOC_COMPONENTS[bloc.class]"
+          v-if="BLOC_COMPONENTS[bloc.class]"
+          v-model="(blocs[index] as any)"
+          :edit
         />
-        <BrandedButton
-          color="tertiary"
-          size="xs"
-          :icon="RiArrowDownLine"
-          :disabled="index === blocs.length - 1"
-          :title="$t('Descendre')"
-          @click="move(index, 1)"
+        <MissingObjectBloc
+          v-else-if="edit"
+          :label="$t('Ce bloc ne peut pas être affiché ici')"
         />
-        <BrandedButton
-          color="tertiary"
-          size="xs"
-          :icon="RiDeleteBinLine"
-          :title="$t('Supprimer')"
-          @click="blocs.splice(index, 1)"
-        />
-      </div>
-
-      <component
-        :is="BLOC_COMPONENTS[bloc.class]"
-        v-if="BLOC_COMPONENTS[bloc.class]"
-        v-model="(blocs[index] as any)"
-        :edit
-      />
-      <MissingObjectBloc
-        v-else-if="edit"
-        :label="$t('Ce bloc ne peut pas être affiché ici')"
-      />
+      </EditItem>
     </div>
 
+    <!-- Always shown in an empty list, the only thing it can hold. Otherwise, on the bottom
+         edge of the innermost hovered list, so that it takes no room in the page. Neither
+         z-index nor transform: they would trap the menu it opens under the page's other
+         controls. -->
     <div
       v-if="edit"
       class="flex justify-center"
-      :class="{ 'mt-6': blocs.length }"
+      :class="blocs.length ? 'absolute inset-x-0 -bottom-3 pointer-events-none *:pointer-events-auto' : ''"
+      :data-add-bloc="blocs.length ? '' : undefined"
     >
       <AddBlocDropdown
         :level
@@ -60,7 +52,8 @@
       >
         <button
           type="button"
-          class="text-gray-400 hover:text-gray-600 flex items-center gap-1 text-sm"
+          class="flex items-center gap-1 text-sm whitespace-nowrap"
+          :class="blocs.length ? 'rounded-full bg-white px-2.5 py-0.5 text-gray-medium hover:text-gray-title shadow-sm ring-1 ring-gray-200' : 'text-gray-400 hover:text-gray-600'"
           :data-testid="`add-bloc-in-${level}`"
         >
           <RiAddLine class="size-4" />
@@ -73,12 +66,12 @@
 
 <script setup lang="ts" generic="T extends SectionContentBloc">
 import * as Sentry from '@sentry/nuxt'
-import { BrandedButton } from '@datagouv/components-next'
-import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine } from '@remixicon/vue'
+import { RiAddLine } from '@remixicon/vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
+import EditItem from './EditItem.vue'
 import MissingObjectBloc from './MissingObjectBloc.vue'
 import type { SectionContentBloc } from '~/types/pages'
-import { BLOC_COMPONENTS, type BlocsLevel } from '~/utils/pages'
+import { BLOC_COMPONENTS, acceptsDroppedBloc, type BlocsLevel } from '~/utils/pages'
 
 const props = defineProps<{
   edit: boolean
@@ -87,6 +80,19 @@ const props = defineProps<{
 }>()
 
 const blocs = defineModel<Array<T>>({ required: true })
+
+const labels = useBlocLabels()
+
+// A cell holding a single bloc is that bloc for the editor: one tab, not two.
+const mergedWithCell = computed(() => props.level === 'cell' && blocs.value.length === 1)
+
+// One group for every list of blocs, so that a bloc moves between sections, cells and
+// accordion items, where it is allowed.
+const { sortableRef, moveWithKeyboard } = useBlocSortable(
+  () => blocs.value,
+  toRef(props, 'edit'),
+  { group: 'blocs', accepts: acceptsDroppedBloc },
+)
 
 watchEffect(() => {
   for (const bloc of blocs.value) {
@@ -103,11 +109,16 @@ function spacingBefore(index: number) {
   if (props.level === 'cell') return afterTitle ? 'mt-4' : 'mt-6'
   return afterTitle ? 'mt-6' : 'mt-12'
 }
-
-function move(index: number, direction: -1 | 1) {
-  const newIndex = index + direction
-  if (newIndex < 0 || newIndex >= blocs.value.length) return
-  const moved = blocs.value.splice(index, 1)[0]
-  blocs.value.splice(newIndex, 0, moved)
-}
 </script>
+
+<style>
+/* Same rule as the tabs of `EditItem`: only the innermost hovered (or focused) list. */
+[data-add-bloc] {
+  opacity: 0;
+  transition: opacity 100ms;
+}
+
+[data-blocs-list]:is(:hover, :focus-within):not(:has([data-blocs-list]:is(:hover, :focus-within))) > [data-add-bloc] {
+  opacity: 1;
+}
+</style>

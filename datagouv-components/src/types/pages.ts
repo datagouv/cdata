@@ -63,7 +63,8 @@ export type GridCellWidth = '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | '1'
 
 export type GridCell = {
   id: string
-  width: GridCellWidth
+  // `null`: the cell shares what the cells with a width leave on its row.
+  width: GridCellWidth | null
   blocs: Array<LeafBloc>
 }
 

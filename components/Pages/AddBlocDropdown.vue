@@ -65,8 +65,8 @@
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { v4 as uuidv4 } from 'uuid'
 import ObjectsSelectorModal from './ObjectsSelectorModal.vue'
-import type { GridBloc, GridCellWidth, ObjectBloc, PageBloc, SectionContentBloc } from '~/types/pages'
-import type { BlocChoice, BlocsLevel, ObjectType } from '~/utils/pages'
+import type { GridBloc, ObjectBloc, PageBloc, SectionContentBloc } from '~/types/pages'
+import { OBJECT_CELL_WIDTH, type BlocChoice, type BlocsLevel, type ObjectType } from '~/utils/pages'
 
 const props = defineProps<{
   level: BlocsLevel
@@ -107,21 +107,17 @@ function pick(choice: BlocChoice) {
   isSelectorOpen.value = true
 }
 
-// Same widths as the former lists of cards: reuses fit three per row, the others two.
-const OBJECT_WIDTH: Record<ObjectType, GridCellWidth> = { dataset: '1/2', dataservice: '1/2', reuse: '1/3' }
-
 function addObjects(blocs: Array<ObjectBloc>) {
-  if (!blocs.length || !objectType.value) return
+  if (!blocs.length) return
   // A cell stacks its objects; elsewhere they are laid out in a grid, one cell each.
   if (props.level === 'cell') {
     emit('newBlocs', blocs)
     return
   }
-  const width = OBJECT_WIDTH[objectType.value]
   const grid: GridBloc = {
     class: 'GridBloc',
     id: uuidv4(),
-    cells: blocs.map(bloc => ({ id: uuidv4(), width, blocs: [bloc] })),
+    cells: blocs.map(bloc => ({ id: uuidv4(), width: OBJECT_CELL_WIDTH[bloc.class], blocs: [bloc] })),
   }
   emit('newBlocs', [grid])
 }

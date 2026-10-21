@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
+import { deleteEditItem, focusedDragHandle } from '../helpers'
 
 test('can save edito page from admin without error toast', async ({ page }) => {
   await page.goto('/admin/site/edito/datasets')
@@ -72,13 +73,11 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.waitForLoadState('networkidle')
 
   // === Step 0: Delete all existing sections to start fresh ===
-  let deleteButtons = page.locator('[title="Supprimer"]')
-  let count = await deleteButtons.count()
-  while (count > 0) {
-    await deleteButtons.first().click()
-    await page.waitForTimeout(200)
-    deleteButtons = page.locator('[title="Supprimer"]')
-    count = await deleteButtons.count()
+  const pageBlocs = page.locator('[data-testid^="page-"][data-sortable-item]')
+  while (await pageBlocs.count() > 0) {
+    const before = await pageBlocs.count()
+    await deleteEditItem(pageBlocs.first())
+    await expect(pageBlocs).toHaveCount(before - 1)
   }
 
   // === Step 1: Add a HeroBloc ===
@@ -129,12 +128,15 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await addSection(page)
   await addTitleInLastSection(page, 'API essentielles')
   await addBlocInLastSection(page, 'GridBloc')
-  const grid = page.getByTestId('page-SectionBloc').last().getByTestId('grid-cell')
-  await grid.nth(0).getByTestId('add-bloc-in-cell').click()
+  const lastSection = page.getByTestId('page-SectionBloc').last()
+  // A cell is added with its content: each API gets its own cell, then the text
+  await lastSection.getByTestId('add-grid-cell').click()
   await page.getByTestId('add-bloc-dataservices').click()
   await selectObjects(page, 'Rechercher une API…', ['sirene', 'explore'])
-  await grid.nth(1).getByTestId('add-bloc-in-cell').click()
+  await expect(lastSection.getByTestId('grid-cell')).toHaveCount(2)
+  await lastSection.getByTestId('add-grid-cell').click()
   await page.getByTestId('add-bloc-MarkdownBloc').click()
+  await expect(lastSection.getByTestId('grid-cell')).toHaveCount(3)
   await page.locator('.milkdown').last().click()
   await page.keyboard.type('Les API les plus utilisées de la plateforme.')
 
@@ -197,10 +199,11 @@ test('can edit edito page with all bloc types', async ({ page }) => {
 
   // === Step 8: Section manipulation ===
   const sectionTitles = page.getByTestId('page-SectionBloc').getByTestId('bloc-TitleBloc')
-  // Move the datasets section below the reuses one, then delete the reuses section
-  await page.getByTestId('page-SectionBloc').nth(0).locator('[title="Descendre"]').first().click()
+  // Move the datasets section below the reuses one with the keyboard on its drag handle,
+  // then delete the reuses section
+  await (await focusedDragHandle(page.getByTestId('page-SectionBloc').nth(0))).press('ArrowDown')
   await expect(sectionTitles.nth(0)).toContainText('Réutilisations innovantes')
-  await page.getByTestId('page-SectionBloc').nth(0).locator('[title="Supprimer"]').first().click()
+  await deleteEditItem(page.getByTestId('page-SectionBloc').nth(0))
   await expect(sectionTitles.nth(0)).toContainText('Nos jeux de données phares')
 
   // === Step 9: Save the page ===
