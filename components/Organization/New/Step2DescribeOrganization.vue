@@ -27,7 +27,7 @@
     <slot name="top" />
 
     <RequiredExplanation />
-    <FormFieldset :legend="$t('Description')">
+    <FormFieldset :legend="showLegend ? $t('Description') : undefined">
       <FieldsetElement form-key="name">
         <InputGroup
           v-model="organization.name"
@@ -241,6 +241,7 @@
       <BrandedButton
         type="submit"
         color="primary"
+        :loading
         :disabled="'permissions' in organization ? !organization.permissions.edit : false"
       >
         {{ submitLabel }}
