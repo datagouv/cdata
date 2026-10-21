@@ -1,4 +1,4 @@
-import Sortable, { type MoveEvent, type SortableEvent } from 'sortablejs'
+import Sortable, { type SortableEvent } from 'sortablejs'
 
 export function useBlocSortable<T>(items: Ref<T[]>, edit: Ref<boolean>) {
   const sortableRef = ref<HTMLElement | null>(null)
@@ -13,13 +13,6 @@ export function useBlocSortable<T>(items: Ref<T[]>, edit: Ref<boolean>) {
     sortableInstance = Sortable.create(el, {
       animation: 150,
       ghostClass: 'opacity-50',
-      filter: '.add-object-card',
-      onMove: (evt: MoveEvent) => {
-        if (evt.related?.classList.contains('add-object-card')) {
-          return false
-        }
-        return true
-      },
       onEnd: (evt: SortableEvent) => {
         if (evt.oldIndex === undefined || evt.newIndex === undefined) return
         if (evt.oldIndex === evt.newIndex) return

@@ -15,101 +15,102 @@
       </BrandedButton>
     </div>
 
-    <div
+    <template
       v-for="(bloc, index) in workingBlocs"
       :key="bloc.id"
-      class="relative"
-      :class="bloc.class !== 'HeroBloc' && (striped ? 'py-24 odd:bg-gray-some even:bg-white' : 'py-12')"
     >
-      <!-- Add button above the bloc (absolute positioned) -->
+      <!-- An empty section is only a placeholder for the editor -->
       <div
-        v-if="isEditing"
-        class="absolute -top-4 left-0 right-0 flex items-center justify-center"
+        v-if="isEditing || bloc.class !== 'SectionBloc' || bloc.blocs.length"
+        class="relative"
+        :class="bloc.class === 'SectionBloc' && (striped ? 'py-24 odd:bg-gray-some even:bg-white' : 'py-12')"
+        :data-testid="`page-${bloc.class}`"
       >
-        <AddBlocDropdown
-          :for-organization="forOrganization"
-          @new-bloc="workingBlocs.splice(index, 0, $event)"
+        <!-- Add button above the bloc (absolute positioned) -->
+        <div
+          v-if="isEditing"
+          class="absolute -top-4 left-0 right-0 flex items-center justify-center z-20"
+        >
+          <AddBlocDropdown
+            level="page"
+            :for-organization="forOrganization"
+            @new-blocs="workingBlocs.splice(index, 0, ...($event as Array<PageBloc>))"
+          >
+            <BrandedButton
+              color="tertiary"
+              size="xs"
+              class="bg-white shadow-sm"
+              :icon="RiAddLine"
+            >
+              {{ $t('Ajouter une section') }}
+            </BrandedButton>
+          </AddBlocDropdown>
+        </div>
+        <!-- Section toolbar in edit mode -->
+        <div
+          v-if="isEditing"
+          class="absolute left-4 top-4 flex flex-row gap-2 z-10 min-[1530px]:left-8 min-[1530px]:top-1/2 min-[1530px]:-translate-y-1/2 min-[1530px]:flex-col"
         >
           <BrandedButton
             color="tertiary"
-            size="xs"
-            class="bg-white shadow-sm"
-            :icon="RiAddLine"
-          >
-            {{ $t('Ajouter un bloc') }}
-          </BrandedButton>
-        </AddBlocDropdown>
-      </div>
-      <!-- Bloc toolbar in edit mode -->
-      <div
-        v-if="isEditing"
-        class="absolute left-4 top-4 flex flex-row gap-2 z-10 min-[1530px]:left-8 min-[1530px]:top-1/2 min-[1530px]:-translate-y-1/2 min-[1530px]:flex-col"
-      >
-        <BrandedButton
-          color="tertiary"
-          :icon="RiArrowUpLine"
-          :disabled="index === 0"
-          :title="$t('Monter')"
-          @click="moveBloc(index, -1)"
-        />
-        <BrandedButton
-          color="tertiary"
-          :icon="RiArrowDownLine"
-          :disabled="index === workingBlocs.length - 1"
-          :title="$t('Descendre')"
-          @click="moveBloc(index, 1)"
-        />
-        <BrandedButton
-          color="tertiary"
-          :icon="RiDeleteBinLine"
-          :title="$t('Supprimer')"
-          @click="workingBlocs.splice(index, 1)"
-        />
-      </div>
+            :icon="RiArrowUpLine"
+            :disabled="index === 0"
+            :title="$t('Monter')"
+            @click="moveBloc(index, -1)"
+          />
+          <BrandedButton
+            color="tertiary"
+            :icon="RiArrowDownLine"
+            :disabled="index === workingBlocs.length - 1"
+            :title="$t('Descendre')"
+            @click="moveBloc(index, 1)"
+          />
+          <BrandedButton
+            color="tertiary"
+            :icon="RiDeleteBinLine"
+            :title="$t('Supprimer')"
+            @click="workingBlocs.splice(index, 1)"
+          />
+        </div>
 
-      <!-- Full-width blocs (like HeroBloc) -->
-      <component
-        :is="blocsTypes[bloc.class].component"
-        v-if="blocsTypes[bloc.class] && 'fullWidth' in blocsTypes[bloc.class] && blocsTypes[bloc.class].component"
-        v-model="(workingBlocs[index] as any)"
-        :edit="isEditing"
-        v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
-      />
-
-      <!-- Other blocs use container layout -->
-      <div
-        v-else
-        class="container"
-      >
-        <component
-          :is="blocsTypes[bloc.class].component"
-          v-if="blocsTypes[bloc.class]?.component"
-          v-model="(workingBlocs[index] as any)"
+        <HeroBloc
+          v-if="bloc.class === 'HeroBloc'"
+          v-model="(workingBlocs[index] as HeroBlocType)"
           :edit="isEditing"
-          v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
         />
-      </div>
-
-      <!-- Add button below the last bloc -->
-      <div
-        v-if="isEditing && index === workingBlocs.length - 1"
-        class="absolute -bottom-4 left-0 right-0 flex items-center justify-center"
-      >
-        <AddBlocDropdown
-          :for-organization="forOrganization"
-          @new-bloc="workingBlocs.push($event)"
+        <div
+          v-else
+          class="container"
         >
-          <BrandedButton
-            color="tertiary"
-            size="xs"
-            class="bg-white shadow-sm"
-            :icon="RiAddLine"
+          <BlocsList
+            v-model="(workingBlocs[index] as SectionBloc).blocs"
+            :edit="isEditing"
+            level="section"
+          />
+        </div>
+
+        <!-- Add button below the last bloc -->
+        <div
+          v-if="isEditing && index === workingBlocs.length - 1"
+          class="absolute -bottom-4 left-0 right-0 flex items-center justify-center z-20"
+        >
+          <AddBlocDropdown
+            level="page"
+            :for-organization="forOrganization"
+            @new-blocs="workingBlocs.push(...($event as Array<PageBloc>))"
           >
-            {{ $t('Ajouter un bloc') }}
-          </BrandedButton>
-        </AddBlocDropdown>
+            <BrandedButton
+              color="tertiary"
+              size="xs"
+              class="bg-white shadow-sm"
+              :icon="RiAddLine"
+            >
+              {{ $t('Ajouter une section') }}
+            </BrandedButton>
+          </AddBlocDropdown>
+        </div>
       </div>
-    </div>
+    </template>
 
     <!-- Empty state. In edit mode it invites adding a first bloc; in view mode it
          is only shown when the host opts in via `emptyCtaLabel` (e.g. an org admin
@@ -134,11 +135,12 @@
       </slot>
       <AddBlocDropdown
         v-if="isEditing"
+        level="page"
         :for-organization="forOrganization"
-        @new-bloc="workingBlocs.push($event)"
+        @new-blocs="workingBlocs.push(...($event as Array<PageBloc>))"
       >
         <BrandedButton :icon="RiAddLine">
-          {{ $t('Ajouter un bloc') }}
+          {{ $t('Ajouter une section') }}
         </BrandedButton>
       </AddBlocDropdown>
       <BrandedButton
@@ -176,23 +178,22 @@
 
 <script setup lang="ts">
 import type { ComponentProps } from 'vue-component-type-helpers'
-import * as Sentry from '@sentry/nuxt'
 import { BrandedButton } from '@datagouv/components-next'
 import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine, RiEdit2Line } from '@remixicon/vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
-import type { PageBloc } from '~/types/pages'
+import BlocsList from './BlocsList.vue'
+import HeroBloc from './HeroBloc.vue'
+import type { HeroBloc as HeroBlocType, PageBloc, SectionBloc } from '~/types/pages'
 import { isMeAdmin } from '~/utils/auth'
-
-const blocsTypes = useBlocsTypes()
+import { BLOCS_MAIN_COLOR, normalizeBlocs, type LegacyBloc } from '~/utils/blocs'
 
 const props = withDefaults(defineProps<{
-  blocs: Array<PageBloc>
+  blocs: Array<PageBloc | LegacyBloc>
   edit?: boolean
   editable?: boolean
   striped?: boolean
   hideEditButton?: boolean
-  // Trims the "add bloc" menu for organization presentation pages (no Hero, Markdown
-  // moved into the layout group). See AddBlocDropdown.
+  // Organization presentation pages have no Hero bloc. See AddBlocDropdown.
   forOrganization?: boolean
   mainColor?: ComponentProps<typeof BrandedButton>['color']
   // When set, the empty state is also shown in view mode (not just while editing)
@@ -210,13 +211,11 @@ const props = withDefaults(defineProps<{
   emptyCtaLabel: undefined,
 })
 
-watchEffect(() => {
-  for (const bloc of props.blocs) {
-    if (!blocsTypes[bloc.class]) {
-      Sentry.captureMessage(`Unknown bloc type: "${bloc.class}"`, 'warning')
-    }
-  }
-})
+provide(BLOCS_MAIN_COLOR, props.mainColor)
+
+// From the raw array, so that the working copy below can be `structuredClone`d (a
+// reactive proxy cannot be).
+const normalizedBlocs = computed(() => normalizeBlocs(toRaw(props.blocs)))
 
 const emit = defineEmits<{
   cancel: []
@@ -232,15 +231,15 @@ const localBlocs = ref<Array<PageBloc> | null>(null)
 
 watchEffect(() => {
   if (isEditing.value && !localBlocs.value) {
-    localBlocs.value = structuredClone(toRaw(props.blocs))
+    localBlocs.value = structuredClone(normalizedBlocs.value)
   }
 })
 
-const workingBlocs = computed(() => localBlocs.value ?? props.blocs)
+const workingBlocs = computed(() => localBlocs.value ?? normalizedBlocs.value)
 
 // Check if there are unsaved changes
 const hasUnsavedChanges = computed(() => {
-  return localBlocs.value !== null && JSON.stringify(toRaw(localBlocs.value)) !== JSON.stringify(toRaw(props.blocs))
+  return localBlocs.value !== null && JSON.stringify(toRaw(localBlocs.value)) !== JSON.stringify(normalizedBlocs.value)
 })
 
 // Warn before leaving with unsaved changes.

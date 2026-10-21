@@ -2,23 +2,18 @@ import type { DatasetV2 } from './datasets'
 import type { Dataservice } from './dataservices'
 import type { Reuse } from './reuses'
 
-export type BlocWithTitle = {
+export type TitleBloc = {
+  class: 'TitleBloc'
+  id: string
   title: string
   subtitle: string | null
 }
 
-export type DatasetsListBloc = {
-  class: 'DatasetsListBloc'
-  datasets: Array<DatasetV2>
-} & BlocWithTitle & { id: string }
-export type DataservicesListBloc = {
-  class: 'DataservicesListBloc'
-  dataservices: Array<Dataservice>
-} & BlocWithTitle & { id: string }
-export type ReusesListBloc = {
-  class: 'ReusesListBloc'
-  reuses: Array<Reuse>
-} & BlocWithTitle & { id: string }
+export type MarkdownBloc = {
+  class: 'MarkdownBloc'
+  id: string
+  content: string
+}
 
 export type LinkInBloc = {
   title: string
@@ -28,38 +23,85 @@ export type LinkInBloc = {
 
 export type LinksListBloc = {
   class: 'LinksListBloc'
+  id: string
   paragraph: string | null
   main_link_title: string | null
   main_link_url: string | null
   links: Array<LinkInBloc>
-} & BlocWithTitle & { id: string }
+}
 
-export type MarkdownBloc = {
-  class: 'MarkdownBloc'
-  content: string
-} & BlocWithTitle & { id: string }
+export type ExploreBloc = {
+  class: 'ExploreBloc'
+  id: string
+  resource_id: string
+}
 
-export type ContentBloc = DatasetsListBloc | DataservicesListBloc | ReusesListBloc | LinksListBloc | MarkdownBloc
+// The referenced object is `null` when it no longer exists.
+export type DatasetBloc = {
+  class: 'DatasetBloc'
+  id: string
+  dataset: DatasetV2 | null
+}
+
+export type DataserviceBloc = {
+  class: 'DataserviceBloc'
+  id: string
+  dataservice: Dataservice | null
+}
+
+export type ReuseBloc = {
+  class: 'ReuseBloc'
+  id: string
+  reuse: Reuse | null
+}
+
+export type ObjectBloc = DatasetBloc | DataserviceBloc | ReuseBloc
+
+export type LeafBloc = TitleBloc | MarkdownBloc | LinksListBloc | ExploreBloc | ObjectBloc
+
+export type GridCellWidth = '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | '1'
+
+export type GridCell = {
+  id: string
+  width: GridCellWidth
+  blocs: Array<LeafBloc>
+}
+
+export type GridBloc = {
+  class: 'GridBloc'
+  id: string
+  cells: Array<GridCell>
+}
+
+export type AccordionContentBloc = GridBloc | Exclude<LeafBloc, ExploreBloc>
 
 export type AccordionItemBloc = {
   title: string
-  content: Array<ContentBloc>
+  content: Array<AccordionContentBloc>
 }
 
 export type AccordionListBloc = {
   class: 'AccordionListBloc'
-  title: string | null
-  description: string | null
+  id: string
   items: Array<AccordionItemBloc>
-} & { id: string }
+}
+
+export type SectionContentBloc = GridBloc | AccordionListBloc | LeafBloc
+
+export type SectionBloc = {
+  class: 'SectionBloc'
+  id: string
+  blocs: Array<SectionContentBloc>
+}
 
 export type HeroBloc = {
   class: 'HeroBloc'
+  id: string
   title: string
   description: string | null
   color: 'primary' | 'green' | 'purple'
   main_link_title: string | null
   main_link_url: string | null
-} & { id: string }
+}
 
-export type PageBloc = ContentBloc | AccordionListBloc | HeroBloc
+export type PageBloc = HeroBloc | SectionBloc
