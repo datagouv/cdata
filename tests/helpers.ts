@@ -3,6 +3,8 @@ import { expect, test } from '@playwright/test'
 import type { MemberRole } from '@datagouv/components-next'
 import type { DiscussionSubject } from '../types/discussions'
 import type { NotificationRuleKey, NotificationSetting } from '../types/notifications'
+import type { PageBloc } from '../types/pages'
+import type { Post } from '../types/posts'
 
 export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
@@ -12,6 +14,7 @@ export type ApiHarvestSource = { id: string, name: string, backend: string, sche
 export type ApiOrganization = { id: string, name: string, slug: string }
 export type ApiContactPoint = { id: string, name: string, email: string | null, contact_form: string | null, role: string }
 export type ApiReuse = { id: string, title: string, slug: string }
+export type ApiPost = { id: string, name: string, slug: string }
 
 export async function createHarvestSource(request: APIRequestContext, name: string, backend: string, config: Record<string, unknown> = {}): Promise<ApiHarvestSource> {
   const response = await request.post(`${API_BASE}/api/1/harvest/sources/`, {
@@ -131,6 +134,29 @@ export async function createReuse(request: APIRequestContext, title: string, url
     throw new Error(`Failed to create reuse "${title}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
   }
   return await response.json()
+}
+
+export async function createPost(request: APIRequestContext, data: {
+  name: string
+  kind: Post['kind']
+  slug?: string
+  content?: string
+  body_type?: Post['body_type']
+  blocs?: Array<PageBloc>
+  parent?: string
+}): Promise<ApiPost> {
+  const response = await request.post(`${API_BASE}/api/1/posts/`, { data })
+  if (!response.ok()) {
+    throw new Error(`Failed to create post "${data.name}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+  return await response.json()
+}
+
+// Deleted from the last created: the API refuses to delete a page that still has sub-pages.
+export async function deletePosts(request: APIRequestContext, ids: Array<string>): Promise<void> {
+  for (const id of ids.splice(0).reverse()) {
+    await request.delete(`${API_BASE}/api/1/posts/${id}/`)
+  }
 }
 
 export async function createDiscussion(request: APIRequestContext, subject: DiscussionSubject, title: string): Promise<{ id: string }> {

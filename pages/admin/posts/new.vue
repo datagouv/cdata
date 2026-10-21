@@ -52,6 +52,7 @@ const { t } = useTranslation()
 const route = useRoute()
 const { $api, $fileApi } = useNuxtApp()
 const me = useMe()
+const absoluteUrlToRelative = useAbsoluteUrlToRelative()
 
 const steps = computed(() => [
   t('Décrivez votre article'),
@@ -70,6 +71,7 @@ const postForm = useState<PostForm>(POST_FORM_STATE, () => ({
   credit_url: '',
   headline: '',
   kind: 'news',
+  parent: null,
   published: null,
   owner: me.value,
   tags: [],
@@ -133,7 +135,7 @@ async function save(form: { content: string }) {
       }
     }
     if (newPost.value.body_type === 'blocs') {
-      await navigateTo(`/posts/${newPost.value.slug}?edit=true`)
+      await navigateTo({ path: absoluteUrlToRelative(newPost.value.page), query: { edit: 'true' } })
     }
     else {
       await navigateTo(`/admin/posts/${newPost.value.id}`)

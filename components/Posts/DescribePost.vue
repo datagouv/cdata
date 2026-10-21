@@ -59,6 +59,21 @@
           ]"
         />
       </div>
+      <div
+        v-if="form.kind === 'page'"
+        class="fr-fieldset__element"
+      >
+        <SearchableSelect
+          v-model="form.parent"
+          :label="t('Page parente')"
+          :hint-text="t(`L'adresse de la page reprend celle de sa page parente, par exemple /pages/elections/municipales.`)"
+          :placeholder="t('Aucune, la page est à la racine')"
+          :suggest="suggestParentPages"
+          :display-value="(page: PostAncestor) => `${page.name} (${absoluteUrlToRelative(page.page)})`"
+          :get-option-id="(page: PostAncestor) => page.id"
+          :multiple="false"
+        />
+      </div>
       <div class="fr-fieldset__element">
         <RadioButtons
           v-model="form.body_type"
@@ -129,13 +144,15 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import type { PostForm } from '~/types/posts'
+import { BrandedButton, SearchableSelect } from '@datagouv/components-next'
+import type { PaginatedArray } from '~/types/types'
+import type { Post, PostAncestor, PostForm } from '~/types/posts'
 
 const props = defineProps<{
   submitLabel: string
   type: 'create' | 'update'
   loading?: boolean
+  postId?: string
 }>()
 const postForm = defineModel<PostForm>({ required: true })
 const emit = defineEmits<{
@@ -144,6 +161,16 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useTranslation()
+const { $api } = useNuxtApp()
+const absoluteUrlToRelative = useAbsoluteUrlToRelative()
+
+async function suggestParentPages(query: string): Promise<Array<PostAncestor>> {
+  const pages = await $api<PaginatedArray<Post>>('/api/1/posts/', {
+    query: { kind: 'page', q: query, with_drafts: true, page_size: 10 },
+  })
+  // The page itself and its sub-pages would make a cycle, which the API refuses
+  return pages.data.filter(page => page.id !== props.postId && !page.ancestors.some(ancestor => ancestor.id === props.postId))
+}
 
 const isUpdate = computed(() => props.type === 'update')
 // News are listed as cards on /posts and on the home page, laid out around their cover.
