@@ -6,12 +6,13 @@
     <!-- Above the item, so that it never covers the item's own controls. The bottom padding
          bridges the gap down to the outline: the pointer stays on the item on its way up.
          A band has no room above it (that is the previous band, or the page header): its
-         tab goes in its own top left corner, empty as its content sits in the container. -->
+         tab goes in its own top left corner, empty as its content sits in the container.
+         A container's tab goes to the right: on the left, it would sit on its first child's. -->
     <div
       v-if="edit"
       data-edit-tab
       class="absolute z-30"
-      :class="band ? 'top-2 left-2' : 'bottom-full -left-1.5 pb-1.5'"
+      :class="band ? 'top-2 left-2' : container ? 'bottom-full -right-1.5 pb-1.5' : 'bottom-full -left-1.5 pb-1.5'"
     >
       <div class="flex items-center gap-0.5 rounded-md bg-new-primary text-white text-xs shadow-sm p-0.5">
         <DragHandle
@@ -65,6 +66,8 @@ defineProps<{
   group?: string
   // A full width band of the page (section, hero), framed from the inside.
   band?: boolean
+  // An item holding other items (grid, accordion, cell stacking several blocs).
+  container?: boolean
 }>()
 
 const emit = defineEmits<{

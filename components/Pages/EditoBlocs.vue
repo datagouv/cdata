@@ -16,82 +16,79 @@
     </div>
 
     <div ref="sortableRef">
-      <template
-        v-for="(bloc, index) in workingBlocs"
+      <!-- No `<template v-for>`: a fragment would leave behind the nodes delimiting it when
+           a section is dragged away. -->
+      <EditItem
+        v-for="{ bloc, index } in shownBlocs"
         :key="bloc.id"
+        :edit="isEditing"
+        :label="labels[bloc.class] ?? bloc.class"
+        group="sections"
+        band
+        class="group/section"
+        :class="bloc.class === 'SectionBloc' && (striped ? 'py-24 odd:bg-gray-some even:bg-white' : 'py-12')"
+        :data-testid="`page-${bloc.class}`"
+        data-sortable-item
+        @delete="workingBlocs.splice(index, 1)"
+        @keyboard-move="moveWithKeyboard($event, index)"
       >
-        <!-- An empty section is only a placeholder for the editor -->
-        <EditItem
-          v-if="isEditing || bloc.class !== 'SectionBloc' || bloc.blocs.length"
-          :edit="isEditing"
-          :label="labels[bloc.class] ?? bloc.class"
-          group="sections"
-          band
-          class="group/section"
-          :class="bloc.class === 'SectionBloc' && (striped ? 'py-24 odd:bg-gray-some even:bg-white' : 'py-12')"
-          :data-testid="`page-${bloc.class}`"
-          data-sortable-item
-          @delete="workingBlocs.splice(index, 1)"
-          @keyboard-move="moveWithKeyboard($event, index)"
+        <!-- Add button above the bloc (absolute positioned), shown on hover -->
+        <div
+          v-if="isEditing"
+          class="absolute -top-4 left-0 right-0 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 focus-within:opacity-100 transition-opacity delay-400 group-hover/section:delay-0 focus-within:delay-0"
         >
-          <!-- Add button above the bloc (absolute positioned), shown on hover -->
-          <div
-            v-if="isEditing"
-            class="absolute -top-4 left-0 right-0 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 focus-within:opacity-100 transition-opacity delay-400 group-hover/section:delay-0 focus-within:delay-0"
+          <AddBlocDropdown
+            level="page"
+            :for-organization="forOrganization"
+            @new-blocs="workingBlocs.splice(index, 0, ...($event as Array<PageBloc>))"
           >
-            <AddBlocDropdown
-              level="page"
-              :for-organization="forOrganization"
-              @new-blocs="workingBlocs.splice(index, 0, ...($event as Array<PageBloc>))"
+            <BrandedButton
+              color="tertiary"
+              size="xs"
+              class="bg-white shadow-sm"
+              :icon="RiAddLine"
             >
-              <BrandedButton
-                color="tertiary"
-                size="xs"
-                class="bg-white shadow-sm"
-                :icon="RiAddLine"
-              >
-                {{ $t('Ajouter une section') }}
-              </BrandedButton>
-            </AddBlocDropdown>
-          </div>
-          <HeroBloc
-            v-if="bloc.class === 'HeroBloc'"
-            v-model="(workingBlocs[index] as HeroBlocType)"
+              {{ $t('Ajouter une section') }}
+            </BrandedButton>
+          </AddBlocDropdown>
+        </div>
+        <HeroBloc
+          v-if="bloc.class === 'HeroBloc'"
+          v-model="(workingBlocs[index] as HeroBlocType)"
+          :edit="isEditing"
+        />
+        <div
+          v-else
+          class="container"
+        >
+          <BlocsList
+            v-model="(workingBlocs[index] as SectionBloc).blocs"
             :edit="isEditing"
+            level="section"
           />
-          <div
-            v-else
-            class="container"
-          >
-            <BlocsList
-              v-model="(workingBlocs[index] as SectionBloc).blocs"
-              :edit="isEditing"
-              level="section"
-            />
-          </div>
+        </div>
 
-          <!-- Add button below the last bloc, always shown: the way to grow the page -->
-          <div
-            v-if="isEditing && index === workingBlocs.length - 1"
-            class="absolute -bottom-4 left-0 right-0 flex items-center justify-center z-20"
+        <!-- Add button below the last bloc, always shown: the way to grow the page -->
+        <div
+          v-if="isEditing && index === workingBlocs.length - 1"
+          class="absolute -bottom-4 left-0 right-0 flex items-center justify-center z-20"
+        >
+          <AddBlocDropdown
+            level="page"
+            :for-organization="forOrganization"
+            @new-blocs="workingBlocs.push(...($event as Array<PageBloc>))"
           >
-            <AddBlocDropdown
-              level="page"
-              :for-organization="forOrganization"
-              @new-blocs="workingBlocs.push(...($event as Array<PageBloc>))"
+            <BrandedButton
+              color="tertiary"
+              size="xs"
+              class="bg-white shadow-sm"
+              :icon="RiAddLine"
             >
-              <BrandedButton
-                color="tertiary"
-                size="xs"
-                class="bg-white shadow-sm"
-                :icon="RiAddLine"
-              >
-                {{ $t('Ajouter une section') }}
-              </BrandedButton>
-            </AddBlocDropdown>
-          </div>
-        </EditItem>
-      </template>
+              {{ $t('Ajouter une section') }}
+            </BrandedButton>
+          </AddBlocDropdown>
+        </div>
+      </EditItem>
     </div>
 
     <!-- Empty state. In edit mode it invites adding a first bloc; in view mode it
@@ -219,6 +216,12 @@ watchEffect(() => {
 })
 
 const workingBlocs = computed(() => localBlocs.value ?? normalizedBlocs.value)
+
+// An empty section is only a placeholder for the editor. Each bloc keeps its index in
+// `workingBlocs`, which the edits address (nothing is filtered out while editing).
+const shownBlocs = computed(() => workingBlocs.value
+  .map((bloc, index) => ({ bloc, index }))
+  .filter(({ bloc }) => isEditing.value || bloc.class !== 'SectionBloc' || bloc.blocs.length))
 
 // Check if there are unsaved changes
 const hasUnsavedChanges = computed(() => {

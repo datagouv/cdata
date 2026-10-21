@@ -1,50 +1,71 @@
 <template>
-  <div
-    class="relative"
-    :data-blocs-list="edit ? '' : undefined"
-  >
+  <div class="relative">
     <!-- `min-h` keeps an empty list a drop target -->
     <div
       ref="sortableRef"
       :data-blocs-level="level"
+      :data-merged-with-cell="mergedWithCell ? '' : undefined"
       :class="{ 'min-h-8': edit }"
     >
-      <!-- Alone in its cell, the bloc is edited as the cell (see `GridBloc`) -->
-      <EditItem
+      <!-- One element per bloc, holding the bloc and the inserter above it: a fragment
+           would leave behind the nodes delimiting it when the bloc is dragged away. -->
+      <div
         v-for="(bloc, index) in blocs"
         :key="bloc.id"
-        :edit="edit && !mergedWithCell"
-        :label="labels[bloc.class] ?? bloc.class"
-        group="blocs"
+        class="relative"
         :class="spacingBefore(index)"
-        :data-testid="`bloc-${bloc.class}`"
         :data-bloc-class="bloc.class"
         data-sortable-item
-        @delete="blocs.splice(index, 1)"
-        @keyboard-move="moveWithKeyboard($event, index)"
       >
-        <component
-          :is="BLOC_COMPONENTS[bloc.class]"
-          v-if="BLOC_COMPONENTS[bloc.class]"
-          v-model="(blocs[index] as any)"
-          :edit
+        <!-- In the gap above the bloc (its top margin): a new bloc lands right here -->
+        <BlocInserter
+          v-if="edit && index > 0"
+          class="absolute inset-x-0 bottom-full"
+          :class="GAP_HEIGHTS[spacingBefore(index)]"
+          :level
+          :label="$t('Ajouter un bloc ici')"
+          :data-testid="`insert-bloc-in-${level}`"
+          @new-blocs="blocs.splice(index, 0, ...($event as Array<T>))"
         />
-        <MissingObjectBloc
-          v-else-if="edit"
-          :label="$t('Ce bloc ne peut pas être affiché ici')"
-        />
-      </EditItem>
+        <!-- Alone in its cell, the bloc is edited as the cell (see `GridBloc`) -->
+        <EditItem
+          :edit="edit && !mergedWithCell"
+          :label="labels[bloc.class] ?? bloc.class"
+          group="blocs"
+          :container="bloc.class === 'GridBloc' || bloc.class === 'AccordionListBloc'"
+          :data-testid="`bloc-${bloc.class}`"
+          @delete="blocs.splice(index, 1)"
+          @keyboard-move="moveWithKeyboard($event, index)"
+        >
+          <component
+            :is="BLOC_COMPONENTS[bloc.class]"
+            v-if="BLOC_COMPONENTS[bloc.class]"
+            v-model="(blocs[index] as any)"
+            :edit
+          />
+          <MissingObjectBloc
+            v-else-if="edit"
+            :label="$t('Ce bloc ne peut pas être affiché ici')"
+          />
+        </EditItem>
+      </div>
     </div>
 
-    <!-- Always shown in an empty list, the only thing it can hold. Otherwise, on the bottom
-         edge of the innermost hovered list, so that it takes no room in the page. Neither
-         z-index nor transform: they would trap the menu it opens under the page's other
-         controls. -->
+    <!-- After the last bloc: below the list, in the room the section or the accordion item
+         leaves; in a cell, whose bottom is the next row, along its bottom edge. -->
+    <BlocInserter
+      v-if="edit && blocs.length"
+      class="absolute inset-x-0"
+      :class="level === 'cell' ? 'bottom-0 h-5' : level === 'section' ? 'top-full h-12' : 'top-full h-6'"
+      :level
+      :label="level === 'cell' ? $t('Ajouter un bloc dans la colonne') : $t('Ajouter un bloc ici')"
+      :data-testid="`add-bloc-in-${level}`"
+      @new-blocs="blocs.push(...($event as Array<T>))"
+    />
+    <!-- An empty list: the only thing it can hold -->
     <div
-      v-if="edit"
+      v-else-if="edit"
       class="flex justify-center"
-      :class="blocs.length ? 'absolute inset-x-0 -bottom-3 pointer-events-none *:pointer-events-auto' : ''"
-      :data-add-bloc="blocs.length ? '' : undefined"
     >
       <AddBlocDropdown
         :level
@@ -52,8 +73,7 @@
       >
         <button
           type="button"
-          class="flex items-center gap-1 text-sm whitespace-nowrap"
-          :class="blocs.length ? 'rounded-full bg-white px-2.5 py-0.5 text-gray-medium hover:text-gray-title shadow-sm ring-1 ring-gray-200' : 'text-gray-400 hover:text-gray-600'"
+          class="flex items-center gap-1 text-sm whitespace-nowrap text-gray-400 hover:text-gray-600"
           :data-testid="`add-bloc-in-${level}`"
         >
           <RiAddLine class="size-4" />
@@ -68,6 +88,7 @@
 import * as Sentry from '@sentry/nuxt'
 import { RiAddLine } from '@remixicon/vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
+import BlocInserter from './BlocInserter.vue'
 import EditItem from './EditItem.vue'
 import MissingObjectBloc from './MissingObjectBloc.vue'
 import type { GridCell, SectionContentBloc } from '~/types/pages'
@@ -107,25 +128,16 @@ watchEffect(() => {
   }
 })
 
+type Spacing = '' | 'mt-4' | 'mt-6' | 'mt-12'
+
+// The inserter between two blocs covers the whole gap the spacing leaves.
+const GAP_HEIGHTS: Record<Spacing, string> = { '': '', 'mt-4': 'h-4', 'mt-6': 'h-6', 'mt-12': 'h-12' }
+
 // A title stays close to what it introduces; other blocs are further apart.
-function spacingBefore(index: number) {
+function spacingBefore(index: number): Spacing {
   if (index === 0) return ''
   const afterTitle = blocs.value[index - 1].class === 'TitleBloc'
   if (props.level === 'cell') return afterTitle ? 'mt-4' : 'mt-6'
   return afterTitle ? 'mt-6' : 'mt-12'
 }
 </script>
-
-<style>
-/* Same rule as the tabs of `EditItem`: only the innermost hovered (or focused) list, and
-   the same grace delay before hiding. */
-[data-add-bloc] {
-  opacity: 0;
-  transition: opacity 150ms 400ms;
-}
-
-[data-blocs-list]:is(:hover, :focus-within):not(:has([data-blocs-list]:is(:hover, :focus-within))) > [data-add-bloc] {
-  opacity: 1;
-  transition: opacity 100ms;
-}
-</style>

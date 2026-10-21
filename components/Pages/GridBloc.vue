@@ -1,5 +1,5 @@
 <template>
-  <div class="relative group/grid">
+  <div class="relative">
     <div
       ref="sortableRef"
       class="flex flex-wrap gap-(--grid-gap) [--grid-gap:1.25rem]"
@@ -11,6 +11,7 @@
         :edit
         :label="cell.blocs.length === 1 ? labels[cell.blocs[0].class] ?? labels.GridCell : labels.GridCell"
         group="cells"
+        :container="cell.blocs.length > 1"
         class="group/cell"
         :class="[cellClass(cell), { 'rounded-lg outline-1 outline-dashed outline-gray-300 p-3': edit && !cell.blocs.length }]"
         :style="cellStyle(cell)"
@@ -43,53 +44,74 @@
           level="cell"
         />
 
-        <!-- Resize handle on the right edge, snapping to the allowed widths. Cells are
-               full width below `sm`, so there is nothing to resize there. -->
+        <!-- The boundary after the column, in the gap on its right: its line resizes the
+             column (snapping to the allowed widths), its button inserts a column there.
+             Columns are full width below `sm`, so there is no boundary there. -->
         <div
           v-if="edit"
-          role="separator"
-          aria-orientation="vertical"
-          tabindex="0"
-          :aria-label="$t('Largeur de la cellule')"
-          :aria-valuetext="widthLabel(cell.width)"
-          :title="$t('Glisser pour redimensionner, double-clic pour la largeur automatique')"
-          class="hidden sm:flex absolute -right-[calc(var(--grid-gap)/2+0.375rem)] top-0 bottom-0 w-3 cursor-col-resize items-center justify-center z-20 touch-none opacity-0 group-hover/cell:opacity-100 focus-visible:opacity-100 transition-opacity delay-400 group-hover/cell:delay-0 focus-visible:delay-0"
-          :class="{ 'opacity-100': resizing === index }"
-          data-testid="grid-cell-resize"
-          @pointerdown="startResize($event, index)"
-          @dblclick="cell.width = null"
-          @keydown="resizeWithKeyboard($event, index)"
+          class="hidden sm:block absolute inset-y-0 left-full w-(--grid-gap) group/boundary"
         >
-          <div class="h-10 w-1 rounded-full bg-new-primary" />
-          <span
-            v-if="resizing === index"
-            class="absolute top-1/2 left-4 -translate-y-1/2 px-1.5 py-0.5 rounded bg-gray-title text-white text-xs tabular-nums whitespace-nowrap pointer-events-none"
+          <div
+            role="separator"
+            aria-orientation="vertical"
+            tabindex="0"
+            :aria-label="$t('Largeur de la colonne')"
+            :aria-valuetext="widthLabel(cell.width)"
+            :title="$t('Glisser pour redimensionner, double-clic pour la largeur automatique')"
+            class="absolute inset-0 flex justify-center cursor-col-resize touch-none outline-none"
+            data-testid="grid-cell-resize"
+            @pointerdown="startResize($event, index)"
+            @dblclick="cell.width = null"
+            @keydown="resizeWithKeyboard($event, index)"
           >
-            {{ widthLabel(cell.width) }}
-          </span>
+            <div
+              class="w-0.5 h-full bg-new-primary transition-opacity"
+              :class="resizing === index ? 'opacity-100' : 'opacity-0 group-hover/cell:opacity-40 group-hover/boundary:opacity-100 group-focus-within/boundary:opacity-100 delay-400 group-hover/cell:delay-0 group-hover/boundary:delay-0'"
+            />
+            <span
+              v-if="resizing === index"
+              class="absolute top-2 left-full ml-1 px-1.5 py-0.5 rounded bg-gray-title text-white text-xs tabular-nums whitespace-nowrap pointer-events-none"
+            >
+              {{ widthLabel(cell.width) }}
+            </span>
+          </div>
+          <!-- No transform on the way to the menu: it would trap the menu under the page -->
+          <div class="absolute inset-x-0 top-1/2 -mt-3 flex justify-center">
+            <AddBlocDropdown
+              level="cell"
+              @new-blocs="addCells($event as Array<SectionContentBloc>, index + 1)"
+            >
+              <button
+                type="button"
+                class="relative inline-flex items-center justify-center size-6 rounded-full bg-new-primary text-white shadow-sm opacity-0 group-hover/boundary:opacity-100 focus-visible:opacity-100 transition-opacity delay-400 group-hover/boundary:delay-0 focus-visible:delay-0"
+                :title="$t('Ajouter une colonne ici')"
+                :aria-label="$t('Ajouter une colonne ici')"
+                :data-testid="index === bloc.cells.length - 1 ? 'add-grid-cell' : 'insert-grid-cell'"
+              >
+                <RiAddLine class="size-4" />
+              </button>
+            </AddBlocDropdown>
+          </div>
         </div>
       </EditItem>
     </div>
 
-    <!-- Bottom right corner, out of the way of the resize handles, shown on hover: the cell
-         is created with its content -->
+    <!-- An empty grid: its first column, the only thing it can hold -->
     <div
-      v-if="edit"
-      class="absolute right-0 -bottom-3.5 opacity-0 group-hover/grid:opacity-100 focus-within:opacity-100 transition-opacity delay-400 group-hover/grid:delay-0 focus-within:delay-0"
-      :class="{ 'opacity-100': !bloc.cells.length }"
+      v-if="edit && !bloc.cells.length"
+      class="flex justify-center rounded-lg outline-1 outline-dashed outline-gray-300 py-6"
     >
       <AddBlocDropdown
         level="cell"
-        @new-blocs="addCells($event as Array<SectionContentBloc>)"
+        @new-blocs="addCells($event as Array<SectionContentBloc>, 0)"
       >
         <button
           type="button"
-          class="inline-flex items-center justify-center size-7 rounded-full bg-white text-gray-medium hover:text-gray-title shadow-sm ring-1 ring-gray-300"
-          :title="$t('Ajouter une cellule')"
-          :aria-label="$t('Ajouter une cellule')"
+          class="flex items-center gap-1 text-sm whitespace-nowrap text-gray-400 hover:text-gray-600"
           data-testid="add-grid-cell"
         >
           <RiAddLine class="size-4" />
+          {{ $t('Ajouter une colonne') }}
         </button>
       </AddBlocDropdown>
     </div>
@@ -153,15 +175,17 @@ const { sortableRef, moveWithKeyboard } = useBlocSortable(
   },
 )
 
-// Each picked bloc gets a cell of its own: an object at the width of its former list of
-// cards, anything else like the last cell (automatic in a row of automatic cells).
-function addCells(blocs: Array<SectionContentBloc>) {
-  for (const newBloc of blocs) {
-    const width = newBloc.class in OBJECT_CELL_WIDTH
-      ? OBJECT_CELL_WIDTH[newBloc.class as keyof typeof OBJECT_CELL_WIDTH]
-      : bloc.value.cells.at(-1)?.width ?? null
-    bloc.value.cells.push({ id: uuidv4(), width, blocs: [newBloc as LeafBloc] })
-  }
+// Each picked bloc gets a cell of its own, inserted at `at`: an object at the width of its
+// former list of cards, anything else like the cell before (automatic in a row of
+// automatic cells).
+function addCells(blocs: Array<SectionContentBloc>, at: number) {
+  const before = bloc.value.cells[at - 1]?.width ?? null
+  const cells: Array<GridCell> = blocs.map(newBloc => ({
+    id: uuidv4(),
+    width: newBloc.class in OBJECT_CELL_WIDTH ? OBJECT_CELL_WIDTH[newBloc.class as keyof typeof OBJECT_CELL_WIDTH] : before,
+    blocs: [newBloc as LeafBloc],
+  }))
+  bloc.value.cells.splice(at, 0, ...cells)
 }
 
 const resizing = ref<number | null>(null)

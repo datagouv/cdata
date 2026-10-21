@@ -52,7 +52,9 @@ const ACCEPTED_BLOCS: Record<Exclude<BlocsLevel, 'page'>, Array<string>> = {
 // blocs it holds, so all of them must be allowed there.
 export function acceptsDroppedItem(item: HTMLElement, list: HTMLElement): boolean {
   const level = list.dataset.blocsLevel as Exclude<BlocsLevel, 'page'> | 'grid' | undefined
-  if (!level) return false
+  // A cell holding a single bloc is that bloc: what is dropped on it lands next to it, as a
+  // cell of the grid, not inside it.
+  if (!level || list.dataset.mergedWithCell !== undefined) return false
   const cellBlocs = item.dataset.cellBlocs
   if (level === 'grid') {
     return cellBlocs !== undefined || LEAF_BLOCS.includes(item.dataset.blocClass ?? '')
@@ -68,7 +70,7 @@ export function useBlocLabels(): Record<string, string> {
     HeroBloc: t('Hero'),
     SectionBloc: t('Section'),
     GridBloc: t('Grille'),
-    GridCell: t('Cellule'),
+    GridCell: t('Colonne'),
     AccordionListBloc: t('Accordéon'),
     AccordionItem: t('Élément'),
     TitleBloc: t('Titre'),

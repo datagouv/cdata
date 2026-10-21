@@ -1,7 +1,9 @@
 <template>
+  <!-- Inert while editing: a click aimed at the editor must not leave the page -->
   <DatasetCardLg
     v-if="bloc.dataset"
     class="min-w-0"
+    :class="{ 'pointer-events-none select-none': edit }"
     :dataset="bloc.dataset"
   />
   <MissingObjectBloc
