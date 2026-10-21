@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createPost, deletePosts, focusedDragHandle, gotoHydrated } from '../helpers'
+import { API_BASE, createPost, deletePosts, dragEditItem, gotoHydrated } from '../helpers'
 import { fillPostDescription } from './helpers'
 import type { GridCellWidth, MarkdownBloc } from '~/types/pages'
 
@@ -244,8 +244,7 @@ test.describe('Sections and grids', () => {
     await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
 
     const cells = page.getByTestId('grid-cell')
-    const handle = await focusedDragHandle(cells.nth(0).getByTestId('bloc-MarkdownBloc').first())
-    await handle.dragTo(cells.nth(1).getByTestId('bloc-MarkdownBloc'))
+    await dragEditItem(cells.nth(0).getByTestId('bloc-MarkdownBloc').first(), cells.nth(1).getByTestId('bloc-MarkdownBloc'))
 
     await expect(cells.nth(0).getByTestId('bloc-MarkdownBloc')).toHaveCount(1)
     await expect(cells.nth(1).getByTestId('bloc-MarkdownBloc')).toHaveCount(2)
@@ -256,7 +255,7 @@ test.describe('Sections and grids', () => {
     expect(right.blocs.map((bloc: { content: string }) => bloc.content).sort()).toEqual(['Droite', 'Gauche A'])
   })
 
-  test('a grid cannot be dropped in a cell', async ({ page, request }) => {
+  test('a grid moves within its section but cannot be dropped in a cell', async ({ page, request }) => {
     const post = await createGridPage(request, [
       { width: '1/2', texts: ['Gauche'] },
       { width: '1/2', texts: ['Droite'] },
@@ -264,13 +263,18 @@ test.describe('Sections and grids', () => {
     await page.setViewportSize({ width: 1280, height: 900 })
     await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
 
-    const handle = await focusedDragHandle(page.getByTestId('bloc-GridBloc'))
-    await handle.dragTo(page.getByTestId('grid-cell').nth(1).getByTestId('bloc-MarkdownBloc'))
+    const grid = page.getByTestId('bloc-GridBloc')
+    await dragEditItem(grid, page.getByTestId('grid-cell').nth(1).getByTestId('bloc-MarkdownBloc'))
+    // Refused: still two cells holding a text each, after the text of the section
+    await expect(page.getByTestId('grid-cell')).toHaveCount(2)
+    await expect(page.getByTestId('page-SectionBloc').locator('[data-bloc-class]').first()).toHaveAttribute('data-bloc-class', 'MarkdownBloc')
 
-    // The grid is still where it was, after the text of the section
+    // Allowed: above the text of the section
+    await dragEditItem(grid, page.getByTestId('bloc-MarkdownBloc').filter({ hasText: 'Avant la grille' }))
+
     const [saved] = await saveAndFetchBlocs(page, post.slug)
-    expect(saved.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['MarkdownBloc', 'GridBloc'])
-    expect(saved.blocs[1].cells.map((cell: { blocs: Array<unknown> }) => cell.blocs.length)).toEqual([1, 1])
+    expect(saved.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['GridBloc', 'MarkdownBloc'])
+    expect(saved.blocs[0].cells.map((cell: { blocs: Array<unknown> }) => cell.blocs.length)).toEqual([1, 1])
   })
 
   test('a cell is resized with its handle, snapping to the allowed widths', async ({ page, request }) => {

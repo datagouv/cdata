@@ -31,6 +31,11 @@ export function useBlocSortable<T>(items: () => T[], edit: Ref<boolean>, options
     sortableInstance = Sortable.create(el, {
       animation: 150,
       ghostClass: 'opacity-50',
+      // Mouse/touch events rather than the native drag and drop, which behaves differently
+      // across browsers with nested lists. The dragged copy goes on the body so that a
+      // cell or a section does not clip it.
+      forceFallback: true,
+      fallbackOnBody: true,
       draggable: '[data-sortable-item]',
       handle: `[data-drag-handle="${options.group}"]`,
       group: {

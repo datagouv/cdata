@@ -109,6 +109,19 @@ export async function focusedDragHandle(item: Locator): Promise<Locator> {
   return handle
 }
 
+// Drags an item of the blocs editor by its handle onto another element, step by step as
+// a user would: the editor's lists follow the pointer, not the native drag and drop.
+export async function dragEditItem(item: Locator, target: Locator): Promise<void> {
+  const page = item.page()
+  const handle = await focusedDragHandle(item)
+  const from = (await handle.boundingBox())!
+  const to = (await target.boundingBox())!
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 20 })
+  await page.mouse.up()
+}
+
 // matomo.js is injected after the load event, and webfonts are only fetched once used,
 // often after it too: leaving the page while either loads makes Firefox log the aborted
 // download. Use it on a page the test leaves right away.
