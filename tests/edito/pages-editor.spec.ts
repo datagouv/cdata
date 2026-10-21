@@ -114,14 +114,14 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   // === Step 2: A section of datasets, laid out in a grid ===
   await addSection(page)
   await addTitleInLastSection(page, 'Nos jeux de données phares', 'Découvrez les données les plus consultées')
-  await addBlocInLastSection(page, 'datasets')
+  await addBlocInLastSection(page, 'DatasetBloc')
   await selectObjects(page, 'Rechercher un jeu de données…', ['marché', 'adresse', 'véhicule', 'covid'])
   await expect(page.getByTestId('page-SectionBloc').last().getByTestId('grid-cell')).not.toHaveCount(0)
 
   // === Step 3: A section of reuses ===
   await addSection(page)
   await addTitleInLastSection(page, 'Réutilisations innovantes')
-  await addBlocInLastSection(page, 'reuses')
+  await addBlocInLastSection(page, 'ReuseBloc')
   await selectObjects(page, 'Rechercher une réutilisation…', ['itineriz', 'kbis', 'infonet', 'proximap'])
 
   // === Step 4: A section of API, next to a text in a two columns grid ===
@@ -131,7 +131,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   const lastSection = page.getByTestId('page-SectionBloc').last()
   // A cell is added with its content: each API gets its own cell, then the text
   await lastSection.getByTestId('add-grid-cell').click()
-  await page.getByTestId('add-bloc-dataservices').click()
+  await page.getByTestId('add-bloc-DataserviceBloc').click()
   await selectObjects(page, 'Rechercher une API…', ['sirene', 'explore'])
   await expect(lastSection.getByTestId('grid-cell')).toHaveCount(2)
   await lastSection.getByTestId('add-grid-cell').click()

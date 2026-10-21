@@ -49,7 +49,7 @@
              Columns are full width below `sm`, so there is no boundary there. -->
         <div
           v-if="edit"
-          class="hidden sm:block absolute inset-y-0 left-full w-(--grid-gap) group/boundary"
+          class="hidden sm:block absolute inset-y-0 left-full w-(--grid-gap) group/boundary group/add"
           data-edit-control
         >
           <div
@@ -82,15 +82,10 @@
               level="cell"
               @new-blocs="addCells($event as Array<SectionContentBloc>, index + 1)"
             >
-              <button
-                type="button"
-                class="relative inline-flex items-center justify-center size-6 rounded-full bg-new-primary text-white shadow-sm opacity-0 group-hover/boundary:opacity-100 focus-visible:opacity-100 transition-opacity delay-400 group-hover/boundary:delay-0 focus-visible:delay-0"
-                :title="$t('Ajouter une colonne ici')"
-                :aria-label="$t('Ajouter une colonne ici')"
+              <RoundAddButton
+                :label="$t('Ajouter une colonne ici')"
                 :data-testid="index === bloc.cells.length - 1 ? 'add-grid-cell' : 'insert-grid-cell'"
-              >
-                <RiAddLine class="size-4" />
-              </button>
+              />
             </AddBlocDropdown>
           </div>
         </div>
@@ -106,14 +101,9 @@
         level="cell"
         @new-blocs="addCells($event as Array<SectionContentBloc>, 0)"
       >
-        <button
-          type="button"
-          class="flex items-center gap-1 text-sm whitespace-nowrap text-gray-400 hover:text-gray-600"
-          data-testid="add-grid-cell"
-        >
-          <RiAddLine class="size-4" />
+        <EmptyListAddButton data-testid="add-grid-cell">
           {{ $t('Ajouter une colonne') }}
-        </button>
+        </EmptyListAddButton>
       </AddBlocDropdown>
     </div>
   </div>
@@ -122,12 +112,15 @@
 <script setup lang="ts">
 import { v4 as uuidv4 } from 'uuid'
 import { MenuItem } from '@headlessui/vue'
-import { RiAddLine, RiExpandHorizontalLine } from '@remixicon/vue'
+import { RiExpandHorizontalLine } from '@remixicon/vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
 import BlocsList from './BlocsList.vue'
 import EditItem from './EditItem.vue'
+import EmptyListAddButton from './EmptyListAddButton.vue'
+import RoundAddButton from './RoundAddButton.vue'
 import type { GridBloc, GridCell, GridCellWidth, LeafBloc, SectionContentBloc } from '~/types/pages'
-import { IN_ACCORDION, OBJECT_CELL_WIDTH, acceptsDropped } from '~/utils/pages'
+import { OBJECT_CELL_WIDTH } from '~/utils/pages'
+import { IN_ACCORDION, acceptsDropped } from '~/utils/blocsLayout'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 defineProps<{
@@ -181,9 +174,9 @@ useDropList(listRef, {
     : [item as GridCell],
 })
 
-// Each picked bloc gets a cell of its own, inserted at `at`: an object at the width of its
-// former list of cards, anything else like the cell before (automatic in a row of
-// automatic cells).
+// Each picked bloc gets a cell of its own, inserted at `at`: an object at its
+// `OBJECT_CELL_WIDTH`, anything else like the cell before (automatic in a row of automatic
+// cells).
 function addCells(blocs: Array<SectionContentBloc>, at: number) {
   const before = bloc.value.cells[at - 1]?.width ?? null
   const cells: Array<GridCell> = blocs.map(newBloc => ({

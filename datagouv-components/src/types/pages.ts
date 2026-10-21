@@ -36,23 +36,22 @@ export type ExploreBloc = {
   resource_id: string
 }
 
-// The referenced object is `null` when it no longer exists.
 export type DatasetBloc = {
   class: 'DatasetBloc'
   id: string
-  dataset: DatasetV2 | null
+  dataset: DatasetV2
 }
 
 export type DataserviceBloc = {
   class: 'DataserviceBloc'
   id: string
-  dataservice: Dataservice | null
+  dataservice: Dataservice
 }
 
 export type ReuseBloc = {
   class: 'ReuseBloc'
   id: string
-  reuse: Reuse | null
+  reuse: Reuse
 }
 
 export type ObjectBloc = DatasetBloc | DataserviceBloc | ReuseBloc

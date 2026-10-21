@@ -1,8 +1,8 @@
-import type { Component, InjectionKey } from 'vue'
+import type { Component } from 'vue'
 import { RiDatabase2Line, RiHeading, RiLayoutColumnLine, RiLayoutRowLine, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine, RiWindow2Line } from '@remixicon/vue'
 import { v4 as uuidv4 } from 'uuid'
-import type { AccordionListBloc, GridBloc, GridCellWidth, HeroBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionBloc, SectionContentBloc, TitleBloc } from '~/types/pages'
-import type { Dragged } from '~/composables/useBlocsDrag'
+import type { AccordionListBloc, GridBloc, GridCellWidth, HeroBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionBloc, TitleBloc } from '~/types/pages'
+import type { BlocClass } from '~/utils/blocsLayout'
 import TitleBlocComponent from '~/components/Pages/TitleBloc.vue'
 import MarkdownBlocComponent from '~/components/Pages/MarkdownBloc.vue'
 import LinksListBlocComponent from '~/components/Pages/LinksListBloc.vue'
@@ -25,47 +25,11 @@ export const BLOC_COMPONENTS: Record<string, Component> = {
   AccordionListBloc: AccordionBlocEditorComponent,
 }
 
-export type ObjectType = 'dataset' | 'dataservice' | 'reuse'
-
-// Same widths as the former lists of cards: reuses fit three per row, the others two.
+// Width of the cell holding an object added to a grid: reuses fit three per row, the others two.
 export const OBJECT_CELL_WIDTH: Record<ObjectBloc['class'], GridCellWidth> = {
   DatasetBloc: '1/2',
   DataserviceBloc: '1/2',
   ReuseBloc: '1/3',
-}
-
-// Where blocs live: the page itself (sections and heroes), a section, an accordion item
-// or a grid cell. Each level only accepts some blocs (see `AddBlocDropdown`).
-export type BlocsLevel = 'page' | 'section' | 'accordion' | 'cell'
-
-// Mirrors the layout udata enforces (`check_blocs_layout`).
-const LEAF_BLOCS = ['TitleBloc', 'MarkdownBloc', 'LinksListBloc', 'ExploreBloc', 'DatasetBloc', 'DataserviceBloc', 'ReuseBloc']
-export const ACCEPTED_BLOCS: Record<BlocsLevel, Array<string>> = {
-  page: ['SectionBloc', 'HeroBloc'],
-  section: [...LEAF_BLOCS, 'GridBloc', 'AccordionListBloc'],
-  accordion: [...LEAF_BLOCS, 'GridBloc'],
-  cell: LEAF_BLOCS,
-}
-
-// Provided by an accordion to the blocs it holds, down to the cells of its grids: the
-// explorer is too wide to go anywhere in it.
-export const IN_ACCORDION: InjectionKey<boolean> = Symbol('in-accordion')
-
-// The classes of a dragged bloc: its own, and those of the blocs it holds when it is a grid.
-export function draggedClasses(bloc: SectionContentBloc): Array<string> {
-  return bloc.class === 'GridBloc'
-    ? [bloc.class, ...bloc.cells.flatMap(cell => cell.blocs.map(cellBloc => cellBloc.class))]
-    : [bloc.class]
-}
-
-// Whether a dragged bloc or cell can be dropped in a list of blocs (`section`, `accordion`,
-// `cell`) or among the cells of a grid (`grid`). A grid takes a bloc as a new cell; a list
-// of blocs takes a cell as the blocs it holds, so all of them must be allowed there.
-export function acceptsDropped(level: Exclude<BlocsLevel, 'page'> | 'grid', dragged: Dragged, inAccordion: boolean): boolean {
-  if (dragged.kind !== 'bloc' && dragged.kind !== 'cell') return false
-  if (inAccordion && dragged.classes.includes('ExploreBloc')) return false
-  if (level === 'grid') return dragged.kind === 'cell' || LEAF_BLOCS.includes(dragged.classes[0])
-  return dragged.classes.every(name => ACCEPTED_BLOCS[level].includes(name))
 }
 
 // Name of a bloc in the editor, on the tab shown when it is hovered.
@@ -88,15 +52,15 @@ export function useBlocLabels(): Record<string, string> {
   }
 }
 
+// A choice of the "add" menu, by the class of the bloc it adds.
 export type BlocChoice = {
-  key: string
   icon: Component
   name: string
   description: string
 } & (
-  | { create: () => SectionBloc | HeroBloc | TitleBloc | MarkdownBloc | LinksListBloc | GridBloc | AccordionListBloc }
+  | { key: Exclude<BlocClass, ObjectBloc['class']>, create: () => SectionBloc | HeroBloc | TitleBloc | MarkdownBloc | LinksListBloc | GridBloc | AccordionListBloc }
   // Objects are picked in a selector before their blocs can be built.
-  | { objectType: ObjectType }
+  | { key: ObjectBloc['class'] }
 )
 
 export function useBlocChoices() {
@@ -153,26 +117,23 @@ export function useBlocChoices() {
       description: t('Liste dépliable de contenus (FAQ, etc.)'),
       create: (): AccordionListBloc => ({ class: 'AccordionListBloc', id: uuidv4(), items: [] }),
     },
-    datasets: {
-      key: 'datasets',
+    DatasetBloc: {
+      key: 'DatasetBloc',
       icon: RiDatabase2Line,
       name: t('Jeux de données'),
       description: t('Mettre en avant des jeux de données'),
-      objectType: 'dataset',
     },
-    dataservices: {
-      key: 'dataservices',
+    DataserviceBloc: {
+      key: 'DataserviceBloc',
       icon: RiTerminalLine,
       name: t('API'),
       description: t('Mettre en avant des API'),
-      objectType: 'dataservice',
     },
-    reuses: {
-      key: 'reuses',
+    ReuseBloc: {
+      key: 'ReuseBloc',
       icon: RiLineChartLine,
       name: t('Réutilisations'),
       description: t('Mettre en avant des réutilisations'),
-      objectType: 'reuse',
     },
   } satisfies Record<string, BlocChoice>
 }

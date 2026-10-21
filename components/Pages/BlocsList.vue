@@ -72,14 +72,9 @@
         :level
         @new-blocs="blocs.push(...($event as Array<T>))"
       >
-        <button
-          type="button"
-          class="flex items-center gap-1 text-sm whitespace-nowrap text-gray-400 hover:text-gray-600"
-          :data-testid="`add-bloc-in-${level}`"
-        >
-          <RiAddLine class="size-4" />
+        <EmptyListAddButton :data-testid="`add-bloc-in-${level}`">
           {{ $t('Ajouter un bloc') }}
-        </button>
+        </EmptyListAddButton>
       </AddBlocDropdown>
     </div>
   </div>
@@ -87,13 +82,14 @@
 
 <script setup lang="ts" generic="T extends SectionContentBloc">
 import * as Sentry from '@sentry/nuxt'
-import { RiAddLine } from '@remixicon/vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
 import BlocInserter from './BlocInserter.vue'
 import EditItem from './EditItem.vue'
+import EmptyListAddButton from './EmptyListAddButton.vue'
 import MissingObjectBloc from './MissingObjectBloc.vue'
 import type { GridCell, SectionContentBloc } from '~/types/pages'
-import { BLOC_COMPONENTS, IN_ACCORDION, acceptsDropped, draggedClasses, type BlocsLevel } from '~/utils/pages'
+import { BLOC_COMPONENTS } from '~/utils/pages'
+import { BLOCS_LEVEL, IN_ACCORDION, acceptsDropped, draggedClasses, type BlocsLevel } from '~/utils/blocsLayout'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 const props = defineProps<{
@@ -103,6 +99,8 @@ const props = defineProps<{
 }>()
 
 const blocs = defineModel<Array<T>>({ required: true })
+
+provide(BLOCS_LEVEL, props.level)
 
 const labels = useBlocLabels()
 

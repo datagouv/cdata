@@ -1,8 +1,10 @@
+import type { BlocClass } from '~/utils/blocsLayout'
+
 // What is being dragged: a band of the page (section, hero), a bloc, a grid cell, or an
 // accordion item. A cell carries the classes of its blocs, which is what decides where it
 // can land.
 export type DraggedKind = 'band' | 'bloc' | 'cell' | 'accordion-item'
-export type Dragged = { kind: DraggedKind, classes: Array<string> }
+export type Dragged = { kind: DraggedKind, classes: Array<BlocClass> }
 
 type DropList = {
   // `horizontal` for the cells of a grid, laid out in rows; `vertical` for the others.

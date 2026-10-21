@@ -63,9 +63,9 @@
   </Menu>
 
   <ObjectsSelectorModal
-    v-if="objectType"
+    v-if="objectClass"
     v-model="isSelectorOpen"
-    :type="objectType"
+    :type="objectClass"
     @select="addObjects"
   />
 </template>
@@ -75,7 +75,8 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { v4 as uuidv4 } from 'uuid'
 import ObjectsSelectorModal from './ObjectsSelectorModal.vue'
 import type { GridBloc, ObjectBloc, PageBloc, SectionContentBloc } from '~/types/pages'
-import { ACCEPTED_BLOCS, OBJECT_CELL_WIDTH, type BlocChoice, type BlocsLevel, type ObjectType } from '~/utils/pages'
+import { OBJECT_CELL_WIDTH, type BlocChoice } from '~/utils/pages'
+import { ACCEPTED_BLOCS, type BlocsLevel } from '~/utils/blocsLayout'
 
 const props = defineProps<{
   level: BlocsLevel
@@ -90,22 +91,16 @@ const emit = defineEmits<{
 const { t } = useTranslation()
 const choices = useBlocChoices()
 
-const OBJECT_BLOC_CLASS: Record<ObjectType, ObjectBloc['class']> = {
-  dataset: 'DatasetBloc',
-  dataservice: 'DataserviceBloc',
-  reuse: 'ReuseBloc',
-}
-
 // The choices whose blocs the level accepts (see `ACCEPTED_BLOCS`).
 const groups = computed(() => {
   const accepted = ACCEPTED_BLOCS[props.level].filter(name => !(props.forOrganization && name === 'HeroBloc'))
-  const isAccepted = (choice: BlocChoice) => accepted.includes('create' in choice ? choice.key : OBJECT_BLOC_CLASS[choice.objectType])
-  return [
+  const all: Array<{ name: string, choices: Array<BlocChoice> }> = [
     { name: t('Mise en page'), choices: [choices.SectionBloc, choices.HeroBloc, choices.GridBloc, choices.AccordionListBloc] },
     { name: t('Contenus'), choices: [choices.TitleBloc, choices.MarkdownBloc, choices.LinksListBloc] },
-    { name: t('Contenus à la une'), choices: [choices.datasets, choices.dataservices, choices.reuses] },
+    { name: t('Contenus à la une'), choices: [choices.DatasetBloc, choices.DataserviceBloc, choices.ReuseBloc] },
   ]
-    .map(group => ({ ...group, choices: group.choices.filter(isAccepted) }))
+  return all
+    .map(group => ({ ...group, choices: group.choices.filter(choice => accepted.includes(choice.key)) }))
     .filter(group => group.choices.length)
 })
 
@@ -114,7 +109,7 @@ const onlyChoice = computed(() => {
   return !otherGroups.length && group?.choices.length === 1 ? group.choices[0] : null
 })
 
-const objectType = ref<ObjectType | null>(null)
+const objectClass = ref<ObjectBloc['class'] | null>(null)
 const isSelectorOpen = ref(false)
 
 function pick(choice: BlocChoice) {
@@ -122,7 +117,7 @@ function pick(choice: BlocChoice) {
     emit('newBlocs', [choice.create()])
     return
   }
-  objectType.value = choice.objectType
+  objectClass.value = choice.key
   isSelectorOpen.value = true
 }
 

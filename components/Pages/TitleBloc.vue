@@ -4,16 +4,19 @@
     <EditableText
       v-if="edit"
       :model-value="bloc.title"
-      class="text-gray-title text-3xl font-extrabold"
+      class="text-gray-title"
+      :class="heading.class"
       :placeholder="$t('Titre')"
       @update:model-value="bloc.title = $event.trim() || bloc.title"
     />
-    <h2
+    <component
+      :is="heading.tag"
       v-else
-      class="text-gray-title text-3xl font-extrabold mb-0"
+      class="text-gray-title mb-0"
+      :class="heading.class"
     >
       {{ bloc.title }}
-    </h2>
+    </component>
 
     <EditableText
       v-if="edit && bloc.subtitle"
@@ -41,10 +44,20 @@
 <script setup lang="ts">
 import EditableText from './EditableText.vue'
 import type { TitleBloc } from '~/types/pages'
+import { BLOCS_LEVEL, type BlocsLevel } from '~/utils/blocsLayout'
 
 defineProps<{
   edit: boolean
 }>()
 
 const bloc = defineModel<TitleBloc>({ required: true })
+
+// The title of a section, or of a part of it: a column, or the content of an accordion
+// item, whose own title is an `h3`.
+const HEADINGS: Record<Exclude<BlocsLevel, 'page'>, { tag: string, class: string }> = {
+  section: { tag: 'h2', class: 'text-3xl font-extrabold' },
+  cell: { tag: 'h3', class: 'text-xl font-bold' },
+  accordion: { tag: 'h4', class: 'text-lg font-bold' },
+}
+const heading = HEADINGS[inject(BLOCS_LEVEL, 'section')]
 </script>
