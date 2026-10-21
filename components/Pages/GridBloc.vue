@@ -127,7 +127,7 @@ import AddBlocDropdown from './AddBlocDropdown.vue'
 import BlocsList from './BlocsList.vue'
 import EditItem from './EditItem.vue'
 import type { GridBloc, GridCell, GridCellWidth, LeafBloc, SectionContentBloc } from '~/types/pages'
-import { OBJECT_CELL_WIDTH, acceptsDropped } from '~/utils/pages'
+import { IN_ACCORDION, OBJECT_CELL_WIDTH, acceptsDropped } from '~/utils/pages'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 defineProps<{
@@ -171,10 +171,11 @@ function cellLabel(cell: GridCell) {
 
 // A bloc dropped between the cells becomes a cell of its own, at the automatic width.
 const listRef = ref<HTMLElement | null>(null)
+const inAccordion = inject(IN_ACCORDION, false)
 useDropList(listRef, {
   orientation: 'horizontal',
   items: () => bloc.value.cells,
-  accepts: dragged => acceptsDropped('grid', dragged),
+  accepts: dragged => acceptsDropped('grid', dragged, inAccordion),
   receive: (item, dragged): Array<GridCell> => dragged.kind === 'bloc'
     ? [{ id: uuidv4(), width: null, blocs: [item as LeafBloc] }]
     : [item as GridCell],

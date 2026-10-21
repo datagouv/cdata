@@ -1,7 +1,7 @@
-import type { Component } from 'vue'
+import type { Component, InjectionKey } from 'vue'
 import { RiDatabase2Line, RiHeading, RiLayoutColumnLine, RiLayoutRowLine, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine, RiWindow2Line } from '@remixicon/vue'
 import { v4 as uuidv4 } from 'uuid'
-import type { AccordionListBloc, GridBloc, GridCellWidth, HeroBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionBloc, TitleBloc } from '~/types/pages'
+import type { AccordionListBloc, GridBloc, GridCellWidth, HeroBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionBloc, SectionContentBloc, TitleBloc } from '~/types/pages'
 import type { Dragged } from '~/composables/useBlocsDrag'
 import TitleBlocComponent from '~/components/Pages/TitleBloc.vue'
 import MarkdownBlocComponent from '~/components/Pages/MarkdownBloc.vue'
@@ -40,18 +40,30 @@ export type BlocsLevel = 'page' | 'section' | 'accordion' | 'cell'
 
 // Mirrors the layout udata enforces (`check_blocs_layout`).
 const LEAF_BLOCS = ['TitleBloc', 'MarkdownBloc', 'LinksListBloc', 'ExploreBloc', 'DatasetBloc', 'DataserviceBloc', 'ReuseBloc']
-const ACCEPTED_BLOCS: Record<Exclude<BlocsLevel, 'page'>, Array<string>> = {
+export const ACCEPTED_BLOCS: Record<BlocsLevel, Array<string>> = {
+  page: ['SectionBloc', 'HeroBloc'],
   section: [...LEAF_BLOCS, 'GridBloc', 'AccordionListBloc'],
-  // The explorer is too wide for an accordion.
-  accordion: [...LEAF_BLOCS.filter(name => name !== 'ExploreBloc'), 'GridBloc'],
+  accordion: [...LEAF_BLOCS, 'GridBloc'],
   cell: LEAF_BLOCS,
+}
+
+// Provided by an accordion to the blocs it holds, down to the cells of its grids: the
+// explorer is too wide to go anywhere in it.
+export const IN_ACCORDION: InjectionKey<boolean> = Symbol('in-accordion')
+
+// The classes of a dragged bloc: its own, and those of the blocs it holds when it is a grid.
+export function draggedClasses(bloc: SectionContentBloc): Array<string> {
+  return bloc.class === 'GridBloc'
+    ? [bloc.class, ...bloc.cells.flatMap(cell => cell.blocs.map(cellBloc => cellBloc.class))]
+    : [bloc.class]
 }
 
 // Whether a dragged bloc or cell can be dropped in a list of blocs (`section`, `accordion`,
 // `cell`) or among the cells of a grid (`grid`). A grid takes a bloc as a new cell; a list
 // of blocs takes a cell as the blocs it holds, so all of them must be allowed there.
-export function acceptsDropped(level: Exclude<BlocsLevel, 'page'> | 'grid', dragged: Dragged): boolean {
+export function acceptsDropped(level: Exclude<BlocsLevel, 'page'> | 'grid', dragged: Dragged, inAccordion: boolean): boolean {
   if (dragged.kind !== 'bloc' && dragged.kind !== 'cell') return false
+  if (inAccordion && dragged.classes.includes('ExploreBloc')) return false
   if (level === 'grid') return dragged.kind === 'cell' || LEAF_BLOCS.includes(dragged.classes[0])
   return dragged.classes.every(name => ACCEPTED_BLOCS[level].includes(name))
 }

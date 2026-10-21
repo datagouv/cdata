@@ -1,5 +1,14 @@
 <template>
+  <!-- A single choice (sections, on an organization page): no menu to pick it from -->
+  <span
+    v-if="onlyChoice"
+    class="contents"
+    @click="pick(onlyChoice)"
+  >
+    <slot />
+  </span>
   <Menu
+    v-else
     as="div"
     class="relative inline-block text-left"
   >
@@ -66,7 +75,7 @@ import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { v4 as uuidv4 } from 'uuid'
 import ObjectsSelectorModal from './ObjectsSelectorModal.vue'
 import type { GridBloc, ObjectBloc, PageBloc, SectionContentBloc } from '~/types/pages'
-import { OBJECT_CELL_WIDTH, type BlocChoice, type BlocsLevel, type ObjectType } from '~/utils/pages'
+import { ACCEPTED_BLOCS, OBJECT_CELL_WIDTH, type BlocChoice, type BlocsLevel, type ObjectType } from '~/utils/pages'
 
 const props = defineProps<{
   level: BlocsLevel
@@ -81,18 +90,28 @@ const emit = defineEmits<{
 const { t } = useTranslation()
 const choices = useBlocChoices()
 
+const OBJECT_BLOC_CLASS: Record<ObjectType, ObjectBloc['class']> = {
+  dataset: 'DatasetBloc',
+  dataservice: 'DataserviceBloc',
+  reuse: 'ReuseBloc',
+}
+
+// The choices whose blocs the level accepts (see `ACCEPTED_BLOCS`).
 const groups = computed(() => {
-  const all: Array<{ name: string, choices: Array<BlocChoice> }> = [
-    { name: t('Mise en page'), choices: props.level === 'page'
-      ? [choices.SectionBloc, ...(props.forOrganization ? [] : [choices.HeroBloc])]
-      : [
-          ...(props.level !== 'cell' ? [choices.GridBloc] : []),
-          ...(props.level === 'section' ? [choices.AccordionListBloc] : []),
-        ] },
-    { name: t('Contenus'), choices: props.level === 'page' ? [] : [choices.TitleBloc, choices.MarkdownBloc, choices.LinksListBloc] },
-    { name: t('Contenus à la une'), choices: props.level === 'page' ? [] : [choices.datasets, choices.dataservices, choices.reuses] },
+  const accepted = ACCEPTED_BLOCS[props.level].filter(name => !(props.forOrganization && name === 'HeroBloc'))
+  const isAccepted = (choice: BlocChoice) => accepted.includes('create' in choice ? choice.key : OBJECT_BLOC_CLASS[choice.objectType])
+  return [
+    { name: t('Mise en page'), choices: [choices.SectionBloc, choices.HeroBloc, choices.GridBloc, choices.AccordionListBloc] },
+    { name: t('Contenus'), choices: [choices.TitleBloc, choices.MarkdownBloc, choices.LinksListBloc] },
+    { name: t('Contenus à la une'), choices: [choices.datasets, choices.dataservices, choices.reuses] },
   ]
-  return all.filter(group => group.choices.length)
+    .map(group => ({ ...group, choices: group.choices.filter(isAccepted) }))
+    .filter(group => group.choices.length)
+})
+
+const onlyChoice = computed(() => {
+  const [group, ...otherGroups] = groups.value
+  return !otherGroups.length && group?.choices.length === 1 ? group.choices[0] : null
 })
 
 const objectType = ref<ObjectType | null>(null)

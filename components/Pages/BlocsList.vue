@@ -35,7 +35,7 @@
           :container="bloc.class === 'GridBloc' || bloc.class === 'AccordionListBloc'"
           :data-testid="`bloc-${bloc.class}`"
           @delete="blocs.splice(index, 1)"
-          @drag-start="startBlocsDrag($event, { list: listRef!, index, kind: 'bloc', classes: [bloc.class], label: labels[bloc.class] ?? bloc.class })"
+          @drag-start="startBlocsDrag($event, { list: listRef!, index, kind: 'bloc', classes: draggedClasses(bloc), label: labels[bloc.class] ?? bloc.class })"
           @keyboard-move="moveWithKeyboard(blocs, $event, index)"
         >
           <component
@@ -93,7 +93,7 @@ import BlocInserter from './BlocInserter.vue'
 import EditItem from './EditItem.vue'
 import MissingObjectBloc from './MissingObjectBloc.vue'
 import type { GridCell, SectionContentBloc } from '~/types/pages'
-import { BLOC_COMPONENTS, acceptsDropped, type BlocsLevel } from '~/utils/pages'
+import { BLOC_COMPONENTS, IN_ACCORDION, acceptsDropped, draggedClasses, type BlocsLevel } from '~/utils/pages'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 const props = defineProps<{
@@ -114,10 +114,11 @@ const mergedWithCell = computed(() => props.level === 'cell' && blocs.value.leng
 // cell's handle) moves out of the grid. A cell holding a single bloc is that bloc: what is
 // dropped on it lands next to it, as a cell of the grid, not inside it.
 const listRef = ref<HTMLElement | null>(null)
+const inAccordion = inject(IN_ACCORDION, false)
 useDropList(listRef, {
   orientation: 'vertical',
   items: () => blocs.value,
-  accepts: dragged => !mergedWithCell.value && acceptsDropped(props.level, dragged),
+  accepts: dragged => !mergedWithCell.value && acceptsDropped(props.level, dragged, inAccordion),
   receive: (item, dragged) => dragged.kind === 'cell' ? (item as GridCell).blocs : [item],
 })
 

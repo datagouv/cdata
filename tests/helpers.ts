@@ -109,20 +109,17 @@ export async function focusedDragHandle(item: Locator): Promise<Locator> {
   return handle
 }
 
-// Drags an item of the blocs editor by its handle onto another element, step by step as
-// a user would: the editor's lists follow the pointer, not the native drag and drop. The
-// lists reorder as the pointer passes over them, moving the target: like a user's eyes,
-// the pointer follows it before dropping.
-export async function dragEditItem(item: Locator, target: Locator): Promise<void> {
+// Drags an item of the blocs editor by its handle and drops it on another element, at
+// `heightFraction` of its height (its middle by default), step by step as a user would: the
+// editor follows the pointer, not the native drag and drop.
+export async function dragEditItem(item: Locator, target: Locator, heightFraction = 0.5): Promise<void> {
   const page = item.page()
   const handle = await focusedDragHandle(item)
   const from = (await handle.boundingBox())!
   await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
   await page.mouse.down()
-  for (const steps of [20, 5, 5]) {
-    const to = (await target.boundingBox())!
-    await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps })
-  }
+  const to = (await target.boundingBox())!
+  await page.mouse.move(to.x + to.width / 2, to.y + to.height * heightFraction, { steps: 20 })
   await page.mouse.up()
 }
 

@@ -73,6 +73,7 @@ import EditableText from './EditableText.vue'
 import BlocsList from './BlocsList.vue'
 import EditItem from './EditItem.vue'
 import type { AccordionListBloc } from '~/types/pages'
+import { IN_ACCORDION } from '~/utils/pages'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 defineProps<{
@@ -80,6 +81,8 @@ defineProps<{
 }>()
 
 const bloc = defineModel<AccordionListBloc>({ required: true })
+
+provide(IN_ACCORDION, true)
 
 const labels = useBlocLabels()
 

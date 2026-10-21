@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, createPost, deleteDatasets, deletePosts, dragEditItem, focusedDragHandle, gotoHydrated } from '../helpers'
+import { API_BASE, createDataset, createDatasetWithRemoteResources, createPost, deleteDatasets, deletePosts, dragEditItem, focusedDragHandle, gotoHydrated } from '../helpers'
 import { fillPostDescription } from './helpers'
 import type { DatasetBloc, GridCellWidth, MarkdownBloc } from '~/types/pages'
 
@@ -264,6 +264,26 @@ test.describe('Sections and grids', () => {
     await expect(cells.nth(0).getByTestId('bloc-MarkdownBloc')).toHaveCount(2)
   })
 
+  test('a bloc dragged down lands where the indicator showed it', async ({ page, request }) => {
+    const post = await createPost(request, {
+      name: `Down ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [{ class: 'SectionBloc', id: crypto.randomUUID(), blocs: ['Premier', 'Deuxième', 'Troisième'].map(markdown) }],
+    })
+    createdIds.push(post.id)
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    // On the upper half of the third: right before it, the list counting the first until
+    // it is dropped
+    const texts = page.getByTestId('bloc-MarkdownBloc')
+    await dragEditItem(texts.filter({ hasText: 'Premier' }), texts.filter({ hasText: 'Troisième' }), 0.25)
+
+    const [section] = await saveAndFetchBlocs(page, post.slug)
+    expect(section.blocs.map((bloc: { content: string }) => bloc.content)).toEqual(['Deuxième', 'Premier', 'Troisième'])
+  })
+
   test('a bloc is dragged by its handle from a cell to another', async ({ page, request }) => {
     // The cell receiving it stacks two blocs already: a cell of a single bloc is that bloc,
     // what is dropped on it becomes a cell next to it (see below)
@@ -418,6 +438,52 @@ test.describe('Sections and grids', () => {
     const [saved] = await saveAndFetchBlocs(page, post.slug)
     expect(saved.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['GridBloc', 'MarkdownBloc'])
     expect(saved.blocs[0].cells.map((cell: { blocs: Array<unknown> }) => cell.blocs.length)).toEqual([1, 1])
+  })
+
+  test('the explorer cannot be dropped in a grid of an accordion', async ({ page, request }) => {
+    const { dataset, resources: [resource] } = await createDatasetWithRemoteResources(request, `Explorer ${Date.now()}`, ['Fichier'])
+    const accordionId = crypto.randomUUID()
+    const post = await createPost(request, {
+      name: `Explorer ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [{
+        class: 'SectionBloc',
+        id: crypto.randomUUID(),
+        blocs: [
+          { class: 'ExploreBloc', id: crypto.randomUUID(), resource_id: resource.id },
+          {
+            class: 'AccordionListBloc',
+            id: accordionId,
+            items: [{
+              title: 'Item',
+              content: [{
+                class: 'GridBloc',
+                id: crypto.randomUUID(),
+                cells: [{ id: crypto.randomUUID(), width: null, blocs: [markdown('Gauche A'), markdown('Gauche B')] }],
+              }],
+            }],
+          },
+        ],
+      }],
+    })
+    createdIds.push(post.id)
+    try {
+      await page.setViewportSize({ width: 1280, height: 900 })
+      // The hash opens the accordion item
+      await gotoHydrated(page, `/pages/${post.slug}?edit=true#accordion-${accordionId}-0`)
+
+      await dragEditItem(page.getByTestId('bloc-ExploreBloc'), page.getByTestId('bloc-MarkdownBloc').filter({ hasText: 'Gauche B' }))
+
+      // Nowhere in the accordion: the explorer stays a bloc of the section
+      const [section] = await saveAndFetchBlocs(page, post.slug)
+      expect(section.blocs.map((bloc: { class: string }) => bloc.class).sort()).toEqual(['AccordionListBloc', 'ExploreBloc'])
+      const accordion = section.blocs.find((bloc: { class: string }) => bloc.class === 'AccordionListBloc')
+      expect(accordion.items[0].content[0].cells[0].blocs.map((bloc: { content: string }) => bloc.content)).toEqual(['Gauche A', 'Gauche B'])
+    }
+    finally {
+      await deleteDatasets(request, [dataset.id])
+    }
   })
 
   test('a cell is resized with its handle, snapping to the allowed widths', async ({ page, request }) => {

@@ -33,7 +33,10 @@ test.describe('Organization presentation tab', () => {
       await expect(page).toHaveURL(/edit=true/)
       // The empty state invites the admin to add a first section.
       await expect(page.getByText('Personnalisez votre page de présentation')).toBeVisible()
-      await expect(page.getByRole('button', { name: 'Ajouter une section' })).toBeVisible()
+      // Sections are all an organization page can add at its top level: no menu to pick from.
+      await page.getByRole('button', { name: 'Ajouter une section' }).click()
+      await expect(page.getByTestId('add-bloc-SectionBloc')).toHaveCount(0)
+      await expect(page.getByTestId('add-bloc-in-section')).toBeVisible()
 
       // Cancelling drops back to view mode, where the same empty state now offers
       // a CTA to re-enter the composer.
