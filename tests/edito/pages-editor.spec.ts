@@ -97,7 +97,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await pickObjects(page, datasets, 'Ajouter un jeu de données', 'Sélectionner des jeux de données', [
     { search: 'marché', title: /Marchés publics de la Métropole de Lyon/ },
     { search: 'adresse', title: /Base Adresse Nationale/ },
-    { search: 'véhicule', title: /Véhicules à faibles et très faibles émissions/ },
+    { search: 'véhicule', title: /Véhicules à faibles et à très faibles émissions/ },
     { search: 'covid', title: /personnes vaccinées contre/ },
   ])
   await expect(datasets.getByRole('link', { name: /Marchés publics de la Métropole de Lyon/ })).toBeVisible()
