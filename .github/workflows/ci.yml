@@ -146,16 +146,19 @@ jobs:
   udata_fixtures:
     needs: udata_ref
     runs-on: ubuntu-latest
-    # Same container and services as the E2E shards, so that the same udata.cfg applies
-    container:
-      image: mcr.microsoft.com/playwright:v1.63.0-noble
-      options: --user 1001
+    env:
+      E2E_MONGODB_HOST: mongodb://localhost:27017/udata
+      E2E_REDIS_URL: redis://localhost:6379
 
     services:
       mongodb:
         image: mongo:6.0.4
+        ports:
+          - 27017:27017
       redis:
         image: redis
+        ports:
+          - 6379:6379
 
     steps:
       - name: Checkout cdata
@@ -181,19 +184,6 @@ jobs:
       - name: Configure udata
         run: cp .github/e2e/udata.cfg ${{ env.UDATA_WORKING_DIR }}/udata.cfg
 
-      - name: Cache MongoDB database tools
-        id: mongodb-tools
-        uses: actions/cache@v6
-        with:
-          path: mongodb-tools
-          key: ${{ env.MONGODB_TOOLS }}
-
-      - name: Install MongoDB database tools
-        if: steps.mongodb-tools.outputs.cache-hit != 'true'
-        run: |
-          mkdir mongodb-tools
-          curl -fsSL "https://fastdl.mongodb.org/tools/db/$MONGODB_TOOLS.tgz" | tar -xz --strip-components=1 -C mongodb-tools
-
       - name: Initialize udata
         working-directory: ${{ env.UDATA_WORKING_DIR }}
         run: |
@@ -207,8 +197,9 @@ jobs:
           uv run udata user create --first-name "Normal" --last-name "User" --email "normal@example.com" --password "@1337Password42"
           uv run udata user create --first-name "2FA" --last-name "User" --email "2fa@example.com" --password "@1337Password42"
 
+      # mongodump comes with the service image: nothing to install
       - name: Dump udata database
-        run: mongodb-tools/bin/mongodump --uri mongodb://mongodb:27017/udata --archive=udata.archive --gzip
+        run: docker exec ${{ job.services.mongodb.id }} mongodump --db udata --archive --gzip > udata.archive
 
       - name: Upload udata database
         uses: actions/upload-artifact@v7
