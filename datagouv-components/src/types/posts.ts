@@ -25,6 +25,7 @@ export type Post = {
   parent: PostAncestor | null
   published: string | null
   reuses: Array<Pick<Reuse, 'id' | 'image' | 'image_thumbnail' | 'page' | 'title' | 'uri'>>
+  sidemenu: boolean
   slug: string
   tags: Array<string>
   url: string

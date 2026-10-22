@@ -15,7 +15,48 @@
       </BrandedButton>
     </div>
 
+    <!-- Side menu, outside of the edit mode whose toolbar lives in the side margins: the
+         colored sections opening the page stay above it as banners, the others go next to it -->
+    <template v-if="sidemenu && !isEditing">
+      <div
+        v-for="section in leadingColoredSections"
+        :key="section.id"
+        class="py-24"
+        :class="heroBgColor(section.color!)"
+        data-testid="page-SectionBloc"
+      >
+        <div class="container">
+          <BlocsList
+            :model-value="section.blocs"
+            :edit="false"
+            level="section"
+            :color="section.color"
+          />
+        </div>
+      </div>
+      <div class="container md:flex md:gap-8 py-12">
+        <HeadingsSidemenu
+          v-if="sidemenuHeadings.length"
+          :headings="sidemenuHeadings"
+          class="md:w-1/4 shrink-0"
+        />
+        <div class="flex-1 min-w-0 space-y-12">
+          <BlocsList
+            v-for="section in workingBlocs.slice(leadingColoredSections.length)"
+            :key="section.id"
+            :model-value="section.blocs"
+            :edit="false"
+            level="section"
+            :color="section.color"
+            :class="section.color && [heroBgColor(section.color), 'rounded-lg p-8']"
+            data-testid="page-SectionBloc"
+          />
+        </div>
+      </div>
+    </template>
+
     <div
+      v-else
       ref="listRef"
       data-drop-list
     >
@@ -174,14 +215,16 @@
 
 <script setup lang="ts">
 import type { ComponentProps } from 'vue-component-type-helpers'
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, formatMarkdown } from '@datagouv/components-next'
 import { MenuItem } from '@headlessui/vue'
 import { RiAddLine, RiCheckLine, RiEdit2Line } from '@remixicon/vue'
 import { v4 as uuidv4 } from 'uuid'
 import BlocsDragLayer from './BlocsDragLayer.vue'
 import BlocsList from './BlocsList.vue'
 import EditItem from './EditItem.vue'
+import HeadingsSidemenu from '~/components/Sidemenu/HeadingsSidemenu.vue'
 import type { PageBloc, SectionBloc, SectionColor } from '~/types/pages'
+import { anchorHeadings, slugify, type Heading } from '~/utils/headings'
 import { isMeAdmin } from '~/utils/auth'
 import { BLOCS_MAIN_COLOR, PAGE_TITLE_ID, normalizeBlocs, type LegacyBloc } from '~/utils/blocs'
 import { heroBgColor } from '~/utils/hero'
@@ -192,6 +235,7 @@ const props = withDefaults(defineProps<{
   edit?: boolean
   editable?: boolean
   striped?: boolean
+  sidemenu?: boolean
   hideEditButton?: boolean
   // Organization presentation pages have no colored section (udata's
   // `check_no_colored_sections`).
@@ -208,6 +252,7 @@ const props = withDefaults(defineProps<{
   edit: false,
   editable: false,
   striped: true,
+  sidemenu: false,
   hideEditButton: false,
   forOrganization: false,
   untitled: false,
@@ -242,10 +287,11 @@ watchEffect(() => {
 const workingBlocs = computed(() => localBlocs.value ?? normalizedBlocs.value)
 
 // The title of the page: the first bloc of the page, when it is a title.
-provide(PAGE_TITLE_ID, computed(() => {
+const pageTitleId = computed(() => {
   const first = workingBlocs.value[0]?.blocs[0]
   return props.untitled && first?.class === 'TitleBloc' ? first.id : null
-}))
+})
+provide(PAGE_TITLE_ID, pageTitleId)
 
 const { t } = useTranslation()
 
@@ -255,6 +301,23 @@ const SECTION_COLORS: Array<{ value: SectionColor | null, label: string }> = [
   { value: 'green', label: t('Fond vert') },
   { value: 'purple', label: t('Fond violet') },
 ]
+
+const leadingColoredSections = computed(() => {
+  const index = workingBlocs.value.findIndex(section => !section.color)
+  return workingBlocs.value.slice(0, index === -1 ? workingBlocs.value.length : index)
+})
+// The titles of the sections next to the menu, then the headings of their Markdown, rendered
+// with the same options as MarkdownBloc so that their ids are the ones on the page. The title
+// of the page is not one of its parts, and the content of the accordions is folded.
+const sidemenuHeadings = computed<Array<Heading>>(() => workingBlocs.value
+  .slice(leadingColoredSections.value.length)
+  .flatMap(section => section.blocs)
+  .flatMap((bloc) => {
+    if (bloc.class === 'TitleBloc') return bloc.id === pageTitleId.value ? [] : [{ id: slugify(bloc.title), label: bloc.title, level: 2 }]
+    if (bloc.class === 'MarkdownBloc') return anchorHeadings(formatMarkdown(bloc.content, { minDepth: 2, noHeadings: false })).headings
+    return []
+  }),
+)
 
 // Check if there are unsaved changes
 const hasUnsavedChanges = computed(() => {

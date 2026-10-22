@@ -8,9 +8,11 @@
       :placeholder="$t('Titre')"
       @update:model-value="bloc.title = $event.trim() || bloc.title"
     />
+    <!-- The id is rendered server-side so that the router finds the anchor of the URL on load -->
     <component
       :is="tag"
       v-else
+      :id="slugify(bloc.title)"
       class="mb-0"
       :class="style.title"
     >
@@ -46,6 +48,7 @@ import EditableText from './EditableText.vue'
 import type { TitleBloc } from '~/types/pages'
 import { PAGE_TITLE_ID, SECTION_COLOR } from '~/utils/blocs'
 import { BLOCS_LEVEL, type BlocsLevel } from '~/utils/blocsLayout'
+import { slugify } from '~/utils/headings'
 
 defineProps<{
   edit: boolean

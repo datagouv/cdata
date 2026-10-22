@@ -180,10 +180,12 @@ export async function createPost(request: APIRequestContext, data: {
   name: string
   kind: Post['kind']
   slug?: string
+  headline?: string
   content?: string
   body_type?: Post['body_type']
   blocs?: Array<PageBloc>
   parent?: string
+  sidemenu?: boolean
 }): Promise<ApiPost> {
   const response = await request.post(`${API_BASE}/api/1/posts/`, { data })
   if (!response.ok()) {
