@@ -343,7 +343,9 @@ jobs:
           # Playwright reuses it (reuseExistingServer), so the webServer.env in
           # playwright.config.ts does not apply here.
           NUXT_PUBLIC_MATOMO_HOST: ${{ env.FAKE_SERVICES_URL }}
-          NUXT_PUBLIC_METRICS_API: ${{ env.FAKE_SERVICES_URL }}
+          # Under a path of its own: the metrics outage tests intercept everything below it,
+          # and must not take matomo.js down with it
+          NUXT_PUBLIC_METRICS_API: ${{ env.FAKE_SERVICES_URL }}/metrics
           NUXT_SITE_URL: http://localhost:3000
           NUXT_PUBLIC_CHARTS_API_BASE: http://localhost:7000
           NUXT_PUBLIC_CADA_RESOURCE_ID: 3a6d6fe3-8548-43ed-ad09-72052771447c
@@ -363,7 +365,7 @@ jobs:
         env:
           BASE_URL: http://localhost:3000
           NUXT_PUBLIC_API_BASE: http://localhost:7000
-          NUXT_PUBLIC_METRICS_API: ${{ env.FAKE_SERVICES_URL }}
+          NUXT_PUBLIC_METRICS_API: ${{ env.FAKE_SERVICES_URL }}/metrics
           UDATA_WORKING_DIR: ${{ env.UDATA_WORKING_DIR }}
           CI: true
           # Unique blob name per (browser, shard): the default is report-<shard>.zip, which would

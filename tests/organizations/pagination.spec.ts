@@ -12,10 +12,6 @@ async function expectCleanNotFound(page: Page, url: string) {
   const response = await page.goto(url)
   expect(response?.status(), url).toBe(404)
   await expect(page.getByRole('heading', { level: 1, name: '404' })).toBeVisible()
-  // The heading is server rendered, so it shows up while the header is still
-  // prefetching the admin layout and middleware through NuxtLink. Navigating away
-  // then aborts those module requests, which Firefox reports as a console error.
-  await page.waitForLoadState('networkidle')
 }
 
 test.describe('Organization listings pagination', () => {
@@ -44,13 +40,14 @@ test.describe('Organization listings pagination', () => {
     await expectCleanNotFound(page, `/organizations/${ORG}/datasets?page=127`)
   })
 
-  // One test per tab: the twelve page loads in a row outlasted the test timeout on a busy CPU
+  // One page per test: the header keeps prefetching modules after the page settles, and
+  // leaving the page aborts them, which Firefox reports as a console error.
   for (const tab of ['datasets', 'reuses', 'dataservices']) {
-    test(`a malformed page of the ${tab} tab answers a clean 404`, async ({ page }) => {
-      // These never depend on the listing having loaded: no page count can make them valid.
-      for (const query of ['?page=abc', '?page=-5', '?page=1.5', '?page=0']) {
+    // These never depend on the listing having loaded: no page count can make them valid.
+    for (const query of ['?page=abc', '?page=-5', '?page=1.5', '?page=0']) {
+      test(`${query} on the ${tab} tab answers a clean 404`, async ({ page }) => {
         await expectCleanNotFound(page, `/organizations/${ORG}/${tab}${query}`)
-      }
-    })
+      })
+    }
   }
 })
