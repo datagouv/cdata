@@ -13,8 +13,11 @@ env:
   CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
   UDATA_WORKING_DIR: udata
   MONGODB_TOOLS: mongodb-database-tools-ubuntu2404-x86_64-100.13.0
-  # Serves the metrics API and matomo.js to the E2E tests, see tests/fake-services.ts
+  # Serves the metrics API, matomo.js and the Tabular API to the E2E tests, see tests/fake-services.ts
   FAKE_SERVICES_URL: http://localhost:3100
+  # Set to record the Tabular API fixtures from the real API instead of replaying them: each
+  # E2E shard then uploads what it recorded
+  FAKE_SERVICES_RECORD: '1'
 
 permissions:
   id-token: write # Required for OIDC for npm publication
@@ -350,6 +353,7 @@ jobs:
           NUXT_PUBLIC_CHARTS_API_BASE: http://localhost:7000
           NUXT_PUBLIC_CADA_RESOURCE_ID: 3a6d6fe3-8548-43ed-ad09-72052771447c
           NUXT_PUBLIC_GEOPF_ENABLED: "true"
+          NUXT_PUBLIC_TABULAR_API_URL: ${{ env.FAKE_SERVICES_URL }}/tabular
           NUXT_PUBLIC_TABULAR_API_PREVIEW_RESOURCES_ID: 982d9dd0-365a-4c4b-8a83-75dec40c36bb
           NUXT_PUBLIC_TABULAR_API_PREVIEW_STATS_ID: 33cf9a65-3f77-4d88-acd1-bca420d83e60
           NUXT_PUBLIC_EXPLORER_FEEDBACK_URL: https://example.com/feedback
@@ -389,6 +393,14 @@ jobs:
           echo ""
           echo "=== CDATA SERVER LOGS ==="
           cat cdata.log || echo "No cdata logs found"
+
+      - name: Upload recorded Tabular API fixtures
+        uses: actions/upload-artifact@v7
+        if: always() && env.FAKE_SERVICES_RECORD
+        with:
+          name: tabular-fixtures-${{ matrix.browser }}-${{ matrix.shard }}
+          path: tests/fixtures/tabular
+          retention-days: 1
 
       - name: Upload screenshots
         uses: actions/upload-artifact@v7
