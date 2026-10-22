@@ -150,16 +150,13 @@ function convertHero(hero: LegacyHeroBloc, colored: boolean): SectionBloc {
   }
 }
 
-// Whether a section is shown to the readers of a page: an empty one is only a placeholder for
-// the editor.
-export function isShown(section: SectionBloc): boolean {
-  return section.blocs.length > 0
-}
-
+// A legacy bloc showing nothing (an empty list without a title) is dropped: a section is
+// never empty.
 export function normalizeBlocs(blocs: Array<PageBloc | LegacyBloc>, colored = true): Array<PageBloc> {
-  return blocs.map((bloc) => {
-    if (bloc.class === 'SectionBloc') return bloc
-    if (bloc.class === 'HeroBloc') return convertHero(bloc, colored)
-    return { class: 'SectionBloc', id: derivedId(bloc.id, 'section'), color: null, blocs: convertLegacyBloc(bloc) }
+  return blocs.flatMap((bloc) => {
+    if (bloc.class === 'SectionBloc') return [bloc]
+    if (bloc.class === 'HeroBloc') return [convertHero(bloc, colored)]
+    const content = convertLegacyBloc(bloc)
+    return content.length ? [{ class: 'SectionBloc' as const, id: derivedId(bloc.id, 'section'), color: null, blocs: content }] : []
   })
 }

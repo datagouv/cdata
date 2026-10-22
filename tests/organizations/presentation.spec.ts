@@ -141,28 +141,6 @@ test.describe('Organization presentation tab', () => {
     }
   })
 
-  test('a presentation of empty sections has nothing to read: the admin lands in the editor', async ({ page }) => {
-    const createResp = await page.request.post(`${API_BASE}/api/1/organizations/`, {
-      data: {
-        name: `Empty sections test ${Date.now()}`,
-        description: 'Organization used to test a presentation of empty sections.',
-      },
-    })
-    const org = await createResp.json()
-    try {
-      await page.request.put(`${API_BASE}/api/1/organizations/${org.id}/`, {
-        data: { ...org, presentation_blocs: [{ class: 'SectionBloc', blocs: [] }] },
-      })
-
-      await page.goto(`/organizations/${org.slug}/presentation`)
-      await expect(page).toHaveURL(/edit=true/)
-      await expect(page.getByTestId('page-SectionBloc')).toHaveCount(1)
-    }
-    finally {
-      await page.request.delete(`${API_BASE}/api/1/organizations/${org.id}/`)
-    }
-  })
-
   test('admin invite banner toggles with the presentation publication state', async ({ page }) => {
     const uniqueId = Date.now()
     const createResp = await page.request.post(`${API_BASE}/api/1/organizations/`, {

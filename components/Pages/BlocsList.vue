@@ -185,7 +185,7 @@ import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/use
 const props = defineProps<{
   edit: boolean
   // Restricts the blocs offered in the "add" menu, see `AddBlocDropdown`.
-  level: Exclude<BlocsLevel, 'page'>
+  level: BlocsLevel
   // The background of the section, for the blocs it holds, down to its accordions.
   color?: SectionColor | null
 }>()

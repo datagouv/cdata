@@ -24,8 +24,10 @@ export async function useSiteBlocs(siteKey: SiteBlocsKey, extraFields: string[] 
       await refresh()
       toast.success(t('Page sauvegardée'))
     }
-    catch {
+    catch (error) {
       toast.error(t('Erreur lors de la sauvegarde'))
+      // The editor keeps the changes that could not be saved
+      throw error
     }
   }
 

@@ -1,6 +1,6 @@
 import { rowShare, type BlocClass } from '~/utils/blocsLayout'
 
-// What is being dragged: a band of the page (section, hero), an accordion item, or a bloc,
+// What is being dragged: a band of the page (a section), an accordion item, or a bloc,
 // whose class decides where it can land.
 export type Dragged = { kind: 'band' | 'accordion-item' } | { kind: 'bloc', blocClass: BlocClass }
 

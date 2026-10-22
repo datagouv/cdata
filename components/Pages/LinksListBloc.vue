@@ -11,7 +11,7 @@
           <CdataLink
             class="hyphens-auto inline-flex items-start relative font-extrabold text-3xl text-(--link-color) no-underline hover:underline fr-raw-link"
             :style="{
-              '--link-color': link.color,
+              '--link-color': colorOf(link),
             }"
             :href="link.url"
           >
@@ -27,6 +27,7 @@
           <!-- Floating controls on the left -->
           <div class="absolute -left-12 top-1/2 -translate-y-1/2 flex flex-col items-center gap-4">
             <input
+              v-if="!sectionColor"
               v-model="link.color"
               type="color"
               class="size-6 rounded cursor-pointer border-0"
@@ -43,7 +44,7 @@
           </div>
           <div
             class="hyphens-auto inline-flex items-start font-extrabold text-3xl"
-            :style="{ color: link.color ?? '#000091' }"
+            :style="{ color: colorOf(link) ?? '#000091' }"
           >
             <EditableText
               :model-value="link.title || $t('Titre du lien')"
@@ -81,11 +82,19 @@
 import { RiAddLine, RiArrowRightUpLine, RiDeleteBinLine } from '@remixicon/vue'
 import CdataLink from '../CdataLink.vue'
 import EditableText from './EditableText.vue'
-import type { LinksListBloc } from '~/types/pages'
+import type { LinkInBloc, LinksListBloc } from '~/types/pages'
+import { SECTION_COLOR } from '~/utils/blocs'
 
 defineProps<{
   edit: boolean
 }>()
 
 const bloc = defineModel<LinksListBloc>({ required: true })
+
+// On a colored section, the links are white whatever their color, which is chosen for a
+// neutral background (dark blue by default, the color of the blue sections).
+const sectionColor = inject(SECTION_COLOR, ref(null))
+function colorOf(link: LinkInBloc): string | null {
+  return sectionColor.value ? '#fff' : link.color
+}
 </script>

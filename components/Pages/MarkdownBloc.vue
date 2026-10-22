@@ -17,7 +17,7 @@
   >
     <MarkdownViewer
       class="prose-h2:text-3xl prose-h3:text-2xl"
-      :class="sectionColor ? 'text-white prose-invert prose-h2:text-white prose-h3:text-white prose-a:text-white' : 'prose-h2:text-gray-title prose-h3:text-gray-title'"
+      :class="sectionColor ? 'text-white prose-invert prose-h2:text-white prose-h3:text-white prose-a:text-white prose-strong:text-white' : 'prose-h2:text-gray-title prose-h3:text-gray-title'"
       :content="bloc.content"
       :min-heading="2"
       size="md"

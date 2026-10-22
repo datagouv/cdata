@@ -4,24 +4,23 @@ import type { Dragged } from '~/composables/useBlocsDrag'
 
 export type BlocClass = PageBloc['class'] | SectionContentBloc['class']
 
-// Where blocs live: the page itself (sections and heroes), a section or an accordion item.
-// Each level only accepts some blocs (see `AddBlocDropdown`).
-export type BlocsLevel = 'page' | 'section' | 'accordion'
+// Where blocs live, under the sections of a page: a section or an accordion item. Each level
+// only accepts some blocs (see `AddBlocDropdown`).
+export type BlocsLevel = 'section' | 'accordion'
 
 // Provided by each list of blocs to the blocs it holds.
-export const BLOCS_LEVEL: InjectionKey<Exclude<BlocsLevel, 'page'>> = Symbol('blocs-level')
+export const BLOCS_LEVEL: InjectionKey<BlocsLevel> = Symbol('blocs-level')
 
 // Mirrors the layout udata enforces (`check_blocs_layout`).
 const LEAF_BLOCS: Array<BlocClass> = ['TitleBloc', 'MarkdownBloc', 'LinksListBloc', 'ButtonBloc', 'ExploreBloc', 'DatasetBloc', 'DataserviceBloc', 'ReuseBloc']
 export const ACCEPTED_BLOCS: Record<BlocsLevel, Array<BlocClass>> = {
-  page: ['SectionBloc'],
   section: [...LEAF_BLOCS, 'AccordionListBloc'],
   // The explorer is too wide for an accordion.
   accordion: LEAF_BLOCS.filter(name => name !== 'ExploreBloc'),
 }
 
 // Whether a dragged bloc can be dropped in a section or an accordion item.
-export function acceptsDropped(level: Exclude<BlocsLevel, 'page'>, dragged: Dragged): boolean {
+export function acceptsDropped(level: BlocsLevel, dragged: Dragged): boolean {
   return dragged.kind === 'bloc' && ACCEPTED_BLOCS[level].includes(dragged.blocClass)
 }
 

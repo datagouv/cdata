@@ -23,7 +23,7 @@ import type { SectionContentBloc } from '~/types/pages'
 import type { BlocsLevel } from '~/utils/blocsLayout'
 
 defineProps<{
-  level: Exclude<BlocsLevel, 'page'>
+  level: BlocsLevel
   label: string
 }>()
 

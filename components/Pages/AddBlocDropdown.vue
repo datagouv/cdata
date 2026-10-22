@@ -1,14 +1,5 @@
 <template>
-  <!-- A single choice (sections, on an organization page): no menu to pick it from -->
-  <span
-    v-if="onlyChoice"
-    class="contents"
-    @click="pick(onlyChoice)"
-  >
-    <slot />
-  </span>
   <Menu
-    v-else
     ref="menu"
     as="div"
     class="relative inline-block text-left"
@@ -83,7 +74,7 @@ import type { ComponentPublicInstance } from 'vue'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { autoUpdate, flip, offset, shift, size, useFloating } from '@floating-ui/vue'
 import ObjectsSelectorModal from './ObjectsSelectorModal.vue'
-import type { ObjectBloc, PageBloc, SectionContentBloc } from '~/types/pages'
+import type { ObjectBloc, SectionContentBloc } from '~/types/pages'
 import type { BlocChoice } from '~/utils/pages'
 import { ACCEPTED_BLOCS, type BlocsLevel } from '~/utils/blocsLayout'
 
@@ -92,7 +83,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  newBlocs: [Array<PageBloc | SectionContentBloc>]
+  newBlocs: [Array<SectionContentBloc>]
 }>()
 
 const { t } = useTranslation()
@@ -130,18 +121,13 @@ const { floatingStyles } = useFloating(menu, items, {
 const groups = computed(() => {
   const accepted = ACCEPTED_BLOCS[props.level]
   const all: Array<{ name: string, choices: Array<BlocChoice> }> = [
-    { name: t('Mise en page'), choices: [choices.SectionBloc, choices.AccordionListBloc] },
+    { name: t('Mise en page'), choices: [choices.AccordionListBloc] },
     { name: t('Contenus'), choices: [choices.TitleBloc, choices.MarkdownBloc, choices.LinksListBloc, choices.ButtonBloc] },
     { name: t('Contenus à la une'), choices: [choices.DatasetBloc, choices.DataserviceBloc, choices.ReuseBloc] },
   ]
   return all
     .map(group => ({ ...group, choices: group.choices.filter(choice => accepted.includes(choice.key)) }))
     .filter(group => group.choices.length)
-})
-
-const onlyChoice = computed(() => {
-  const [group, ...otherGroups] = groups.value
-  return !otherGroups.length && group?.choices.length === 1 ? group.choices[0] : null
 })
 
 const objectClass = ref<ObjectBloc['class'] | null>(null)

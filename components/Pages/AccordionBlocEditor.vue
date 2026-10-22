@@ -1,5 +1,7 @@
 <template>
-  <AccordionGroup>
+  <!-- On a colored section, the accordion is a white card: its titles and its content keep
+       the colors of a neutral background. -->
+  <AccordionGroup :class="{ 'bg-white rounded-lg px-6 py-4': sectionColor }">
     <div
       ref="listRef"
       data-drop-list
@@ -16,7 +18,7 @@
         @keyboard-move="moveWithKeyboard(bloc.items, $event, itemIndex)"
       >
         <Accordion
-          :id="`accordion-${bloc.id}-${itemIndex}`"
+          :id="`accordion-${bloc.id}-${item.id}`"
           :title="item.title || $t('Titre de l\'élément')"
         >
           <template
@@ -74,6 +76,7 @@ import BlocsList from './BlocsList.vue'
 import EditItem from './EditItem.vue'
 import { v4 as uuidv4 } from 'uuid'
 import type { AccordionListBloc } from '~/types/pages'
+import { SECTION_COLOR } from '~/utils/blocs'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 defineProps<{
@@ -83,6 +86,10 @@ defineProps<{
 const bloc = defineModel<AccordionListBloc>({ required: true })
 
 const labels = useBlocLabels()
+
+// On a colored section, the content of the items is drawn on the white card.
+const sectionColor = inject(SECTION_COLOR, ref(null))
+provide(SECTION_COLOR, ref(null))
 
 // Items move between accordions, and nowhere else.
 const listRef = ref<HTMLElement | null>(null)

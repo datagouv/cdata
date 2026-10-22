@@ -70,7 +70,7 @@ defineProps<{
   label: string
   // Shows the drag handle, which starts a drag (see `startBlocsDrag`).
   draggable?: boolean
-  // A full width band of the page (section, hero), framed from the inside.
+  // A full width band of the page (a section), framed from the inside.
   band?: boolean
   // An item holding other items (an accordion).
   container?: boolean

@@ -104,6 +104,10 @@ describe('normalizeBlocs', () => {
     ])
   })
 
+  it('drops an empty object list without a title: a section is never empty', () => {
+    expect(normalizeBlocs([{ class: 'DatasetsListBloc', id: 'list', title: null, subtitle: null, datasets: [] }])).toEqual([])
+  })
+
   it('converts the content of accordion items and moves the accordion title and description to a title bloc', () => {
     const [section] = normalizeBlocs([{
       class: 'AccordionListBloc',

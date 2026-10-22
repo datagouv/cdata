@@ -54,7 +54,7 @@ defineProps<{
 const bloc = defineModel<TitleBloc>({ required: true })
 
 // The title of a section, or of the content of an accordion item, whose own title is an `h3`.
-const HEADINGS: Record<Exclude<BlocsLevel, 'page'>, { tag: string, class: string }> = {
+const HEADINGS: Record<BlocsLevel, { tag: string, class: string }> = {
   section: { tag: 'h2', class: 'text-3xl font-extrabold' },
   accordion: { tag: 'h4', class: 'text-lg font-bold' },
 }
@@ -65,7 +65,8 @@ const heading = HEADINGS[level]
 const pageTitleId = inject(PAGE_TITLE_ID, ref(null))
 const tag = computed(() => pageTitleId.value === bloc.value.id ? 'h1' : heading.tag)
 
-// On a colored section, the title of the section has the look of the former heroes.
+// On a colored section, the title of the section is a banner: white, very large, its subtitle
+// in italics, as the banners at the top of the datasets, reuses and API pages.
 const sectionColor = inject(SECTION_COLOR, ref(null))
 const style = computed(() => {
   if (sectionColor.value && level === 'section') {

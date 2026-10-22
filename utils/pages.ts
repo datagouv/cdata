@@ -1,8 +1,7 @@
 import type { Component } from 'vue'
-import { RiCursorLine, RiDatabase2Line, RiHeading, RiLayoutRowLine, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine } from '@remixicon/vue'
+import { RiCursorLine, RiDatabase2Line, RiHeading, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine } from '@remixicon/vue'
 import { v4 as uuidv4 } from 'uuid'
-import type { AccordionListBloc, BlocWidth, ButtonBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionBloc, TitleBloc } from '~/types/pages'
-import type { BlocClass } from '~/utils/blocsLayout'
+import type { AccordionListBloc, BlocWidth, ButtonBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionContentBloc, TitleBloc } from '~/types/pages'
 import TitleBlocComponent from '~/components/Pages/TitleBloc.vue'
 import MarkdownBlocComponent from '~/components/Pages/MarkdownBloc.vue'
 import LinksListBlocComponent from '~/components/Pages/LinksListBloc.vue'
@@ -56,7 +55,7 @@ export type BlocChoice = {
   name: string
   description: string
 } & (
-  | { key: Exclude<BlocClass, ObjectBloc['class']>, create: () => SectionBloc | TitleBloc | MarkdownBloc | LinksListBloc | ButtonBloc | AccordionListBloc }
+  | { key: Exclude<SectionContentBloc['class'], ObjectBloc['class']>, create: () => TitleBloc | MarkdownBloc | LinksListBloc | ButtonBloc | AccordionListBloc }
   // Objects are picked in a selector before their blocs can be built.
   | { key: ObjectBloc['class'] }
 )
@@ -65,13 +64,6 @@ export function useBlocChoices() {
   const { t } = useTranslation()
 
   return {
-    SectionBloc: {
-      key: 'SectionBloc',
-      icon: RiLayoutRowLine,
-      name: t('Section'),
-      description: t('Bande pleine largeur qui regroupe des blocs'),
-      create: (): SectionBloc => ({ class: 'SectionBloc', id: uuidv4(), color: null, blocs: [] }),
-    },
     TitleBloc: {
       key: 'TitleBloc',
       icon: RiHeading,

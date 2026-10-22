@@ -2,7 +2,7 @@
   <div :class="{ relative: editable }">
     <!-- Admin edit button. Hidden when empty: the empty state carries its own CTA. -->
     <div
-      v-if="editable && !hideEditButton && isMeAdmin() && !isEditing && shownBlocs.length > 0"
+      v-if="editable && !hideEditButton && isMeAdmin() && !isEditing && workingBlocs.length > 0"
       class="absolute top-4 right-4 z-50"
     >
       <BrandedButton
@@ -20,7 +20,7 @@
       data-drop-list
     >
       <EditItem
-        v-for="{ bloc, index } in shownBlocs"
+        v-for="(bloc, index) in workingBlocs"
         :key="bloc.id"
         :edit="isEditing"
         :label="labels[bloc.class] ?? bloc.class"
@@ -29,7 +29,6 @@
         class="group/section"
         :class="[striped ? 'py-24' : 'py-12', bloc.color ? heroBgColor(bloc.color) : striped && 'odd:bg-gray-some even:bg-white']"
         :data-testid="`page-${bloc.class}`"
-        :data-section-color="bloc.color ?? undefined"
         data-drop-item
         @delete="workingBlocs.splice(index, 1)"
         @drag-start="startBlocsDrag($event, { list: listRef!, index, kind: 'band', label: labels[bloc.class] ?? bloc.class })"
@@ -70,19 +69,15 @@
           class="absolute -top-4 left-0 right-0 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 focus-within:opacity-100 transition-opacity delay-400 group-hover/section:delay-0 focus-within:delay-0"
           data-edit-control
         >
-          <AddBlocDropdown
-            level="page"
-            @new-blocs="workingBlocs.splice(index, 0, ...($event as Array<PageBloc>))"
+          <BrandedButton
+            color="tertiary"
+            size="xs"
+            class="bg-white shadow-sm"
+            :icon="RiAddLine"
+            @click="workingBlocs.splice(index, 0, newSection())"
           >
-            <BrandedButton
-              color="tertiary"
-              size="xs"
-              class="bg-white shadow-sm"
-              :icon="RiAddLine"
-            >
-              {{ $t('Ajouter une section') }}
-            </BrandedButton>
-          </AddBlocDropdown>
+            {{ $t('Ajouter une section') }}
+          </BrandedButton>
         </div>
         <div class="container">
           <BlocsList
@@ -99,19 +94,15 @@
           class="absolute -bottom-4 left-0 right-0 flex items-center justify-center z-20"
           data-edit-control
         >
-          <AddBlocDropdown
-            level="page"
-            @new-blocs="workingBlocs.push(...($event as Array<PageBloc>))"
+          <BrandedButton
+            color="tertiary"
+            size="xs"
+            class="bg-white shadow-sm"
+            :icon="RiAddLine"
+            @click="workingBlocs.push(newSection())"
           >
-            <BrandedButton
-              color="tertiary"
-              size="xs"
-              class="bg-white shadow-sm"
-              :icon="RiAddLine"
-            >
-              {{ $t('Ajouter une section') }}
-            </BrandedButton>
-          </AddBlocDropdown>
+            {{ $t('Ajouter une section') }}
+          </BrandedButton>
         </div>
       </EditItem>
     </div>
@@ -123,7 +114,7 @@
          on an unconfigured presentation), offering a CTA to enter edit mode. The
          visual comes from the host through the #empty slot, with a generic fallback. -->
     <div
-      v-if="shownBlocs.length === 0 && (isEditing || (editable && emptyCtaLabel))"
+      v-if="workingBlocs.length === 0 && (isEditing || (editable && emptyCtaLabel))"
       class="container py-12 flex flex-col items-center text-center"
     >
       <slot name="empty">
@@ -139,15 +130,13 @@
           {{ $t('Ajoutez un premier bloc pour commencer à composer la page.') }}
         </p>
       </slot>
-      <AddBlocDropdown
+      <BrandedButton
         v-if="isEditing"
-        level="page"
-        @new-blocs="workingBlocs.push(...($event as Array<PageBloc>))"
+        :icon="RiAddLine"
+        @click="workingBlocs.push(newSection())"
       >
-        <BrandedButton :icon="RiAddLine">
-          {{ $t('Ajouter une section') }}
-        </BrandedButton>
-      </AddBlocDropdown>
+        {{ $t('Ajouter une section') }}
+      </BrandedButton>
       <BrandedButton
         v-else
         :icon="RiEdit2Line"
@@ -188,13 +177,13 @@ import type { ComponentProps } from 'vue-component-type-helpers'
 import { BrandedButton } from '@datagouv/components-next'
 import { MenuItem } from '@headlessui/vue'
 import { RiAddLine, RiCheckLine, RiEdit2Line } from '@remixicon/vue'
-import AddBlocDropdown from './AddBlocDropdown.vue'
+import { v4 as uuidv4 } from 'uuid'
 import BlocsDragLayer from './BlocsDragLayer.vue'
 import BlocsList from './BlocsList.vue'
 import EditItem from './EditItem.vue'
-import type { PageBloc, SectionColor } from '~/types/pages'
+import type { PageBloc, SectionBloc, SectionColor } from '~/types/pages'
 import { isMeAdmin } from '~/utils/auth'
-import { BLOCS_MAIN_COLOR, PAGE_TITLE_ID, isShown, normalizeBlocs, type LegacyBloc } from '~/utils/blocs'
+import { BLOCS_MAIN_COLOR, PAGE_TITLE_ID, normalizeBlocs, type LegacyBloc } from '~/utils/blocs'
 import { heroBgColor } from '~/utils/hero'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
@@ -252,15 +241,9 @@ watchEffect(() => {
 
 const workingBlocs = computed(() => localBlocs.value ?? normalizedBlocs.value)
 
-// Each bloc keeps its index in `workingBlocs`, which the edits address (nothing is filtered
-// out while editing). A page whose sections are all empty has nothing to show: it is empty.
-const shownBlocs = computed(() => workingBlocs.value
-  .map((bloc, index) => ({ bloc, index }))
-  .filter(({ bloc }) => isEditing.value || isShown(bloc)))
-
 // The title of the page: the first bloc of the page, when it is a title.
 provide(PAGE_TITLE_ID, computed(() => {
-  const first = shownBlocs.value[0]?.bloc.blocs[0]
+  const first = workingBlocs.value[0]?.blocs[0]
   return props.untitled && first?.class === 'TitleBloc' ? first.id : null
 }))
 
@@ -300,7 +283,12 @@ onBeforeRouteLeave(() => {
 
 const labels = useBlocLabels()
 
-// Sections and heroes only move among themselves.
+// A page only holds sections: they are added directly, without a menu to pick from.
+function newSection(): SectionBloc {
+  return { class: 'SectionBloc', id: uuidv4(), color: null, blocs: [] }
+}
+
+// Sections only move among themselves.
 const listRef = ref<HTMLElement | null>(null)
 useDropList(listRef, {
   orientation: 'vertical',
@@ -321,7 +309,14 @@ function exitEditMode() {
 async function save() {
   if (!localBlocs.value) return
 
-  await props.onSave(localBlocs.value)
+  // A section left empty only existed for the editor: no reader would see it.
+  try {
+    await props.onSave(localBlocs.value.filter(section => section.blocs.length))
+  }
+  catch {
+    // The host reported the error: the changes stay, to be fixed and saved again.
+    return
+  }
   localBlocs.value = null
   if (props.editable) {
     exitEditMode()

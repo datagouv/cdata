@@ -1,4 +1,4 @@
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { API_BASE, createDataset, createDatasetWithRemoteResources, createPost, deleteDatasets, deletePosts, dragEditItem, focusedDragHandle, gotoHydrated, startEditItemDrag } from '../helpers'
 import { fillPostDescription } from './helpers'
@@ -27,8 +27,8 @@ async function createPostWithBlocs(page: Page, options: {
   return { postSlug, postId }
 }
 
-// A section holding a title, saved
-async function addTitledSectionAndSave(page: Page, title: string) {
+// A section holding a title
+async function addTitledSection(page: Page, title: string) {
   // Sections are the only blocs of a page: no menu to pick one from
   await page.getByRole('button', { name: 'Ajouter une section' }).first().click()
   await page.getByTestId('add-bloc-in-section').click()
@@ -38,7 +38,10 @@ async function addTitledSectionAndSave(page: Page, title: string) {
   await titleInput.click()
   await titleInput.fill(title)
   await page.mouse.click(1, 1)
+}
 
+async function addTitledSectionAndSave(page: Page, title: string) {
+  await addTitledSection(page, title)
   await page.getByRole('button', { name: 'Sauvegarder' }).click()
   await expect(page.getByText('Page créée').or(page.getByText('Page sauvegardée'))).toBeVisible()
 }
@@ -106,7 +109,7 @@ test.describe('Post with blocs', () => {
     await expect(page.getByRole('heading', { level: 2, name: 'News content' })).toBeVisible()
   })
 
-  test('a section gets a background color, the way the heroes were', async ({ page }) => {
+  test('a section gets a background color, its title and its button turning white', async ({ page }) => {
     const uniqueId = Date.now()
     const result = await createPostWithBlocs(page, {
       title: `Test Section ${uniqueId}`,
@@ -115,10 +118,12 @@ test.describe('Post with blocs', () => {
     })
     postId = result.postId
 
-    await page.getByRole('button', { name: 'Ajouter une section' }).first().click()
+    await addTitledSection(page, 'Titre sur fond vert')
     await page.getByTestId('add-bloc-in-section').click()
     await page.getByTestId('add-bloc-ButtonBloc').click()
-    await page.getByLabel('URL du bouton').fill('https://www.data.gouv.fr/datasets')
+    const url = page.getByLabel('URL du bouton')
+    await url.fill('https://www.data.gouv.fr/datasets')
+    await url.press('Tab')
 
     // From the menu of the section's tab
     const section = page.getByTestId('page-SectionBloc')
@@ -131,8 +136,18 @@ test.describe('Post with blocs', () => {
 
     await page.goto(`/posts/${result.postSlug}`)
     await page.waitForLoadState('networkidle')
-    await expect(page.getByTestId('page-SectionBloc')).toHaveAttribute('data-section-color', 'green')
-    await expect(page.getByRole('link', { name: 'Titre du bouton' })).toHaveAttribute('href', 'https://www.data.gouv.fr/datasets')
+    const style = (locator: Locator) => locator.evaluate((element) => {
+      const { backgroundColor, color } = getComputedStyle(element)
+      return { backgroundColor, color }
+    })
+    const white = 'rgb(255, 255, 255)'
+    const band = await style(page.getByTestId('page-SectionBloc'))
+    expect(band.backgroundColor).not.toBe(white)
+    expect(band.backgroundColor).not.toBe('rgba(0, 0, 0, 0)')
+    expect((await style(page.getByRole('heading', { name: 'Titre sur fond vert' }))).color).toBe(white)
+    const button = page.getByRole('link', { name: 'Titre du bouton' })
+    await expect(button).toHaveAttribute('href', 'https://www.data.gouv.fr/datasets')
+    expect((await style(button)).backgroundColor).toBe(white)
   })
 
   test('a button is saved as added, to the home page of the site', async ({ page }) => {
@@ -146,12 +161,41 @@ test.describe('Post with blocs', () => {
     await page.getByRole('button', { name: 'Ajouter une section' }).first().click()
     await page.getByTestId('add-bloc-in-section').click()
     await page.getByTestId('add-bloc-ButtonBloc').click()
+    // A URL is required: emptying it keeps the previous one
+    const url = page.getByLabel('URL du bouton')
+    await url.fill('')
+    await url.press('Tab')
+    await expect(url).toHaveValue('/')
     await page.getByRole('button', { name: 'Sauvegarder' }).click()
     await expect(page.getByText('Page sauvegardée')).toBeVisible()
 
     await page.goto(`/posts/${result.postSlug}`)
     await page.waitForLoadState('networkidle')
     await expect(page.getByRole('link', { name: 'Titre du bouton' })).toHaveAttribute('href', '/')
+  })
+
+  test.describe('when the save is rejected', () => {
+    // The rejection below is the point of the test: the browser logs it.
+    test.use({ allowedConsoleMessages: ['the server responded with a status of 400'] })
+
+    test('the changes stay in the editor when they cannot be saved', async ({ page }) => {
+      const result = await createPostWithBlocs(page, {
+        title: `Test Failure ${Date.now()}`,
+        headline: 'A page failing to save',
+        kind: 'page',
+      })
+      postId = result.postId
+      await addTitledSection(page, 'Titre non sauvegardé')
+
+      await page.route(url => url.pathname.endsWith(`/api/1/posts/${postId}/`), route => route.request().method() === 'PUT'
+        ? route.fulfill({ status: 400, json: { message: 'Validation error' } })
+        : route.continue())
+      await page.getByRole('button', { name: 'Sauvegarder' }).click()
+
+      await expect(page.getByText('Erreur lors de la sauvegarde')).toBeVisible()
+      await expect(page).toHaveURL(/edit=true/)
+      await expect(page.getByTestId('bloc-TitleBloc')).toContainText('Titre non sauvegardé')
+    })
   })
 
   test('emptying a title keeps the previous one, a title being required', async ({ page }) => {
@@ -162,13 +206,8 @@ test.describe('Post with blocs', () => {
     })
     postId = result.postId
 
-    await page.getByRole('button', { name: 'Ajouter une section' }).first().click()
-    await page.getByTestId('add-bloc-in-section').click()
-    await page.getByTestId('add-bloc-TitleBloc').click()
+    await addTitledSection(page, 'Titre de la section')
     const title = page.getByTestId('bloc-TitleBloc').locator('[contenteditable="true"]').first()
-    await title.click()
-    await title.fill('Titre de la section')
-    await page.mouse.click(1, 1)
     await title.click()
     await title.fill('')
     await page.mouse.click(1, 1)
@@ -390,24 +429,15 @@ test.describe('Sections', () => {
     expect(contents(saved)).toEqual(['Quatre', 'Un', 'Trois', 'Deux'])
   })
 
-  test('an empty section is only shown while editing', async ({ page, request }) => {
-    const post = await createPost(request, {
-      name: `Empty ${Date.now()}`,
-      kind: 'page',
-      body_type: 'blocs',
-      blocs: [
-        { class: 'SectionBloc', id: crypto.randomUUID(), color: null, blocs: [] },
-        { class: 'SectionBloc', id: crypto.randomUUID(), color: null, blocs: [markdown('Seule section remplie')] },
-      ],
-    })
-    createdIds.push(post.id)
-
-    await gotoHydrated(page, `/pages/${post.slug}`)
-    await expect(page.getByText('Seule section remplie')).toBeVisible()
-    await expect(page.getByTestId('page-SectionBloc')).toHaveCount(1)
-
+  test('a section left empty in the editor is not saved', async ({ page, request }) => {
+    const post = await createSectionPage(request, [markdown('Seule section remplie')])
     await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    await page.getByRole('button', { name: 'Ajouter une section' }).last().click()
     await expect(page.getByTestId('page-SectionBloc')).toHaveCount(2)
+
+    const sections = await saveAndFetchBlocs(page, post.slug)
+    expect(sections.map(contents)).toEqual([['Seule section remplie']])
   })
 
   // `page.keyboard`, not `Locator.press`: the latter focuses the handle again before each
@@ -546,6 +576,7 @@ test.describe('Sections', () => {
   test('a bloc moves into an accordion item, but not the explorer', async ({ page, request }) => {
     const { dataset, resources: [resource] } = await createDatasetWithRemoteResources(request, `Explorer ${Date.now()}`, ['Fichier'])
     const accordionId = crypto.randomUUID()
+    const itemId = crypto.randomUUID()
     const post = await createPost(request, {
       name: `Explorer ${Date.now()}`,
       kind: 'page',
@@ -561,7 +592,7 @@ test.describe('Sections', () => {
             class: 'AccordionListBloc',
             id: accordionId,
             width: null,
-            items: [{ id: crypto.randomUUID(), title: 'Item', content: [markdown('Dedans A'), markdown('Dedans B')] }],
+            items: [{ id: itemId, title: 'Item', content: [markdown('Dedans A'), markdown('Dedans B')] }],
           },
         ],
       }],
@@ -571,7 +602,7 @@ test.describe('Sections', () => {
       // Tall enough for the whole section: the texts are editors, high ones
       await page.setViewportSize({ width: 1280, height: 1600 })
       // The hash opens the accordion item
-      await gotoHydrated(page, `/pages/${post.slug}?edit=true#accordion-${accordionId}-0`)
+      await gotoHydrated(page, `/pages/${post.slug}?edit=true#accordion-${accordionId}-${itemId}`)
 
       // On the upper half of the second text of the item: right before it
       const texts = page.getByTestId('bloc-MarkdownBloc')
