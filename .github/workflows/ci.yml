@@ -147,6 +147,9 @@ jobs:
   # the dump in seconds instead.
   udata_fixtures:
     needs: udata_ref
+    # The init downloads the zones and the fixtures without a timeout: a stalled download
+    # must fail the run rather than hold the E2E shards waiting for hours
+    timeout-minutes: 10
     runs-on: ubuntu-latest
     env:
       E2E_MONGODB_HOST: mongodb://localhost:27017/udata
