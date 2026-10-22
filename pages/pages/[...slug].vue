@@ -2,7 +2,7 @@
   <PostView
     v-if="post"
     :post
-    @refresh="refreshPost"
+    :on-refresh="refreshPost"
   />
   <LoadingBlock
     v-else-if="apiFailed"

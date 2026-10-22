@@ -6,7 +6,7 @@
   >
     <PostView
       :post
-      @refresh="refreshPost"
+      :on-refresh="refreshPost"
     />
   </LoadingBlock>
 </template>
@@ -19,7 +19,6 @@ import type { Post } from '~/types/posts'
 const route = useRoute()
 
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
-// Not lazy: the redirection must come from the server response, before anything renders.
 const { data: post, status, refresh: refreshPost } = await useAPI<Post>(url, { showErrorPage: true })
 
 if (post.value) {

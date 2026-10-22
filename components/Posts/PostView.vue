@@ -1,35 +1,11 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
-  <!-- Full page blocs mode: no header, just the blocs (and the breadcrumb of a sub-page) -->
-  <div v-if="isFullPageBlocs">
+  <div>
+    <!-- A full page blocs page shows the breadcrumb only when it is a sub-page -->
     <div
-      v-if="post.ancestors.length"
+      v-if="!isFullPageBlocs || post.ancestors.length"
       class="container"
     >
-      <Breadcrumb>
-        <BreadcrumbItem
-          v-for="crumb in breadcrumb"
-          :key="crumb.to ?? 'current'"
-          :to="crumb.to"
-        >
-          {{ crumb.label }}
-        </BreadcrumbItem>
-      </Breadcrumb>
-    </div>
-    <EditoBlocs
-      :blocs="post.blocs ?? []"
-      editable
-      :sidemenu="post.sidemenu"
-      :on-save="saveBlocs"
-    />
-  </div>
-
-  <!-- Header mode: news, and pages that are not full page blocs -->
-  <div
-    v-else
-    class="mb-24"
-  >
-    <div class="container">
       <div class="flex items-center">
         <Breadcrumb class="flex-1">
           <BreadcrumbItem
@@ -42,7 +18,7 @@
         </Breadcrumb>
 
         <div
-          v-if="isMeAdmin()"
+          v-if="!isFullPageBlocs && isMeAdmin()"
           class="flex gap-2"
         >
           <EditButton
@@ -60,96 +36,114 @@
           </BrandedButton>
         </div>
       </div>
-      <div class="max-w-4xl">
-        <h1 class="text-4.5xl font-extrabold text-gray-title mb-0">
-          {{ post.name }}
-        </h1>
-        <template v-if="post.published || isMeAdmin()">
-          <TranslationT
-            v-if="post.published"
-            tag="p"
-            class="text-xs mt-2 mb-0"
-            keypath="Publié le {date}"
-          >
-            <template #date>
-              <FormattedDate :date="post.published" />
-            </template>
-          </TranslationT>
-          <p
-            v-else
-            class="text-xs mb-0"
-          >
-            {{ $t('Pas encore publié') }}
-          </p>
-          <p class="mt-4 mb-6">
-            {{ post.headline }}
-          </p>
-          <img
-            v-if="post.image"
-            :src="post.image"
-            class="w-full h-auto mb-2"
-          >
-        </template>
-        <template v-else>
-          {{ $t(`Cet article n'est pas encore publié`) }}
-        </template>
-      </div>
     </div>
-    <template v-if="post.published || isMeAdmin()">
-      <!-- Blocs render full-width so the striped backgrounds reach the screen edges
+
+    <!-- Full page blocs mode: no header, just the blocs -->
+    <EditoBlocs
+      v-if="isFullPageBlocs"
+      :blocs="post.blocs ?? []"
+      editable
+      :sidemenu="post.sidemenu"
+      :on-save="saveBlocs"
+    />
+
+    <!-- Header mode: news, and pages that are not full page blocs -->
+    <div
+      v-else
+      class="mb-24"
+    >
+      <div class="container">
+        <div class="max-w-4xl">
+          <h1 class="text-4.5xl font-extrabold text-gray-title mb-0">
+            {{ post.name }}
+          </h1>
+          <template v-if="post.published || isMeAdmin()">
+            <TranslationT
+              v-if="post.published"
+              tag="p"
+              class="text-xs mt-2 mb-0"
+              keypath="Publié le {date}"
+            >
+              <template #date>
+                <FormattedDate :date="post.published" />
+              </template>
+            </TranslationT>
+            <p
+              v-else
+              class="text-xs mb-0"
+            >
+              {{ $t('Pas encore publié') }}
+            </p>
+            <p class="mt-4 mb-6">
+              {{ post.headline }}
+            </p>
+            <img
+              v-if="post.image"
+              :src="post.image"
+              class="w-full h-auto mb-2"
+            >
+          </template>
+          <template v-else>
+            {{ $t(`Cet article n'est pas encore publié`) }}
+          </template>
+        </div>
+      </div>
+      <template v-if="post.published || isMeAdmin()">
+        <!-- Blocs render full-width so the striped backgrounds reach the screen edges
            and the bloc toolbar sits in the side margins instead of over the content.
            pt-24 keeps the first striped band from hugging the header image, matching
            the vertical rhythm between consecutive blocs. -->
-      <div
-        v-if="post.body_type === 'blocs'"
-        ref="blocsSection"
-        class="pt-24"
-      >
-        <EditoBlocs
-          :blocs="post.blocs ?? []"
-          editable
-          hide-edit-button
-          :sidemenu="post.sidemenu"
-          :on-save="saveBlocs"
-        />
-      </div>
-      <div
-        v-else
-        class="container"
-        :class="{ 'md:flex md:gap-8': post.sidemenu }"
-      >
-        <HeadingsSidemenu
-          v-if="post.sidemenu"
-          :content="body"
-          class="md:w-1/4 shrink-0"
-        />
         <div
-          ref="body"
-          class="max-w-4xl min-w-0 flex-1"
+          v-if="post.body_type === 'blocs'"
+          ref="blocsSection"
+          class="pt-24"
         >
-          <MarkdownViewer
-            v-if="post.body_type === 'markdown'"
-            :content="post.content"
-            :min-heading="2"
-            size="md"
-          />
-          <div
-            v-else
-            :class="markdownClasses"
-            v-html="post.content"
+          <EditoBlocs
+            :blocs="post.blocs ?? []"
+            editable
+            hide-edit-button
+            :sidemenu="post.sidemenu"
+            :on-save="saveBlocs"
           />
         </div>
-      </div>
+        <div
+          v-else
+          class="container"
+          :class="{ 'md:flex md:gap-8': post.sidemenu }"
+        >
+          <HeadingsSidemenu
+            v-if="post.sidemenu"
+            :content="body"
+            class="md:w-1/4 shrink-0"
+          />
+          <div
+            ref="body"
+            class="max-w-4xl min-w-0 flex-1"
+          >
+            <MarkdownViewer
+              v-if="post.body_type === 'markdown'"
+              :content="post.content"
+              :min-heading="2"
+              size="md"
+            />
+            <div
+              v-else
+              :class="markdownClasses"
+              v-html="post.content"
+            />
+          </div>
+        </div>
 
-      <div class="container">
-        <DiscussionsList
-          v-if="config.public.allowDiscussionsInPosts"
-          class="mt-16 max-w-4xl"
-          type="Post"
-          :subject="post"
-        />
-      </div>
-    </template>
+        <div class="container">
+          <DiscussionsList
+            v-if="config.public.allowDiscussionsInPosts"
+            class="mt-16 max-w-4xl"
+            type="Post"
+            :subject="post"
+          />
+        </div>
+      </template>
+    </div>
   </div>
 </template>
 
@@ -165,9 +159,7 @@ import type { Post } from '~/types/posts'
 
 const props = defineProps<{
   post: Post
-}>()
-const emit = defineEmits<{
-  refresh: []
+  onRefresh: () => Promise<unknown>
 }>()
 
 const config = useRuntimeConfig()
@@ -176,6 +168,7 @@ const route = useRoute()
 const router = useRouter()
 const { $api } = useNuxtApp()
 const { t } = useTranslation()
+const absoluteUrlToRelative = useAbsoluteUrlToRelative()
 
 const blocsSection = ref<HTMLElement | null>(null)
 const body = useTemplateRef('body')
@@ -204,7 +197,7 @@ async function saveBlocs(blocs: Array<PageBloc>) {
       method: 'PUT',
       body: { blocs },
     })
-    emit('refresh')
+    await props.onRefresh()
     toast.success(t('Page sauvegardée'))
   }
   catch {
@@ -219,7 +212,7 @@ useSeoMeta({
 })
 defineOgImage('MainPage.takumi', {
   title: props.post.name,
-  uri: props.post.kind === 'page' ? postPath(props.post) : '/posts',
+  uri: props.post.kind === 'page' ? absoluteUrlToRelative(props.post.page) : '/posts',
 })
 useHead({
   script: [

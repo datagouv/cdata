@@ -3,13 +3,15 @@ import { expect, test } from '@playwright/test'
 import type { MemberRole } from '@datagouv/components-next'
 import type { DiscussionSubject } from '../types/discussions'
 import type { NotificationRuleKey, NotificationSetting } from '../types/notifications'
+import type { PageBloc } from '../types/pages'
+import type { Post } from '../types/posts'
 
 export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
 export type ApiDataset = { id: string, title: string, slug: string }
 export type ApiResource = { id: string, title: string, latest: string, url: string }
 export type ApiHarvestSource = { id: string, name: string, backend: string, schedule: string | null, config: Record<string, unknown> }
-export type ApiOrganization = { id: string, name: string }
+export type ApiOrganization = { id: string, name: string, slug: string }
 export type ApiContactPoint = { id: string, name: string, email: string | null, contact_form: string | null, role: string }
 export type ApiReuse = { id: string, title: string, slug: string }
 export type ApiPost = { id: string, name: string, slug: string }
@@ -134,7 +136,20 @@ export async function createReuse(request: APIRequestContext, title: string, url
   return await response.json()
 }
 
-export async function createPost(request: APIRequestContext, data: Record<string, unknown> & { name: string }): Promise<ApiPost> {
+// The API gives each bloc its id. Distributed over the union so each bloc keeps its own fields.
+type NewPageBloc = PageBloc extends infer Bloc ? Bloc extends PageBloc ? Omit<Bloc, 'id'> : never : never
+
+export async function createPost(request: APIRequestContext, data: {
+  name: string
+  kind: Post['kind']
+  slug?: string
+  headline?: string
+  content?: string
+  body_type?: Post['body_type']
+  blocs?: Array<NewPageBloc>
+  parent?: string
+  sidemenu?: boolean
+}): Promise<ApiPost> {
   const response = await request.post(`${API_BASE}/api/1/posts/`, { data })
   if (!response.ok()) {
     throw new Error(`Failed to create post "${data.name}": ${response.status()} ${(await response.text()).slice(0, 300)}`)

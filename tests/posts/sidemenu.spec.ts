@@ -39,6 +39,7 @@ test.describe('Post side menu', () => {
     const uniqueId = Date.now()
     const post = await createPost(request, {
       name: `Actualité ${uniqueId}`,
+      kind: 'news',
       headline: 'Une actualité',
       content: '# Contexte\n\nDu contexte.\n\n## Chiffres\n\nDes chiffres.\n\n# Suite\n\nLa suite.',
       sidemenu: true,
@@ -51,7 +52,7 @@ test.describe('Post side menu', () => {
 
   test('a post without side menu has none', async ({ page, request }) => {
     const uniqueId = Date.now()
-    const post = await createPost(request, { name: `Actualité ${uniqueId}`, headline: 'Une actualité', content: '# Contexte\n\nDu contexte.' })
+    const post = await createPost(request, { name: `Actualité ${uniqueId}`, kind: 'news', headline: 'Une actualité', content: '# Contexte\n\nDu contexte.' })
     createdIds.push(post.id)
 
     await page.goto(`/posts/${post.slug}`)
