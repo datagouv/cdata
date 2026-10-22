@@ -99,10 +99,20 @@ export default defineConfig({
     },
   ],
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'pnpm run dev',
-    url: process.env.BASE_URL || 'http://localhost:3000',
-    reuseExistingServer: true,
-  },
+  webServer: [
+    /* Run your local dev server before starting the tests */
+    {
+      command: 'pnpm run dev',
+      url: process.env.BASE_URL || 'http://localhost:3000',
+      reuseExistingServer: true,
+    },
+    // Only when the server under test is configured to reach its third-party services there
+    ...(process.env.FAKE_SERVICES_URL
+      ? [{
+          command: 'node tests/fake-services.ts',
+          url: `${process.env.FAKE_SERVICES_URL}/matomo.js`,
+          reuseExistingServer: true,
+        }]
+      : []),
+  ],
 })
