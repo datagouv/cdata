@@ -10,17 +10,14 @@
 import { createServer } from 'node:http'
 import { MATOMO_SCRIPT } from './matomo.ts'
 import { CORS_HEADERS, metricsApiResponse } from './metricsApi.ts'
-import { REAL_TABULAR_API, readTabularFixture, tabularRequestKey, writeTabularFixture, type TabularFixture } from './tabularFixtures.ts'
+import { REAL_TABULAR_API, REAL_TABULAR_API_TIMEOUT, readTabularFixture, tabularRequestKey, writeTabularFixture, type TabularFixture } from './tabularFixtures.ts'
 
 const origin = process.env.FAKE_SERVICES_URL || 'http://localhost:3100'
 const TABULAR_PREFIX = '/tabular'
 
-// The real API answers its heaviest queries in tens of seconds, or with a 504 from its gateway
-const RECORD_TIMEOUT = 30_000
-
 async function recordTabularResponse(request: string): Promise<TabularFixture> {
   try {
-    const real = await fetch(new URL(request, REAL_TABULAR_API), { signal: AbortSignal.timeout(RECORD_TIMEOUT) })
+    const real = await fetch(new URL(request, REAL_TABULAR_API), { signal: AbortSignal.timeout(REAL_TABULAR_API_TIMEOUT) })
     const fixture = { request, status: real.status, contentType: real.headers.get('content-type') ?? 'application/json', body: await real.text() }
     // A gateway error says nothing of the API: never replay it
     if (fixture.status < 500) writeTabularFixture(fixture)

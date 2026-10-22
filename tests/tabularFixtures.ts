@@ -7,6 +7,9 @@ import path from 'node:path'
 
 export const REAL_TABULAR_API = 'https://tabular-api.data.gouv.fr'
 
+// The real API answers its heaviest queries (filters on the whole CADA advices) in tens of seconds
+export const REAL_TABULAR_API_TIMEOUT = 30_000
+
 const FIXTURES_DIR = path.join(import.meta.dirname, 'fixtures', 'tabular')
 
 export type TabularFixture = {

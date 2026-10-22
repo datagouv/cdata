@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { allTabularFixtures, REAL_TABULAR_API } from '../tests/tabularFixtures'
+import { allTabularFixtures, REAL_TABULAR_API, REAL_TABULAR_API_TIMEOUT } from '../tests/tabularFixtures'
 
 // The E2E tests run against responses of the Tabular API recorded once (tests/fake-services.ts).
 // This checks the real API still answers each recorded request the same way, structure only:
@@ -66,5 +66,5 @@ describe('the real Tabular API answers like the recorded fixtures', () => {
       expect(typeOf(actual.meta?.total)).toBe(typeOf(recorded.meta?.total))
       expectSameRowsStructure(actual.data, recorded.data)
     }
-  })
+  }, REAL_TABULAR_API_TIMEOUT)
 })
