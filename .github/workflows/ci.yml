@@ -149,6 +149,7 @@ jobs:
     env:
       E2E_MONGODB_HOST: mongodb://localhost:27017/udata
       E2E_REDIS_URL: redis://localhost:6379
+      E2E_CACHE_TYPE: flask_caching.backends.SimpleCache
 
     services:
       mongodb:
@@ -197,9 +198,10 @@ jobs:
           uv run udata user create --first-name "Normal" --last-name "User" --email "normal@example.com" --password "@1337Password42"
           uv run udata user create --first-name "2FA" --last-name "User" --email "2fa@example.com" --password "@1337Password42"
 
-      # mongodump comes with the service image: nothing to install
+      # mongodump comes with the service image: nothing to install. TESTING makes udata
+      # suffix its database name with `-test`.
       - name: Dump udata database
-        run: docker exec ${{ job.services.mongodb.id }} mongodump --db udata --archive --gzip > udata.archive
+        run: docker exec ${{ job.services.mongodb.id }} mongodump --db udata-test --archive --gzip > udata.archive
 
       - name: Upload udata database
         uses: actions/upload-artifact@v7
