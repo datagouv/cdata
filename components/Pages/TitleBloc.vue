@@ -4,16 +4,15 @@
     <EditableText
       v-if="edit"
       :model-value="bloc.title"
-      class="text-gray-title"
-      :class="heading.class"
+      :class="style.title"
       :placeholder="$t('Titre')"
       @update:model-value="bloc.title = $event.trim() || bloc.title"
     />
     <component
-      :is="heading.tag"
+      :is="tag"
       v-else
-      class="text-gray-title mb-0"
-      :class="heading.class"
+      class="mb-0"
+      :class="style.title"
     >
       {{ bloc.title }}
     </component>
@@ -21,19 +20,20 @@
     <EditableText
       v-if="edit && bloc.subtitle"
       :model-value="bloc.subtitle"
-      class="text-gray-plain"
+      :class="style.subtitle"
       @update:model-value="bloc.subtitle = $event || null"
     />
     <div
       v-else-if="bloc.subtitle"
-      class="text-gray-plain"
+      :class="style.subtitle"
     >
       {{ bloc.subtitle }}
     </div>
     <button
       v-else-if="edit"
       type="button"
-      class="text-gray-400 hover:text-gray-600 text-sm"
+      class="text-sm"
+      :class="sectionColor ? 'text-white/70 hover:text-white' : 'text-gray-400 hover:text-gray-600'"
       @click="bloc.subtitle = $t('Sous-titre')"
     >
       + {{ $t('Ajouter un sous-titre') }}
@@ -44,6 +44,7 @@
 <script setup lang="ts">
 import EditableText from './EditableText.vue'
 import type { TitleBloc } from '~/types/pages'
+import { PAGE_TITLE_ID, SECTION_COLOR } from '~/utils/blocs'
 import { BLOCS_LEVEL, type BlocsLevel } from '~/utils/blocsLayout'
 
 defineProps<{
@@ -57,5 +58,20 @@ const HEADINGS: Record<Exclude<BlocsLevel, 'page'>, { tag: string, class: string
   section: { tag: 'h2', class: 'text-3xl font-extrabold' },
   accordion: { tag: 'h4', class: 'text-lg font-bold' },
 }
-const heading = HEADINGS[inject(BLOCS_LEVEL, 'section')]
+const level = inject(BLOCS_LEVEL, 'section')
+const heading = HEADINGS[level]
+
+// The first title of a page without a title of its own is that of the page.
+const pageTitleId = inject(PAGE_TITLE_ID, ref(null))
+const tag = computed(() => pageTitleId.value === bloc.value.id ? 'h1' : heading.tag)
+
+// On a colored section, the title of the section has the look of the former heroes.
+const sectionColor = inject(SECTION_COLOR, ref(null))
+const style = computed(() => {
+  if (sectionColor.value && level === 'section') {
+    return { title: 'text-white font-extrabold text-5xl', subtitle: 'italic font-spectral text-2xl text-white' }
+  }
+  if (sectionColor.value) return { title: `text-white ${heading.class}`, subtitle: 'text-white' }
+  return { title: `text-gray-title ${heading.class}`, subtitle: 'text-gray-plain' }
+})
 </script>

@@ -2,7 +2,7 @@ import type { DatasetV2 } from './datasets'
 import type { Dataservice } from './dataservices'
 import type { Reuse } from './reuses'
 
-export type BlocWidth = '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | '1'
+export type BlocWidth = '1/4' | '1/3' | '1/2' | '2/3' | '3/4'
 
 // Blocs inside a section or an accordion item sit side by side, wrapping to a new row when
 // the row is full. `null`: the whole row.
@@ -30,10 +30,14 @@ export type LinkInBloc = {
 export type LinksListBloc = Sized & {
   class: 'LinksListBloc'
   id: string
-  paragraph: string | null
-  main_link_title: string | null
-  main_link_url: string | null
   links: Array<LinkInBloc>
+}
+
+export type ButtonBloc = Sized & {
+  class: 'ButtonBloc'
+  id: string
+  title: string
+  url: string
 }
 
 export type ExploreBloc = Sized & {
@@ -62,11 +66,12 @@ export type ReuseBloc = Sized & {
 
 export type ObjectBloc = DatasetBloc | DataserviceBloc | ReuseBloc
 
-export type LeafBloc = TitleBloc | MarkdownBloc | LinksListBloc | ExploreBloc | ObjectBloc
+export type LeafBloc = TitleBloc | MarkdownBloc | LinksListBloc | ButtonBloc | ExploreBloc | ObjectBloc
 
 export type AccordionContentBloc = Exclude<LeafBloc, ExploreBloc>
 
 export type AccordionItemBloc = {
+  id: string
   title: string
   content: Array<AccordionContentBloc>
 }
@@ -79,20 +84,15 @@ export type AccordionListBloc = Sized & {
 
 export type SectionContentBloc = AccordionListBloc | LeafBloc
 
+export type SectionColor = 'primary' | 'green' | 'purple'
+
 export type SectionBloc = {
   class: 'SectionBloc'
   id: string
+  // `null`: the sections of the page alternate their neutral backgrounds.
+  color: SectionColor | null
   blocs: Array<SectionContentBloc>
 }
 
-export type HeroBloc = {
-  class: 'HeroBloc'
-  id: string
-  title: string
-  description: string | null
-  color: 'primary' | 'green' | 'purple'
-  main_link_title: string | null
-  main_link_url: string | null
-}
-
-export type PageBloc = HeroBloc | SectionBloc
+// The blocs of a page, from the top.
+export type PageBloc = SectionBloc

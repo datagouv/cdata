@@ -12,9 +12,9 @@ export type BlocsLevel = 'page' | 'section' | 'accordion'
 export const BLOCS_LEVEL: InjectionKey<Exclude<BlocsLevel, 'page'>> = Symbol('blocs-level')
 
 // Mirrors the layout udata enforces (`check_blocs_layout`).
-const LEAF_BLOCS: Array<BlocClass> = ['TitleBloc', 'MarkdownBloc', 'LinksListBloc', 'ExploreBloc', 'DatasetBloc', 'DataserviceBloc', 'ReuseBloc']
+const LEAF_BLOCS: Array<BlocClass> = ['TitleBloc', 'MarkdownBloc', 'LinksListBloc', 'ButtonBloc', 'ExploreBloc', 'DatasetBloc', 'DataserviceBloc', 'ReuseBloc']
 export const ACCEPTED_BLOCS: Record<BlocsLevel, Array<BlocClass>> = {
-  page: ['SectionBloc', 'HeroBloc'],
+  page: ['SectionBloc'],
   section: [...LEAF_BLOCS, 'AccordionListBloc'],
   // The explorer is too wide for an accordion.
   accordion: LEAF_BLOCS.filter(name => name !== 'ExploreBloc'),
@@ -25,8 +25,17 @@ export function acceptsDropped(level: Exclude<BlocsLevel, 'page'>, dragged: Drag
   return dragged.kind === 'bloc' && ACCEPTED_BLOCS[level].includes(dragged.blocClass)
 }
 
+// A share of the row, the whole one included: stored as no width at all (`null`).
+export type RowWidth = BlocWidth | 'whole'
+
 // Columns of the 12 columns grid of a section or an accordion item, from the narrowest.
-export const BLOC_SPANS: Record<BlocWidth, number> = { '1/4': 3, '1/3': 4, '1/2': 6, '2/3': 8, '3/4': 9, '1': 12 }
+export const BLOC_SPANS: Record<RowWidth, number> = { '1/4': 3, '1/3': 4, '1/2': 6, '2/3': 8, '3/4': 9, 'whole': 12 }
+
+// The share of a row a bloc takes, from its width on screen: the row is made of the blocs
+// and the gaps between them, the last bloc having no gap after it.
+export function rowShare(blocWidth: number, rowWidth: number, gap: number): number {
+  return (blocWidth + gap) / (rowWidth + gap)
+}
 
 // The index of the first bloc of each row, as the grid lays them out: a bloc goes to the
 // next row when it does not fit in what is left of the current one.
@@ -34,7 +43,7 @@ export function rowStarts(widths: Array<BlocWidth | null>): Array<number> {
   const starts: Array<number> = []
   let used = 12
   widths.forEach((width, index) => {
-    const span = BLOC_SPANS[width ?? '1']
+    const span = BLOC_SPANS[width ?? 'whole']
     if (used + span > 12) {
       starts.push(index)
       used = 0

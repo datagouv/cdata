@@ -16,7 +16,8 @@
     class="max-w-4xl"
   >
     <MarkdownViewer
-      class="prose-h2:text-3xl prose-h2:text-gray-title prose-h3:text-2xl prose-h3:text-gray-title"
+      class="prose-h2:text-3xl prose-h3:text-2xl"
+      :class="sectionColor ? 'text-white prose-invert prose-h2:text-white prose-h3:text-white prose-a:text-white' : 'prose-h2:text-gray-title prose-h3:text-gray-title'"
       :content="bloc.content"
       :min-heading="2"
       size="md"
@@ -28,10 +29,14 @@
 import { MarkdownViewer } from '@datagouv/components-next'
 import MarkdownEditor from '~/components/MarkdownEditor/MarkdownEditor.vue'
 import type { MarkdownBloc } from '~/types/pages'
+import { SECTION_COLOR } from '~/utils/blocs'
 
 defineProps<{
   edit: boolean
 }>()
 
 const bloc = defineModel<MarkdownBloc>({ required: true })
+
+// On a colored section, the text is white.
+const sectionColor = inject(SECTION_COLOR, ref(null))
 </script>

@@ -1,4 +1,4 @@
-import type { BlocClass } from '~/utils/blocsLayout'
+import { rowShare, type BlocClass } from '~/utils/blocsLayout'
 
 // What is being dragged: a band of the page (section, hero), an accordion item, or a bloc,
 // whose class decides where it can land.
@@ -76,12 +76,13 @@ function place(listElement: HTMLElement, list: DropList, source: DragSource, x: 
   }).length
   const before = rects[index - 1]
   const after = rects[index]
-  const gap = Number.parseFloat(getComputedStyle(listElement).columnGap) || 0
+  const columnGap = (element: HTMLElement) => Number.parseFloat(getComputedStyle(element).columnGap) || 0
+  const gap = columnGap(listElement)
   // The dragged bloc keeps its width, its share of a row: after the last bloc of a row, it
   // stays on that row if it fits in what is left.
   const fits = () => {
-    const sourceList = source.element.parentElement!.getBoundingClientRect()
-    const share = (source.element.getBoundingClientRect().width + gap) / (sourceList.width + gap)
+    const sourceList = source.element.parentElement!
+    const share = rowShare(source.element.getBoundingClientRect().width, sourceList.getBoundingClientRect().width, columnGap(sourceList))
     return before.right + share * (listRect.width + gap) <= listRect.right + 1
   }
   // Between two blocs of a row, or at the end of a row with room for it: a vertical line,

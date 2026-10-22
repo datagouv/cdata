@@ -15,11 +15,18 @@
       :class="band ? 'top-2 left-2' : container ? 'bottom-full -right-1.5 pb-1.5' : 'bottom-full -left-1.5 pb-1.5'"
     >
       <div class="flex items-center gap-0.5 rounded-md bg-new-primary text-white text-xs shadow-sm p-0.5">
-        <DragHandle
+        <button
           v-if="draggable"
-          @drag-start="emit('dragStart', $event)"
-          @keyboard-move="emit('keyboardMove', $event)"
-        />
+          type="button"
+          class="inline-flex items-center justify-center size-6 rounded opacity-80 hover:opacity-100 hover:bg-white/10 cursor-grab active:cursor-grabbing touch-none"
+          data-drag-handle
+          :title="$t('Glisser pour déplacer (ou flèches du clavier)')"
+          :aria-label="$t('Déplacer')"
+          @pointerdown="emit('dragStart', $event)"
+          @keydown="emit('keyboardMove', $event)"
+        >
+          <RiDraggable class="size-4" />
+        </button>
         <span class="px-1 select-none whitespace-nowrap">{{ label }}</span>
         <Menu
           as="div"
@@ -55,8 +62,7 @@
 
 <script setup lang="ts">
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { RiDeleteBinLine, RiMore2Fill } from '@remixicon/vue'
-import DragHandle from './DragHandle.vue'
+import { RiDeleteBinLine, RiDraggable, RiMore2Fill } from '@remixicon/vue'
 
 defineProps<{
   // Without it, only the content is rendered: the page as visitors see it.

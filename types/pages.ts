@@ -16,5 +16,6 @@ export type {
   AccordionContentBloc,
   AccordionItemBloc,
   AccordionListBloc,
-  HeroBloc,
+  ButtonBloc,
+  SectionColor,
 } from '@datagouv/components-next'

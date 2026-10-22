@@ -43,6 +43,7 @@
       v-if="isFullPageBlocs"
       :blocs="post.blocs ?? []"
       editable
+      untitled
       :on-save="saveBlocs"
     />
 

@@ -2,7 +2,7 @@
   <div :class="{ relative: editable }">
     <!-- Admin edit button. Hidden when empty: the empty state carries its own CTA. -->
     <div
-      v-if="editable && !hideEditButton && isMeAdmin() && !isEditing && workingBlocs.length > 0"
+      v-if="editable && !hideEditButton && isMeAdmin() && !isEditing && shownBlocs.length > 0"
       class="absolute top-4 right-4 z-50"
     >
       <BrandedButton
@@ -27,13 +27,43 @@
         draggable
         band
         class="group/section"
-        :class="bloc.class === 'SectionBloc' && (striped ? 'py-24 odd:bg-gray-some even:bg-white' : 'py-12')"
+        :class="[striped ? 'py-24' : 'py-12', bloc.color ? heroBgColor(bloc.color) : striped && 'odd:bg-gray-some even:bg-white']"
         :data-testid="`page-${bloc.class}`"
+        :data-section-color="bloc.color ?? undefined"
         data-drop-item
         @delete="workingBlocs.splice(index, 1)"
         @drag-start="startBlocsDrag($event, { list: listRef!, index, kind: 'band', label: labels[bloc.class] ?? bloc.class })"
         @keyboard-move="moveWithKeyboard(workingBlocs, $event, index)"
       >
+        <!-- The background of the section; an organization page sits under the banner of
+             the organization, its sections keep neutral ones -->
+        <template
+          v-if="!forOrganization"
+          #actions
+        >
+          <MenuItem
+            v-for="color in SECTION_COLORS"
+            :key="color.value ?? 'neutral'"
+            v-slot="{ active }"
+          >
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 px-3 py-1.5"
+              :class="{ 'bg-gray-100': active }"
+              @click="bloc.color = color.value"
+            >
+              <span
+                class="size-4 rounded-full border border-gray-300"
+                :class="color.value ? heroBgColor(color.value) : 'bg-gray-some'"
+              />
+              {{ color.label }}
+              <RiCheckLine
+                v-if="bloc.color === color.value"
+                class="size-4 ml-auto"
+              />
+            </button>
+          </MenuItem>
+        </template>
         <!-- Add button above the bloc (absolute positioned), shown on hover -->
         <div
           v-if="isEditing"
@@ -42,7 +72,6 @@
         >
           <AddBlocDropdown
             level="page"
-            :for-organization="forOrganization"
             @new-blocs="workingBlocs.splice(index, 0, ...($event as Array<PageBloc>))"
           >
             <BrandedButton
@@ -55,19 +84,12 @@
             </BrandedButton>
           </AddBlocDropdown>
         </div>
-        <HeroBloc
-          v-if="bloc.class === 'HeroBloc'"
-          v-model="(workingBlocs[index] as HeroBlocType)"
-          :edit="isEditing"
-        />
-        <div
-          v-else
-          class="container"
-        >
+        <div class="container">
           <BlocsList
-            v-model="(workingBlocs[index] as SectionBloc).blocs"
+            v-model="workingBlocs[index].blocs"
             :edit="isEditing"
             level="section"
+            :color="bloc.color"
           />
         </div>
 
@@ -79,7 +101,6 @@
         >
           <AddBlocDropdown
             level="page"
-            :for-organization="forOrganization"
             @new-blocs="workingBlocs.push(...($event as Array<PageBloc>))"
           >
             <BrandedButton
@@ -102,7 +123,7 @@
          on an unconfigured presentation), offering a CTA to enter edit mode. The
          visual comes from the host through the #empty slot, with a generic fallback. -->
     <div
-      v-if="workingBlocs.length === 0 && (isEditing || (editable && emptyCtaLabel))"
+      v-if="shownBlocs.length === 0 && (isEditing || (editable && emptyCtaLabel))"
       class="container py-12 flex flex-col items-center text-center"
     >
       <slot name="empty">
@@ -121,7 +142,6 @@
       <AddBlocDropdown
         v-if="isEditing"
         level="page"
-        :for-organization="forOrganization"
         @new-blocs="workingBlocs.push(...($event as Array<PageBloc>))"
       >
         <BrandedButton :icon="RiAddLine">
@@ -166,15 +186,16 @@
 <script setup lang="ts">
 import type { ComponentProps } from 'vue-component-type-helpers'
 import { BrandedButton } from '@datagouv/components-next'
-import { RiAddLine, RiEdit2Line } from '@remixicon/vue'
+import { MenuItem } from '@headlessui/vue'
+import { RiAddLine, RiCheckLine, RiEdit2Line } from '@remixicon/vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
 import BlocsDragLayer from './BlocsDragLayer.vue'
 import BlocsList from './BlocsList.vue'
 import EditItem from './EditItem.vue'
-import HeroBloc from './HeroBloc.vue'
-import type { HeroBloc as HeroBlocType, PageBloc, SectionBloc } from '~/types/pages'
+import type { PageBloc, SectionColor } from '~/types/pages'
 import { isMeAdmin } from '~/utils/auth'
-import { BLOCS_MAIN_COLOR, normalizeBlocs, type LegacyBloc } from '~/utils/blocs'
+import { BLOCS_MAIN_COLOR, PAGE_TITLE_ID, isShown, normalizeBlocs, type LegacyBloc } from '~/utils/blocs'
+import { heroBgColor } from '~/utils/hero'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 const props = withDefaults(defineProps<{
@@ -183,8 +204,11 @@ const props = withDefaults(defineProps<{
   editable?: boolean
   striped?: boolean
   hideEditButton?: boolean
-  // Organization presentation pages have no Hero bloc. See AddBlocDropdown.
+  // Organization presentation pages have no colored section (udata's
+  // `check_no_colored_sections`).
   forOrganization?: boolean
+  // The page shows no title of its own: the first title bloc is the title of the page (`h1`).
+  untitled?: boolean
   mainColor?: ComponentProps<typeof BrandedButton>['color']
   // When set, the empty state is also shown in view mode (not just while editing)
   // with this label on a CTA that enters edit mode. Hosts that pass it are
@@ -197,6 +221,7 @@ const props = withDefaults(defineProps<{
   striped: true,
   hideEditButton: false,
   forOrganization: false,
+  untitled: false,
   mainColor: 'primary',
   emptyCtaLabel: undefined,
 })
@@ -205,7 +230,7 @@ provide(BLOCS_MAIN_COLOR, props.mainColor)
 
 // From the raw array, so that the working copy below can be `structuredClone`d (a
 // reactive proxy cannot be).
-const normalizedBlocs = computed(() => normalizeBlocs(toRaw(props.blocs)))
+const normalizedBlocs = computed(() => normalizeBlocs(toRaw(props.blocs), !props.forOrganization))
 
 const emit = defineEmits<{
   cancel: []
@@ -227,11 +252,26 @@ watchEffect(() => {
 
 const workingBlocs = computed(() => localBlocs.value ?? normalizedBlocs.value)
 
-// An empty section is only a placeholder for the editor. Each bloc keeps its index in
-// `workingBlocs`, which the edits address (nothing is filtered out while editing).
+// Each bloc keeps its index in `workingBlocs`, which the edits address (nothing is filtered
+// out while editing). A page whose sections are all empty has nothing to show: it is empty.
 const shownBlocs = computed(() => workingBlocs.value
   .map((bloc, index) => ({ bloc, index }))
-  .filter(({ bloc }) => isEditing.value || bloc.class !== 'SectionBloc' || bloc.blocs.length))
+  .filter(({ bloc }) => isEditing.value || isShown(bloc)))
+
+// The title of the page: the first bloc of the page, when it is a title.
+provide(PAGE_TITLE_ID, computed(() => {
+  const first = shownBlocs.value[0]?.bloc.blocs[0]
+  return props.untitled && first?.class === 'TitleBloc' ? first.id : null
+}))
+
+const { t } = useTranslation()
+
+const SECTION_COLORS: Array<{ value: SectionColor | null, label: string }> = [
+  { value: null, label: t('Fond neutre') },
+  { value: 'primary', label: t('Fond bleu') },
+  { value: 'green', label: t('Fond vert') },
+  { value: 'purple', label: t('Fond violet') },
+]
 
 // Check if there are unsaved changes
 const hasUnsavedChanges = computed(() => {
@@ -239,8 +279,6 @@ const hasUnsavedChanges = computed(() => {
 })
 
 // Warn before leaving with unsaved changes.
-const { t } = useTranslation()
-
 const handleBeforeUnload = (e: BeforeUnloadEvent) => {
   if (hasUnsavedChanges.value) {
     e.preventDefault()

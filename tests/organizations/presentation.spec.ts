@@ -33,10 +33,17 @@ test.describe('Organization presentation tab', () => {
       await expect(page).toHaveURL(/edit=true/)
       // The empty state invites the admin to add a first section.
       await expect(page.getByText('Personnalisez votre page de présentation')).toBeVisible()
-      // Sections are all an organization page can add at its top level: no menu to pick from.
+      // Sections are all a page can add at its top level: no menu to pick from.
       await page.getByRole('button', { name: 'Ajouter une section' }).click()
       await expect(page.getByTestId('add-bloc-SectionBloc')).toHaveCount(0)
       await expect(page.getByTestId('add-bloc-in-section')).toBeVisible()
+      // Under the banner of the organization, a section keeps a neutral background.
+      const section = page.getByTestId('page-SectionBloc')
+      await section.hover({ position: { x: 20, y: 20 } })
+      await section.getByRole('button', { name: 'Actions sur Section' }).click()
+      await expect(page.getByRole('menuitem', { name: 'Supprimer' })).toBeVisible()
+      await expect(page.getByRole('menuitem', { name: 'Fond vert' })).toHaveCount(0)
+      await page.keyboard.press('Escape')
 
       // Cancelling drops back to view mode, where the same empty state now offers
       // a CTA to re-enter the composer.
@@ -128,6 +135,28 @@ test.describe('Organization presentation tab', () => {
       await page.waitForLoadState('networkidle')
       await page.goto(`/organizations/${org.slug}/`)
       await expect(page).toHaveURL(new RegExp(`/organizations/${org.slug}/datasets`))
+    }
+    finally {
+      await page.request.delete(`${API_BASE}/api/1/organizations/${org.id}/`)
+    }
+  })
+
+  test('a presentation of empty sections has nothing to read: the admin lands in the editor', async ({ page }) => {
+    const createResp = await page.request.post(`${API_BASE}/api/1/organizations/`, {
+      data: {
+        name: `Empty sections test ${Date.now()}`,
+        description: 'Organization used to test a presentation of empty sections.',
+      },
+    })
+    const org = await createResp.json()
+    try {
+      await page.request.put(`${API_BASE}/api/1/organizations/${org.id}/`, {
+        data: { ...org, presentation_blocs: [{ class: 'SectionBloc', blocs: [] }] },
+      })
+
+      await page.goto(`/organizations/${org.slug}/presentation`)
+      await expect(page).toHaveURL(/edit=true/)
+      await expect(page.getByTestId('page-SectionBloc')).toHaveCount(1)
     }
     finally {
       await page.request.delete(`${API_BASE}/api/1/organizations/${org.id}/`)

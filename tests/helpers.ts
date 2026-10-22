@@ -109,18 +109,24 @@ export async function focusedDragHandle(item: Locator): Promise<Locator> {
   return handle
 }
 
-// Drags an item of the blocs editor by its handle and drops it on another element, at
-// `heightFraction` of its height (its middle by default), step by step as a user would: the
-// editor follows the pointer, not the native drag and drop.
-export async function dragEditItem(item: Locator, target: Locator, heightFraction = 0.5): Promise<void> {
+// Grabs an item of the blocs editor by its handle and brings it to a point of the page, step
+// by step as a user would (the editor follows the pointer, not the native drag and drop),
+// without dropping it: the drop indicator can be read there.
+export async function startEditItemDrag(item: Locator, x: number, y: number): Promise<void> {
   const page = item.page()
   const handle = await focusedDragHandle(item)
   const from = (await handle.boundingBox())!
   await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
   await page.mouse.down()
+  await page.mouse.move(x, y, { steps: 20 })
+}
+
+// Drags an item of the blocs editor by its handle and drops it on another element, at
+// `heightFraction` of its height (its middle by default).
+export async function dragEditItem(item: Locator, target: Locator, heightFraction = 0.5): Promise<void> {
   const to = (await target.boundingBox())!
-  await page.mouse.move(to.x + to.width / 2, to.y + to.height * heightFraction, { steps: 20 })
-  await page.mouse.up()
+  await startEditItemDrag(item, to.x + to.width / 2, to.y + to.height * heightFraction)
+  await item.page().mouse.up()
 }
 
 // matomo.js is injected after the load event, and webfonts are only fetched once used,

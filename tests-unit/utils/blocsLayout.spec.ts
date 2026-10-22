@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { acceptsDropped, rowSpacings, rowStarts } from '~/utils/blocsLayout'
+import { acceptsDropped, rowShare, rowSpacings, rowStarts } from '~/utils/blocsLayout'
 import type { Dragged } from '~/composables/useBlocsDrag'
 import type { BlocWidth } from '~/types/pages'
 import type { BlocClass, RowSpacing } from '~/utils/blocsLayout'
@@ -27,7 +27,7 @@ describe('acceptsDropped', () => {
 
 describe('rowStarts', () => {
   it.each<[name: string, widths: Array<BlocWidth | null>, starts: Array<number>]>([
-    ['full width blocs, one per row', [null, '1', null], [0, 1, 2]],
+    ['full width blocs, one per row', [null, null, null], [0, 1, 2]],
     ['halves, two per row', ['1/2', '1/2', '1/2'], [0, 2]],
     ['thirds then a full width bloc', ['1/3', '1/3', '1/3', null], [0, 3]],
     ['a bloc that does not fit in what is left of the row', ['2/3', '1/2', '1/2'], [0, 1]],
@@ -35,6 +35,14 @@ describe('rowStarts', () => {
     ['no bloc', [], []],
   ])('%s', (_name, widths, starts) => {
     expect(rowStarts(widths)).toEqual(starts)
+  })
+})
+
+describe('rowShare', () => {
+  it('counts the gap after a bloc, but not after the last one of a row', () => {
+    // A row of 1000px with gaps of 20px: two halves of 490px, or the whole row
+    expect(rowShare(490, 1000, 20)).toBeCloseTo(0.5)
+    expect(rowShare(1000, 1000, 20)).toBeCloseTo(1)
   })
 })
 

@@ -19,9 +19,9 @@ test('can save edito page from admin without error toast', async ({ page }) => {
   await expect(page.getByText('Erreur lors de la sauvegarde')).not.toBeVisible()
 })
 
+// Sections are the only blocs of a page: no menu to pick one from
 async function addSection(page: Page) {
   await page.getByRole('button', { name: 'Ajouter une section' }).last().click()
-  await page.getByTestId('add-bloc-SectionBloc').click()
   await page.waitForTimeout(300)
 }
 
@@ -80,36 +80,20 @@ test('can edit edito page with all bloc types', async ({ page }) => {
     await expect(pageBlocs).toHaveCount(before - 1)
   }
 
-  // === Step 1: Add a HeroBloc ===
-  await page.getByRole('button', { name: 'Ajouter une section' }).first().click()
-  await page.getByTestId('add-bloc-HeroBloc').click()
-  await page.waitForTimeout(300)
-
-  // Edit the hero title (it has a default "Titre")
-  const heroTitle = page.locator('.bg-new-blue-illustration [contenteditable="true"]').first()
-  await heroTitle.click()
-  await heroTitle.fill('Bienvenue sur data.gouv.fr')
+  // === Step 1: A green section, with a title and a button, as the heroes were ===
+  await addSection(page)
+  await addTitleInLastSection(page, 'Bienvenue sur data.gouv.fr', 'La plateforme ouverte des données publiques françaises')
+  await addBlocInLastSection(page, 'ButtonBloc')
+  const buttonTitle = page.getByLabel('Titre du bouton')
+  await buttonTitle.click()
+  await buttonTitle.fill('Découvrir les données')
   await page.mouse.click(1, 1)
+  await page.getByLabel('URL du bouton').fill('https://www.data.gouv.fr/fr/datasets/')
 
-  // Add a description
-  await page.getByText('Ajouter une description').click()
-  await page.waitForTimeout(200)
-  const heroDescription = page.locator('.bg-new-blue-illustration [contenteditable="true"]').nth(1)
-  await heroDescription.click()
-  await heroDescription.fill('La plateforme ouverte des données publiques françaises')
-  await page.mouse.click(1, 1)
-
-  // Change the color to green
-  await page.locator('.bg-new-green-illustration.size-8').click()
-  await page.waitForTimeout(200)
-
-  // Add a CTA button
-  const heroCTATitle = page.locator('.bg-new-green-illustration [aria-label="Titre du bouton"]')
-  await heroCTATitle.click()
-  await heroCTATitle.fill('Découvrir les données')
-  await page.mouse.click(1, 1)
-  const heroCTAUrl = page.locator('.bg-new-green-illustration [aria-label="URL du bouton"]')
-  await heroCTAUrl.fill('https://www.data.gouv.fr/fr/datasets/')
+  const firstSection = page.getByTestId('page-SectionBloc').first()
+  await firstSection.hover({ position: { x: 20, y: 20 } })
+  await firstSection.getByRole('button', { name: 'Actions sur Section' }).click()
+  await page.getByRole('menuitem', { name: 'Fond vert' }).click()
 
   // === Step 2: A section of datasets, side by side ===
   await addSection(page)
@@ -135,17 +119,10 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.locator('.milkdown').last().click()
   await page.keyboard.type('Les API les plus utilisées de la plateforme.')
 
-  // === Step 5: A LinksListBloc WITH paragraph ===
+  // === Step 5: Links, then a button under them ===
   await addSection(page)
   await addTitleInLastSection(page, 'Ressources utiles')
   await addBlocInLastSection(page, 'LinksListBloc')
-
-  await page.getByText('Ajouter un paragraphe').first().click()
-  await page.waitForTimeout(300)
-  const paragraph = page.locator('p[contenteditable="true"]')
-  await paragraph.click()
-  await paragraph.fill('Découvrez nos guides et ressources pour mieux exploiter les données publiques.')
-  await page.mouse.click(1, 1)
 
   await page.getByText('Ajouter un lien').first().click()
   await page.waitForTimeout(300)
@@ -155,11 +132,12 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.mouse.click(1, 1)
   await page.locator('input[placeholder="URL"]').first().fill('https://doc.data.gouv.fr')
 
-  const buttonTitle1 = page.locator('[aria-label="Titre du bouton"]').first()
-  await buttonTitle1.click()
-  await buttonTitle1.fill('Voir tous les guides')
+  await addBlocInLastSection(page, 'ButtonBloc')
+  const guidesButton = page.getByLabel('Titre du bouton').last()
+  await guidesButton.click()
+  await guidesButton.fill('Voir tous les guides')
   await page.mouse.click(1, 1)
-  await page.locator('input[placeholder="URL du bouton"]').first().fill('https://guides.data.gouv.fr')
+  await page.getByLabel('URL du bouton').last().fill('https://guides.data.gouv.fr')
 
   // === Step 6: A MarkdownBloc in the same section ===
   await addBlocInLastSection(page, 'MarkdownBloc')
@@ -194,12 +172,12 @@ test('can edit edito page with all bloc types', async ({ page }) => {
 
   // === Step 8: Section manipulation ===
   const sectionTitles = page.getByTestId('page-SectionBloc').getByTestId('bloc-TitleBloc')
-  // Move the datasets section below the reuses one with the keyboard on its drag handle,
-  // then delete the reuses section
-  await (await focusedDragHandle(page.getByTestId('page-SectionBloc').nth(0))).press('ArrowDown')
-  await expect(sectionTitles.nth(0)).toContainText('Réutilisations innovantes')
-  await deleteEditItem(page.getByTestId('page-SectionBloc').nth(0))
-  await expect(sectionTitles.nth(0)).toContainText('Nos jeux de données phares')
+  // Move the datasets section (after the green one) below the reuses one with the keyboard on
+  // its drag handle, then delete the reuses section
+  await (await focusedDragHandle(page.getByTestId('page-SectionBloc').nth(1))).press('ArrowDown')
+  await expect(sectionTitles.nth(1)).toContainText('Réutilisations innovantes')
+  await deleteEditItem(page.getByTestId('page-SectionBloc').nth(1))
+  await expect(sectionTitles.nth(1)).toContainText('Nos jeux de données phares')
 
   // === Step 9: Save the page ===
   await page.getByRole('button', { name: 'Sauvegarder' }).click()

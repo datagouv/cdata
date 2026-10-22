@@ -6,7 +6,7 @@
     >
       <EditItem
         v-for="(item, itemIndex) in bloc.items"
-        :key="keyOf(item)"
+        :key="item.id"
         :edit
         :label="labels.AccordionItem"
         draggable
@@ -72,7 +72,8 @@
 import EditableText from './EditableText.vue'
 import BlocsList from './BlocsList.vue'
 import EditItem from './EditItem.vue'
-import type { AccordionItemBloc, AccordionListBloc } from '~/types/pages'
+import { v4 as uuidv4 } from 'uuid'
+import type { AccordionListBloc } from '~/types/pages'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 defineProps<{
@@ -82,15 +83,6 @@ defineProps<{
 const bloc = defineModel<AccordionListBloc>({ required: true })
 
 const labels = useBlocLabels()
-
-// Items have no id: a key of their own lets an item keep its element (and the focus of its
-// handle) when it moves, which its position would not.
-const keys = new WeakMap<AccordionItemBloc, number>()
-let nextKey = 0
-function keyOf(item: AccordionItemBloc): number {
-  if (!keys.has(item)) keys.set(item, nextKey++)
-  return keys.get(item)!
-}
 
 // Items move between accordions, and nowhere else.
 const listRef = ref<HTMLElement | null>(null)
@@ -105,7 +97,7 @@ const newItemKey = ref(0)
 
 function createNewItem(title: string) {
   if (title.trim()) {
-    bloc.value.items.push({ title, content: [] })
+    bloc.value.items.push({ id: uuidv4(), title, content: [] })
     newItemTitle.value = ''
     newItemKey.value++
   }

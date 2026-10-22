@@ -26,7 +26,7 @@
         v-for="(bloc, index) in blocs"
         :key="bloc.id"
         class="relative min-w-0"
-        :class="[SPANS[bloc.width ?? '1'], spacingBefore(index)]"
+        :class="[SPANS[bloc.width ?? 'whole'], spacingBefore(index)]"
         :data-bloc-class="bloc.class"
         data-drop-item
       >
@@ -80,7 +80,7 @@
             class="flex items-center gap-2 rounded-lg border border-dashed border-gray-300 p-4 text-sm text-gray-medium"
           >
             <RiErrorWarningLine class="size-4 shrink-0" />
-            {{ $t('Ce bloc ne peut pas être affiché ici') }}
+            {{ $t('Le bloc « {name} » ne peut pas être affiché ici', { name: labels[bloc.class] ?? bloc.class }) }}
           </div>
         </EditItem>
 
@@ -155,9 +155,14 @@
         :level
         @new-blocs="blocs.push(...($event as Array<T>))"
       >
-        <EmptyListAddButton :data-testid="`add-bloc-in-${level}`">
+        <button
+          type="button"
+          class="flex items-center gap-1 text-sm whitespace-nowrap text-gray-400 hover:text-gray-600"
+          :data-testid="`add-bloc-in-${level}`"
+        >
+          <RiAddLine class="size-4" />
           {{ $t('Ajouter un bloc') }}
-        </EmptyListAddButton>
+        </button>
       </AddBlocDropdown>
     </div>
   </div>
@@ -166,26 +171,29 @@
 <script setup lang="ts" generic="T extends SectionContentBloc">
 import * as Sentry from '@sentry/nuxt'
 import { MenuItem } from '@headlessui/vue'
-import { RiErrorWarningLine, RiExpandHorizontalLine } from '@remixicon/vue'
+import { RiAddLine, RiErrorWarningLine, RiExpandHorizontalLine } from '@remixicon/vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
 import BlocInserter from './BlocInserter.vue'
 import EditItem from './EditItem.vue'
-import EmptyListAddButton from './EmptyListAddButton.vue'
 import RoundAddButton from './RoundAddButton.vue'
-import type { BlocWidth, SectionContentBloc } from '~/types/pages'
+import type { BlocWidth, SectionColor, SectionContentBloc } from '~/types/pages'
+import { SECTION_COLOR } from '~/utils/blocs'
 import { BLOC_COMPONENTS, OBJECT_WIDTH } from '~/utils/pages'
-import { BLOCS_LEVEL, BLOC_SPANS, acceptsDropped, rowSpacings, rowStarts, type BlocsLevel, type RowSpacing } from '~/utils/blocsLayout'
+import { BLOCS_LEVEL, BLOC_SPANS, acceptsDropped, rowShare, rowSpacings, rowStarts, type BlocsLevel, type RowSpacing, type RowWidth } from '~/utils/blocsLayout'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 const props = defineProps<{
   edit: boolean
   // Restricts the blocs offered in the "add" menu, see `AddBlocDropdown`.
   level: Exclude<BlocsLevel, 'page'>
+  // The background of the section, for the blocs it holds, down to its accordions.
+  color?: SectionColor | null
 }>()
 
 const blocs = defineModel<Array<T>>({ required: true })
 
 provide(BLOCS_LEVEL, props.level)
+if (props.level === 'section') provide(SECTION_COLOR, toRef(() => props.color ?? null))
 
 const { t } = useTranslation()
 const labels = useBlocLabels()
@@ -207,13 +215,13 @@ watchEffect(() => {
 })
 
 // Written out for Tailwind to find them.
-const SPANS: Record<BlocWidth, string> = {
+const SPANS: Record<RowWidth, string> = {
   '1/4': 'sm:col-span-3',
   '1/3': 'sm:col-span-4',
   '1/2': 'sm:col-span-6',
   '2/3': 'sm:col-span-8',
   '3/4': 'sm:col-span-9',
-  '1': 'sm:col-span-12',
+  'whole': 'sm:col-span-12',
 }
 
 // Written out for Tailwind to find them. The inserter above a row covers the whole gap the
@@ -246,15 +254,15 @@ function insertBeside(newBlocs: Array<T>, index: number) {
 }
 
 // Share of the row, from the narrowest.
-const WIDTHS = Object.keys(BLOC_SPANS) as Array<BlocWidth>
+const WIDTHS = Object.keys(BLOC_SPANS) as Array<RowWidth>
 
 function widthLabel(width: BlocWidth | null) {
-  return !width || width === '1' ? t('Pleine largeur') : width
+  return width ?? t('Pleine largeur')
 }
 
 const resizing = ref<number | null>(null)
 
-function nearestWidth(fraction: number): BlocWidth {
+function nearestWidth(fraction: number): RowWidth {
   return WIDTHS.reduce((best, width) => Math.abs(BLOC_SPANS[width] / 12 - fraction) < Math.abs(BLOC_SPANS[best] / 12 - fraction) ? width : best)
 }
 
@@ -262,12 +270,12 @@ function nearestWidth(fraction: number): BlocWidth {
 function renderedFraction(blocElement: HTMLElement, right: number) {
   const list = listRef.value!
   const gap = Number.parseFloat(getComputedStyle(list).columnGap) || 0
-  return (right - blocElement.getBoundingClientRect().left + gap) / (list.getBoundingClientRect().width + gap)
+  return rowShare(right - blocElement.getBoundingClientRect().left, list.getBoundingClientRect().width, gap)
 }
 
-// The full width is stored as no width at all, which is what a new bloc has.
-function setWidth(index: number, width: BlocWidth) {
-  blocs.value[index].width = width === '1' ? null : width
+// The whole row is stored as no width at all, which is what a new bloc has.
+function setWidth(index: number, width: RowWidth) {
+  blocs.value[index].width = width === 'whole' ? null : width
 }
 
 function startResize(event: PointerEvent, index: number) {
@@ -295,7 +303,7 @@ function resizeWithKeyboard(event: KeyboardEvent, index: number) {
   const step = { ArrowLeft: -1, ArrowDown: -1, ArrowRight: 1, ArrowUp: 1 }[event.key]
   if (!step) return
   event.preventDefault()
-  const next = WIDTHS[WIDTHS.indexOf(blocs.value[index].width ?? '1') + step]
+  const next = WIDTHS[WIDTHS.indexOf(blocs.value[index].width ?? 'whole') + step]
   if (next) setWidth(index, next)
 }
 </script>

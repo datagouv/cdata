@@ -89,8 +89,6 @@ import { ACCEPTED_BLOCS, type BlocsLevel } from '~/utils/blocsLayout'
 
 const props = defineProps<{
   level: BlocsLevel
-  // Organization presentation pages have no Hero bloc.
-  forOrganization?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -130,10 +128,10 @@ const { floatingStyles } = useFloating(menu, items, {
 
 // The choices whose blocs the level accepts (see `ACCEPTED_BLOCS`).
 const groups = computed(() => {
-  const accepted = ACCEPTED_BLOCS[props.level].filter(name => !(props.forOrganization && name === 'HeroBloc'))
+  const accepted = ACCEPTED_BLOCS[props.level]
   const all: Array<{ name: string, choices: Array<BlocChoice> }> = [
-    { name: t('Mise en page'), choices: [choices.SectionBloc, choices.HeroBloc, choices.AccordionListBloc] },
-    { name: t('Contenus'), choices: [choices.TitleBloc, choices.MarkdownBloc, choices.LinksListBloc] },
+    { name: t('Mise en page'), choices: [choices.SectionBloc, choices.AccordionListBloc] },
+    { name: t('Contenus'), choices: [choices.TitleBloc, choices.MarkdownBloc, choices.LinksListBloc, choices.ButtonBloc] },
     { name: t('Contenus à la une'), choices: [choices.DatasetBloc, choices.DataserviceBloc, choices.ReuseBloc] },
   ]
   return all

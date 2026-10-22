@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { normalizeBlocs, type LegacyBloc } from '~/utils/blocs'
 import type { DatasetV2, Dataservice, Reuse } from '@datagouv/components-next'
-import type { AccordionListBloc, HeroBloc, PageBloc, SectionBloc } from '~/types/pages'
+import type { AccordionListBloc, PageBloc, SectionBloc } from '~/types/pages'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
@@ -9,7 +9,7 @@ const dataset = (id: string) => ({ id, title: `Dataset ${id}` }) as DatasetV2
 const dataservice = (id: string) => ({ id, title: `API ${id}` }) as Dataservice
 const reuse = (id: string) => ({ id, title: `Reuse ${id}` }) as Reuse
 
-const hero: HeroBloc = { class: 'HeroBloc', id: 'hero', title: 'Hero', description: null, color: 'primary', main_link_title: null, main_link_url: null }
+const hero: LegacyBloc = { class: 'HeroBloc', id: 'hero', title: 'Hero', description: 'Description', color: 'green', main_link_title: 'Go', main_link_url: 'https://example.com' }
 
 function sectionOf(blocs: Array<PageBloc>, index: number): SectionBloc {
   const bloc = blocs[index]
@@ -18,18 +18,46 @@ function sectionOf(blocs: Array<PageBloc>, index: number): SectionBloc {
 }
 
 describe('normalizeBlocs', () => {
-  it('keeps heroes at the top level and wraps every other legacy bloc in its own section', () => {
+  it('wraps every legacy bloc in its own section', () => {
     const blocs = normalizeBlocs([
-      hero,
       { class: 'MarkdownBloc', id: 'md-1', title: null, subtitle: null, content: 'Un' },
       { class: 'MarkdownBloc', id: 'md-2', title: null, subtitle: null, content: 'Deux' },
     ])
 
-    expect(blocs.map(bloc => bloc.class)).toEqual(['HeroBloc', 'SectionBloc', 'SectionBloc'])
-    expect(blocs[0]).toBe(hero)
-    expect(sectionOf(blocs, 1).blocs).toEqual([{ class: 'MarkdownBloc', id: 'md-1', width: null, content: 'Un' }])
-    expect(sectionOf(blocs, 2).blocs).toEqual([{ class: 'MarkdownBloc', id: 'md-2', width: null, content: 'Deux' }])
-    expect(sectionOf(blocs, 1).id).toMatch(UUID)
+    expect(blocs.map(bloc => bloc.class)).toEqual(['SectionBloc', 'SectionBloc'])
+    expect(sectionOf(blocs, 0).blocs).toEqual([{ class: 'MarkdownBloc', id: 'md-1', width: null, content: 'Un' }])
+    expect(sectionOf(blocs, 1).blocs).toEqual([{ class: 'MarkdownBloc', id: 'md-2', width: null, content: 'Deux' }])
+    expect(sectionOf(blocs, 0).id).toMatch(UUID)
+  })
+
+  it('turns a hero into a section of its color holding its title and its button', () => {
+    expect(normalizeBlocs([hero])).toEqual([{
+      class: 'SectionBloc',
+      id: 'hero',
+      color: 'green',
+      blocs: [
+        { class: 'TitleBloc', id: expect.stringMatching(UUID), width: null, title: 'Hero', subtitle: 'Description' },
+        { class: 'ButtonBloc', id: expect.stringMatching(UUID), width: null, title: 'Go', url: 'https://example.com' },
+      ],
+    }])
+  })
+
+  it('gives a hero without color the primary one, and a neutral section where sections have no color', () => {
+    const uncolored: LegacyBloc = { class: 'HeroBloc', id: 'hero', title: 'Hero', description: null, color: null, main_link_title: null, main_link_url: null }
+
+    expect(sectionOf(normalizeBlocs([uncolored]), 0).color).toBe('primary')
+    expect(sectionOf(normalizeBlocs([hero], false), 0).color).toBeNull()
+  })
+
+  it.each([
+    ['with a paragraph, on its left with the button under it', 'P', [['MarkdownBloc', '1/2'], ['LinksListBloc', '1/2'], ['ButtonBloc', '1/2']]],
+    ['without a paragraph, with the button under the links', null, [['LinksListBloc', null], ['ButtonBloc', null]]],
+  ] as const)('splits a list of links %s', (_name, paragraph, blocs) => {
+    const [section] = normalizeBlocs([
+      { class: 'LinksListBloc', id: 'links', title: null, subtitle: null, paragraph, main_link_title: 'Go', main_link_url: 'https://example.com', links: [] },
+    ])
+
+    expect(section.blocs.map(bloc => [bloc.class, bloc.width])).toEqual(blocs)
   })
 
   it('extracts the title and subtitle of a bloc into a title bloc placed before it', () => {
@@ -50,7 +78,7 @@ describe('normalizeBlocs', () => {
 
     expect((section as SectionBloc).blocs).toEqual([
       { class: 'MarkdownBloc', id: expect.stringMatching(UUID), width: null, content: 'Seulement un sous-titre' },
-      { class: 'LinksListBloc', id: 'links', width: null, paragraph: null, main_link_title: null, main_link_url: null, links: [] },
+      { class: 'LinksListBloc', id: 'links', width: null, links: [] },
     ])
   })
 
@@ -103,8 +131,8 @@ describe('normalizeBlocs', () => {
 
   it('leaves blocs already in the section format untouched', () => {
     const blocs: Array<PageBloc> = [
-      hero,
-      { class: 'SectionBloc', id: 'section', blocs: [{ class: 'TitleBloc', id: 'title', width: null, title: 'Titre', subtitle: null }] },
+      { class: 'SectionBloc', id: 'colored', color: 'green', blocs: [] },
+      { class: 'SectionBloc', id: 'section', color: null, blocs: [{ class: 'TitleBloc', id: 'title', width: null, title: 'Titre', subtitle: null }] },
     ]
 
     expect(normalizeBlocs(blocs)).toEqual(blocs)

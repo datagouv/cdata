@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, createDatasetWithRemoteResources, createPost, deleteDatasets, deletePosts, dragEditItem, focusedDragHandle, gotoHydrated } from '../helpers'
+import { API_BASE, createDataset, createDatasetWithRemoteResources, createPost, deleteDatasets, deletePosts, dragEditItem, focusedDragHandle, gotoHydrated, startEditItemDrag } from '../helpers'
 import { fillPostDescription } from './helpers'
 import type { BlocWidth, DatasetBloc, MarkdownBloc } from '~/types/pages'
 
@@ -27,13 +27,16 @@ async function createPostWithBlocs(page: Page, options: {
   return { postSlug, postId }
 }
 
-async function addHeroBlocAndSave(page: Page, title: string) {
+// A section holding a title, saved
+async function addTitledSectionAndSave(page: Page, title: string) {
+  // Sections are the only blocs of a page: no menu to pick one from
   await page.getByRole('button', { name: 'Ajouter une section' }).first().click()
-  await page.getByTestId('add-bloc-HeroBloc').click()
+  await page.getByTestId('add-bloc-in-section').click()
+  await page.getByTestId('add-bloc-TitleBloc').click()
 
-  const heroTitle = page.locator('.bg-new-blue-illustration [contenteditable="true"]').first()
-  await heroTitle.click()
-  await heroTitle.fill(title)
+  const titleInput = page.getByTestId('bloc-TitleBloc').locator('[contenteditable="true"]').first()
+  await titleInput.click()
+  await titleInput.fill(title)
   await page.mouse.click(1, 1)
 
   await page.getByRole('button', { name: 'Sauvegarder' }).click()
@@ -70,15 +73,15 @@ test.describe('Post with blocs', () => {
     })
     postId = result.postId
 
-    await addHeroBlocAndSave(page, 'Full page content')
+    await addTitledSectionAndSave(page, 'Full page content')
 
     await page.goto(`/posts/${result.postSlug}`)
     await page.waitForLoadState('networkidle')
 
-    // Full page mode: no breadcrumb, no title
+    // Full page mode: no breadcrumb, no title of its own, the first title bloc is the page's
     await expect(page.locator('nav').filter({ hasText: 'Accueil' })).not.toBeVisible()
     await expect(page.getByRole('heading', { level: 1, name: `Test Full Page ${uniqueId}` })).not.toBeVisible()
-    await expect(page.getByText('Full page content')).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: 'Full page content' })).toBeVisible()
   })
 
   test('news + blocs displays with header and breadcrumb', async ({ page }) => {
@@ -90,44 +93,91 @@ test.describe('Post with blocs', () => {
     })
     postId = result.postId
 
-    await addHeroBlocAndSave(page, 'News content')
+    await addTitledSectionAndSave(page, 'News content')
 
     await page.goto(`/posts/${result.postSlug}`)
     await page.waitForLoadState('networkidle')
 
-    // News mode: breadcrumb, title, headline visible
+    // News mode: breadcrumb, title, headline visible; the title bloc stays under the page's
     await expect(page.getByText('Accueil').first()).toBeVisible()
     await expect(page.getByText('Articles')).toBeVisible()
     await expect(page.getByRole('heading', { level: 1, name: `Test News Blocs ${uniqueId}` })).toBeVisible()
     await expect(page.getByText('A news post with blocs')).toBeVisible()
-    await expect(page.getByText('News content')).toBeVisible()
+    await expect(page.getByRole('heading', { level: 2, name: 'News content' })).toBeVisible()
   })
 
-  test('a section added in the editor holds its blocs and is saved', async ({ page }) => {
+  test('a section gets a background color, the way the heroes were', async ({ page }) => {
     const uniqueId = Date.now()
     const result = await createPostWithBlocs(page, {
       title: `Test Section ${uniqueId}`,
-      headline: 'A page with a section',
+      headline: 'A page with a colored section',
       kind: 'page',
     })
     postId = result.postId
 
     await page.getByRole('button', { name: 'Ajouter une section' }).first().click()
-    await page.getByTestId('add-bloc-SectionBloc').click()
     await page.getByTestId('add-bloc-in-section').click()
-    await page.getByTestId('add-bloc-TitleBloc').click()
+    await page.getByTestId('add-bloc-ButtonBloc').click()
+    await page.getByLabel('URL du bouton').fill('https://www.data.gouv.fr/datasets')
 
-    const title = page.getByTestId('bloc-TitleBloc').locator('[contenteditable="true"]').first()
-    await title.click()
-    await title.fill('Titre de la section')
-    await page.mouse.click(1, 1)
+    // From the menu of the section's tab
+    const section = page.getByTestId('page-SectionBloc')
+    await section.hover({ position: { x: 20, y: 20 } })
+    await section.getByRole('button', { name: 'Actions sur Section' }).click()
+    await page.getByRole('menuitem', { name: 'Fond vert' }).click()
 
     await page.getByRole('button', { name: 'Sauvegarder' }).click()
     await expect(page.getByText('Page sauvegardée')).toBeVisible()
 
     await page.goto(`/posts/${result.postSlug}`)
     await page.waitForLoadState('networkidle')
-    await expect(page.getByTestId('page-SectionBloc').getByRole('heading', { level: 2, name: 'Titre de la section' })).toBeVisible()
+    await expect(page.getByTestId('page-SectionBloc')).toHaveAttribute('data-section-color', 'green')
+    await expect(page.getByRole('link', { name: 'Titre du bouton' })).toHaveAttribute('href', 'https://www.data.gouv.fr/datasets')
+  })
+
+  test('a button is saved as added, to the home page of the site', async ({ page }) => {
+    const result = await createPostWithBlocs(page, {
+      title: `Test Button ${Date.now()}`,
+      headline: 'A page with a button',
+      kind: 'page',
+    })
+    postId = result.postId
+
+    await page.getByRole('button', { name: 'Ajouter une section' }).first().click()
+    await page.getByTestId('add-bloc-in-section').click()
+    await page.getByTestId('add-bloc-ButtonBloc').click()
+    await page.getByRole('button', { name: 'Sauvegarder' }).click()
+    await expect(page.getByText('Page sauvegardée')).toBeVisible()
+
+    await page.goto(`/posts/${result.postSlug}`)
+    await page.waitForLoadState('networkidle')
+    await expect(page.getByRole('link', { name: 'Titre du bouton' })).toHaveAttribute('href', '/')
+  })
+
+  test('emptying a title keeps the previous one, a title being required', async ({ page }) => {
+    const result = await createPostWithBlocs(page, {
+      title: `Test Title ${Date.now()}`,
+      headline: 'A page with a title',
+      kind: 'page',
+    })
+    postId = result.postId
+
+    await page.getByRole('button', { name: 'Ajouter une section' }).first().click()
+    await page.getByTestId('add-bloc-in-section').click()
+    await page.getByTestId('add-bloc-TitleBloc').click()
+    const title = page.getByTestId('bloc-TitleBloc').locator('[contenteditable="true"]').first()
+    await title.click()
+    await title.fill('Titre de la section')
+    await page.mouse.click(1, 1)
+    await title.click()
+    await title.fill('')
+    await page.mouse.click(1, 1)
+
+    await page.getByRole('button', { name: 'Sauvegarder' }).click()
+    await expect(page.getByText('Page sauvegardée')).toBeVisible()
+    await page.goto(`/posts/${result.postSlug}`)
+    await page.waitForLoadState('networkidle')
+    await expect(page.getByRole('heading', { name: 'Titre de la section' })).toBeVisible()
   })
 })
 
@@ -148,7 +198,7 @@ test.describe('Sections', () => {
       name: `Section ${Date.now()}`,
       kind: 'page',
       body_type: 'blocs',
-      blocs: [{ class: 'SectionBloc', id: crypto.randomUUID(), blocs }],
+      blocs: [{ class: 'SectionBloc', id: crypto.randomUUID(), color: null, blocs }],
     })
     createdIds.push(post.id)
     return post
@@ -175,13 +225,14 @@ test.describe('Sections', () => {
         {
           class: 'SectionBloc',
           id: crypto.randomUUID(),
+          color: null,
           blocs: [
             { class: 'TitleBloc', id: crypto.randomUUID(), width: null, title: 'Première section', subtitle: 'Son sous-titre' },
             markdown('Bloc étroit', '1/3'),
             markdown('Bloc large', '2/3'),
           ],
         },
-        { class: 'SectionBloc', id: crypto.randomUUID(), blocs: [markdown('Seconde section')] },
+        { class: 'SectionBloc', id: crypto.randomUUID(), color: null, blocs: [markdown('Seconde section')] },
       ],
     })
     createdIds.push(post.id)
@@ -191,7 +242,8 @@ test.describe('Sections', () => {
 
     const sections = page.getByTestId('page-SectionBloc')
     await expect(sections).toHaveCount(2)
-    await expect(sections.first().getByRole('heading', { level: 2, name: 'Première section' })).toBeVisible()
+    // The page has no title of its own: its first title is the page's
+    await expect(sections.first().getByRole('heading', { level: 1, name: 'Première section' })).toBeVisible()
     await expect(sections.first().getByText('Son sous-titre')).toBeVisible()
     await expect(sections.last().getByText('Seconde section')).toBeVisible()
 
@@ -226,11 +278,7 @@ test.describe('Sections', () => {
     const texts = page.getByTestId('bloc-MarkdownBloc')
     const target = texts.filter({ hasText: 'Dessous' })
     const targetBefore = (await target.boundingBox())!
-    const handle = await focusedDragHandle(texts.filter({ hasText: 'Gauche' }))
-    const from = (await handle.boundingBox())!
-    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
-    await page.mouse.down()
-    await page.mouse.move(targetBefore.x + targetBefore.width / 2, targetBefore.y + 10, { steps: 20 })
+    await startEditItemDrag(texts.filter({ hasText: 'Gauche' }), targetBefore.x + targetBefore.width / 2, targetBefore.y + 10)
 
     await expect(page.getByTestId('drop-indicator')).toBeVisible()
     const indicator = (await page.getByTestId('drop-indicator').boundingBox())!
@@ -271,13 +319,9 @@ test.describe('Sections', () => {
     await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
 
     const texts = page.getByTestId('bloc-MarkdownBloc')
-    const handle = await focusedDragHandle(texts.filter({ hasText: 'Dessous' }))
-    const from = (await handle.boundingBox())!
     const right = (await texts.filter({ hasText: 'Droite' }).boundingBox())!
-    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
-    await page.mouse.down()
     // On the left part of the last bloc of the first row
-    await page.mouse.move(right.x + right.width / 4, right.y + right.height / 2, { steps: 20 })
+    await startEditItemDrag(texts.filter({ hasText: 'Dessous' }), right.x + right.width / 4, right.y + right.height / 2)
 
     // A vertical line, in the gap between the two blocs
     const indicator = (await page.getByTestId('drop-indicator').boundingBox())!
@@ -300,12 +344,8 @@ test.describe('Sections', () => {
     const left = (await texts.filter({ hasText: 'Gauche' }).boundingBox())!
 
     async function dragToFreeSpace(text: string) {
-      const handle = await focusedDragHandle(texts.filter({ hasText: text }))
-      const from = (await handle.boundingBox())!
-      await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
-      await page.mouse.down()
       // On the right half of the first row, which `Gauche` leaves empty
-      await page.mouse.move(left.x + left.width * 1.5, left.y + left.height / 2, { steps: 20 })
+      await startEditItemDrag(texts.filter({ hasText: text }), left.x + left.width * 1.5, left.y + left.height / 2)
       const indicator = (await page.getByTestId('drop-indicator').boundingBox())!
       await page.mouse.up()
       return indicator
@@ -332,15 +372,11 @@ test.describe('Sections', () => {
     const section = page.getByTestId('page-SectionBloc')
 
     async function dragToMargin(text: string, margin: 'top' | 'bottom') {
-      const handle = await focusedDragHandle(texts.filter({ hasText: text }))
-      const from = (await handle.boundingBox())!
-      await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
-      await page.mouse.down()
       const band = (await section.boundingBox())!
       const blocs = (await page.locator('[data-blocs-level="section"]').boundingBox())!
       // Halfway between the edge of the section and its blocs
       const y = margin === 'top' ? (band.y + blocs.y) / 2 : (blocs.y + blocs.height + band.y + band.height) / 2
-      await page.mouse.move(blocs.x + blocs.width / 2, y, { steps: 20 })
+      await startEditItemDrag(texts.filter({ hasText: text }), blocs.x + blocs.width / 2, y)
       await expect(page.getByTestId('drop-indicator')).toBeVisible()
       await page.mouse.up()
     }
@@ -360,8 +396,8 @@ test.describe('Sections', () => {
       kind: 'page',
       body_type: 'blocs',
       blocs: [
-        { class: 'SectionBloc', id: crypto.randomUUID(), blocs: [] },
-        { class: 'SectionBloc', id: crypto.randomUUID(), blocs: [markdown('Seule section remplie')] },
+        { class: 'SectionBloc', id: crypto.randomUUID(), color: null, blocs: [] },
+        { class: 'SectionBloc', id: crypto.randomUUID(), color: null, blocs: [markdown('Seule section remplie')] },
       ],
     })
     createdIds.push(post.id)
@@ -401,11 +437,12 @@ test.describe('Sections', () => {
       blocs: [{
         class: 'SectionBloc',
         id: crypto.randomUUID(),
+        color: null,
         blocs: [{
           class: 'AccordionListBloc',
           id: crypto.randomUUID(),
           width: null,
-          items: ['A', 'B', 'C'].map(name => ({ title: `Item ${name}`, content: [markdown(name)] })),
+          items: ['A', 'B', 'C'].map(name => ({ id: crypto.randomUUID(), title: `Item ${name}`, content: [markdown(name)] })),
         }],
       }],
     })
@@ -463,6 +500,7 @@ test.describe('Sections', () => {
       blocs: [{
         class: 'SectionBloc',
         id: crypto.randomUUID(),
+        color: null,
         blocs: [{ class: 'DatasetBloc', id: crypto.randomUUID(), width: '1/2', dataset: { id: dataset.id } as DatasetBloc['dataset'] }],
       }],
     })
@@ -481,7 +519,31 @@ test.describe('Sections', () => {
     }
   })
 
-  test('the explorer cannot be dropped in an accordion', async ({ page, request }) => {
+  test('a bloc moves from a section to another', async ({ page, request }) => {
+    const post = await createPost(request, {
+      name: `Sections ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [
+        { class: 'SectionBloc', id: crypto.randomUUID(), color: null, blocs: [markdown('Reste'), markdown('Part')] },
+        { class: 'SectionBloc', id: crypto.randomUUID(), color: null, blocs: [markdown('Là')] },
+      ],
+    })
+    createdIds.push(post.id)
+    // Tall enough for both sections: the texts are editors, high ones
+    await page.setViewportSize({ width: 1280, height: 1600 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    // On the upper half of the text of the other section: right before it
+    const texts = page.getByTestId('bloc-MarkdownBloc')
+    await dragEditItem(texts.filter({ hasText: 'Part' }), texts.filter({ hasText: 'Là' }), 0.25)
+
+    const [first, second] = await saveAndFetchBlocs(page, post.slug)
+    expect(contents(first)).toEqual(['Reste'])
+    expect(contents(second)).toEqual(['Part', 'Là'])
+  })
+
+  test('a bloc moves into an accordion item, but not the explorer', async ({ page, request }) => {
     const { dataset, resources: [resource] } = await createDatasetWithRemoteResources(request, `Explorer ${Date.now()}`, ['Fichier'])
     const accordionId = crypto.randomUUID()
     const post = await createPost(request, {
@@ -491,30 +553,37 @@ test.describe('Sections', () => {
       blocs: [{
         class: 'SectionBloc',
         id: crypto.randomUUID(),
+        color: null,
         blocs: [
           { class: 'ExploreBloc', id: crypto.randomUUID(), width: null, resource_id: resource.id },
+          markdown('Dehors'),
           {
             class: 'AccordionListBloc',
             id: accordionId,
             width: null,
-            items: [{ title: 'Item', content: [markdown('Dedans A'), markdown('Dedans B')] }],
+            items: [{ id: crypto.randomUUID(), title: 'Item', content: [markdown('Dedans A'), markdown('Dedans B')] }],
           },
         ],
       }],
     })
     createdIds.push(post.id)
     try {
-      await page.setViewportSize({ width: 1280, height: 900 })
+      // Tall enough for the whole section: the texts are editors, high ones
+      await page.setViewportSize({ width: 1280, height: 1600 })
       // The hash opens the accordion item
       await gotoHydrated(page, `/pages/${post.slug}?edit=true#accordion-${accordionId}-0`)
 
-      await dragEditItem(page.getByTestId('bloc-ExploreBloc'), page.getByTestId('bloc-MarkdownBloc').filter({ hasText: 'Dedans B' }))
+      // On the upper half of the second text of the item: right before it
+      const texts = page.getByTestId('bloc-MarkdownBloc')
+      await dragEditItem(texts.filter({ hasText: 'Dehors' }), texts.filter({ hasText: 'Dedans B' }), 0.25)
+      await expect(page.getByTestId('bloc-AccordionListBloc').getByTestId('bloc-MarkdownBloc')).toHaveCount(3)
+      // The same place refuses the explorer, too wide for an accordion: it lands in the
+      // section holding the accordion instead, after it, on the lower half of which it is
+      await dragEditItem(page.getByTestId('bloc-ExploreBloc'), texts.filter({ hasText: 'Dedans B' }), 0.25)
 
-      // Nowhere in the accordion: the explorer stays a bloc of the section
       const [section] = await saveAndFetchBlocs(page, post.slug)
-      expect(section.blocs.map((bloc: { class: string }) => bloc.class).sort()).toEqual(['AccordionListBloc', 'ExploreBloc'])
-      const accordion = section.blocs.find((bloc: { class: string }) => bloc.class === 'AccordionListBloc')
-      expect(contents({ blocs: accordion.items[0].content })).toEqual(['Dedans A', 'Dedans B'])
+      expect(section.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['AccordionListBloc', 'ExploreBloc'])
+      expect(contents({ blocs: section.blocs[0].items[0].content })).toEqual(['Dedans A', 'Dehors', 'Dedans B'])
     }
     finally {
       await deleteDatasets(request, [dataset.id])

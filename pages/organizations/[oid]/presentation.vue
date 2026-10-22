@@ -52,6 +52,7 @@ import { SegmentedControl, type Organization, type PageBloc } from '@datagouv/co
 import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import { isUserOrgAdmin, useMaybeMe } from '~/utils/auth'
+import { isShown, normalizeBlocs } from '~/utils/blocs'
 
 const props = defineProps<{
   organization: Organization
@@ -82,8 +83,8 @@ const mode = computed({
 // dropped straight into edit mode — there is nothing to preview, so we skip the
 // extra "Configurer" click and land them in the composer. This runs once on mount
 // (a query-only change does not re-run setup), so cancelling or emptying the page
-// later does not bounce the admin back into edit mode.
-if (!blocs.value.length && !isEditing.value) {
+// later does not bounce the admin back into edit mode. Empty sections are not read either.
+if (!normalizeBlocs(blocs.value, false).some(isShown) && !isEditing.value) {
   if (canEdit.value) {
     await navigateTo({ query: { ...route.query, edit: 'true' } }, { replace: true })
   }
