@@ -31,11 +31,11 @@ async function addBloc(page: Page, name: string): Promise<Locator> {
   return page.getByTestId('edito-bloc').last()
 }
 
-// An editable text only hands its value to the bloc once it loses the focus
+// An editable text only hands its value to the bloc once it loses the focus. Moved away with
+// the keyboard: a textbox found by its placeholder text no longer matches once filled.
 async function editText(textbox: Locator, value: string) {
   await textbox.fill(value)
-  await textbox.blur()
-  await expect(textbox).toHaveText(value)
+  await textbox.page().keyboard.press('Tab')
 }
 
 // Picks each object by the option bearing its title, so a slow search answering after
