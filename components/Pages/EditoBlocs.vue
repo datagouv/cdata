@@ -27,13 +27,11 @@
       />
       <div class="container md:flex md:gap-8 py-12">
         <HeadingsSidemenu
-          :content="sidemenuContent"
+          v-if="sidemenuHeadings.length"
+          :headings="sidemenuHeadings"
           class="md:w-1/4 shrink-0"
         />
-        <div
-          ref="sidemenuContent"
-          class="flex-1 min-w-0 space-y-12"
-        >
+        <div class="flex-1 min-w-0 space-y-12">
           <template
             v-for="bloc in workingBlocs.slice(leadingFullWidthBlocs.length)"
             :key="bloc.id"
@@ -214,11 +212,12 @@
 <script setup lang="ts">
 import type { ComponentProps } from 'vue-component-type-helpers'
 import * as Sentry from '@sentry/nuxt'
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, formatMarkdown } from '@datagouv/components-next'
 import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine, RiEdit2Line } from '@remixicon/vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
 import HeadingsSidemenu from '~/components/Sidemenu/HeadingsSidemenu.vue'
 import type { PageBloc } from '~/types/pages'
+import type { Heading } from '~/utils/headings'
 import { isMeAdmin } from '~/utils/auth'
 
 const blocsTypes = useBlocsTypes()
@@ -278,11 +277,20 @@ watchEffect(() => {
 
 const workingBlocs = computed(() => localBlocs.value ?? props.blocs)
 
-const sidemenuContent = useTemplateRef('sidemenuContent')
+const isFullWidth = (bloc: PageBloc) => 'fullWidth' in (blocsTypes[bloc.class] ?? {})
 const leadingFullWidthBlocs = computed(() => {
-  const index = workingBlocs.value.findIndex(bloc => !('fullWidth' in (blocsTypes[bloc.class] ?? {})))
+  const index = workingBlocs.value.findIndex(bloc => !isFullWidth(bloc))
   return workingBlocs.value.slice(0, index === -1 ? workingBlocs.value.length : index)
 })
+// The title of each bloc, then the headings of its Markdown, rendered with the same options
+// as MarkdownBloc so that their ids are the ones on the page
+const sidemenuHeadings = computed<Array<Heading>>(() => workingBlocs.value
+  .filter(bloc => !isFullWidth(bloc))
+  .flatMap(bloc => [
+    ...(bloc.title ? [{ id: slugify(bloc.title), label: bloc.title, level: 2 }] : []),
+    ...(bloc.class === 'MarkdownBloc' ? anchorHeadings(formatMarkdown(bloc.content, { minDepth: 2, noHeadings: false })).headings : []),
+  ]),
+)
 
 // Check if there are unsaved changes
 const hasUnsavedChanges = computed(() => {

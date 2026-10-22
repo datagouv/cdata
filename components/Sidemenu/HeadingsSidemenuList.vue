@@ -1,8 +1,9 @@
 <template>
   <ul class="fr-sidemenu__list">
+    <!-- Not keyed by id: the same heading in two blocs has the same id -->
     <li
-      v-for="heading in headings"
-      :key="heading.id"
+      v-for="(heading, index) in headings"
+      :key="index"
       class="fr-sidemenu__item"
     >
       <a

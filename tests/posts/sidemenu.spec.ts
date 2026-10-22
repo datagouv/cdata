@@ -8,7 +8,7 @@ test.describe('Post side menu', () => {
     await deletePosts(request, createdIds)
   })
 
-  test('a blocs page lists the titles of its blocs and of their Markdown, each leading to its own heading', async ({ page, request }) => {
+  test('a blocs page lists the titles of its blocs and of their Markdown, not the titles of their cards', async ({ page, request }) => {
     const uniqueId = Date.now()
     const post = await createPost(request, {
       name: `Inventaire ${uniqueId}`,
@@ -19,20 +19,14 @@ test.describe('Post side menu', () => {
         { class: 'HeroBloc', title: `Inventaire ${uniqueId}`, description: null, color: 'primary', main_link_title: null, main_link_url: null },
         { class: 'MarkdownBloc', title: 'Santé', subtitle: null, content: '## Données\n\nSur la santé.' },
         { class: 'MarkdownBloc', title: 'Emploi', subtitle: null, content: '## Données\n\nSur l\'emploi.' },
+        { class: 'LinksListBloc', title: 'Liens utiles', subtitle: null, paragraph: null, main_link_title: null, main_link_url: null, links: [{ title: 'Un lien', url: 'https://example.org', color: null }] },
       ],
     })
     createdIds.push(post.id)
 
     await page.goto(`/pages/${post.slug}`)
-    const menu = page.getByRole('navigation', { name: 'Sommaire' })
-    await expect(menu.getByRole('link')).toHaveText(['Santé', 'Données', 'Emploi', 'Données'])
-
-    // Both "Données" sections are reachable, not twice the first one
-    const links = menu.getByRole('link', { name: 'Données' })
-    const firstHref = await links.first().getAttribute('href')
-    const lastHref = await links.last().getAttribute('href')
-    expect(firstHref).not.toBe(lastHref)
-    await expect(page.locator(`${lastHref} + p`)).toHaveText('Sur l\'emploi.')
+    await expect(page.getByRole('heading', { name: 'Un lien' })).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'Sommaire' }).getByRole('link')).toHaveText(['Santé', 'Données', 'Emploi', 'Données', 'Liens utiles'])
   })
 
   test('a link to a bloc title opens the page on that title', async ({ page, request }) => {
@@ -53,7 +47,7 @@ test.describe('Post side menu', () => {
     await expect(page.getByRole('heading', { name: 'Emploi' })).toBeInViewport()
   })
 
-  test('a Markdown news lists its headings', async ({ page, request }) => {
+  test('a Markdown news lists its headings, nested by level', async ({ page, request }) => {
     const uniqueId = Date.now()
     const post = await createPost(request, {
       name: `Actualité ${uniqueId}`,
@@ -65,7 +59,36 @@ test.describe('Post side menu', () => {
     createdIds.push(post.id)
 
     await page.goto(`/posts/${post.slug}`)
-    await expect(page.getByRole('navigation', { name: 'Sommaire' }).getByRole('link')).toHaveText(['Contexte', 'Chiffres', 'Suite'])
+    const menu = page.getByRole('navigation', { name: 'Sommaire' })
+    await expect(menu.getByRole('link')).toHaveText(['Contexte', 'Chiffres', 'Suite'])
+    await expect(menu.getByRole('listitem').filter({ has: page.getByRole('link', { name: 'Contexte' }) }).getByRole('link')).toHaveText(['Contexte', 'Chiffres'])
+    await expect(menu.getByRole('listitem').filter({ has: page.getByRole('link', { name: 'Suite' }) }).getByRole('link')).toHaveText(['Suite'])
+  })
+
+  test('a link to a heading of an HTML news opens the page on that heading', async ({ page, request }) => {
+    const uniqueId = Date.now()
+    const post = await createPost(request, {
+      name: `Actualité ${uniqueId}`,
+      kind: 'news',
+      headline: 'Une actualité',
+      body_type: 'html',
+      content: `<h2>Contexte</h2>${'<p>Du contexte.</p>'.repeat(40)}<h2>Suite</h2><p>La suite.</p>`,
+      sidemenu: true,
+    })
+    createdIds.push(post.id)
+
+    await page.goto(`/posts/${post.slug}#suite`)
+    await expect(page.getByRole('heading', { name: 'Suite' })).toBeInViewport()
+  })
+
+  test('a post whose content has no heading has no side menu', async ({ page, request }) => {
+    const uniqueId = Date.now()
+    const post = await createPost(request, { name: `Actualité ${uniqueId}`, kind: 'news', headline: 'Une actualité', content: 'Du contexte.', sidemenu: true })
+    createdIds.push(post.id)
+
+    await page.goto(`/posts/${post.slug}`)
+    await expect(page.getByText('Du contexte.')).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'Sommaire' })).toHaveCount(0)
   })
 
   test('a post without side menu has none', async ({ page, request }) => {
@@ -76,5 +99,24 @@ test.describe('Post side menu', () => {
     await page.goto(`/posts/${post.slug}`)
     await expect(page.getByRole('heading', { name: 'Contexte' })).toBeVisible()
     await expect(page.getByRole('navigation', { name: 'Sommaire' })).toHaveCount(0)
+  })
+
+  test.describe('without JavaScript', () => {
+    test.use({ javaScriptEnabled: false })
+
+    test('the side menu is already in the page sent by the server', async ({ page, request }) => {
+      const uniqueId = Date.now()
+      const post = await createPost(request, {
+        name: `Inventaire ${uniqueId}`,
+        kind: 'page',
+        body_type: 'blocs',
+        sidemenu: true,
+        blocs: [{ class: 'MarkdownBloc', title: 'Santé', subtitle: null, content: '## Données\n\nSur la santé.' }],
+      })
+      createdIds.push(post.id)
+
+      await page.goto(`/pages/${post.slug}`)
+      await expect(page.getByRole('navigation', { name: 'Sommaire' }).getByRole('link')).toHaveText(['Santé', 'Données'])
+    })
   })
 })

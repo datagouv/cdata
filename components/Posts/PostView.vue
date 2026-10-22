@@ -109,17 +109,14 @@
         <div
           v-else
           class="container"
-          :class="{ 'md:flex md:gap-8': post.sidemenu }"
+          :class="{ 'md:flex md:gap-8': anchoredBody?.headings.length }"
         >
           <HeadingsSidemenu
-            v-if="post.sidemenu"
-            :content="body"
+            v-if="anchoredBody?.headings.length"
+            :headings="anchoredBody.headings"
             class="md:w-1/4 shrink-0"
           />
-          <div
-            ref="body"
-            class="max-w-4xl min-w-0 flex-1"
-          >
+          <div class="max-w-4xl min-w-0 flex-1">
             <MarkdownViewer
               v-if="post.body_type === 'markdown'"
               :content="post.content"
@@ -129,7 +126,7 @@
             <div
               v-else
               :class="markdownClasses"
-              v-html="post.content"
+              v-html="anchoredBody?.html ?? post.content"
             />
           </div>
         </div>
@@ -148,7 +145,7 @@
 </template>
 
 <script setup lang="ts">
-import { markdownClasses, MarkdownViewer, BrandedButton, toast, FormattedDate, TranslationT } from '@datagouv/components-next'
+import { formatMarkdown, markdownClasses, MarkdownViewer, BrandedButton, toast, FormattedDate, TranslationT } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
@@ -171,7 +168,15 @@ const { t } = useTranslation()
 const absoluteUrlToRelative = useAbsoluteUrlToRelative()
 
 const blocsSection = ref<HTMLElement | null>(null)
-const body = useTemplateRef('body')
+
+// Only with the side menu: an HTML body is then rendered again with ids on its headings.
+// Markdown goes through the options of the MarkdownViewer below to get the same ids.
+const anchoredBody = computed(() => {
+  if (!props.post.sidemenu || props.post.body_type === 'blocs') return null
+  return anchorHeadings(props.post.body_type === 'markdown'
+    ? formatMarkdown(props.post.content, { minDepth: 2, noHeadings: false })
+    : props.post.content)
+})
 
 // Enter edit mode and scroll to the blocs, which start below the article image:
 // with a tall image the user would otherwise see no visible change on click.
