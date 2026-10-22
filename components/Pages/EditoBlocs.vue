@@ -104,7 +104,8 @@
             </button>
           </MenuItem>
         </template>
-        <!-- Add button above the bloc (absolute positioned), shown on hover -->
+        <!-- Adds a section above this one. Only on hover: one per section would crowd the page,
+             the one below the last section stays -->
         <div
           v-if="isEditing"
           class="absolute -top-4 left-0 right-0 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 focus-within:opacity-100 transition-opacity delay-400 group-hover/section:delay-0 focus-within:delay-0"
@@ -225,7 +226,7 @@ import HeadingsSidemenu from '~/components/Sidemenu/HeadingsSidemenu.vue'
 import type { PageBloc, SectionBloc, SectionColor } from '~/types/pages'
 import { anchorHeadings, slugify, type Heading } from '~/utils/headings'
 import { isMeAdmin } from '~/utils/auth'
-import { BLOCS_MAIN_COLOR, PAGE_TITLE_ID, normalizeBlocs, type BlocsMainColor, type LegacyBloc } from '~/utils/blocs'
+import { BLOCS_MAIN_COLOR, PAGE_TITLE_ID, normalizeBlocs, withoutEmptyBlocs, type BlocsMainColor, type LegacyBloc } from '~/utils/blocs'
 import { heroBgColor } from '~/utils/hero'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
@@ -371,9 +372,8 @@ function exitEditMode() {
 async function save() {
   if (!localBlocs.value) return
 
-  // A section left empty only existed for the editor: no reader would see it.
   try {
-    await props.onSave(localBlocs.value.filter(section => section.blocs.length))
+    await props.onSave(withoutEmptyBlocs(localBlocs.value))
   }
   catch {
     // The host reported the error: the changes stay, to be fixed and saved again.

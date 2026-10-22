@@ -17,7 +17,7 @@
   >
     <MarkdownViewer
       class="prose-h2:text-3xl prose-h3:text-2xl"
-      :class="sectionColor ? 'text-white prose-invert prose-h2:text-white prose-h3:text-white prose-a:text-white prose-strong:text-white' : 'prose-h2:text-gray-title prose-h3:text-gray-title'"
+      :class="sectionColor ? 'text-white prose-invert prose-h2:text-white prose-h3:text-white prose-a:text-white! prose-strong:text-white!' : 'prose-h2:text-gray-title prose-h3:text-gray-title'"
       :content="bloc.content"
       :min-heading="2"
       size="md"
@@ -37,6 +37,7 @@ defineProps<{
 
 const bloc = defineModel<MarkdownBloc>({ required: true })
 
-// On a colored section, the text is white.
+// On a colored section, the text is white. The links and the bold text too: important, as the
+// viewer gives them a gray of its own, on the same element.
 const sectionColor = inject(SECTION_COLOR, ref(null))
 </script>

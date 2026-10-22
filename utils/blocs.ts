@@ -150,6 +150,19 @@ function convertHero(hero: LegacyHeroBloc, colored: boolean): SectionBloc {
   }
 }
 
+// What only exists for the editor, where content is added to it, and that no reader would
+// see: an accordion without items, links without a link, then the sections left empty.
+export function withoutEmptyBlocs(sections: Array<SectionBloc>): Array<SectionBloc> {
+  const shown = <T extends SectionContentBloc>(blocs: Array<T>): Array<T> => blocs
+    .filter(bloc => !(bloc.class === 'AccordionListBloc' && !bloc.items.length) && !(bloc.class === 'LinksListBloc' && !bloc.links.length))
+    .map(bloc => bloc.class === 'AccordionListBloc'
+      ? { ...bloc, items: bloc.items.map(item => ({ ...item, content: shown(item.content) })) }
+      : bloc)
+  return sections
+    .map(section => ({ ...section, blocs: shown(section.blocs) }))
+    .filter(section => section.blocs.length)
+}
+
 // A legacy bloc showing nothing (an empty list without a title) is dropped: a section is
 // never empty.
 export function normalizeBlocs(blocs: Array<PageBloc | LegacyBloc>, colored = true): Array<PageBloc> {

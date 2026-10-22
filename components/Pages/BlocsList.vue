@@ -25,8 +25,8 @@
       <div
         v-for="(bloc, index) in blocs"
         :key="bloc.id"
-        class="relative min-w-0"
-        :class="[SPANS[bloc.width ?? 'whole'], spacingBefore(index)]"
+        class="relative min-w-0 sm:col-span-(--span) max-sm:mt-(--stacked-space) sm:mt-(--row-space)"
+        :style="placement(index)"
         :data-bloc-class="bloc.class"
         data-drop-item
       >
@@ -34,8 +34,7 @@
              the row -->
         <BlocInserter
           v-if="edit && index > 0 && rows.starts.has(index)"
-          class="absolute left-0 bottom-full w-[100cqw]"
-          :class="GAP_HEIGHTS[rows.spacing[index]]"
+          class="absolute left-0 bottom-full w-[100cqw] h-(--row-space)"
           :level
           :label="$t('Ajouter un bloc ici')"
           :data-testid="`insert-bloc-in-${level}`"
@@ -214,33 +213,24 @@ watchEffect(() => {
   }
 })
 
-// Written out for Tailwind to find them.
-const SPANS: Record<RowWidth, string> = {
-  '1/4': 'sm:col-span-3',
-  '1/3': 'sm:col-span-4',
-  '1/2': 'sm:col-span-6',
-  '2/3': 'sm:col-span-8',
-  '3/4': 'sm:col-span-9',
-  'whole': 'sm:col-span-12',
-}
-
-// Written out for Tailwind to find them. The inserter above a row covers the whole gap the
-// spacing leaves.
-const GAP_HEIGHTS: Record<RowSpacing, string> = { 'none': '', 'column-gap': 'h-5', 'after-title': 'h-6', 'between-rows': 'h-12' }
-const ROW_SPACINGS: Record<RowSpacing, string> = { 'none': '', 'column-gap': 'sm:mt-5', 'after-title': 'sm:mt-6', 'between-rows': 'sm:mt-12' }
-const STACKED_SPACINGS: Record<RowSpacing, string> = { 'none': '', 'column-gap': 'max-sm:mt-5', 'after-title': 'max-sm:mt-6', 'between-rows': 'max-sm:mt-12' }
+// The space above a row; the inserter above a row covers all of it.
+const ROW_SPACES: Record<RowSpacing, string> = { 'none': '0', 'column-gap': 'var(--grid-gap)', 'after-title': '1.5rem', 'between-rows': '3rem' }
 
 const rows = computed(() => ({
   starts: new Set(rowStarts(blocs.value.map(bloc => bloc.width))),
   spacing: rowSpacings(blocs.value),
 }))
 
-// Stacked below `sm`, the blocs of a row keep the column gap between them.
-function spacingBefore(index: number): string {
-  if (index === 0) return ''
+// The columns a bloc takes, and the space above it. Stacked below `sm`, the blocs of a row keep
+// the column gap between them.
+function placement(index: number) {
   const spacing = rows.value.spacing[index]
-  const stacked = rows.value.starts.has(index) ? spacing : 'column-gap'
-  return `${STACKED_SPACINGS[stacked]} ${ROW_SPACINGS[spacing]}`
+  const stacked = index === 0 || rows.value.starts.has(index) ? spacing : 'column-gap'
+  return {
+    '--span': BLOC_SPANS[blocs.value[index].width ?? 'whole'],
+    '--row-space': ROW_SPACES[spacing],
+    '--stacked-space': ROW_SPACES[stacked],
+  }
 }
 
 // Blocs inserted between two blocs of a row join it: an object at its own width, anything

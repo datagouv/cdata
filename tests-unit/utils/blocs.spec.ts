@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { normalizeBlocs, type LegacyBloc } from '~/utils/blocs'
+import { normalizeBlocs, withoutEmptyBlocs, type LegacyBloc } from '~/utils/blocs'
 import type { DatasetV2, Dataservice, Reuse } from '@datagouv/components-next'
-import type { AccordionListBloc, PageBloc, SectionBloc } from '~/types/pages'
+import type { AccordionListBloc, LinksListBloc, MarkdownBloc, PageBloc, SectionBloc } from '~/types/pages'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
@@ -149,5 +149,28 @@ describe('normalizeBlocs', () => {
     expect(normalizeBlocs(legacy)).toEqual(normalizeBlocs(legacy))
     const ids = JSON.stringify(normalizeBlocs(legacy)).match(/[0-9a-f]{8}-[0-9a-f-]{27}/g) ?? []
     expect(new Set(ids).size).toBe(ids.length)
+  })
+})
+
+describe('withoutEmptyBlocs', () => {
+  const text: MarkdownBloc = { class: 'MarkdownBloc', id: 'text', width: null, content: 'Texte' }
+  const noLinks: LinksListBloc = { class: 'LinksListBloc', id: 'links', width: null, links: [] }
+
+  it('drops the accordions without items and the links without a link, then the sections left empty', () => {
+    const sections: Array<SectionBloc> = [
+      { class: 'SectionBloc', id: 'empty-accordion', color: 'green', blocs: [{ class: 'AccordionListBloc', id: 'accordion', width: null, items: [] }] },
+      { class: 'SectionBloc', id: 'empty-links', color: null, blocs: [noLinks] },
+      { class: 'SectionBloc', id: 'kept', color: null, blocs: [noLinks, text] },
+    ]
+
+    expect(withoutEmptyBlocs(sections)).toEqual([{ class: 'SectionBloc', id: 'kept', color: null, blocs: [text] }])
+  })
+
+  it('drops the empty blocs of the accordion items, keeping the items and their titles', () => {
+    const accordion: AccordionListBloc = { class: 'AccordionListBloc', id: 'accordion', width: null, items: [{ id: 'item', title: 'Item', content: [noLinks] }] }
+
+    expect(withoutEmptyBlocs([{ class: 'SectionBloc', id: 'section', color: null, blocs: [accordion] }])).toEqual([
+      { class: 'SectionBloc', id: 'section', color: null, blocs: [{ ...accordion, items: [{ id: 'item', title: 'Item', content: [] }] }] },
+    ])
   })
 })

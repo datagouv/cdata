@@ -692,6 +692,21 @@ test.describe('Sections', () => {
     expect(menu.y + menu.height).toBeLessThanOrEqual(bar.y)
   })
 
+  test('the links and the bold text of a text are white on a colored section', async ({ page, request }) => {
+    const post = await createPost(request, {
+      name: `Colored ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [{ class: 'SectionBloc', id: crypto.randomUUID(), color: 'green', blocs: [markdown('[Un lien](https://www.data.gouv.fr) et **du gras**')] }],
+    })
+    createdIds.push(post.id)
+    await gotoHydrated(page, `/pages/${post.slug}`)
+
+    const white = 'rgb(255, 255, 255)'
+    await expect(page.getByRole('link', { name: 'Un lien' })).toHaveCSS('color', white)
+    await expect(page.getByText('du gras')).toHaveCSS('color', white)
+  })
+
   test('a section is dragged after another', async ({ page, request }) => {
     const post = await createPost(request, {
       name: `Sections ${Date.now()}`,
