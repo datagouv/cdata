@@ -84,12 +84,12 @@ export async function createDatasetWithRemoteResources(request: APIRequestContex
 
 // Typing into a server-rendered field before Vue hydrates it is lost: hydration resets each
 // input to its `v-model`. Use it before filling a form right after landing on a page.
-// The network going idle does not prove hydration ended on a busy CPU: the app flags it
-// itself (plugins/hydrated.client.ts).
+// The network going idle does not prove hydration ended on a busy CPU: Nuxt tells it, the
+// way @nuxt/test-utils waits for it.
 export async function gotoHydrated(page: Page, url: string): Promise<void> {
   await page.goto(url)
   await page.waitForLoadState('networkidle')
-  await page.locator('html[data-hydrated]').waitFor({ state: 'attached' })
+  await page.waitForFunction(() => window.useNuxtApp?.().isHydrating === false)
 }
 
 // matomo.js is injected after the load event, and webfonts are only fetched once used,
