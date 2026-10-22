@@ -1,5 +1,10 @@
 import { test, expect } from '../base'
 import { createPost, deletePosts } from '../helpers'
+import type { SectionBloc, SectionContentBloc } from '~/types/pages'
+
+const title = (text: string): SectionContentBloc => ({ class: 'TitleBloc', id: crypto.randomUUID(), width: null, title: text, subtitle: null })
+const markdown = (content: string): SectionContentBloc => ({ class: 'MarkdownBloc', id: crypto.randomUUID(), width: null, content })
+const section = (blocs: Array<SectionContentBloc>, color: SectionBloc['color'] = null): SectionBloc => ({ class: 'SectionBloc', id: crypto.randomUUID(), color, blocs })
 
 test.describe('Post side menu', () => {
   const createdIds: Array<string> = []
@@ -8,7 +13,7 @@ test.describe('Post side menu', () => {
     await deletePosts(request, createdIds)
   })
 
-  test('a blocs page lists the titles of its blocs and of their Markdown, not the titles of their cards', async ({ page, request }) => {
+  test('a blocs page lists its titles and those of its Markdown, not its banner nor the titles of its cards', async ({ page, request }) => {
     const uniqueId = Date.now()
     const post = await createPost(request, {
       name: `Inventaire ${uniqueId}`,
@@ -16,10 +21,10 @@ test.describe('Post side menu', () => {
       body_type: 'blocs',
       sidemenu: true,
       blocs: [
-        { class: 'HeroBloc', title: `Inventaire ${uniqueId}`, description: null, color: 'primary', main_link_title: null, main_link_url: null },
-        { class: 'MarkdownBloc', title: 'Santé', subtitle: null, content: '## Données\n\nSur la santé.' },
-        { class: 'MarkdownBloc', title: 'Emploi', subtitle: null, content: '## Données\n\nSur l\'emploi.' },
-        { class: 'LinksListBloc', title: 'Liens utiles', subtitle: null, paragraph: null, main_link_title: null, main_link_url: null, links: [{ title: 'Un lien', url: 'https://example.org', color: null }] },
+        section([title(`Inventaire ${uniqueId}`)], 'primary'),
+        section([title('Santé'), markdown('## Données\n\nSur la santé.')]),
+        section([title('Emploi'), markdown('## Données\n\nSur l\'emploi.')]),
+        section([title('Liens utiles'), { class: 'LinksListBloc', id: crypto.randomUUID(), width: null, links: [{ title: 'Un lien', url: 'https://example.org', color: null }] }]),
       ],
     })
     createdIds.push(post.id)
@@ -37,8 +42,8 @@ test.describe('Post side menu', () => {
       body_type: 'blocs',
       sidemenu: true,
       blocs: [
-        { class: 'MarkdownBloc', title: 'Santé', subtitle: null, content: Array(40).fill('Sur la santé.').join('\n\n') },
-        { class: 'MarkdownBloc', title: 'Emploi', subtitle: null, content: 'Sur l\'emploi.' },
+        section([title('Santé'), markdown(Array(40).fill('Sur la santé.').join('\n\n'))]),
+        section([title('Emploi'), markdown('Sur l\'emploi.')]),
       ],
     })
     createdIds.push(post.id)
@@ -111,7 +116,8 @@ test.describe('Post side menu', () => {
         kind: 'page',
         body_type: 'blocs',
         sidemenu: true,
-        blocs: [{ class: 'MarkdownBloc', title: 'Santé', subtitle: null, content: '## Données\n\nSur la santé.' }],
+        // Behind the banner: alone, the first title would be the one of the page, not a part of it
+        blocs: [section([title(`Inventaire ${uniqueId}`)], 'primary'), section([title('Santé'), markdown('## Données\n\nSur la santé.')])],
       })
       createdIds.push(post.id)
 

@@ -31,9 +31,19 @@ test.describe('Organization presentation tab', () => {
       await expect(page).toHaveURL(new RegExp(`/organizations/${org.slug}/presentation`))
       // There is nothing to read yet, so an admin is dropped straight into edit mode.
       await expect(page).toHaveURL(/edit=true/)
-      // The empty state invites the admin to add a first bloc.
+      // The empty state invites the admin to add a first section.
       await expect(page.getByText('Personnalisez votre page de présentation')).toBeVisible()
-      await expect(page.getByRole('button', { name: 'Ajouter un bloc' })).toBeVisible()
+      // Sections are all a page can add at its top level: no menu to pick from.
+      await page.getByRole('button', { name: 'Ajouter une section' }).click()
+      await expect(page.getByTestId('add-bloc-SectionBloc')).toHaveCount(0)
+      await expect(page.getByTestId('add-bloc-in-section')).toBeVisible()
+      // Under the banner of the organization, a section keeps a neutral background.
+      const section = page.getByTestId('page-SectionBloc')
+      await section.hover({ position: { x: 20, y: 20 } })
+      await section.getByRole('button', { name: 'Actions sur Section' }).click()
+      await expect(page.getByRole('menuitem', { name: 'Supprimer' })).toBeVisible()
+      await expect(page.getByRole('menuitem', { name: 'Fond vert' })).toHaveCount(0)
+      await page.keyboard.press('Escape')
 
       // Cancelling drops back to view mode, where the same empty state now offers
       // a CTA to re-enter the composer.
@@ -51,7 +61,10 @@ test.describe('Organization presentation tab', () => {
         data: {
           ...org,
           presentation_blocs: [
-            { class: 'MarkdownBloc', title: 'Bienvenue', subtitle: null, content: '## Nos données\n\nNotre **présentation**.' },
+            { class: 'SectionBloc', blocs: [
+              { class: 'TitleBloc', title: 'Bienvenue', subtitle: null },
+              { class: 'MarkdownBloc', content: '## Nos données\n\nNotre **présentation**.' },
+            ] },
           ],
         },
       })
@@ -152,7 +165,7 @@ test.describe('Organization presentation tab', () => {
         data: {
           ...org,
           presentation_blocs: [
-            { class: 'MarkdownBloc', title: 'Bienvenue', subtitle: null, content: 'Contenu.' },
+            { class: 'SectionBloc', blocs: [{ class: 'MarkdownBloc', content: 'Contenu.' }] },
           ],
           presentation_blocs_published_at: new Date().toISOString(),
         },
@@ -167,7 +180,7 @@ test.describe('Organization presentation tab', () => {
         data: {
           ...org,
           presentation_blocs: [
-            { class: 'MarkdownBloc', title: 'Bienvenue', subtitle: null, content: 'Contenu.' },
+            { class: 'SectionBloc', blocs: [{ class: 'MarkdownBloc', content: 'Contenu.' }] },
           ],
           presentation_blocs_published_at: null,
         },
