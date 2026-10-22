@@ -337,7 +337,7 @@ export async function fetchDocumentationContent(url: string): Promise<string> {
     clearTimeout(timeoutId)
     if (error instanceof Error) {
       if (error.name === 'AbortError') {
-        throw new Error(`Documentation URL could not be loaded within ${FETCH_TIMEOUT_MS / 1000} seconds.`)
+        throw new Error(`Documentation URL could not be loaded within ${FETCH_TIMEOUT_MS / 1000} seconds.`, { cause: error })
       }
       if (
         error.message === DISALLOWED_URL_MESSAGE
@@ -346,9 +346,9 @@ export async function fetchDocumentationContent(url: string): Promise<string> {
       ) {
         throw error
       }
-      throw new Error(`Failed to load documentation from URL: ${error.message}`)
+      throw new Error(`Failed to load documentation from URL: ${error.message}`, { cause: error })
     }
-    throw new Error('Failed to load documentation from URL.')
+    throw new Error('Failed to load documentation from URL.', { cause: error })
   }
 }
 

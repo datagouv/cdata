@@ -10,10 +10,11 @@ async function createPostWithBlocs(page: Page, options: {
 }) {
   await fillPostDescription(page, { ...options, bodyType: 'blocs' })
   await page.getByRole('button', { name: 'Suivant' }).click()
-  await expect(page).toHaveURL(/\/posts\/[a-z0-9-]+\?edit=true/, { timeout: 10000 })
+  // A page lands on its /pages URL, a news on its /posts one
+  await expect(page).toHaveURL(/\/(pages|posts)\/[a-z0-9-]+\?edit=true/, { timeout: 10000 })
 
   const url = page.url()
-  const postSlug = url.match(/\/posts\/([a-z0-9-]+)\?/)?.[1]
+  const postSlug = url.match(/\/(?:pages|posts)\/([a-z0-9-]+)\?/)?.[1]
 
   let postId: string | undefined
   if (postSlug) {

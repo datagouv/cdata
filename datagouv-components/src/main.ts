@@ -14,7 +14,7 @@ import type { Member, MemberRole, NewOrganization, Organization, OrganizationOrS
 import type { Owned, OwnedWithFullObject, OwnedWithId } from './types/owned'
 import type { Comment, Thread } from './types/discussions'
 import type { PageBloc, ContentBloc, BlocWithTitle, DatasetsListBloc, DataservicesListBloc, ReusesListBloc, LinkInBloc, LinksListBloc, MarkdownBloc, AccordionItemBloc, AccordionListBloc, HeroBloc } from './types/pages'
-import type { Post } from './types/posts'
+import type { Post, PostAncestor } from './types/posts'
 import type { ReuseReference, NewReuse, Reuse, ReuseV2, ReuseTopic, ReuseType } from './types/reuses'
 import type { RegisteredSchema, Schema, SchemaDetails, SchemaField, SchemaPath, SchemaPublicationMode, SchemaResponseData, SchemaVersion, ValidataError } from './types/schemas'
 import type { TopicV2, TopicElement, TopicElementClass, TopicElementRel } from './types/topics'
@@ -229,6 +229,7 @@ export type {
   HeroBloc,
   PaginatedArray,
   Post,
+  PostAncestor,
   Thread,
   Quality,
   RegisteredSchema,

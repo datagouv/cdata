@@ -64,7 +64,7 @@ test('information tab stats accordion can be opened', async ({ page }) => {
   await page.getByRole('button', { name: 'Voir les statistiques' }).click()
 
   await expect(page.locator('[data-type="accordion"]').first().locator('.grid').first()).toBeVisible()
-  await expect(page.getByRole('link', { name: 'Télécharger les statistiques au format CSV' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Télécharger les statistiques au format CSV' })).toBeVisible()
 })
 
 test('search navigates to search page on input', async ({ page }) => {
