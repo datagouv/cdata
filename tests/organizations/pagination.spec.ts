@@ -44,12 +44,13 @@ test.describe('Organization listings pagination', () => {
     await expectCleanNotFound(page, `/organizations/${ORG}/datasets?page=127`)
   })
 
-  test('a malformed page answers a clean 404', async ({ page }) => {
-    // These never depend on the listing having loaded: no page count can make them valid.
-    for (const query of ['?page=abc', '?page=-5', '?page=1.5', '?page=0']) {
-      for (const tab of ['datasets', 'reuses', 'dataservices']) {
+  // One test per tab: the twelve page loads in a row outlasted the test timeout on a busy CPU
+  for (const tab of ['datasets', 'reuses', 'dataservices']) {
+    test(`a malformed page of the ${tab} tab answers a clean 404`, async ({ page }) => {
+      // These never depend on the listing having loaded: no page count can make them valid.
+      for (const query of ['?page=abc', '?page=-5', '?page=1.5', '?page=0']) {
         await expectCleanNotFound(page, `/organizations/${ORG}/${tab}${query}`)
       }
-    }
-  })
+    })
+  }
 })

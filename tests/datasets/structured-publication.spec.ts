@@ -522,7 +522,7 @@ test.describe('validation', () => {
     await startWizard(page, 'durabilite')
     await page.getByRole('group', { name: 'Saisir vos données' }).getByRole('button', { name: `Utiliser l'outil tableur` }).click()
 
-    await expect(page.getByText('Validez vos données pour pouvoir continuer.')).toBeVisible()
+    await expect(page.getByText('Validez vos données pour pouvoir continuer.')).toBeVisible(SPREADSHEET_OPENED)
     await expect(page.getByRole('button', { name: 'Suivant' })).toBeDisabled()
   })
 })
