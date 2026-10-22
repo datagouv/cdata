@@ -15,16 +15,29 @@ import { REAL_TABULAR_API, readTabularFixture, tabularRequestKey, writeTabularFi
 const origin = process.env.FAKE_SERVICES_URL || 'http://localhost:3100'
 const TABULAR_PREFIX = '/tabular'
 
-async function tabularResponse(url: URL): Promise<TabularFixture> {
-  const request = tabularRequestKey(url.pathname.slice(TABULAR_PREFIX.length), url.search)
-  if (process.env.FAKE_SERVICES_RECORD) {
-    const real = await fetch(new URL(request, REAL_TABULAR_API))
+// The real API answers its heaviest queries in tens of seconds, or with a 504 from its gateway
+const RECORD_TIMEOUT = 30_000
+
+async function recordTabularResponse(request: string): Promise<TabularFixture> {
+  try {
+    const real = await fetch(new URL(request, REAL_TABULAR_API), { signal: AbortSignal.timeout(RECORD_TIMEOUT) })
     const fixture = { request, status: real.status, contentType: real.headers.get('content-type') ?? 'application/json', body: await real.text() }
-    writeTabularFixture(fixture)
+    // A gateway error says nothing of the API: never replay it
+    if (fixture.status < 500) writeTabularFixture(fixture)
     return fixture
   }
+  catch (error) {
+    console.error(`Tabular API did not answer ${request}: ${error}`)
+    return { request, status: 504, contentType: 'text/plain', body: `Tabular API did not answer ${request}` }
+  }
+}
+
+async function tabularResponse(url: URL): Promise<TabularFixture> {
+  const request = tabularRequestKey(url.pathname.slice(TABULAR_PREFIX.length), url.search)
   const fixture = readTabularFixture(request)
+  // Recording only fetches what is missing, so that a run fills the gaps of the previous ones
   if (fixture) return fixture
+  if (process.env.FAKE_SERVICES_RECORD) return recordTabularResponse(request)
   console.error(`No Tabular API fixture for ${request}: record it with FAKE_SERVICES_RECORD (see tests/fake-services.ts)`)
   return { request, status: 404, contentType: 'text/plain', body: `No fixture for ${request}` }
 }

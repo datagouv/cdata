@@ -1,0 +1,6 @@
+{
+  "request": "/api/resources/63f39717-e5c9-4d70-a0d5-544773c1d742/data/csv/?or=%28code_r%C3%A9gion__contains.OCCITANIE%2Clibelle_region__contains.OCCITANIE%29",
+  "status": 200,
+  "contentType": "text/csv",
+  "body": "__id,code_région,libelle_region,année_publication,Nbre_bailleurs,Nbre_bailleurs_consolidé,Nbre_logements,Part_logement_sociaux_gérés_OPH (%),Part_logement_sociaux_gérés_ESH (%),Part_logement_sociaux_gérés_SEM (%),Part_logements_sociaux_gérés_autres_bailleurs (%)\n9,76,Occitanie,2018,84,53,280910,53,43,2,2\n"
+}
