@@ -497,8 +497,6 @@ const title = t('{site} : Plateforme ouverte des données publiques françaises'
 useSeoMeta({
   title,
   description: config.public.description,
-  ogTitle: title,
-  ogDescription: config.public.description,
 })
 
 const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts/', { params: { kind: 'news' } })

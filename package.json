@@ -58,6 +58,7 @@
     "@takumi-rs/core": "^2.13.7",
     "@types/papaparse": "^5.5.2",
     "@types/tabulator-tables": "^6.3.6",
+    "@unhead/vue": "3.4.1",
     "@vueuse/core": "^14.4.0",
     "@vueuse/integrations": "^14.4.0",
     "@vueuse/nuxt": "^14.4.0",

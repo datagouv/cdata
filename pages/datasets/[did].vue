@@ -549,8 +549,6 @@ useSeoMeta({
   title,
   robots,
   description,
-  ogTitle: title,
-  ogDescription: description,
 })
 
 defineOgImage('ObjectPage.takumi', {

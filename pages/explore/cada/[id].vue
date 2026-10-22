@@ -240,8 +240,6 @@ const description = computed(() => {
 useSeoMeta({
   title,
   description,
-  ogTitle: title,
-  ogDescription: description,
 })
 
 defineOgImage('MainPage.takumi', {

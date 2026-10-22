@@ -37,8 +37,6 @@ useHeadSafe({
 
 useSeoMeta({
   description: runtimeConfig.public.description,
-  ogTitle: runtimeConfig.public.title,
-  ogDescription: runtimeConfig.public.description,
   ogType: 'website',
   ogUrl: () => `${siteConfig.url}${route.path}`,
   ogSiteName: runtimeConfig.public.title,
