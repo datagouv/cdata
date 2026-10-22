@@ -133,16 +133,6 @@ describe('normalizeBlocs', () => {
     expect(item.content.map(bloc => bloc.class)).toEqual(['TitleBloc', 'MarkdownBloc', 'DatasetBloc'])
   })
 
-  it('turns a hero in an accordion item into its title and its button', () => {
-    const [section] = normalizeBlocs([{ class: 'AccordionListBloc', id: 'accordion', items: [{ title: 'Item', content: [hero] }] }])
-    const [item] = ((section as SectionBloc).blocs[0] as AccordionListBloc).items
-
-    expect(item.content).toEqual([
-      { class: 'TitleBloc', id: expect.stringMatching(UUID), width: null, title: 'Hero', subtitle: 'Description' },
-      { class: 'ButtonBloc', id: expect.stringMatching(UUID), width: null, title: 'Go', url: 'https://example.com' },
-    ])
-  })
-
   it('leaves blocs already in the section format untouched', () => {
     const blocs: Array<PageBloc> = [
       { class: 'SectionBloc', id: 'colored', color: 'green', blocs: [] },

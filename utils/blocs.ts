@@ -40,8 +40,7 @@ type LegacyAccordionListBloc = {
   id: string
   title?: string | null
   description?: string | null
-  // A hero too: the API accepted one in an item for a few days (v14.7.0 and v14.7.1)
-  items: Array<{ id?: string, title: string, content: Array<LegacyContentBloc | LegacyHeroBloc> }>
+  items: Array<{ id?: string, title: string, content: Array<LegacyContentBloc> }>
 }
 
 type LegacyHeroBloc = {
@@ -99,7 +98,7 @@ function convertLegacyBloc(bloc: LegacyContentBloc | LegacyAccordionListBloc): A
         items: bloc.items.map((item, index) => ({
           id: item.id ?? derivedId(bloc.id, `item-${index}`),
           title: item.title,
-          content: item.content.flatMap(content => content.class === 'HeroBloc' ? heroBlocs(content) : convertLegacyBloc(content)) as Array<AccordionContentBloc>,
+          content: item.content.flatMap(convertLegacyBloc) as Array<AccordionContentBloc>,
         })),
       },
     ]
@@ -137,18 +136,18 @@ function convertLegacyBloc(bloc: LegacyContentBloc | LegacyAccordionListBloc): A
   }
 }
 
-// The title of a hero, its description as subtitle, and its button.
-function heroBlocs(hero: LegacyHeroBloc): Array<LeafBloc> {
-  return [
-    { class: 'TitleBloc', id: derivedId(hero.id, 'title'), width: null, title: hero.title, subtitle: isFilled(hero.description) ? hero.description : null },
-    ...buttonBlocs(hero.id, hero.main_link_title, hero.main_link_url, null),
-  ]
-}
-
 // A hero becomes a section of its color (the primary one without), holding its title and its
 // button. Where sections have no color (an organization page), a neutral one.
 function convertHero(hero: LegacyHeroBloc, colored: boolean): SectionBloc {
-  return { class: 'SectionBloc', id: hero.id, color: colored ? hero.color ?? 'primary' : null, blocs: heroBlocs(hero) }
+  return {
+    class: 'SectionBloc',
+    id: hero.id,
+    color: colored ? hero.color ?? 'primary' : null,
+    blocs: [
+      { class: 'TitleBloc', id: derivedId(hero.id, 'title'), width: null, title: hero.title, subtitle: isFilled(hero.description) ? hero.description : null },
+      ...buttonBlocs(hero.id, hero.main_link_title, hero.main_link_url, null),
+    ],
+  }
 }
 
 // A legacy bloc showing nothing (an empty list without a title) is dropped: a section is
