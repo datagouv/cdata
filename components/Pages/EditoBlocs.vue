@@ -31,7 +31,7 @@
         :data-testid="`page-${bloc.class}`"
         data-drop-item
         @delete="workingBlocs.splice(index, 1)"
-        @drag-start="startBlocsDrag($event, { list: listRef!, index, kind: 'band', classes: [bloc.class], label: labels[bloc.class] ?? bloc.class })"
+        @drag-start="startBlocsDrag($event, { list: listRef!, index, kind: 'band', label: labels[bloc.class] ?? bloc.class })"
         @keyboard-move="moveWithKeyboard(workingBlocs, $event, index)"
       >
         <!-- Add button above the bloc (absolute positioned), shown on hover -->
@@ -138,9 +138,11 @@
     </div>
 
     <!-- Save bar -->
+    <!-- The add menus keep clear of it (see `AddBlocDropdown`) -->
     <div
       v-if="isEditing"
       class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4 flex items-center justify-end gap-8 z-50"
+      data-blocs-save-bar
     >
       <!-- Hosts can add controls applied on save (e.g. a publish toggle), grouped on
            the right next to the save actions but spaced apart so the action buttons
@@ -266,7 +268,6 @@ useDropList(listRef, {
   orientation: 'vertical',
   items: () => workingBlocs.value,
   accepts: dragged => dragged.kind === 'band',
-  receive: item => [item],
 })
 
 // Edit mode management

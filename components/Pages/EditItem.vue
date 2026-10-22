@@ -32,7 +32,7 @@
             <RiMore2Fill class="size-4" />
           </MenuButton>
           <MenuItems class="absolute left-0 z-50 mt-1 w-48 rounded-md bg-white py-1 text-sm text-gray-plain shadow-lg ring-1 ring-black/5 focus:outline-hidden">
-            <!-- `MenuItem`s specific to the item, e.g. the width of a grid cell -->
+            <!-- `MenuItem`s specific to the item, e.g. the width of a bloc -->
             <slot name="actions" />
             <MenuItem v-slot="{ active }">
               <button
@@ -66,7 +66,7 @@ defineProps<{
   draggable?: boolean
   // A full width band of the page (section, hero), framed from the inside.
   band?: boolean
-  // An item holding other items (grid, accordion, cell stacking several blocs).
+  // An item holding other items (an accordion).
   container?: boolean
 }>()
 

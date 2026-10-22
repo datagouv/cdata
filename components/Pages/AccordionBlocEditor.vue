@@ -6,13 +6,13 @@
     >
       <EditItem
         v-for="(item, itemIndex) in bloc.items"
-        :key="itemIndex"
+        :key="keyOf(item)"
         :edit
         :label="labels.AccordionItem"
         draggable
         data-drop-item
         @delete="bloc.items.splice(itemIndex, 1)"
-        @drag-start="startBlocsDrag($event, { list: listRef!, index: itemIndex, kind: 'accordion-item', classes: [], label: labels.AccordionItem })"
+        @drag-start="startBlocsDrag($event, { list: listRef!, index: itemIndex, kind: 'accordion-item', label: labels.AccordionItem })"
         @keyboard-move="moveWithKeyboard(bloc.items, $event, itemIndex)"
       >
         <Accordion
@@ -72,8 +72,7 @@
 import EditableText from './EditableText.vue'
 import BlocsList from './BlocsList.vue'
 import EditItem from './EditItem.vue'
-import type { AccordionListBloc } from '~/types/pages'
-import { IN_ACCORDION } from '~/utils/blocsLayout'
+import type { AccordionItemBloc, AccordionListBloc } from '~/types/pages'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 defineProps<{
@@ -82,9 +81,16 @@ defineProps<{
 
 const bloc = defineModel<AccordionListBloc>({ required: true })
 
-provide(IN_ACCORDION, true)
-
 const labels = useBlocLabels()
+
+// Items have no id: a key of their own lets an item keep its element (and the focus of its
+// handle) when it moves, which its position would not.
+const keys = new WeakMap<AccordionItemBloc, number>()
+let nextKey = 0
+function keyOf(item: AccordionItemBloc): number {
+  if (!keys.has(item)) keys.set(item, nextKey++)
+  return keys.get(item)!
+}
 
 // Items move between accordions, and nowhere else.
 const listRef = ref<HTMLElement | null>(null)
@@ -92,7 +98,6 @@ useDropList(listRef, {
   orientation: 'vertical',
   items: () => bloc.value.items,
   accepts: dragged => dragged.kind === 'accordion-item',
-  receive: item => [item],
 })
 
 const newItemTitle = ref('')

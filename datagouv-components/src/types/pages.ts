@@ -2,14 +2,20 @@ import type { DatasetV2 } from './datasets'
 import type { Dataservice } from './dataservices'
 import type { Reuse } from './reuses'
 
-export type TitleBloc = {
+export type BlocWidth = '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | '1'
+
+// Blocs inside a section or an accordion item sit side by side, wrapping to a new row when
+// the row is full. `null`: the whole row.
+type Sized = { width: BlocWidth | null }
+
+export type TitleBloc = Sized & {
   class: 'TitleBloc'
   id: string
   title: string
   subtitle: string | null
 }
 
-export type MarkdownBloc = {
+export type MarkdownBloc = Sized & {
   class: 'MarkdownBloc'
   id: string
   content: string
@@ -21,7 +27,7 @@ export type LinkInBloc = {
   color: string | null
 }
 
-export type LinksListBloc = {
+export type LinksListBloc = Sized & {
   class: 'LinksListBloc'
   id: string
   paragraph: string | null
@@ -30,25 +36,25 @@ export type LinksListBloc = {
   links: Array<LinkInBloc>
 }
 
-export type ExploreBloc = {
+export type ExploreBloc = Sized & {
   class: 'ExploreBloc'
   id: string
   resource_id: string
 }
 
-export type DatasetBloc = {
+export type DatasetBloc = Sized & {
   class: 'DatasetBloc'
   id: string
   dataset: DatasetV2
 }
 
-export type DataserviceBloc = {
+export type DataserviceBloc = Sized & {
   class: 'DataserviceBloc'
   id: string
   dataservice: Dataservice
 }
 
-export type ReuseBloc = {
+export type ReuseBloc = Sized & {
   class: 'ReuseBloc'
   id: string
   reuse: Reuse
@@ -58,35 +64,20 @@ export type ObjectBloc = DatasetBloc | DataserviceBloc | ReuseBloc
 
 export type LeafBloc = TitleBloc | MarkdownBloc | LinksListBloc | ExploreBloc | ObjectBloc
 
-export type GridCellWidth = '1/4' | '1/3' | '1/2' | '2/3' | '3/4' | '1'
-
-export type GridCell = {
-  id: string
-  // `null`: the cell shares what the cells with a width leave on its row.
-  width: GridCellWidth | null
-  blocs: Array<LeafBloc>
-}
-
-export type GridBloc = {
-  class: 'GridBloc'
-  id: string
-  cells: Array<GridCell>
-}
-
-export type AccordionContentBloc = GridBloc | Exclude<LeafBloc, ExploreBloc>
+export type AccordionContentBloc = Exclude<LeafBloc, ExploreBloc>
 
 export type AccordionItemBloc = {
   title: string
   content: Array<AccordionContentBloc>
 }
 
-export type AccordionListBloc = {
+export type AccordionListBloc = Sized & {
   class: 'AccordionListBloc'
   id: string
   items: Array<AccordionItemBloc>
 }
 
-export type SectionContentBloc = GridBloc | AccordionListBloc | LeafBloc
+export type SectionContentBloc = AccordionListBloc | LeafBloc
 
 export type SectionBloc = {
   class: 'SectionBloc'

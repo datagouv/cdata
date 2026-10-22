@@ -9,6 +9,7 @@
   </span>
   <Menu
     v-else
+    ref="menu"
     as="div"
     class="relative inline-block text-left"
   >
@@ -23,7 +24,14 @@
       leave-from-class="transform opacity-100 scale-100"
       leave-to-class="transform opacity-0 scale-95"
     >
-      <MenuItems class="overflow-hidden absolute left-1/2 -translate-x-1/2 z-50 mt-2 w-80 divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden">
+      <!-- Below its button, or above when there is more room there; scrolling when it is
+           taller than the room it has. Above the header of the site too (`z-index: 750`),
+           which it can reach once above its button. -->
+      <MenuItems
+        ref="items"
+        class="overflow-y-auto z-[800] w-80 divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden"
+        :style="floatingStyles"
+      >
         <div
           v-for="group in groups"
           :key="group.name"
@@ -66,16 +74,17 @@
     v-if="objectClass"
     v-model="isSelectorOpen"
     :type="objectClass"
-    @select="addObjects"
+    @select="emit('newBlocs', $event)"
   />
 </template>
 
 <script setup lang="ts">
+import type { ComponentPublicInstance } from 'vue'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { v4 as uuidv4 } from 'uuid'
+import { autoUpdate, flip, offset, shift, size, useFloating } from '@floating-ui/vue'
 import ObjectsSelectorModal from './ObjectsSelectorModal.vue'
-import type { GridBloc, ObjectBloc, PageBloc, SectionContentBloc } from '~/types/pages'
-import { OBJECT_CELL_WIDTH, type BlocChoice } from '~/utils/pages'
+import type { ObjectBloc, PageBloc, SectionContentBloc } from '~/types/pages'
+import type { BlocChoice } from '~/utils/pages'
 import { ACCEPTED_BLOCS, type BlocsLevel } from '~/utils/blocsLayout'
 
 const props = defineProps<{
@@ -91,11 +100,39 @@ const emit = defineEmits<{
 const { t } = useTranslation()
 const choices = useBlocChoices()
 
+// The room the menu has: the window, without the save bar of the editor fixed at its bottom.
+function padding() {
+  const saveBar = document.querySelector('[data-blocs-save-bar]')?.getBoundingClientRect().height ?? 0
+  return { top: 8, right: 8, bottom: saveBar + 8, left: 8 }
+}
+const menu = useTemplateRef<ComponentPublicInstance>('menu')
+const items = useTemplateRef<ComponentPublicInstance>('items')
+const { floatingStyles } = useFloating(menu, items, {
+  placement: 'bottom',
+  strategy: 'fixed',
+  // Positioned by its offsets: its opening transition scales it with `transform`.
+  transform: false,
+  middleware: [
+    offset(8),
+    flip(() => ({ padding: padding() })),
+    shift(() => ({ padding: padding() })),
+    size(() => ({
+      padding: padding(),
+      apply({ availableHeight, elements }) {
+        elements.floating.style.maxHeight = `${Math.max(availableHeight, 160)}px`
+      },
+    })),
+  ],
+  // Follows its button at every frame while open: the page can move under it without
+  // scrolling or resizing, as an image above loads.
+  whileElementsMounted: (reference, floating, update) => autoUpdate(reference, floating, update, { animationFrame: true }),
+})
+
 // The choices whose blocs the level accepts (see `ACCEPTED_BLOCS`).
 const groups = computed(() => {
   const accepted = ACCEPTED_BLOCS[props.level].filter(name => !(props.forOrganization && name === 'HeroBloc'))
   const all: Array<{ name: string, choices: Array<BlocChoice> }> = [
-    { name: t('Mise en page'), choices: [choices.SectionBloc, choices.HeroBloc, choices.GridBloc, choices.AccordionListBloc] },
+    { name: t('Mise en page'), choices: [choices.SectionBloc, choices.HeroBloc, choices.AccordionListBloc] },
     { name: t('Contenus'), choices: [choices.TitleBloc, choices.MarkdownBloc, choices.LinksListBloc] },
     { name: t('Contenus à la une'), choices: [choices.DatasetBloc, choices.DataserviceBloc, choices.ReuseBloc] },
   ]
@@ -119,20 +156,5 @@ function pick(choice: BlocChoice) {
   }
   objectClass.value = choice.key
   isSelectorOpen.value = true
-}
-
-function addObjects(blocs: Array<ObjectBloc>) {
-  if (!blocs.length) return
-  // A cell stacks its objects; elsewhere they are laid out in a grid, one cell each.
-  if (props.level === 'cell') {
-    emit('newBlocs', blocs)
-    return
-  }
-  const grid: GridBloc = {
-    class: 'GridBloc',
-    id: uuidv4(),
-    cells: blocs.map(bloc => ({ id: uuidv4(), width: OBJECT_CELL_WIDTH[bloc.class], blocs: [bloc] })),
-  }
-  emit('newBlocs', [grid])
 }
 </script>

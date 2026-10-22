@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { normalizeBlocs, type LegacyBloc } from '~/utils/blocs'
 import type { DatasetV2, Dataservice, Reuse } from '@datagouv/components-next'
-import type { AccordionListBloc, GridBloc, HeroBloc, PageBloc, SectionBloc } from '~/types/pages'
+import type { AccordionListBloc, HeroBloc, PageBloc, SectionBloc } from '~/types/pages'
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-5[0-9a-f]{3}-[0-9a-f]{4}-[0-9a-f]{12}$/
 
@@ -27,8 +27,8 @@ describe('normalizeBlocs', () => {
 
     expect(blocs.map(bloc => bloc.class)).toEqual(['HeroBloc', 'SectionBloc', 'SectionBloc'])
     expect(blocs[0]).toBe(hero)
-    expect(sectionOf(blocs, 1).blocs).toEqual([{ class: 'MarkdownBloc', id: 'md-1', content: 'Un' }])
-    expect(sectionOf(blocs, 2).blocs).toEqual([{ class: 'MarkdownBloc', id: 'md-2', content: 'Deux' }])
+    expect(sectionOf(blocs, 1).blocs).toEqual([{ class: 'MarkdownBloc', id: 'md-1', width: null, content: 'Un' }])
+    expect(sectionOf(blocs, 2).blocs).toEqual([{ class: 'MarkdownBloc', id: 'md-2', width: null, content: 'Deux' }])
     expect(sectionOf(blocs, 1).id).toMatch(UUID)
   })
 
@@ -38,8 +38,8 @@ describe('normalizeBlocs', () => {
     ])
 
     expect((section as SectionBloc).blocs).toEqual([
-      { class: 'TitleBloc', id: expect.stringMatching(UUID), title: 'Titre', subtitle: 'Sous-titre' },
-      { class: 'MarkdownBloc', id: 'md', content: 'Texte' },
+      { class: 'TitleBloc', id: expect.stringMatching(UUID), width: null, title: 'Titre', subtitle: 'Sous-titre' },
+      { class: 'MarkdownBloc', id: 'md', width: null, content: 'Texte' },
     ])
   })
 
@@ -49,8 +49,8 @@ describe('normalizeBlocs', () => {
     ])
 
     expect((section as SectionBloc).blocs).toEqual([
-      { class: 'MarkdownBloc', id: expect.stringMatching(UUID), content: 'Seulement un sous-titre' },
-      { class: 'LinksListBloc', id: 'links', paragraph: null, main_link_title: null, main_link_url: null, links: [] },
+      { class: 'MarkdownBloc', id: expect.stringMatching(UUID), width: null, content: 'Seulement un sous-titre' },
+      { class: 'LinksListBloc', id: 'links', width: null, paragraph: null, main_link_title: null, main_link_url: null, links: [] },
     ])
   })
 
@@ -58,24 +58,21 @@ describe('normalizeBlocs', () => {
     ['DatasetsListBloc', { datasets: [dataset('a'), dataset('b')] }, 'DatasetBloc', 'dataset', '1/2'],
     ['DataservicesListBloc', { dataservices: [dataservice('a'), dataservice('b')] }, 'DataserviceBloc', 'dataservice', '1/2'],
     ['ReusesListBloc', { reuses: [reuse('a'), reuse('b')] }, 'ReuseBloc', 'reuse', '1/3'],
-  ] as const)('turns a %s into a grid with one cell per object', (legacyClass, objects, objectClass, objectKey, width) => {
+  ] as const)('turns a %s into one bloc per object, keeping the columns of the list', (legacyClass, objects, objectClass, objectKey, width) => {
     const legacy = { class: legacyClass, id: 'list', title: null, subtitle: null, ...objects } as unknown as LegacyBloc
     const [section] = normalizeBlocs([legacy])
-    const [grid] = (section as SectionBloc).blocs as Array<GridBloc>
     const sourceObjects: ReadonlyArray<unknown> = Object.values(objects)[0]
 
-    expect(grid.class).toBe('GridBloc')
-    expect(grid.cells.map(cell => cell.width)).toEqual([width, width])
-    expect(grid.cells.map(cell => cell.blocs)).toEqual(sourceObjects.map(object => [
-      { class: objectClass, id: expect.stringMatching(UUID), [objectKey]: object },
-    ]))
+    expect((section as SectionBloc).blocs).toEqual(sourceObjects.map(object => (
+      { class: objectClass, id: expect.stringMatching(UUID), width, [objectKey]: object }
+    )))
   })
 
   it('keeps only the title of an empty object list', () => {
     const [section] = normalizeBlocs([{ class: 'DatasetsListBloc', id: 'list', title: 'À la une', subtitle: null, datasets: [] }])
 
     expect((section as SectionBloc).blocs).toEqual([
-      { class: 'TitleBloc', id: expect.stringMatching(UUID), title: 'À la une', subtitle: null },
+      { class: 'TitleBloc', id: expect.stringMatching(UUID), width: null, title: 'À la une', subtitle: null },
     ])
   })
 
@@ -95,19 +92,19 @@ describe('normalizeBlocs', () => {
     }])
     const [title, accordion] = (section as SectionBloc).blocs
 
-    expect(title).toEqual({ class: 'TitleBloc', id: expect.stringMatching(UUID), title: 'FAQ', subtitle: 'Questions fréquentes' })
+    expect(title).toEqual({ class: 'TitleBloc', id: expect.stringMatching(UUID), width: null, title: 'FAQ', subtitle: 'Questions fréquentes' })
     expect(accordion).toMatchObject({ class: 'AccordionListBloc', id: 'accordion' })
     expect(accordion).not.toHaveProperty('title')
     expect(accordion).not.toHaveProperty('description')
     const [item] = (accordion as AccordionListBloc).items
     expect(item.title).toBe('Question')
-    expect(item.content.map(bloc => bloc.class)).toEqual(['TitleBloc', 'MarkdownBloc', 'GridBloc'])
+    expect(item.content.map(bloc => bloc.class)).toEqual(['TitleBloc', 'MarkdownBloc', 'DatasetBloc'])
   })
 
   it('leaves blocs already in the section format untouched', () => {
     const blocs: Array<PageBloc> = [
       hero,
-      { class: 'SectionBloc', id: 'section', blocs: [{ class: 'TitleBloc', id: 'title', title: 'Titre', subtitle: null }] },
+      { class: 'SectionBloc', id: 'section', blocs: [{ class: 'TitleBloc', id: 'title', width: null, title: 'Titre', subtitle: null }] },
     ]
 
     expect(normalizeBlocs(blocs)).toEqual(blocs)

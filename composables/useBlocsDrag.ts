@@ -1,21 +1,19 @@
 import type { BlocClass } from '~/utils/blocsLayout'
 
-// What is being dragged: a band of the page (section, hero), a bloc, a grid cell, or an
-// accordion item. A cell carries the classes of its blocs, which is what decides where it
-// can land.
-export type DraggedKind = 'band' | 'bloc' | 'cell' | 'accordion-item'
-export type Dragged = { kind: DraggedKind, classes: Array<BlocClass> }
+// What is being dragged: a band of the page (section, hero), an accordion item, or a bloc,
+// whose class decides where it can land.
+export type Dragged = { kind: 'band' | 'accordion-item' } | { kind: 'bloc', blocClass: BlocClass }
 
 type DropList = {
-  // `horizontal` for the cells of a grid, laid out in rows; `vertical` for the others.
-  orientation: 'vertical' | 'horizontal'
+  // `grid` for the blocs of a section or an accordion item, laid out side by side in rows;
+  // `vertical` for the others.
+  orientation: 'vertical' | 'grid'
   items: () => unknown[]
   accepts: (dragged: Dragged) => boolean
-  // Turns what is dropped into the items of this list (e.g. a bloc into a cell).
-  receive: (item: unknown, dragged: Dragged) => unknown[]
 }
 
-type DragSource = Dragged & { list: HTMLElement, index: number, element: HTMLElement, label: string }
+type DragStart = Dragged & { list: HTMLElement, index: number, label: string }
+type DragSource = DragStart & { element: HTMLElement }
 
 type DropTarget = {
   list: HTMLElement
@@ -48,7 +46,7 @@ export function useDropList(list: Ref<HTMLElement | null>, options: DropList) {
 }
 
 // Index the pointer points at in a list, and where to draw it.
-function place(listElement: HTMLElement, list: DropList, x: number, y: number): DropTarget {
+function place(listElement: HTMLElement, list: DropList, source: DragSource, x: number, y: number): DropTarget {
   const rects = itemElements(listElement).map(item => item.getBoundingClientRect())
   const listRect = listElement.getBoundingClientRect()
 
@@ -62,26 +60,57 @@ function place(listElement: HTMLElement, list: DropList, x: number, y: number): 
     return { list: listElement, index, line: { left: listRect.left, top: lineY - 1, width: listRect.width, height: 2 } }
   }
 
-  // Cells wrap in rows: those of the rows above, and those of the pointer's row on its left.
-  const index = rects.filter(rect => rect.bottom < y || (rect.top <= y && rect.left + rect.width / 2 < x)).length
-  const reference = rects[Math.min(index, rects.length - 1)]
-  if (!reference) {
-    return { list: listElement, index, line: { left: listRect.left, top: listRect.top, width: 2, height: listRect.height } }
+  if (!rects.length) {
+    return { list: listElement, index: 0, line: { left: listRect.left, top: listRect.top + listRect.height / 2 - 1, width: listRect.width, height: 2 } }
   }
-  // Half of the gap between two cells, on the side of the reference cell.
-  const lineX = index < rects.length ? reference.left - 10 : reference.right + 10
-  return { list: listElement, index, line: { left: lineX - 1, top: reference.top, width: 2, height: reference.height } }
+  // Blocs wrap in rows: those of the rows above, then, in the pointer's row, those on its
+  // left. On a bloc, its left half; or its upper half when it is alone on its row, the
+  // others being above and below.
+  const sameRow = (a: DOMRect, b: DOMRect) => a.top === b.top
+  const index = rects.filter((rect) => {
+    if (rect.bottom < y) return true
+    if (rect.top > y || rect.left > x) return false
+    if (rect.right < x) return true
+    const alone = rects.every(other => other === rect || !sameRow(other, rect))
+    return alone ? rect.top + rect.height / 2 < y : rect.left + rect.width / 2 < x
+  }).length
+  const before = rects[index - 1]
+  const after = rects[index]
+  const gap = Number.parseFloat(getComputedStyle(listElement).columnGap) || 0
+  // The dragged bloc keeps its width, its share of a row: after the last bloc of a row, it
+  // stays on that row if it fits in what is left.
+  const fits = () => {
+    const sourceList = source.element.parentElement!.getBoundingClientRect()
+    const share = (source.element.getBoundingClientRect().width + gap) / (sourceList.width + gap)
+    return before.right + share * (listRect.width + gap) <= listRect.right + 1
+  }
+  // Between two blocs of a row, or at the end of a row with room for it: a vertical line,
+  // in the middle of the gap.
+  if (before && ((after && sameRow(before, after)) || fits())) {
+    return { list: listElement, index, line: { left: before.right + gap / 2 - 1, top: before.top, width: 2, height: before.height } }
+  }
+  // Otherwise the bloc starts a row: a line across the list, above that row.
+  const lineY = !after ? before.bottom + 4 : before ? (before.bottom + after.top) / 2 : after.top - 4
+  return { list: listElement, index, line: { left: listRect.left, top: lineY - 1, width: listRect.width, height: 2 } }
 }
 
-// The innermost list under the pointer that accepts what is dragged; when it does not,
-// its parent list, and so on. Never a list inside the dragged element itself.
+// The innermost list under the pointer that accepts what is dragged. When it does not, the
+// first list inside the item under the pointer that does: the margins of a section around
+// its blocs are aimed at to put a bloc first or last. Then its parent list, and so on.
+// Never a list inside the dragged element itself.
 function resolveTarget(source: DragSource, x: number, y: number): DropTarget | null {
-  let listElement = document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-drop-list]') ?? null
-  while (listElement) {
+  const hit = document.elementFromPoint(x, y)
+  const accepting = (listElement: HTMLElement) => {
     const list = dropLists.get(listElement)
-    if (list && !source.element.contains(listElement) && list.accepts(source)) {
-      return place(listElement, list, x, y)
-    }
+    return list && !source.element.contains(listElement) && list.accepts(source) ? list : null
+  }
+  let listElement = hit?.closest<HTMLElement>('[data-drop-list]') ?? null
+  while (listElement) {
+    const list = accepting(listElement)
+    if (list) return place(listElement, list, source, x, y)
+    const item = itemElements(listElement).find(element => element.contains(hit))
+    const inner = [...item?.querySelectorAll<HTMLElement>('[data-drop-list]') ?? []].find(accepting)
+    if (inner) return place(inner, accepting(inner)!, source, x, y)
     listElement = listElement.parentElement?.closest<HTMLElement>('[data-drop-list]') ?? null
   }
   return null
@@ -100,8 +129,7 @@ function drop({ source, target }: DragState) {
     if (index > source.index) index -= 1
   }
   const [moved] = from.items().splice(source.index, 1)
-  const received = target.list === source.list ? [moved] : to.receive(moved, source)
-  to.items().splice(index, 0, ...received)
+  to.items().splice(index, 0, moved)
 }
 
 // Pixels the pointer moves before a press on a handle becomes a drag: a mere click on the
@@ -115,7 +143,7 @@ const SCROLL_EDGE = 80
  * the page while dragging: `BlocsDragLayer` shows where the item will land, and the item
  * moves once, when it is dropped. Escape cancels.
  */
-export function startBlocsDrag(event: PointerEvent, source: Omit<DragSource, 'element'>) {
+export function startBlocsDrag(event: PointerEvent, source: DragStart) {
   if (event.button !== 0) return
   const element = itemElements(source.list)[source.index]
   if (!element) return
@@ -189,4 +217,8 @@ export function moveWithKeyboard(items: unknown[], event: KeyboardEvent, index: 
   if (newIndex < 0 || newIndex >= items.length) return
   const [moved] = items.splice(index, 1)
   items.splice(newIndex, 0, moved)
+  // Moving an item up, Vue moves its element in the page, which drops the focus of its handle:
+  // give it back, so that the next press moves it again.
+  const handle = event.currentTarget as HTMLElement
+  nextTick(() => handle.focus())
 }

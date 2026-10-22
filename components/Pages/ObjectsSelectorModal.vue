@@ -36,6 +36,7 @@ import type { Dataservice, Dataset, DatasetV2, Reuse } from '@datagouv/component
 import type { DatasetBloc, DataserviceBloc, ObjectBloc, ReuseBloc } from '~/types/pages'
 import type { DatasetSuggest } from '~/types/types'
 import { v4 as uuidv4 } from 'uuid'
+import { OBJECT_WIDTH } from '~/utils/pages'
 
 const props = defineProps<{
   type: ObjectBloc['class']
@@ -76,16 +77,16 @@ async function buildBlocs(): Promise<Array<ObjectBloc>> {
         ? dataset as DatasetV2
         : $api<DatasetV2>(`/api/2/datasets/${dataset.id}/`),
     ))
-    return datasets.map((dataset): DatasetBloc => ({ class: 'DatasetBloc', id: uuidv4(), dataset }))
+    return datasets.map((dataset): DatasetBloc => ({ class: 'DatasetBloc', id: uuidv4(), width: OBJECT_WIDTH.DatasetBloc, dataset }))
   }
   if (props.type === 'ReuseBloc') {
     const reuses = await Promise.all(selectedReuses.value.map(reuse =>
       // Not `in`: it would narrow the suggestions out, typed as they are as `Reuse`.
       Object.hasOwn(reuse, 'datasets') ? reuse : $api<Reuse>(`/api/1/reuses/${reuse.id}/`),
     ))
-    return reuses.map((reuse): ReuseBloc => ({ class: 'ReuseBloc', id: uuidv4(), reuse }))
+    return reuses.map((reuse): ReuseBloc => ({ class: 'ReuseBloc', id: uuidv4(), width: OBJECT_WIDTH.ReuseBloc, reuse }))
   }
-  return selectedDataservices.value.map((dataservice): DataserviceBloc => ({ class: 'DataserviceBloc', id: uuidv4(), dataservice }))
+  return selectedDataservices.value.map((dataservice): DataserviceBloc => ({ class: 'DataserviceBloc', id: uuidv4(), width: OBJECT_WIDTH.DataserviceBloc, dataservice }))
 }
 
 async function validate() {

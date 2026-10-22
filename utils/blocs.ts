@@ -2,7 +2,7 @@ import type { InjectionKey } from 'vue'
 import type { ComponentProps } from 'vue-component-type-helpers'
 import { v5 as uuidv5 } from 'uuid'
 import type { BrandedButton, Dataservice, DatasetV2, Reuse } from '@datagouv/components-next'
-import type { AccordionContentBloc, GridBloc, GridCellWidth, LeafBloc, LinkInBloc, PageBloc, ObjectBloc, SectionContentBloc } from '~/types/pages'
+import type { AccordionContentBloc, LeafBloc, LinkInBloc, PageBloc, ObjectBloc, SectionContentBloc } from '~/types/pages'
 
 // Colour of the main buttons of the page (e.g. green on /reuses), provided by `EditoBlocs`
 // to the blocs however deep they are nested.
@@ -52,22 +52,13 @@ function isFilled(value: string | null | undefined): value is string {
 
 function titleBlocs(sourceId: string, title: string | null | undefined, subtitle: string | null | undefined): Array<LeafBloc> {
   if (isFilled(title)) {
-    return [{ class: 'TitleBloc', id: derivedId(sourceId, 'title'), title, subtitle: isFilled(subtitle) ? subtitle : null }]
+    return [{ class: 'TitleBloc', id: derivedId(sourceId, 'title'), width: null, title, subtitle: isFilled(subtitle) ? subtitle : null }]
   }
   // A title is required on a TitleBloc: a lone subtitle stays as text.
   if (isFilled(subtitle)) {
-    return [{ class: 'MarkdownBloc', id: derivedId(sourceId, 'title'), content: subtitle }]
+    return [{ class: 'MarkdownBloc', id: derivedId(sourceId, 'title'), width: null, content: subtitle }]
   }
   return []
-}
-
-function objectsGrid(sourceId: string, width: GridCellWidth, blocs: Array<ObjectBloc>): Array<GridBloc> {
-  if (!blocs.length) return []
-  return [{
-    class: 'GridBloc',
-    id: derivedId(sourceId, 'grid'),
-    cells: blocs.map((bloc, index) => ({ id: derivedId(sourceId, `cell-${index}`), width, blocs: [bloc] })),
-  }]
 }
 
 function convertLegacyBloc(bloc: LegacyBloc): Array<SectionContentBloc> {
@@ -77,6 +68,7 @@ function convertLegacyBloc(bloc: LegacyBloc): Array<SectionContentBloc> {
       {
         class: 'AccordionListBloc',
         id: bloc.id,
+        width: null,
         items: bloc.items.map(item => ({
           title: item.title,
           content: item.content.flatMap(convertLegacyBloc) as Array<AccordionContentBloc>,
@@ -88,24 +80,25 @@ function convertLegacyBloc(bloc: LegacyBloc): Array<SectionContentBloc> {
   const title = titleBlocs(bloc.id, bloc.title, bloc.subtitle)
   switch (bloc.class) {
     case 'DatasetsListBloc':
-      return [...title, ...objectsGrid(bloc.id, '1/2', bloc.datasets.map((dataset, index) => ({ class: 'DatasetBloc', id: derivedId(bloc.id, `object-${index}`), dataset })))]
+      return [...title, ...bloc.datasets.map((dataset, index): ObjectBloc => ({ class: 'DatasetBloc', id: derivedId(bloc.id, `object-${index}`), width: '1/2', dataset }))]
     case 'DataservicesListBloc':
-      return [...title, ...objectsGrid(bloc.id, '1/2', bloc.dataservices.map((dataservice, index) => ({ class: 'DataserviceBloc', id: derivedId(bloc.id, `object-${index}`), dataservice })))]
+      return [...title, ...bloc.dataservices.map((dataservice, index): ObjectBloc => ({ class: 'DataserviceBloc', id: derivedId(bloc.id, `object-${index}`), width: '1/2', dataservice }))]
     case 'ReusesListBloc':
-      return [...title, ...objectsGrid(bloc.id, '1/3', bloc.reuses.map((reuse, index) => ({ class: 'ReuseBloc', id: derivedId(bloc.id, `object-${index}`), reuse })))]
+      return [...title, ...bloc.reuses.map((reuse, index): ObjectBloc => ({ class: 'ReuseBloc', id: derivedId(bloc.id, `object-${index}`), width: '1/3', reuse }))]
     case 'MarkdownBloc':
-      return [...title, { class: 'MarkdownBloc', id: bloc.id, content: bloc.content }]
+      return [...title, { class: 'MarkdownBloc', id: bloc.id, width: null, content: bloc.content }]
     case 'LinksListBloc':
       return [...title, {
         class: 'LinksListBloc',
         id: bloc.id,
+        width: null,
         paragraph: bloc.paragraph,
         main_link_title: bloc.main_link_title,
         main_link_url: bloc.main_link_url,
         links: bloc.links,
       }]
     case 'ExploreBloc':
-      return [...title, { class: 'ExploreBloc', id: bloc.id, resource_id: bloc.resource_id }]
+      return [...title, { class: 'ExploreBloc', id: bloc.id, width: null, resource_id: bloc.resource_id }]
     default:
       // Kept untouched so that saving the page does not drop a bloc we cannot read.
       return [bloc as SectionContentBloc]

@@ -2,7 +2,7 @@ import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { API_BASE, createDataset, createDatasetWithRemoteResources, createPost, deleteDatasets, deletePosts, dragEditItem, focusedDragHandle, gotoHydrated } from '../helpers'
 import { fillPostDescription } from './helpers'
-import type { DatasetBloc, GridCellWidth, MarkdownBloc } from '~/types/pages'
+import type { BlocWidth, DatasetBloc, MarkdownBloc } from '~/types/pages'
 
 async function createPostWithBlocs(page: Page, options: {
   title: string
@@ -131,14 +131,41 @@ test.describe('Post with blocs', () => {
   })
 })
 
-test.describe('Sections and grids', () => {
+test.describe('Sections', () => {
   const createdIds: Array<string> = []
 
   test.afterEach(async ({ request }) => {
     await deletePosts(request, createdIds)
   })
 
-  test('a section keeps its blocs on one band and a grid lays its cells out by width', async ({ page, request }) => {
+  function markdown(content: string, width: BlocWidth | null = null): MarkdownBloc {
+    return { class: 'MarkdownBloc', id: crypto.randomUUID(), width, content }
+  }
+
+  // A page of a single section holding these blocs
+  async function createSectionPage(request: Parameters<typeof createPost>[0], blocs: Array<MarkdownBloc>) {
+    const post = await createPost(request, {
+      name: `Section ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [{ class: 'SectionBloc', id: crypto.randomUUID(), blocs }],
+    })
+    createdIds.push(post.id)
+    return post
+  }
+
+  async function saveAndFetchBlocs(page: Page, slug: string) {
+    await page.getByRole('button', { name: 'Sauvegarder' }).click()
+    await expect(page.getByText('Page sauvegardée')).toBeVisible()
+    const response = await page.request.get(`${API_BASE}/api/1/posts/${slug}/`)
+    return (await response.json()).blocs
+  }
+
+  function contents(section: { blocs: Array<{ content: string }> }) {
+    return section.blocs.map(bloc => bloc.content)
+  }
+
+  test('a section keeps its blocs on one band, side by side by width', async ({ page, request }) => {
     const uniqueId = Date.now()
     const post = await createPost(request, {
       name: `Sections ${uniqueId}`,
@@ -149,22 +176,12 @@ test.describe('Sections and grids', () => {
           class: 'SectionBloc',
           id: crypto.randomUUID(),
           blocs: [
-            { class: 'TitleBloc', id: crypto.randomUUID(), title: 'Première section', subtitle: 'Son sous-titre' },
-            {
-              class: 'GridBloc',
-              id: crypto.randomUUID(),
-              cells: [
-                { id: crypto.randomUUID(), width: '1/3', blocs: [{ class: 'MarkdownBloc', id: crypto.randomUUID(), content: 'Cellule étroite' }] },
-                { id: crypto.randomUUID(), width: '2/3', blocs: [{ class: 'MarkdownBloc', id: crypto.randomUUID(), content: 'Cellule large' }] },
-              ],
-            },
+            { class: 'TitleBloc', id: crypto.randomUUID(), width: null, title: 'Première section', subtitle: 'Son sous-titre' },
+            markdown('Bloc étroit', '1/3'),
+            markdown('Bloc large', '2/3'),
           ],
         },
-        {
-          class: 'SectionBloc',
-          id: crypto.randomUUID(),
-          blocs: [{ class: 'MarkdownBloc', id: crypto.randomUUID(), content: 'Seconde section' }],
-        },
+        { class: 'SectionBloc', id: crypto.randomUUID(), blocs: [markdown('Seconde section')] },
       ],
     })
     createdIds.push(post.id)
@@ -182,71 +199,34 @@ test.describe('Sections and grids', () => {
     const backgrounds = await sections.evaluateAll(elements => elements.map(element => getComputedStyle(element).backgroundColor))
     expect(backgrounds[0]).not.toBe(backgrounds[1])
 
-    // Cells share a row, the 2/3 one being twice as wide as the 1/3 one
-    const narrow = await sections.first().getByTestId('grid-cell').nth(0).boundingBox()
-    const wide = await sections.first().getByTestId('grid-cell').nth(1).boundingBox()
-    expect(narrow && wide).toBeTruthy()
-    expect(Math.abs(narrow!.y - wide!.y)).toBeLessThan(1)
-    expect(wide!.width / narrow!.width).toBeGreaterThan(1.8)
-    expect(wide!.width / narrow!.width).toBeLessThan(2.3)
+    // The title takes the whole row; the texts share the next one, the 2/3 one being twice
+    // as wide as the 1/3 one
+    const texts = sections.first().getByTestId('bloc-MarkdownBloc')
+    const title = (await sections.first().getByTestId('bloc-TitleBloc').boundingBox())!
+    const narrow = (await texts.nth(0).boundingBox())!
+    const wide = (await texts.nth(1).boundingBox())!
+    expect(narrow.y).toBeGreaterThan(title.y + title.height)
+    expect(Math.abs(narrow.y - wide.y)).toBeLessThan(1)
+    expect(wide.width / narrow.width).toBeGreaterThan(1.8)
+    expect(wide.width / narrow.width).toBeLessThan(2.3)
 
-    // Below `sm`, every cell takes the full width
+    // Below `sm`, the blocs are stacked
     await page.setViewportSize({ width: 400, height: 900 })
-    const narrowMobile = await sections.first().getByTestId('grid-cell').nth(0).boundingBox()
-    const wideMobile = await sections.first().getByTestId('grid-cell').nth(1).boundingBox()
-    expect(narrowMobile!.width).toBeCloseTo(wideMobile!.width, 0)
-    expect(wideMobile!.y).toBeGreaterThan(narrowMobile!.y)
+    const narrowMobile = (await texts.nth(0).boundingBox())!
+    const wideMobile = (await texts.nth(1).boundingBox())!
+    expect(narrowMobile.width).toBeCloseTo(wideMobile.width, 0)
+    expect(wideMobile.y).toBeGreaterThan(narrowMobile.y)
   })
 
-  function markdown(content: string): MarkdownBloc {
-    return { class: 'MarkdownBloc', id: crypto.randomUUID(), content }
-  }
-
-  // A section holding a text, then a grid with a text per line of each cell
-  async function createGridPage(
-    request: Parameters<typeof createPost>[0],
-    cells: Array<{ width: GridCellWidth | null, texts: Array<string> }>,
-  ) {
-    const post = await createPost(request, {
-      name: `Grid ${Date.now()}`,
-      kind: 'page',
-      body_type: 'blocs',
-      blocs: [{
-        class: 'SectionBloc',
-        id: crypto.randomUUID(),
-        blocs: [
-          markdown('Avant la grille'),
-          {
-            class: 'GridBloc',
-            id: crypto.randomUUID(),
-            cells: cells.map(cell => ({ id: crypto.randomUUID(), width: cell.width, blocs: cell.texts.map(markdown) })),
-          },
-        ],
-      }],
-    })
-    createdIds.push(post.id)
-    return post
-  }
-
-  async function saveAndFetchBlocs(page: Page, slug: string) {
-    await page.getByRole('button', { name: 'Sauvegarder' }).click()
-    await expect(page.getByText('Page sauvegardée')).toBeVisible()
-    const response = await page.request.get(`${API_BASE}/api/1/posts/${slug}/`)
-    return (await response.json()).blocs
-  }
-
   test('nothing moves in the page while dragging, an indicator shows where the bloc lands', async ({ page, request }) => {
-    const post = await createGridPage(request, [
-      { width: '1/2', texts: ['Gauche A', 'Gauche B'] },
-      { width: '1/2', texts: ['Droite', 'Droite B'] },
-    ])
+    const post = await createSectionPage(request, [markdown('Gauche', '1/2'), markdown('Droite', '1/2'), markdown('Dessous')])
     await page.setViewportSize({ width: 1280, height: 900 })
     await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
 
-    const cells = page.getByTestId('grid-cell')
-    const target = cells.nth(1).getByTestId('bloc-MarkdownBloc').first()
+    const texts = page.getByTestId('bloc-MarkdownBloc')
+    const target = texts.filter({ hasText: 'Dessous' })
     const targetBefore = (await target.boundingBox())!
-    const handle = await focusedDragHandle(cells.nth(0).getByTestId('bloc-MarkdownBloc').first())
+    const handle = await focusedDragHandle(texts.filter({ hasText: 'Gauche' }))
     const from = (await handle.boundingBox())!
     await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
     await page.mouse.down()
@@ -254,24 +234,20 @@ test.describe('Sections and grids', () => {
 
     await expect(page.getByTestId('drop-indicator')).toBeVisible()
     const indicator = (await page.getByTestId('drop-indicator').boundingBox())!
-    // Above the target, across its cell
-    expect(Math.abs(indicator.y - targetBefore.y)).toBeLessThan(12)
+    // Above the target, across the section: the bloc starts a row there
+    expect(indicator.y).toBeLessThan(targetBefore.y)
+    expect(targetBefore.y - indicator.y).toBeLessThan(40)
+    expect(indicator.width).toBeGreaterThan(targetBefore.width * 0.9)
     expect(await target.boundingBox()).toEqual(targetBefore)
 
     await page.keyboard.press('Escape')
     await expect(page.getByTestId('drop-indicator')).toHaveCount(0)
     await page.mouse.up()
-    await expect(cells.nth(0).getByTestId('bloc-MarkdownBloc')).toHaveCount(2)
+    await expect(texts.first()).toContainText('Gauche')
   })
 
   test('a bloc dragged down lands where the indicator showed it', async ({ page, request }) => {
-    const post = await createPost(request, {
-      name: `Down ${Date.now()}`,
-      kind: 'page',
-      body_type: 'blocs',
-      blocs: [{ class: 'SectionBloc', id: crypto.randomUUID(), blocs: ['Premier', 'Deuxième', 'Troisième'].map(markdown) }],
-    })
-    createdIds.push(post.id)
+    const post = await createSectionPage(request, ['Premier', 'Deuxième', 'Troisième'].map(text => markdown(text)))
     await page.setViewportSize({ width: 1280, height: 900 })
     await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
 
@@ -281,114 +257,201 @@ test.describe('Sections and grids', () => {
     await dragEditItem(texts.filter({ hasText: 'Premier' }), texts.filter({ hasText: 'Troisième' }), 0.25)
 
     const [section] = await saveAndFetchBlocs(page, post.slug)
-    expect(section.blocs.map((bloc: { content: string }) => bloc.content)).toEqual(['Deuxième', 'Premier', 'Troisième'])
+    expect(contents(section)).toEqual(['Deuxième', 'Premier', 'Troisième'])
   })
 
-  test('a bloc is dragged by its handle from a cell to another', async ({ page, request }) => {
-    // The cell receiving it stacks two blocs already: a cell of a single bloc is that bloc,
-    // what is dropped on it becomes a cell next to it (see below)
-    const post = await createGridPage(request, [
-      { width: '1/2', texts: ['Gauche A', 'Gauche B'] },
-      { width: '1/2', texts: ['Droite', 'Droite B'] },
+  test('a bloc dropped between two blocs of a row joins it', async ({ page, request }) => {
+    const post = await createSectionPage(request, [
+      markdown('Avant', '1/3'),
+      markdown('Gauche', '1/3'),
+      markdown('Droite', '1/3'),
+      markdown('Dessous', '1/3'),
     ])
     await page.setViewportSize({ width: 1280, height: 900 })
     await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
 
-    const cells = page.getByTestId('grid-cell')
-    await dragEditItem(cells.nth(0).getByTestId('bloc-MarkdownBloc').first(), cells.nth(1).getByTestId('bloc-MarkdownBloc').first())
-
-    await expect(cells).toHaveCount(2)
-    await expect(cells.nth(0).getByTestId('bloc-MarkdownBloc')).toHaveCount(1)
-    await expect(cells.nth(1).getByTestId('bloc-MarkdownBloc')).toHaveCount(3)
-
-    const [section] = await saveAndFetchBlocs(page, post.slug)
-    const [left, right] = section.blocs[1].cells
-    expect(left.blocs.map((bloc: { content: string }) => bloc.content)).toEqual(['Gauche B'])
-    expect(right.blocs.map((bloc: { content: string }) => bloc.content).sort()).toEqual(['Droite', 'Droite B', 'Gauche A'])
-  })
-
-  test('a bloc dropped on a cell holding a single bloc becomes a cell next to it', async ({ page, request }) => {
-    const post = await createGridPage(request, [
-      { width: '1/2', texts: ['Gauche A', 'Gauche B'] },
-      { width: '1/2', texts: ['Droite'] },
-    ])
-    await page.setViewportSize({ width: 1280, height: 900 })
-    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
-
-    const cells = page.getByTestId('grid-cell')
-    await dragEditItem(cells.nth(0).getByTestId('bloc-MarkdownBloc').first(), cells.nth(1).getByTestId('bloc-MarkdownBloc'))
-    await expect(cells).toHaveCount(3)
-
-    const [section] = await saveAndFetchBlocs(page, post.slug)
-    const contents = section.blocs[1].cells.map((cell: { blocs: Array<{ content: string }> }) => cell.blocs.map(bloc => bloc.content))
-    expect(contents).toContainEqual(['Gauche B'])
-    expect(contents).toContainEqual(['Gauche A'])
-    expect(contents).toContainEqual(['Droite'])
-  })
-
-  test('a bloc alone in its cell moves up into the section, the cell going with it', async ({ page, request }) => {
-    const post = await createGridPage(request, [
-      { width: null, texts: ['Seul'] },
-      { width: null, texts: ['Droite'] },
-    ])
-    await page.setViewportSize({ width: 1280, height: 900 })
-    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
-
-    // The cell holding a single bloc is dragged by its own handle
-    await dragEditItem(page.getByTestId('grid-cell').first(), page.getByTestId('bloc-MarkdownBloc').filter({ hasText: 'Avant la grille' }))
-    await expect(page.getByTestId('grid-cell')).toHaveCount(1)
-
-    // The text left the grid for the section (next to the text it was dropped on), the
-    // grid keeping its other cell
-    const [section] = await saveAndFetchBlocs(page, post.slug)
-    const texts = section.blocs.filter((bloc: { class: string }) => bloc.class === 'MarkdownBloc')
-    expect(texts.map((bloc: { content: string }) => bloc.content).sort()).toEqual(['Avant la grille', 'Seul'])
-    const grid = section.blocs.find((bloc: { class: string }) => bloc.class === 'GridBloc')
-    expect(grid.cells.map((cell: { blocs: Array<{ content: string }> }) => cell.blocs[0].content)).toEqual(['Droite'])
-  })
-
-  test('a bloc dropped on the free space of a row becomes a cell', async ({ page, request }) => {
-    const post = await createGridPage(request, [{ width: '1/2', texts: ['Gauche'] }])
-    await page.setViewportSize({ width: 1280, height: 900 })
-    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
-
-    const handle = await focusedDragHandle(page.getByTestId('bloc-MarkdownBloc').filter({ hasText: 'Avant la grille' }))
+    const texts = page.getByTestId('bloc-MarkdownBloc')
+    const handle = await focusedDragHandle(texts.filter({ hasText: 'Dessous' }))
     const from = (await handle.boundingBox())!
-    const cell = (await page.getByTestId('grid-cell').first().boundingBox())!
-    // On the right half of the row, which the 1/2 cell leaves empty
+    const right = (await texts.filter({ hasText: 'Droite' }).boundingBox())!
     await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
     await page.mouse.down()
-    await page.mouse.move(cell.x + cell.width * 1.5, cell.y + cell.height / 2, { steps: 20 })
+    // On the left part of the last bloc of the first row
+    await page.mouse.move(right.x + right.width / 4, right.y + right.height / 2, { steps: 20 })
+
+    // A vertical line, in the gap between the two blocs
+    const indicator = (await page.getByTestId('drop-indicator').boundingBox())!
+    expect(indicator.height).toBeGreaterThan(indicator.width)
+    expect(Math.abs(indicator.x - right.x)).toBeLessThan(20)
     await page.mouse.up()
-    await expect(page.getByTestId('grid-cell')).toHaveCount(2)
 
     const [section] = await saveAndFetchBlocs(page, post.slug)
-    expect(section.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['GridBloc'])
-    const cells = section.blocs[0].cells
-    expect(cells.map((c: { blocs: Array<{ content: string }> }) => c.blocs[0].content)).toEqual(['Gauche', 'Avant la grille'])
-    expect(cells[1].width).toBeNull()
+    expect(contents(section)).toEqual(['Avant', 'Gauche', 'Dessous', 'Droite'])
   })
 
-  test('a bloc is inserted between two blocs, and a column between two columns', async ({ page, request }) => {
-    const post = await createGridPage(request, [
-      { width: null, texts: ['Gauche'] },
-      { width: null, texts: ['Droite'] },
-    ])
+  test('a bloc dropped on the free space of a row stays on it when it fits', async ({ page, request }) => {
+    // `Gauche` is alone on its row, the full width bloc not fitting next to it
+    const post = await createSectionPage(request, [markdown('Gauche', '1/2'), markdown('Pleine largeur'), markdown('Dessous', '1/2')])
     await page.setViewportSize({ width: 1280, height: 900 })
     await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
 
-    // The line in the gap between the text and the grid
-    await page.getByTestId('insert-bloc-in-section').click()
-    await page.getByTestId('add-bloc-TitleBloc').click()
-    // The boundary between the two columns
-    await page.getByTestId('insert-grid-cell').click()
-    await page.getByTestId('add-bloc-TitleBloc').click()
-    await expect(page.getByTestId('grid-cell')).toHaveCount(3)
+    const texts = page.getByTestId('bloc-MarkdownBloc')
+    await expect(texts.filter({ hasText: 'Gauche' })).toBeVisible()
+    const left = (await texts.filter({ hasText: 'Gauche' }).boundingBox())!
+
+    async function dragToFreeSpace(text: string) {
+      const handle = await focusedDragHandle(texts.filter({ hasText: text }))
+      const from = (await handle.boundingBox())!
+      await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+      await page.mouse.down()
+      // On the right half of the first row, which `Gauche` leaves empty
+      await page.mouse.move(left.x + left.width * 1.5, left.y + left.height / 2, { steps: 20 })
+      const indicator = (await page.getByTestId('drop-indicator').boundingBox())!
+      await page.mouse.up()
+      return indicator
+    }
+
+    // A full width bloc does not fit: the line shows it stays after the row, across the list
+    const fullWidth = await dragToFreeSpace('Pleine largeur')
+    expect(fullWidth.width).toBeGreaterThan(fullWidth.height)
+    // A half does: the line is in the row, right after `Gauche`
+    const half = await dragToFreeSpace('Dessous')
+    expect(half.height).toBeGreaterThan(half.width)
+    expect(half.x).toBeGreaterThan(left.x + left.width)
 
     const [section] = await saveAndFetchBlocs(page, post.slug)
-    expect(section.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['MarkdownBloc', 'TitleBloc', 'GridBloc'])
-    const cells = section.blocs[2].cells
-    expect(cells.map((cell: { blocs: Array<{ class: string }> }) => cell.blocs[0].class)).toEqual(['MarkdownBloc', 'TitleBloc', 'MarkdownBloc'])
+    expect(contents(section)).toEqual(['Gauche', 'Dessous', 'Pleine largeur'])
+  })
+
+  test('a bloc dropped in the margin above or below the blocs of a section goes first or last', async ({ page, request }) => {
+    const post = await createSectionPage(request, ['Un', 'Deux', 'Trois', 'Quatre'].map(text => markdown(text, '1/2')))
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    const texts = page.getByTestId('bloc-MarkdownBloc')
+    const section = page.getByTestId('page-SectionBloc')
+
+    async function dragToMargin(text: string, margin: 'top' | 'bottom') {
+      const handle = await focusedDragHandle(texts.filter({ hasText: text }))
+      const from = (await handle.boundingBox())!
+      await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+      await page.mouse.down()
+      const band = (await section.boundingBox())!
+      const blocs = (await page.locator('[data-blocs-level="section"]').boundingBox())!
+      // Halfway between the edge of the section and its blocs
+      const y = margin === 'top' ? (band.y + blocs.y) / 2 : (blocs.y + blocs.height + band.y + band.height) / 2
+      await page.mouse.move(blocs.x + blocs.width / 2, y, { steps: 20 })
+      await expect(page.getByTestId('drop-indicator')).toBeVisible()
+      await page.mouse.up()
+    }
+
+    await dragToMargin('Quatre', 'top')
+    await expect(texts.first()).toContainText('Quatre')
+    await dragToMargin('Deux', 'bottom')
+    await expect(texts.last()).toContainText('Deux')
+
+    const [saved] = await saveAndFetchBlocs(page, post.slug)
+    expect(contents(saved)).toEqual(['Quatre', 'Un', 'Trois', 'Deux'])
+  })
+
+  test('an empty section is only shown while editing', async ({ page, request }) => {
+    const post = await createPost(request, {
+      name: `Empty ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [
+        { class: 'SectionBloc', id: crypto.randomUUID(), blocs: [] },
+        { class: 'SectionBloc', id: crypto.randomUUID(), blocs: [markdown('Seule section remplie')] },
+      ],
+    })
+    createdIds.push(post.id)
+
+    await gotoHydrated(page, `/pages/${post.slug}`)
+    await expect(page.getByText('Seule section remplie')).toBeVisible()
+    await expect(page.getByTestId('page-SectionBloc')).toHaveCount(1)
+
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+    await expect(page.getByTestId('page-SectionBloc')).toHaveCount(2)
+  })
+
+  // `page.keyboard`, not `Locator.press`: the latter focuses the handle again before each
+  // press, which would hide a handle losing the focus after a move.
+  test('a bloc moves several steps with the keyboard, up as down', async ({ page, request }) => {
+    const post = await createSectionPage(request, ['Un', 'Deux', 'Trois'].map(text => markdown(text)))
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    const texts = page.getByTestId('bloc-MarkdownBloc')
+    await focusedDragHandle(texts.filter({ hasText: 'Trois' }))
+    await page.keyboard.press('ArrowUp')
+    await page.keyboard.press('ArrowUp')
+    await expect(texts.first()).toContainText('Trois')
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('ArrowDown')
+
+    const [section] = await saveAndFetchBlocs(page, post.slug)
+    expect(contents(section)).toEqual(['Un', 'Deux', 'Trois'])
+  })
+
+  test('an accordion item moves several steps with the keyboard', async ({ page, request }) => {
+    const post = await createPost(request, {
+      name: `Accordion ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [{
+        class: 'SectionBloc',
+        id: crypto.randomUUID(),
+        blocs: [{
+          class: 'AccordionListBloc',
+          id: crypto.randomUUID(),
+          width: null,
+          items: ['A', 'B', 'C'].map(name => ({ title: `Item ${name}`, content: [markdown(name)] })),
+        }],
+      }],
+    })
+    createdIds.push(post.id)
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    await focusedDragHandle(page.locator('[data-drop-item]').filter({ hasText: 'Item A' }).last())
+    await page.keyboard.press('ArrowDown')
+    await page.keyboard.press('ArrowDown')
+
+    const [section] = await saveAndFetchBlocs(page, post.slug)
+    expect(section.blocs[0].items.map((item: { title: string }) => item.title)).toEqual(['Item B', 'Item C', 'Item A'])
+  })
+
+  test('a bloc is inserted first, above a row, and beside a bloc of a row at its width', async ({ page, request }) => {
+    const post = await createSectionPage(request, [markdown('Avant'), markdown('Gauche', '1/3'), markdown('Droite', '1/3')])
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    // Waits for the menu to be gone: leaving, it would still be there when opening the next
+    async function addTitle() {
+      await page.getByTestId('add-bloc-TitleBloc').click()
+      await expect(page.getByTestId('add-bloc-TitleBloc')).toHaveCount(0)
+    }
+
+    // The line above the first bloc
+    await page.getByTestId('prepend-bloc-in-section').click()
+    await addTitle()
+    // The line in the gap above the row
+    await page.getByTestId('insert-bloc-in-section').last().click()
+    await addTitle()
+    // The boundary between the two blocs of the row
+    await page.getByTestId('insert-bloc-beside-in-section').click()
+    await addTitle()
+
+    const [section] = await saveAndFetchBlocs(page, post.slug)
+    const blocs = section.blocs.map((bloc: { class: string, width: string | null }) => [bloc.class, bloc.width])
+    expect(blocs).toEqual([
+      ['TitleBloc', null],
+      ['MarkdownBloc', null],
+      ['TitleBloc', null],
+      ['MarkdownBloc', '1/3'],
+      ['TitleBloc', '1/3'],
+      ['MarkdownBloc', '1/3'],
+    ])
   })
 
   test('a card does not leave the editor when clicked', async ({ page, request }) => {
@@ -400,7 +463,7 @@ test.describe('Sections and grids', () => {
       blocs: [{
         class: 'SectionBloc',
         id: crypto.randomUUID(),
-        blocs: [{ class: 'DatasetBloc', id: crypto.randomUUID(), dataset: { id: dataset.id } as DatasetBloc['dataset'] }],
+        blocs: [{ class: 'DatasetBloc', id: crypto.randomUUID(), width: '1/2', dataset: { id: dataset.id } as DatasetBloc['dataset'] }],
       }],
     })
     createdIds.push(post.id)
@@ -418,29 +481,7 @@ test.describe('Sections and grids', () => {
     }
   })
 
-  test('a grid moves within its section but cannot be dropped in a cell', async ({ page, request }) => {
-    const post = await createGridPage(request, [
-      { width: '1/2', texts: ['Gauche'] },
-      { width: '1/2', texts: ['Droite'] },
-    ])
-    await page.setViewportSize({ width: 1280, height: 900 })
-    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
-
-    const grid = page.getByTestId('bloc-GridBloc')
-    await dragEditItem(grid, page.getByTestId('grid-cell').nth(1).getByTestId('bloc-MarkdownBloc'))
-    // Refused: still two cells holding a text each, after the text of the section
-    await expect(page.getByTestId('grid-cell')).toHaveCount(2)
-    await expect(page.getByTestId('page-SectionBloc').locator('[data-bloc-class]').first()).toHaveAttribute('data-bloc-class', 'MarkdownBloc')
-
-    // Allowed: above the text of the section
-    await dragEditItem(grid, page.getByTestId('bloc-MarkdownBloc').filter({ hasText: 'Avant la grille' }))
-
-    const [saved] = await saveAndFetchBlocs(page, post.slug)
-    expect(saved.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['GridBloc', 'MarkdownBloc'])
-    expect(saved.blocs[0].cells.map((cell: { blocs: Array<unknown> }) => cell.blocs.length)).toEqual([1, 1])
-  })
-
-  test('the explorer cannot be dropped in a grid of an accordion', async ({ page, request }) => {
+  test('the explorer cannot be dropped in an accordion', async ({ page, request }) => {
     const { dataset, resources: [resource] } = await createDatasetWithRemoteResources(request, `Explorer ${Date.now()}`, ['Fichier'])
     const accordionId = crypto.randomUUID()
     const post = await createPost(request, {
@@ -451,18 +492,12 @@ test.describe('Sections and grids', () => {
         class: 'SectionBloc',
         id: crypto.randomUUID(),
         blocs: [
-          { class: 'ExploreBloc', id: crypto.randomUUID(), resource_id: resource.id },
+          { class: 'ExploreBloc', id: crypto.randomUUID(), width: null, resource_id: resource.id },
           {
             class: 'AccordionListBloc',
             id: accordionId,
-            items: [{
-              title: 'Item',
-              content: [{
-                class: 'GridBloc',
-                id: crypto.randomUUID(),
-                cells: [{ id: crypto.randomUUID(), width: null, blocs: [markdown('Gauche A'), markdown('Gauche B')] }],
-              }],
-            }],
+            width: null,
+            items: [{ title: 'Item', content: [markdown('Dedans A'), markdown('Dedans B')] }],
           },
         ],
       }],
@@ -473,37 +508,34 @@ test.describe('Sections and grids', () => {
       // The hash opens the accordion item
       await gotoHydrated(page, `/pages/${post.slug}?edit=true#accordion-${accordionId}-0`)
 
-      await dragEditItem(page.getByTestId('bloc-ExploreBloc'), page.getByTestId('bloc-MarkdownBloc').filter({ hasText: 'Gauche B' }))
+      await dragEditItem(page.getByTestId('bloc-ExploreBloc'), page.getByTestId('bloc-MarkdownBloc').filter({ hasText: 'Dedans B' }))
 
       // Nowhere in the accordion: the explorer stays a bloc of the section
       const [section] = await saveAndFetchBlocs(page, post.slug)
       expect(section.blocs.map((bloc: { class: string }) => bloc.class).sort()).toEqual(['AccordionListBloc', 'ExploreBloc'])
       const accordion = section.blocs.find((bloc: { class: string }) => bloc.class === 'AccordionListBloc')
-      expect(accordion.items[0].content[0].cells[0].blocs.map((bloc: { content: string }) => bloc.content)).toEqual(['Gauche A', 'Gauche B'])
+      expect(contents({ blocs: accordion.items[0].content })).toEqual(['Dedans A', 'Dedans B'])
     }
     finally {
       await deleteDatasets(request, [dataset.id])
     }
   })
 
-  test('a cell is resized with its handle, snapping to the allowed widths', async ({ page, request }) => {
-    const post = await createGridPage(request, [
-      { width: '1/3', texts: ['Gauche'] },
-      { width: '1/3', texts: ['Droite'] },
-    ])
+  test('a bloc is resized with its handle, snapping to the allowed widths', async ({ page, request }) => {
+    const post = await createSectionPage(request, [markdown('Gauche', '1/3'), markdown('Droite', '1/3')])
     await page.setViewportSize({ width: 1280, height: 900 })
     await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
 
-    const firstCell = page.getByTestId('grid-cell').first()
-    const handle = firstCell.getByTestId('grid-cell-resize')
-    const grid = await page.getByTestId('bloc-GridBloc').boundingBox()
+    const left = page.locator('[data-bloc-class]').first()
+    const handle = left.getByTestId('bloc-resize')
+    const list = await page.locator('[data-blocs-level="section"]').boundingBox()
     const start = await handle.boundingBox()
 
-    // The line is grabbed near its top, its middle holding the button inserting a column.
-    // Dragged to about the middle of the grid: the cell snaps to a half.
+    // The line is grabbed near its top, its middle holding the button inserting a bloc.
+    // Dragged to about the middle of the section: the bloc snaps to a half.
     await page.mouse.move(start!.x + start!.width / 2, start!.y + 8)
     await page.mouse.down()
-    await page.mouse.move(grid!.x + grid!.width * 0.48, start!.y + 8, { steps: 10 })
+    await page.mouse.move(list!.x + list!.width * 0.48, start!.y + 8, { steps: 10 })
     await page.mouse.up()
     await expect(handle).toHaveAttribute('aria-valuetext', '1/2')
 
@@ -512,32 +544,23 @@ test.describe('Sections and grids', () => {
     await expect(handle).toHaveAttribute('aria-valuetext', '2/3')
 
     const [section] = await saveAndFetchBlocs(page, post.slug)
-    expect(section.blocs[1].cells.map((cell: { width: string }) => cell.width)).toEqual(['2/3', '1/3'])
+    expect(section.blocs.map((bloc: { width: string | null }) => bloc.width)).toEqual(['2/3', '1/3'])
   })
 
-  test('a cell without width takes what the others leave, and a double click gives it back', async ({ page, request }) => {
-    const post = await createGridPage(request, [
-      { width: '2/3', texts: ['Large'] },
-      { width: null, texts: ['Automatique'] },
-    ])
+  test('a double click on the handle gives the bloc the whole row', async ({ page, request }) => {
+    const post = await createSectionPage(request, [markdown('Large', '2/3'), markdown('Étroit', '1/3')])
     await page.setViewportSize({ width: 1280, height: 900 })
     await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
 
-    const cells = page.getByTestId('grid-cell')
-    const large = await cells.nth(0).boundingBox()
-    const automatic = await cells.nth(1).boundingBox()
-    // Same row, the automatic cell taking the remaining third
-    expect(Math.abs(large!.y - automatic!.y)).toBeLessThan(1)
-    expect(large!.width / automatic!.width).toBeGreaterThan(1.8)
-    expect(large!.width / automatic!.width).toBeLessThan(2.3)
-
-    await cells.nth(0).getByTestId('grid-cell-resize').dblclick({ position: { x: 10, y: 8 } })
-    await expect(cells.nth(0).getByTestId('grid-cell-resize')).toHaveAttribute('aria-valuetext', 'Automatique')
-    const left = await cells.nth(0).boundingBox()
-    const right = await cells.nth(1).boundingBox()
-    expect(left!.width).toBeCloseTo(right!.width, 0)
+    const blocs = page.locator('[data-bloc-class]')
+    await blocs.nth(0).getByTestId('bloc-resize').dblclick({ position: { x: 10, y: 8 } })
+    await expect(blocs.nth(0).getByTestId('bloc-resize')).toHaveAttribute('aria-valuetext', 'Pleine largeur')
+    // The narrow bloc no longer fits next to it: it goes to the next row
+    const large = (await blocs.nth(0).boundingBox())!
+    const narrow = (await blocs.nth(1).boundingBox())!
+    expect(narrow.y).toBeGreaterThanOrEqual(large.y + large.height)
 
     const [section] = await saveAndFetchBlocs(page, post.slug)
-    expect(section.blocs[1].cells.map((cell: { width: string | null }) => cell.width)).toEqual([null, null])
+    expect(section.blocs.map((bloc: { width: string | null }) => bloc.width)).toEqual([null, '1/3'])
   })
 })

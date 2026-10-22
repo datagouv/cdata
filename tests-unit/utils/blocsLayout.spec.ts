@@ -1,50 +1,53 @@
 import { describe, expect, it } from 'vitest'
-import { acceptsDropped, draggedClasses } from '~/utils/blocsLayout'
+import { acceptsDropped, rowSpacings, rowStarts } from '~/utils/blocsLayout'
 import type { Dragged } from '~/composables/useBlocsDrag'
-import type { GridBloc, TitleBloc } from '~/types/pages'
+import type { BlocWidth } from '~/types/pages'
+import type { BlocClass, RowSpacing } from '~/utils/blocsLayout'
 
-const bloc = (...classes: Dragged['classes']): Dragged => ({ kind: 'bloc', classes })
-const cell = (...classes: Dragged['classes']): Dragged => ({ kind: 'cell', classes })
+const bloc = (blocClass: BlocClass): Dragged => ({ kind: 'bloc', blocClass })
 
 // The same layout as udata's `check_blocs_layout` (see `PostBlocsLayoutAPITest`): what the
 // editor lets through must save.
-type Case = [name: string, level: Parameters<typeof acceptsDropped>[0], dragged: Dragged, inAccordion: boolean, accepted: boolean]
+type Case = [name: string, level: Parameters<typeof acceptsDropped>[0], dragged: Dragged, accepted: boolean]
 
 describe('acceptsDropped', () => {
   it.each<Case>([
-    ['a title in a section', 'section', bloc('TitleBloc'), false, true],
-    ['a grid in a section', 'section', bloc('GridBloc', 'MarkdownBloc'), false, true],
-    ['an accordion in a section', 'section', bloc('AccordionListBloc'), false, true],
-    ['a grid in a cell', 'cell', bloc('GridBloc', 'MarkdownBloc'), false, false],
-    ['an accordion in a cell', 'cell', bloc('AccordionListBloc'), false, false],
-    ['a grid in an accordion item', 'accordion', bloc('GridBloc', 'MarkdownBloc'), true, true],
-    ['an accordion in an accordion item', 'accordion', bloc('AccordionListBloc'), true, false],
-    ['the explorer in an accordion item', 'accordion', bloc('ExploreBloc'), true, false],
-    ['the explorer in a cell of an accordion', 'cell', bloc('ExploreBloc'), true, false],
-    ['the explorer among the cells of a grid of an accordion', 'grid', bloc('ExploreBloc'), true, false],
-    ['the explorer in a cell of a section', 'cell', bloc('ExploreBloc'), false, true],
-    ['a grid holding the explorer in an accordion item', 'accordion', bloc('GridBloc', 'ExploreBloc'), true, false],
-    ['a cell leaving its blocs in a section', 'section', cell('TitleBloc', 'DatasetBloc'), false, true],
-    ['a cell holding the explorer in an accordion item', 'accordion', cell('ExploreBloc'), true, false],
-    ['a cell among the cells of a grid', 'grid', cell('TitleBloc'), false, true],
-    ['a bloc among the cells of a grid', 'grid', bloc('ReuseBloc'), false, true],
-    ['a grid among the cells of a grid', 'grid', bloc('GridBloc'), false, false],
-    ['a section in a section', 'section', { kind: 'band', classes: ['SectionBloc'] }, false, false],
-    ['an accordion item in a section', 'section', { kind: 'accordion-item', classes: [] }, false, false],
-  ])('%s', (_name, level, dragged, inAccordion, accepted) => {
-    expect(acceptsDropped(level, dragged, inAccordion)).toBe(accepted)
+    ['a title in a section', 'section', bloc('TitleBloc'), true],
+    ['the explorer in a section', 'section', bloc('ExploreBloc'), true],
+    ['an accordion in a section', 'section', bloc('AccordionListBloc'), true],
+    ['a dataset in an accordion item', 'accordion', bloc('DatasetBloc'), true],
+    ['an accordion in an accordion item', 'accordion', bloc('AccordionListBloc'), false],
+    ['the explorer in an accordion item', 'accordion', bloc('ExploreBloc'), false],
+    ['a section in a section', 'section', { kind: 'band' }, false],
+    ['an accordion item in a section', 'section', { kind: 'accordion-item' }, false],
+  ])('%s', (_name, level, dragged, accepted) => {
+    expect(acceptsDropped(level, dragged)).toBe(accepted)
   })
 })
 
-describe('draggedClasses', () => {
-  it('lists the blocs a grid holds', () => {
-    const title: TitleBloc = { class: 'TitleBloc', id: 't', title: 'T', subtitle: null }
-    const grid: GridBloc = {
-      class: 'GridBloc',
-      id: 'g',
-      cells: [{ id: 'c', width: null, blocs: [{ class: 'ExploreBloc', id: 'e', resource_id: 'r' }] }],
-    }
-    expect(draggedClasses(title)).toEqual(['TitleBloc'])
-    expect(draggedClasses(grid)).toEqual(['GridBloc', 'ExploreBloc'])
+describe('rowStarts', () => {
+  it.each<[name: string, widths: Array<BlocWidth | null>, starts: Array<number>]>([
+    ['full width blocs, one per row', [null, '1', null], [0, 1, 2]],
+    ['halves, two per row', ['1/2', '1/2', '1/2'], [0, 2]],
+    ['thirds then a full width bloc', ['1/3', '1/3', '1/3', null], [0, 3]],
+    ['a bloc that does not fit in what is left of the row', ['2/3', '1/2', '1/2'], [0, 1]],
+    ['a row left incomplete by a full width bloc', ['1/4', null, '3/4', '1/4'], [0, 1, 2]],
+    ['no bloc', [], []],
+  ])('%s', (_name, widths, starts) => {
+    expect(rowStarts(widths)).toEqual(starts)
+  })
+})
+
+describe('rowSpacings', () => {
+  const at = (blocClass: BlocClass, width: BlocWidth | null = null) => ({ class: blocClass, width }) as Parameters<typeof rowSpacings>[0][number]
+
+  it.each<[name: string, blocs: Parameters<typeof rowSpacings>[0], spacings: Array<RowSpacing>]>([
+    ['a title close to what follows it', [at('TitleBloc'), at('MarkdownBloc')], ['none', 'after-title']],
+    ['cards wrapping on two rows, as close as in a row', [at('DatasetBloc', '1/2'), at('DatasetBloc', '1/2'), at('DatasetBloc', '1/2')], ['none', 'none', 'column-gap']],
+    ['a row of another kind of blocs further apart', [at('DatasetBloc', '1/2'), at('DatasetBloc', '1/2'), at('ReuseBloc', '1/3')], ['none', 'none', 'between-rows']],
+    ['full width texts further apart', [at('MarkdownBloc'), at('MarkdownBloc')], ['none', 'between-rows']],
+    ['a row after a lone card further apart', [at('DatasetBloc', '1/2'), at('MarkdownBloc'), at('DatasetBloc', '1/2'), at('DatasetBloc', '1/2')], ['none', 'between-rows', 'between-rows', 'between-rows']],
+  ])('%s', (_name, blocs, spacings) => {
+    expect(rowSpacings(blocs)).toEqual(spacings)
   })
 })

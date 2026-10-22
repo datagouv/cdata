@@ -1,7 +1,7 @@
 import type { Component } from 'vue'
-import { RiDatabase2Line, RiHeading, RiLayoutColumnLine, RiLayoutRowLine, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine, RiWindow2Line } from '@remixicon/vue'
+import { RiDatabase2Line, RiHeading, RiLayoutRowLine, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine, RiWindow2Line } from '@remixicon/vue'
 import { v4 as uuidv4 } from 'uuid'
-import type { AccordionListBloc, GridBloc, GridCellWidth, HeroBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionBloc, TitleBloc } from '~/types/pages'
+import type { AccordionListBloc, BlocWidth, HeroBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionBloc, TitleBloc } from '~/types/pages'
 import type { BlocClass } from '~/utils/blocsLayout'
 import TitleBlocComponent from '~/components/Pages/TitleBloc.vue'
 import MarkdownBlocComponent from '~/components/Pages/MarkdownBloc.vue'
@@ -9,10 +9,9 @@ import LinksListBlocComponent from '~/components/Pages/LinksListBloc.vue'
 import DatasetBlocComponent from '~/components/Pages/DatasetBloc.vue'
 import DataserviceBlocComponent from '~/components/Pages/DataserviceBloc.vue'
 import ReuseBlocComponent from '~/components/Pages/ReuseBloc.vue'
-import GridBlocComponent from '~/components/Pages/GridBloc.vue'
 import AccordionBlocEditorComponent from '~/components/Pages/AccordionBlocEditor.vue'
 
-// Components rendering the blocs nested in a section, a grid cell or an accordion item.
+// Components rendering the blocs nested in a section or an accordion item.
 // Sections and heroes are rendered by `EditoBlocs` itself.
 export const BLOC_COMPONENTS: Record<string, Component> = {
   TitleBloc: TitleBlocComponent,
@@ -21,12 +20,11 @@ export const BLOC_COMPONENTS: Record<string, Component> = {
   DatasetBloc: DatasetBlocComponent,
   DataserviceBloc: DataserviceBlocComponent,
   ReuseBloc: ReuseBlocComponent,
-  GridBloc: GridBlocComponent,
   AccordionListBloc: AccordionBlocEditorComponent,
 }
 
-// Width of the cell holding an object added to a grid: reuses fit three per row, the others two.
-export const OBJECT_CELL_WIDTH: Record<ObjectBloc['class'], GridCellWidth> = {
+// Width of an object bloc once picked: reuses fit three per row, the others two.
+export const OBJECT_WIDTH: Record<ObjectBloc['class'], BlocWidth> = {
   DatasetBloc: '1/2',
   DataserviceBloc: '1/2',
   ReuseBloc: '1/3',
@@ -38,8 +36,6 @@ export function useBlocLabels(): Record<string, string> {
   return {
     HeroBloc: t('Hero'),
     SectionBloc: t('Section'),
-    GridBloc: t('Grille'),
-    GridCell: t('Colonne'),
     AccordionListBloc: t('Accordéon'),
     AccordionItem: t('Élément'),
     TitleBloc: t('Titre'),
@@ -58,7 +54,7 @@ export type BlocChoice = {
   name: string
   description: string
 } & (
-  | { key: Exclude<BlocClass, ObjectBloc['class']>, create: () => SectionBloc | HeroBloc | TitleBloc | MarkdownBloc | LinksListBloc | GridBloc | AccordionListBloc }
+  | { key: Exclude<BlocClass, ObjectBloc['class']>, create: () => SectionBloc | HeroBloc | TitleBloc | MarkdownBloc | LinksListBloc | AccordionListBloc }
   // Objects are picked in a selector before their blocs can be built.
   | { key: ObjectBloc['class'] }
 )
@@ -86,36 +82,28 @@ export function useBlocChoices() {
       icon: RiHeading,
       name: t('Titre'),
       description: t('Titre et sous-titre'),
-      create: (): TitleBloc => ({ class: 'TitleBloc', id: uuidv4(), title: t('Titre'), subtitle: null }),
+      create: (): TitleBloc => ({ class: 'TitleBloc', id: uuidv4(), width: null, title: t('Titre'), subtitle: null }),
     },
     MarkdownBloc: {
       key: 'MarkdownBloc',
       icon: RiMarkdownLine,
       name: t('Texte'),
       description: t('Ajouter du contenu texte riche'),
-      create: (): MarkdownBloc => ({ class: 'MarkdownBloc', id: uuidv4(), content: '' }),
+      create: (): MarkdownBloc => ({ class: 'MarkdownBloc', id: uuidv4(), width: null, content: '' }),
     },
     LinksListBloc: {
       key: 'LinksListBloc',
       icon: RiLink,
       name: t('Liens'),
       description: t('Mettre en avant quelques liens'),
-      create: (): LinksListBloc => ({ class: 'LinksListBloc', id: uuidv4(), paragraph: null, main_link_title: null, main_link_url: null, links: [] }),
-    },
-    GridBloc: {
-      key: 'GridBloc',
-      icon: RiLayoutColumnLine,
-      name: t('Grille'),
-      description: t('Disposer des blocs en colonnes'),
-      // Cells are added with their content, see `GridBloc`.
-      create: (): GridBloc => ({ class: 'GridBloc', id: uuidv4(), cells: [] }),
+      create: (): LinksListBloc => ({ class: 'LinksListBloc', id: uuidv4(), width: null, paragraph: null, main_link_title: null, main_link_url: null, links: [] }),
     },
     AccordionListBloc: {
       key: 'AccordionListBloc',
       icon: RiListCheck2,
       name: t('Accordéon'),
       description: t('Liste dépliable de contenus (FAQ, etc.)'),
-      create: (): AccordionListBloc => ({ class: 'AccordionListBloc', id: uuidv4(), items: [] }),
+      create: (): AccordionListBloc => ({ class: 'AccordionListBloc', id: uuidv4(), width: null, items: [] }),
     },
     DatasetBloc: {
       key: 'DatasetBloc',

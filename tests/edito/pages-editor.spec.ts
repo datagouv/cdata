@@ -111,12 +111,12 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   const heroCTAUrl = page.locator('.bg-new-green-illustration [aria-label="URL du bouton"]')
   await heroCTAUrl.fill('https://www.data.gouv.fr/fr/datasets/')
 
-  // === Step 2: A section of datasets, laid out in a grid ===
+  // === Step 2: A section of datasets, side by side ===
   await addSection(page)
   await addTitleInLastSection(page, 'Nos jeux de données phares', 'Découvrez les données les plus consultées')
   await addBlocInLastSection(page, 'DatasetBloc')
   await selectObjects(page, 'Rechercher un jeu de données…', ['marché', 'adresse', 'véhicule', 'covid'])
-  await expect(page.getByTestId('page-SectionBloc').last().getByTestId('grid-cell')).not.toHaveCount(0)
+  await expect(page.getByTestId('page-SectionBloc').last().getByTestId('bloc-DatasetBloc')).not.toHaveCount(0)
 
   // === Step 3: A section of reuses ===
   await addSection(page)
@@ -124,19 +124,14 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await addBlocInLastSection(page, 'ReuseBloc')
   await selectObjects(page, 'Rechercher une réutilisation…', ['itineriz', 'kbis', 'infonet', 'proximap'])
 
-  // === Step 4: A section of API, next to a text in a two columns grid ===
+  // === Step 4: A section of API, two per row, then a text ===
   await addSection(page)
   await addTitleInLastSection(page, 'API essentielles')
-  await addBlocInLastSection(page, 'GridBloc')
-  const lastSection = page.getByTestId('page-SectionBloc').last()
-  // A cell is added with its content: each API gets its own cell, then the text
-  await lastSection.getByTestId('add-grid-cell').click()
-  await page.getByTestId('add-bloc-DataserviceBloc').click()
+  await addBlocInLastSection(page, 'DataserviceBloc')
   await selectObjects(page, 'Rechercher une API…', ['sirene', 'explore'])
-  await expect(lastSection.getByTestId('grid-cell')).toHaveCount(2)
-  await lastSection.getByTestId('add-grid-cell').click()
-  await page.getByTestId('add-bloc-MarkdownBloc').click()
-  await expect(lastSection.getByTestId('grid-cell')).toHaveCount(3)
+  const lastSection = page.getByTestId('page-SectionBloc').last()
+  await expect(lastSection.getByTestId('bloc-DataserviceBloc')).toHaveCount(2)
+  await addBlocInLastSection(page, 'MarkdownBloc')
   await page.locator('.milkdown').last().click()
   await page.keyboard.type('Les API les plus utilisées de la plateforme.')
 

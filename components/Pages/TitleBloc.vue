@@ -52,11 +52,9 @@ defineProps<{
 
 const bloc = defineModel<TitleBloc>({ required: true })
 
-// The title of a section, or of a part of it: a column, or the content of an accordion
-// item, whose own title is an `h3`.
+// The title of a section, or of the content of an accordion item, whose own title is an `h3`.
 const HEADINGS: Record<Exclude<BlocsLevel, 'page'>, { tag: string, class: string }> = {
   section: { tag: 'h2', class: 'text-3xl font-extrabold' },
-  cell: { tag: 'h3', class: 'text-xl font-bold' },
   accordion: { tag: 'h4', class: 'text-lg font-bold' },
 }
 const heading = HEADINGS[inject(BLOCS_LEVEL, 'section')]
