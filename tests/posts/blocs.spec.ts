@@ -174,6 +174,28 @@ test.describe('Post with blocs', () => {
     await expect(page.getByRole('link', { name: 'Titre du bouton' })).toHaveAttribute('href', '/')
   })
 
+  test('a bloc keeping the focus does not hide the menu of the section hovered', async ({ page, request }) => {
+    const post = await createPost(request, {
+      name: `Test Focus ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [{ class: 'SectionBloc', id: crypto.randomUUID(), color: null, blocs: [{ class: 'ButtonBloc', id: crypto.randomUUID(), width: null, title: 'Bouton', url: '/' }] }],
+    })
+    postId = post.id
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    // The URL input keeps the focus
+    await page.getByLabel('URL du bouton').fill('https://www.data.gouv.fr/datasets')
+
+    const section = page.getByTestId('page-SectionBloc')
+    await section.hover({ position: { x: 20, y: 20 } })
+    const tab = section.locator(':scope > [data-edit-tab]')
+    await expect(tab).toHaveCSS('opacity', '1')
+    await expect(tab).toHaveCSS('pointer-events', 'auto')
+    await section.getByRole('button', { name: 'Actions sur Section' }).click()
+    await expect(page.getByRole('menuitem', { name: 'Fond vert' })).toBeVisible()
+  })
+
   test.describe('when the save is rejected', () => {
     // The rejection below is the point of the test: the browser logs it.
     test.use({ allowedConsoleMessages: ['the server responded with a status of 400'] })

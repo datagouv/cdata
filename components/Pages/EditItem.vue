@@ -84,32 +84,34 @@ const emit = defineEmits<{
 </script>
 
 <style>
-/* Only the innermost hovered (or focused) item shows its outline and its tab: the editor
-   stays as quiet as the page, whatever the nesting.
+/* Only the innermost hovered item, and the innermost focused one, show their outline and
+   their tab: the editor stays as quiet as the page, whatever the nesting. The two are told
+   apart: a bloc keeping the focus, its input just typed in, must not hide the tab of the
+   section hovered.
    A tab shows at once, but hides after a grace delay, during which it stays usable: leaving
    the item by a few pixels on the way to its tab must not take the tab away.
-   `allow-discrete` delays the switch of `pointer-events` too. Not `visibility`: a hidden
+   `allow-discrete` delays the switch of `pointer-events` too; in the shorthand, as the build
+   moves a separate `transition-behavior` before it, which resets it. Not `visibility`: a hidden
    button cannot take the keyboard focus, which is what shows the tab to keyboard users. */
 [data-edit-tab] {
   opacity: 0;
   pointer-events: none;
-  transition: opacity 150ms 400ms, pointer-events 0s 550ms;
-  transition-behavior: allow-discrete;
+  transition: opacity 150ms 400ms, pointer-events 0s 550ms allow-discrete;
 }
 
-[data-edit-item]:is(:hover, :focus-within):not(:has([data-edit-item]:is(:hover, :focus-within))) {
+[data-edit-item]:is(:hover:not(:has([data-edit-item]:hover)), :focus-within:not(:has([data-edit-item]:focus-within))) {
   outline: 2px solid var(--color-new-primary);
   outline-offset: 6px;
   border-radius: 2px;
 }
 
 /* Outside a band, the outline would sit on the edges of the screen and on its neighbours. */
-[data-edit-item="band"]:is(:hover, :focus-within):not(:has([data-edit-item]:is(:hover, :focus-within))) {
+[data-edit-item="band"]:is(:hover:not(:has([data-edit-item]:hover)), :focus-within:not(:has([data-edit-item]:focus-within))) {
   outline-offset: -2px;
   border-radius: 0;
 }
 
-[data-edit-item]:is(:hover, :focus-within):not(:has([data-edit-item]:is(:hover, :focus-within))) > [data-edit-tab] {
+[data-edit-item]:is(:hover:not(:has([data-edit-item]:hover)), :focus-within:not(:has([data-edit-item]:focus-within))) > [data-edit-tab] {
   opacity: 1;
   pointer-events: auto;
   transition: opacity 100ms, pointer-events 0s;
@@ -117,7 +119,7 @@ const emit = defineEmits<{
 
 /* No grace delay inside the active item: the lingering tab of an item inside it could sit
    where the pointer is heading, and catch the click meant for another. */
-[data-edit-item]:is(:hover, :focus-within):not(:has([data-edit-item]:is(:hover, :focus-within))) [data-edit-item] > [data-edit-tab] {
+[data-edit-item]:is(:hover:not(:has([data-edit-item]:hover)), :focus-within:not(:has([data-edit-item]:focus-within))) [data-edit-item] > [data-edit-tab] {
   transition: opacity 100ms, pointer-events 0s;
 }
 
