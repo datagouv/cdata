@@ -17,7 +17,7 @@ env:
   FAKE_SERVICES_URL: http://localhost:3100
   # Set to record the Tabular API fixtures from the real API instead of replaying them: each
   # E2E shard then uploads what it recorded
-  FAKE_SERVICES_RECORD: '1'
+  FAKE_SERVICES_RECORD: ''
 
 permissions:
   id-token: write # Required for OIDC for npm publication
