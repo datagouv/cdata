@@ -116,7 +116,8 @@ test.describe('Post side menu', () => {
         kind: 'page',
         body_type: 'blocs',
         sidemenu: true,
-        blocs: [section([title('Santé'), markdown('## Données\n\nSur la santé.')])],
+        // Behind the banner: alone, the first title would be the one of the page, not a part of it
+        blocs: [section([title(`Inventaire ${uniqueId}`)], 'primary'), section([title('Santé'), markdown('## Données\n\nSur la santé.')])],
       })
       createdIds.push(post.id)
 
