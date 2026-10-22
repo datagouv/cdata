@@ -149,7 +149,7 @@ jobs:
       matrix:
         browser: [chromium, firefox]
         # Each (browser, shard) pair runs in its own container with its own MongoDB/Redis/udata,
-        # so Playwright can keep workers=1 (shared backend state) while shards run in parallel.
+        # and Playwright runs one worker per core of that runner against it.
         # Keep the shard count in sync with the `--shard=.../N` value in the "Run E2E tests" step.
         shard: [1, 2, 3, 4]
         include:
