@@ -156,7 +156,9 @@ jobs:
           - browser: chromium
             projects: "--project=setup --project=setup-normal-user --project=chromium --project=chromium-normal-user --project=chromium-2fa-user --project=chromium-logged-out"
           - browser: firefox
-            projects: "--project=setup --project=setup-normal-user --project=firefox"
+            # Firefox takes more CPU per page than Chromium: with one worker per core, the heavy
+            # client-side libraries (map preview, spreadsheet import) miss their timeouts.
+            projects: "--project=setup --project=setup-normal-user --project=firefox --workers=2"
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble
       options: --user 1001
