@@ -136,14 +136,19 @@ export async function createReuse(request: APIRequestContext, title: string, url
   return await response.json()
 }
 
+// The API gives each bloc its id. Distributed over the union so each bloc keeps its own fields.
+type NewPageBloc = PageBloc extends infer Bloc ? Bloc extends PageBloc ? Omit<Bloc, 'id'> : never : never
+
 export async function createPost(request: APIRequestContext, data: {
   name: string
   kind: Post['kind']
   slug?: string
+  headline?: string
   content?: string
   body_type?: Post['body_type']
-  blocs?: Array<PageBloc>
+  blocs?: Array<NewPageBloc>
   parent?: string
+  sidemenu?: boolean
 }): Promise<ApiPost> {
   const response = await request.post(`${API_BASE}/api/1/posts/`, { data })
   if (!response.ok()) {

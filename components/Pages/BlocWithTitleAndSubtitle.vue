@@ -8,8 +8,10 @@
         :placeholder="$t('Titre du bloc')"
         @update:model-value="bloc.title = $event || null"
       />
+      <!-- The id is rendered server-side so that the router finds the anchor of the URL on load -->
       <h2
         v-else-if="bloc.title"
+        :id="slugify(bloc.title)"
         class="text-gray-title text-3xl font-extrabold"
       >
         {{ bloc.title }}

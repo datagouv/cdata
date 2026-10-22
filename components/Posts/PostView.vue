@@ -43,6 +43,7 @@
       v-if="isFullPageBlocs"
       :blocs="post.blocs ?? []"
       editable
+      :sidemenu="post.sidemenu"
       :on-save="saveBlocs"
     />
 
@@ -101,29 +102,33 @@
             :blocs="post.blocs ?? []"
             editable
             hide-edit-button
+            :sidemenu="post.sidemenu"
             :on-save="saveBlocs"
-          />
-        </div>
-        <div
-          v-else-if="post.body_type === 'markdown'"
-          class="container"
-        >
-          <MarkdownViewer
-            :content="post.content"
-            :min-heading="2"
-            size="md"
-            class="max-w-4xl"
           />
         </div>
         <div
           v-else
           class="container"
+          :class="{ 'md:flex md:gap-8': anchoredBody?.headings.length }"
         >
-          <div
-            class="max-w-4xl"
-            :class="markdownClasses"
-            v-html="post.content"
+          <HeadingsSidemenu
+            v-if="anchoredBody?.headings.length"
+            :headings="anchoredBody.headings"
+            class="md:w-1/4 shrink-0"
           />
+          <div class="max-w-4xl min-w-0 flex-1">
+            <MarkdownViewer
+              v-if="post.body_type === 'markdown'"
+              :content="post.content"
+              :min-heading="2"
+              size="md"
+            />
+            <div
+              v-else
+              :class="markdownClasses"
+              v-html="anchoredBody?.html ?? post.content"
+            />
+          </div>
         </div>
 
         <div class="container">
@@ -140,11 +145,12 @@
 </template>
 
 <script setup lang="ts">
-import { markdownClasses, MarkdownViewer, BrandedButton, toast, FormattedDate, TranslationT } from '@datagouv/components-next'
+import { formatMarkdown, markdownClasses, MarkdownViewer, BrandedButton, toast, FormattedDate, TranslationT } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
+import HeadingsSidemenu from '~/components/Sidemenu/HeadingsSidemenu.vue'
 import type { PageBloc } from '~/types/pages'
 import type { Post } from '~/types/posts'
 
@@ -162,6 +168,15 @@ const { t } = useTranslation()
 const absoluteUrlToRelative = useAbsoluteUrlToRelative()
 
 const blocsSection = ref<HTMLElement | null>(null)
+
+// Only with the side menu: an HTML body is then rendered again with ids on its headings.
+// Markdown goes through the options of the MarkdownViewer below to get the same ids.
+const anchoredBody = computed(() => {
+  if (!props.post.sidemenu || props.post.body_type === 'blocs') return null
+  return anchorHeadings(props.post.body_type === 'markdown'
+    ? formatMarkdown(props.post.content, { minDepth: 2, noHeadings: false })
+    : props.post.content)
+})
 
 // Enter edit mode and scroll to the blocs, which start below the article image:
 // with a tall image the user would otherwise see no visible change on click.
