@@ -8,6 +8,10 @@ import MarkdownBlocComponent from '~/components/Pages/MarkdownBloc.vue'
 import AccordionBlocEditorComponent from '~/components/Pages/AccordionBlocEditor.vue'
 import HeroBlocComponent from '~/components/Pages/HeroBloc.vue'
 
+export function slugify(text: string) {
+  return text.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+}
+
 export function useContentBlocsTypes() {
   const { t } = useTranslation()
 

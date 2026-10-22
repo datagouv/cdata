@@ -35,6 +35,24 @@ test.describe('Post side menu', () => {
     await expect(page.locator(`${lastHref} + p`)).toHaveText('Sur l\'emploi.')
   })
 
+  test('a link to a bloc title opens the page on that title', async ({ page, request }) => {
+    const uniqueId = Date.now()
+    const post = await createPost(request, {
+      name: `Inventaire ${uniqueId}`,
+      kind: 'page',
+      body_type: 'blocs',
+      sidemenu: true,
+      blocs: [
+        { class: 'MarkdownBloc', title: 'Santé', subtitle: null, content: Array(40).fill('Sur la santé.').join('\n\n') },
+        { class: 'MarkdownBloc', title: 'Emploi', subtitle: null, content: 'Sur l\'emploi.' },
+      ],
+    })
+    createdIds.push(post.id)
+
+    await page.goto(`/pages/${post.slug}#emploi`)
+    await expect(page.getByRole('heading', { name: 'Emploi' })).toBeInViewport()
+  })
+
   test('a Markdown news lists its headings', async ({ page, request }) => {
     const uniqueId = Date.now()
     const post = await createPost(request, {

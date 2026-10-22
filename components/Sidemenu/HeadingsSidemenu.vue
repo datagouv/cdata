@@ -21,13 +21,9 @@ const props = defineProps<{
 
 const headings = ref<Array<SidemenuHeading>>([])
 
-function slugify(text: string) {
-  return text.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-}
-
 // Read from the rendered page rather than from the post: the headings come from bloc
-// titles, Markdown and raw HTML alike. Ids are set here because bloc titles have none
-// and the same Markdown heading ("Données") in two blocs gets the same id.
+// titles, Markdown and raw HTML alike. Ids are set here because raw HTML headings have
+// none and the same heading ("Données") in two blocs gets the same id.
 function scan() {
   if (!props.content) return
   const usedIds = new Set<string>()
@@ -55,10 +51,5 @@ function scan() {
 // Not `attributes`: setting the ids would trigger a new scan.
 useMutationObserver(() => props.content, scan, { childList: true, subtree: true, characterData: true })
 
-onMounted(() => {
-  scan()
-  // The ids did not exist when the browser looked for the anchor of the URL.
-  if (location.hash) document.getElementById(decodeURIComponent(location.hash.slice(1)))?.scrollIntoView()
-})
-watch(() => props.content, scan)
+watch(() => props.content, scan, { immediate: true })
 </script>
