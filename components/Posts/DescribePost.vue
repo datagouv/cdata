@@ -87,6 +87,14 @@
         />
       </div>
       <div class="fr-fieldset__element">
+        <ToggleSwitch
+          v-model="form.sidemenu"
+          :label="t('Menu latéral')"
+          :label-true="t('Un menu à côté du contenu renvoie vers chacun de ses titres.')"
+          :label-false="t('Pas de menu à côté du contenu.')"
+        />
+      </div>
+      <div class="fr-fieldset__element">
         <TagsSelect
           v-model="form.tags"
           :error-text="getFirstError('tags')"
@@ -145,6 +153,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, SearchableSelect } from '@datagouv/components-next'
+import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import type { PaginatedArray } from '~/types/types'
 import type { Post, PostAncestor, PostForm } from '~/types/posts'
 

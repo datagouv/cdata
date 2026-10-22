@@ -15,102 +15,137 @@
       </BrandedButton>
     </div>
 
-    <div
-      v-for="(bloc, index) in workingBlocs"
-      :key="bloc.id"
-      class="relative"
-      :class="bloc.class !== 'HeroBloc' && (striped ? 'py-24 odd:bg-gray-some even:bg-white' : 'py-12')"
-      data-testid="edito-bloc"
-    >
-      <!-- Add button above the bloc (absolute positioned) -->
+    <!-- Side menu, outside of the edit mode whose toolbar lives in the side margins: the
+         full-width blocs opening the page stay above it, the others go next to it -->
+    <template v-if="sidemenu && !isEditing">
+      <component
+        :is="blocsTypes[bloc.class].component"
+        v-for="bloc in leadingFullWidthBlocs"
+        :key="bloc.id"
+        :model-value="(bloc as any)"
+        :edit="false"
+      />
+      <div class="container md:flex md:gap-8 py-12">
+        <HeadingsSidemenu
+          v-if="sidemenuHeadings.length"
+          :headings="sidemenuHeadings"
+          class="md:w-1/4 shrink-0"
+        />
+        <div class="flex-1 min-w-0 space-y-12">
+          <template
+            v-for="bloc in workingBlocs.slice(leadingFullWidthBlocs.length)"
+            :key="bloc.id"
+          >
+            <component
+              :is="blocsTypes[bloc.class].component"
+              v-if="blocsTypes[bloc.class]?.component"
+              :model-value="(bloc as any)"
+              :edit="false"
+              v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
+            />
+          </template>
+        </div>
+      </div>
+    </template>
+
+    <template v-else>
       <div
-        v-if="isEditing"
-        class="absolute -top-4 left-0 right-0 flex items-center justify-center"
+        v-for="(bloc, index) in workingBlocs"
+        :key="bloc.id"
+        class="relative"
+        :class="bloc.class !== 'HeroBloc' && (striped ? 'py-24 odd:bg-gray-some even:bg-white' : 'py-12')"
+        data-testid="edito-bloc"
       >
-        <AddBlocDropdown
-          :for-organization="forOrganization"
-          @new-bloc="workingBlocs.splice(index, 0, $event)"
+        <!-- Add button above the bloc (absolute positioned) -->
+        <div
+          v-if="isEditing"
+          class="absolute -top-4 left-0 right-0 flex items-center justify-center"
+        >
+          <AddBlocDropdown
+            :for-organization="forOrganization"
+            @new-bloc="workingBlocs.splice(index, 0, $event)"
+          >
+            <BrandedButton
+              color="tertiary"
+              size="xs"
+              class="bg-white shadow-sm"
+              :icon="RiAddLine"
+            >
+              {{ $t('Ajouter un bloc') }}
+            </BrandedButton>
+          </AddBlocDropdown>
+        </div>
+        <!-- Bloc toolbar in edit mode -->
+        <div
+          v-if="isEditing"
+          class="absolute left-4 top-4 flex flex-row gap-2 z-10 min-[1530px]:left-8 min-[1530px]:top-1/2 min-[1530px]:-translate-y-1/2 min-[1530px]:flex-col"
         >
           <BrandedButton
             color="tertiary"
-            size="xs"
-            class="bg-white shadow-sm"
-            :icon="RiAddLine"
-          >
-            {{ $t('Ajouter un bloc') }}
-          </BrandedButton>
-        </AddBlocDropdown>
-      </div>
-      <!-- Bloc toolbar in edit mode -->
-      <div
-        v-if="isEditing"
-        class="absolute left-4 top-4 flex flex-row gap-2 z-10 min-[1530px]:left-8 min-[1530px]:top-1/2 min-[1530px]:-translate-y-1/2 min-[1530px]:flex-col"
-      >
-        <BrandedButton
-          color="tertiary"
-          :icon="RiArrowUpLine"
-          :disabled="index === 0"
-          :title="$t('Monter')"
-          @click="moveBloc(index, -1)"
-        />
-        <BrandedButton
-          color="tertiary"
-          :icon="RiArrowDownLine"
-          :disabled="index === workingBlocs.length - 1"
-          :title="$t('Descendre')"
-          @click="moveBloc(index, 1)"
-        />
-        <BrandedButton
-          color="tertiary"
-          :icon="RiDeleteBinLine"
-          :title="$t('Supprimer')"
-          @click="workingBlocs.splice(index, 1)"
-        />
-      </div>
+            :icon="RiArrowUpLine"
+            :disabled="index === 0"
+            :title="$t('Monter')"
+            @click="moveBloc(index, -1)"
+          />
+          <BrandedButton
+            color="tertiary"
+            :icon="RiArrowDownLine"
+            :disabled="index === workingBlocs.length - 1"
+            :title="$t('Descendre')"
+            @click="moveBloc(index, 1)"
+          />
+          <BrandedButton
+            color="tertiary"
+            :icon="RiDeleteBinLine"
+            :title="$t('Supprimer')"
+            @click="workingBlocs.splice(index, 1)"
+          />
+        </div>
 
-      <!-- Full-width blocs (like HeroBloc) -->
-      <component
-        :is="blocsTypes[bloc.class].component"
-        v-if="blocsTypes[bloc.class] && 'fullWidth' in blocsTypes[bloc.class] && blocsTypes[bloc.class].component"
-        v-model="(workingBlocs[index] as any)"
-        :edit="isEditing"
-        v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
-      />
-
-      <!-- Other blocs use container layout -->
-      <div
-        v-else
-        class="container"
-      >
+        <!-- Full-width blocs (like HeroBloc) -->
         <component
           :is="blocsTypes[bloc.class].component"
-          v-if="blocsTypes[bloc.class]?.component"
+          v-if="blocsTypes[bloc.class] && 'fullWidth' in blocsTypes[bloc.class] && blocsTypes[bloc.class].component"
           v-model="(workingBlocs[index] as any)"
           :edit="isEditing"
           v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
         />
-      </div>
 
-      <!-- Add button below the last bloc -->
-      <div
-        v-if="isEditing && index === workingBlocs.length - 1"
-        class="absolute -bottom-4 left-0 right-0 flex items-center justify-center"
-      >
-        <AddBlocDropdown
-          :for-organization="forOrganization"
-          @new-bloc="workingBlocs.push($event)"
+        <!-- Other blocs use container layout -->
+        <div
+          v-else
+          class="container"
         >
-          <BrandedButton
-            color="tertiary"
-            size="xs"
-            class="bg-white shadow-sm"
-            :icon="RiAddLine"
+          <component
+            :is="blocsTypes[bloc.class].component"
+            v-if="blocsTypes[bloc.class]?.component"
+            v-model="(workingBlocs[index] as any)"
+            :edit="isEditing"
+            v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
+          />
+        </div>
+
+        <!-- Add button below the last bloc -->
+        <div
+          v-if="isEditing && index === workingBlocs.length - 1"
+          class="absolute -bottom-4 left-0 right-0 flex items-center justify-center"
+        >
+          <AddBlocDropdown
+            :for-organization="forOrganization"
+            @new-bloc="workingBlocs.push($event)"
           >
-            {{ $t('Ajouter un bloc') }}
-          </BrandedButton>
-        </AddBlocDropdown>
+            <BrandedButton
+              color="tertiary"
+              size="xs"
+              class="bg-white shadow-sm"
+              :icon="RiAddLine"
+            >
+              {{ $t('Ajouter un bloc') }}
+            </BrandedButton>
+          </AddBlocDropdown>
+        </div>
       </div>
-    </div>
+    </template>
 
     <!-- Empty state. In edit mode it invites adding a first bloc; in view mode it
          is only shown when the host opts in via `emptyCtaLabel` (e.g. an org admin
@@ -178,10 +213,12 @@
 <script setup lang="ts">
 import type { ComponentProps } from 'vue-component-type-helpers'
 import * as Sentry from '@sentry/nuxt'
-import { BrandedButton } from '@datagouv/components-next'
+import { BrandedButton, formatMarkdown } from '@datagouv/components-next'
 import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine, RiEdit2Line } from '@remixicon/vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
+import HeadingsSidemenu from '~/components/Sidemenu/HeadingsSidemenu.vue'
 import type { PageBloc } from '~/types/pages'
+import type { Heading } from '~/utils/headings'
 import { isMeAdmin } from '~/utils/auth'
 
 const blocsTypes = useBlocsTypes()
@@ -191,6 +228,7 @@ const props = withDefaults(defineProps<{
   edit?: boolean
   editable?: boolean
   striped?: boolean
+  sidemenu?: boolean
   hideEditButton?: boolean
   // Trims the "add bloc" menu for organization presentation pages (no Hero, Markdown
   // moved into the layout group). See AddBlocDropdown.
@@ -205,6 +243,7 @@ const props = withDefaults(defineProps<{
   edit: false,
   editable: false,
   striped: true,
+  sidemenu: false,
   hideEditButton: false,
   forOrganization: false,
   mainColor: 'primary',
@@ -238,6 +277,21 @@ watchEffect(() => {
 })
 
 const workingBlocs = computed(() => localBlocs.value ?? props.blocs)
+
+const isFullWidth = (bloc: PageBloc) => 'fullWidth' in (blocsTypes[bloc.class] ?? {})
+const leadingFullWidthBlocs = computed(() => {
+  const index = workingBlocs.value.findIndex(bloc => !isFullWidth(bloc))
+  return workingBlocs.value.slice(0, index === -1 ? workingBlocs.value.length : index)
+})
+// The title of each bloc, then the headings of its Markdown, rendered with the same options
+// as MarkdownBloc so that their ids are the ones on the page
+const sidemenuHeadings = computed<Array<Heading>>(() => workingBlocs.value
+  .filter(bloc => !isFullWidth(bloc))
+  .flatMap(bloc => [
+    ...(bloc.title ? [{ id: slugify(bloc.title), label: bloc.title, level: 2 }] : []),
+    ...(bloc.class === 'MarkdownBloc' ? anchorHeadings(formatMarkdown(bloc.content, { minDepth: 2, noHeadings: false })).headings : []),
+  ]),
+)
 
 // Check if there are unsaved changes
 const hasUnsavedChanges = computed(() => {
