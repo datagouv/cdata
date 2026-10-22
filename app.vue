@@ -30,9 +30,6 @@ useHeadSafe({
   htmlAttrs: {
     lang: locale,
   },
-  titleTemplate: (titleChunk) => {
-    return titleChunk ? `${titleChunk} - data.gouv.fr` : 'data.gouv.fr'
-  },
 })
 
 useSeoMeta({
