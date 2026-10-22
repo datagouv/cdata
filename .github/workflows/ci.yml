@@ -281,8 +281,10 @@ jobs:
           # concurrently, and the single-process development server would serialize them.
           # lazy-apps loads the app after the fork, so that no PyMongo client is shared across
           # processes. die-on-term makes SIGTERM stop uWSGI, which reloads on it otherwise.
-          uv run --with pyuwsgi uwsgi --master --http localhost:7000 --module udata.wsgi:app \
-            --processes "$(nproc)" --lazy-apps --die-on-term > udata.log 2>&1 &
+          # http-keepalive stands for the nginx of production: the HTTP router closes every
+          # connection otherwise, and the Playwright API client hangs up on the sockets it reuses.
+          uv run --with pyuwsgi uwsgi --master --http localhost:7000 --http-keepalive \
+            --module udata.wsgi:app --processes "$(nproc)" --lazy-apps --die-on-term > udata.log 2>&1 &
 
           # Wait for udata to be ready
           timeout 90 bash -c 'until curl -f http://localhost:7000/api/1/site/; do sleep 2; done'
