@@ -1,12 +1,12 @@
 import type { InjectionKey, Ref } from 'vue'
-import type { ComponentProps } from 'vue-component-type-helpers'
 import { v5 as uuidv5 } from 'uuid'
-import type { BrandedButton, Dataservice, DatasetV2, Reuse } from '@datagouv/components-next'
+import type { Dataservice, DatasetV2, Reuse } from '@datagouv/components-next'
 import type { AccordionContentBloc, BlocWidth, ButtonBloc, LeafBloc, LinkInBloc, MarkdownBloc, PageBloc, ObjectBloc, SectionBloc, SectionColor, SectionContentBloc } from '~/types/pages'
 
-// Colour of the main buttons of the page (e.g. green on /reuses), provided by `EditoBlocs`
-// to the blocs however deep they are nested.
-export const BLOCS_MAIN_COLOR: InjectionKey<ComponentProps<typeof BrandedButton>['color']> = Symbol('blocsMainColor')
+// Colour of the main buttons of the page (green on /reuses, brown on /dataservices), provided
+// by `EditoBlocs` to the blocs however deep they are nested.
+export type BlocsMainColor = 'primary' | 'brown-illustration' | 'green-illustration'
+export const BLOCS_MAIN_COLOR: InjectionKey<BlocsMainColor> = Symbol('blocsMainColor')
 
 // Background of the section holding a bloc, provided by `BlocsList`: on a colored one, the
 // blocs are drawn in white.

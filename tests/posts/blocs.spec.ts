@@ -643,6 +643,101 @@ test.describe('Sections', () => {
     }
   })
 
+  test('a bloc dropped on a folded accordion item stays in sight, in the section', async ({ page, request }) => {
+    const post = await createPost(request, {
+      name: `Folded ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [{
+        class: 'SectionBloc',
+        id: crypto.randomUUID(),
+        color: null,
+        blocs: [
+          markdown('Dehors'),
+          {
+            class: 'AccordionListBloc',
+            id: crypto.randomUUID(),
+            width: null,
+            items: ['A', 'B'].map(name => ({ id: crypto.randomUUID(), title: `Item ${name}`, content: [markdown(`Dedans ${name}`)] })),
+          },
+        ],
+      }],
+    })
+    createdIds.push(post.id)
+    await page.setViewportSize({ width: 1280, height: 1200 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    // On the title of the last item, folded: its content is hidden, the bloc stays in the
+    // section, before the accordion, on the upper half of which that title is
+    await dragEditItem(page.getByTestId('bloc-MarkdownBloc').filter({ hasText: 'Dehors' }), page.locator('[data-drop-item]').filter({ hasText: 'Item B' }).last())
+
+    const [section] = await saveAndFetchBlocs(page, post.slug)
+    expect(section.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['MarkdownBloc', 'AccordionListBloc'])
+    expect(section.blocs[1].items.map((item: { content: Array<unknown> }) => item.content.length)).toEqual([1, 1])
+  })
+
+  test('the menu of a section near the bottom of the window stays above the save bar', async ({ page, request }) => {
+    const post = await createSectionPage(request, [markdown('Un')])
+    // A low window: the tab of the section lands right above the save bar, with no room for
+    // the menu below it
+    await page.setViewportSize({ width: 1280, height: 340 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    const section = page.getByTestId('page-SectionBloc')
+    await section.hover({ position: { x: 20, y: 20 } })
+    await section.getByRole('button', { name: 'Actions sur Section' }).click()
+
+    const bar = (await page.locator('[data-blocs-save-bar]').boundingBox())!
+    const menu = (await page.getByRole('menu').boundingBox())!
+    expect(menu.y + menu.height).toBeLessThanOrEqual(bar.y)
+  })
+
+  test('a section is dragged after another', async ({ page, request }) => {
+    const post = await createPost(request, {
+      name: `Sections ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: ['Un', 'Deux', 'Trois'].map(text => ({ class: 'SectionBloc' as const, id: crypto.randomUUID(), color: null, blocs: [markdown(text)] })),
+    })
+    createdIds.push(post.id)
+    await page.setViewportSize({ width: 1280, height: 1600 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    // On the lower half of the last section: after it
+    const sections = page.getByTestId('page-SectionBloc')
+    await dragEditItem(sections.nth(0), sections.nth(2), 0.75)
+
+    expect((await saveAndFetchBlocs(page, post.slug)).map(contents)).toEqual([['Deux'], ['Trois'], ['Un']])
+  })
+
+  test('an accordion item is dragged after another', async ({ page, request }) => {
+    const post = await createPost(request, {
+      name: `Accordion ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [{
+        class: 'SectionBloc',
+        id: crypto.randomUUID(),
+        color: null,
+        blocs: [{
+          class: 'AccordionListBloc',
+          id: crypto.randomUUID(),
+          width: null,
+          items: ['A', 'B', 'C'].map(name => ({ id: crypto.randomUUID(), title: `Item ${name}`, content: [markdown(name)] })),
+        }],
+      }],
+    })
+    createdIds.push(post.id)
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    const item = (name: string) => page.locator('[data-drop-item]').filter({ hasText: `Item ${name}` }).last()
+    await dragEditItem(item('A'), item('C'), 0.75)
+
+    const [section] = await saveAndFetchBlocs(page, post.slug)
+    expect(section.blocs[0].items.map((item: { title: string }) => item.title)).toEqual(['Item B', 'Item C', 'Item A'])
+  })
+
   test('a bloc is resized with its handle, snapping to the allowed widths', async ({ page, request }) => {
     const post = await createSectionPage(request, [markdown('Gauche', '1/3'), markdown('Droite', '1/3')])
     await page.setViewportSize({ width: 1280, height: 900 })

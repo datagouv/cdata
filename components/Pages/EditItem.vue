@@ -33,12 +33,18 @@
           class="relative"
         >
           <MenuButton
+            ref="menuButton"
             class="inline-flex items-center justify-center size-6 rounded opacity-80 hover:opacity-100 hover:bg-white/10"
             :aria-label="$t('Actions sur {label}', { label })"
           >
             <RiMore2Fill class="size-4" />
           </MenuButton>
-          <MenuItems class="absolute left-0 z-50 mt-1 w-48 rounded-md bg-white py-1 text-sm text-gray-plain shadow-lg ring-1 ring-black/5 focus:outline-hidden">
+          <!-- Out of the save bar, as the menu adding a bloc -->
+          <MenuItems
+            ref="menuItems"
+            class="z-[800] w-48 overflow-y-auto rounded-md bg-white py-1 text-sm text-gray-plain shadow-lg ring-1 ring-black/5 focus:outline-hidden"
+            :style="floatingStyles"
+          >
             <!-- `MenuItem`s specific to the item, e.g. the width of a bloc -->
             <slot name="actions" />
             <MenuItem v-slot="{ active }">
@@ -61,8 +67,10 @@
 </template>
 
 <script setup lang="ts">
+import type { ComponentPublicInstance } from 'vue'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
 import { RiDeleteBinLine, RiDraggable, RiMore2Fill } from '@remixicon/vue'
+import { useEditorMenu } from '~/composables/useEditorMenu'
 
 defineProps<{
   // Without it, only the content is rendered: the page as visitors see it.
@@ -81,6 +89,10 @@ const emit = defineEmits<{
   dragStart: [PointerEvent]
   keyboardMove: [KeyboardEvent]
 }>()
+
+const menuButton = useTemplateRef<ComponentPublicInstance>('menuButton')
+const menuItems = useTemplateRef<ComponentPublicInstance>('menuItems')
+const floatingStyles = useEditorMenu(menuButton, menuItems, 'bottom-start')
 </script>
 
 <style>

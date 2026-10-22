@@ -179,7 +179,7 @@ import RoundAddButton from './RoundAddButton.vue'
 import type { BlocWidth, SectionColor, SectionContentBloc } from '~/types/pages'
 import { SECTION_COLOR } from '~/utils/blocs'
 import { BLOC_COMPONENTS, OBJECT_WIDTH } from '~/utils/pages'
-import { BLOCS_LEVEL, BLOC_SPANS, acceptsDropped, rowShare, rowSpacings, rowStarts, type BlocsLevel, type RowSpacing, type RowWidth } from '~/utils/blocsLayout'
+import { BLOCS_LEVEL, BLOC_SPANS, acceptsDropped, renderedShare, rowSpacings, rowStarts, type BlocsLevel, type RowSpacing, type RowWidth } from '~/utils/blocsLayout'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 const props = defineProps<{
@@ -266,13 +266,6 @@ function nearestWidth(fraction: number): RowWidth {
   return WIDTHS.reduce((best, width) => Math.abs(BLOC_SPANS[width] / 12 - fraction) < Math.abs(BLOC_SPANS[best] / 12 - fraction) ? width : best)
 }
 
-// Share of the row the bloc takes on screen, up to `right`.
-function renderedFraction(blocElement: HTMLElement, right: number) {
-  const list = listRef.value!
-  const gap = Number.parseFloat(getComputedStyle(list).columnGap) || 0
-  return rowShare(right - blocElement.getBoundingClientRect().left, list.getBoundingClientRect().width, gap)
-}
-
 // The whole row is stored as no width at all, which is what a new bloc has.
 function setWidth(index: number, width: RowWidth) {
   blocs.value[index].width = width === 'whole' ? null : width
@@ -286,7 +279,7 @@ function startResize(event: PointerEvent, index: number) {
   resizing.value = index
 
   const onMove = (moveEvent: PointerEvent) => {
-    setWidth(index, nearestWidth(renderedFraction(blocElement, moveEvent.clientX)))
+    setWidth(index, nearestWidth(renderedShare(blocElement, listRef.value!, moveEvent.clientX)))
   }
   const onUp = () => {
     resizing.value = null

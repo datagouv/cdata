@@ -36,6 +36,16 @@ export function rowShare(blocWidth: number, rowWidth: number, gap: number): numb
   return (blocWidth + gap) / (rowWidth + gap)
 }
 
+// The gap between the blocs of a row of a list, as laid out.
+export function columnGap(list: HTMLElement): number {
+  return Number.parseFloat(getComputedStyle(list).columnGap) || 0
+}
+
+// The share of the row of its list a bloc takes on screen, from its left edge to `right`.
+export function renderedShare(bloc: HTMLElement, list: HTMLElement, right = bloc.getBoundingClientRect().right): number {
+  return rowShare(right - bloc.getBoundingClientRect().left, list.getBoundingClientRect().width, columnGap(list))
+}
+
 // The index of the first bloc of each row, as the grid lays them out: a bloc goes to the
 // next row when it does not fit in what is left of the current one.
 export function rowStarts(widths: Array<BlocWidth | null>): Array<number> {

@@ -72,8 +72,8 @@
 <script setup lang="ts">
 import type { ComponentPublicInstance } from 'vue'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { autoUpdate, flip, offset, shift, size, useFloating } from '@floating-ui/vue'
 import ObjectsSelectorModal from './ObjectsSelectorModal.vue'
+import { useEditorMenu } from '~/composables/useEditorMenu'
 import type { ObjectBloc, SectionContentBloc } from '~/types/pages'
 import type { BlocChoice } from '~/utils/pages'
 import { ACCEPTED_BLOCS, type BlocsLevel } from '~/utils/blocsLayout'
@@ -89,33 +89,9 @@ const emit = defineEmits<{
 const { t } = useTranslation()
 const choices = useBlocChoices()
 
-// The room the menu has: the window, without the save bar of the editor fixed at its bottom.
-function padding() {
-  const saveBar = document.querySelector('[data-blocs-save-bar]')?.getBoundingClientRect().height ?? 0
-  return { top: 8, right: 8, bottom: saveBar + 8, left: 8 }
-}
 const menu = useTemplateRef<ComponentPublicInstance>('menu')
 const items = useTemplateRef<ComponentPublicInstance>('items')
-const { floatingStyles } = useFloating(menu, items, {
-  placement: 'bottom',
-  strategy: 'fixed',
-  // Positioned by its offsets: its opening transition scales it with `transform`.
-  transform: false,
-  middleware: [
-    offset(8),
-    flip(() => ({ padding: padding() })),
-    shift(() => ({ padding: padding() })),
-    size(() => ({
-      padding: padding(),
-      apply({ availableHeight, elements }) {
-        elements.floating.style.maxHeight = `${Math.max(availableHeight, 160)}px`
-      },
-    })),
-  ],
-  // Follows its button at every frame while open: the page can move under it without
-  // scrolling or resizing, as an image above loads.
-  whileElementsMounted: (reference, floating, update) => autoUpdate(reference, floating, update, { animationFrame: true }),
-})
+const floatingStyles = useEditorMenu(menu, items, 'bottom')
 
 // The choices whose blocs the level accepts (see `ACCEPTED_BLOCS`).
 const groups = computed(() => {

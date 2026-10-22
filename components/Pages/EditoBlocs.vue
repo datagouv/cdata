@@ -214,7 +214,6 @@
 </template>
 
 <script setup lang="ts">
-import type { ComponentProps } from 'vue-component-type-helpers'
 import { BrandedButton, formatMarkdown } from '@datagouv/components-next'
 import { MenuItem } from '@headlessui/vue'
 import { RiAddLine, RiCheckLine, RiEdit2Line } from '@remixicon/vue'
@@ -226,7 +225,7 @@ import HeadingsSidemenu from '~/components/Sidemenu/HeadingsSidemenu.vue'
 import type { PageBloc, SectionBloc, SectionColor } from '~/types/pages'
 import { anchorHeadings, slugify, type Heading } from '~/utils/headings'
 import { isMeAdmin } from '~/utils/auth'
-import { BLOCS_MAIN_COLOR, PAGE_TITLE_ID, normalizeBlocs, type LegacyBloc } from '~/utils/blocs'
+import { BLOCS_MAIN_COLOR, PAGE_TITLE_ID, normalizeBlocs, type BlocsMainColor, type LegacyBloc } from '~/utils/blocs'
 import { heroBgColor } from '~/utils/hero'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
@@ -242,7 +241,7 @@ const props = withDefaults(defineProps<{
   forOrganization?: boolean
   // The page shows no title of its own: the first title bloc is the title of the page (`h1`).
   untitled?: boolean
-  mainColor?: ComponentProps<typeof BrandedButton>['color']
+  mainColor?: BlocsMainColor
   // When set, the empty state is also shown in view mode (not just while editing)
   // with this label on a CTA that enters edit mode. Hosts that pass it are
   // responsible for only making the page editable (`editable`) for allowed users.

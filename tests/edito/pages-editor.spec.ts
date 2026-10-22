@@ -56,10 +56,7 @@ async function selectObjects(page: Page, placeholder: string, searchTerms: Array
     await searchInput.fill(term)
     await page.waitForTimeout(500)
 
-    const options = page.getByRole('option')
-    if (await options.count() > 0) {
-      await options.first().click()
-    }
+    await page.getByRole('option').first().click()
     await page.keyboard.press('Escape')
     await page.waitForTimeout(200)
   }
@@ -100,13 +97,14 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await addTitleInLastSection(page, 'Nos jeux de données phares', 'Découvrez les données les plus consultées')
   await addBlocInLastSection(page, 'DatasetBloc')
   await selectObjects(page, 'Rechercher un jeu de données…', ['marché', 'adresse', 'véhicule', 'covid'])
-  await expect(page.getByTestId('page-SectionBloc').last().getByTestId('bloc-DatasetBloc')).not.toHaveCount(0)
+  await expect(page.getByTestId('page-SectionBloc').last().getByTestId('bloc-DatasetBloc')).toHaveCount(4)
 
   // === Step 3: A section of reuses ===
   await addSection(page)
   await addTitleInLastSection(page, 'Réutilisations innovantes')
   await addBlocInLastSection(page, 'ReuseBloc')
   await selectObjects(page, 'Rechercher une réutilisation…', ['itineriz', 'kbis', 'infonet', 'proximap'])
+  await expect(page.getByTestId('page-SectionBloc').last().getByTestId('bloc-ReuseBloc')).toHaveCount(4)
 
   // === Step 4: A section of API, two per row, then a text ===
   await addSection(page)

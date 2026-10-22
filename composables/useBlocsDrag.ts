@@ -1,4 +1,4 @@
-import { rowShare, type BlocClass } from '~/utils/blocsLayout'
+import { columnGap, renderedShare, type BlocClass } from '~/utils/blocsLayout'
 
 // What is being dragged: a band of the page (a section), an accordion item, or a bloc,
 // whose class decides where it can land.
@@ -76,13 +76,11 @@ function place(listElement: HTMLElement, list: DropList, source: DragSource, x: 
   }).length
   const before = rects[index - 1]
   const after = rects[index]
-  const columnGap = (element: HTMLElement) => Number.parseFloat(getComputedStyle(element).columnGap) || 0
   const gap = columnGap(listElement)
   // The dragged bloc keeps its width, its share of a row: after the last bloc of a row, it
   // stays on that row if it fits in what is left.
   const fits = () => {
-    const sourceList = source.element.parentElement!
-    const share = rowShare(source.element.getBoundingClientRect().width, sourceList.getBoundingClientRect().width, columnGap(sourceList))
+    const share = renderedShare(source.element, source.element.parentElement!)
     return before.right + share * (listRect.width + gap) <= listRect.right + 1
   }
   // Between two blocs of a row, or at the end of a row with room for it: a vertical line,
@@ -98,12 +96,14 @@ function place(listElement: HTMLElement, list: DropList, source: DragSource, x: 
 // The innermost list under the pointer that accepts what is dragged. When it does not, the
 // first list inside the item under the pointer that does: the margins of a section around
 // its blocs are aimed at to put a bloc first or last. Then its parent list, and so on.
-// Never a list inside the dragged element itself.
+// Never a list inside the dragged element itself, nor a hidden one, as the content of a folded
+// accordion item: nothing would show where the bloc lands.
 function resolveTarget(source: DragSource, x: number, y: number): DropTarget | null {
   const hit = document.elementFromPoint(x, y)
   const accepting = (listElement: HTMLElement) => {
     const list = dropLists.get(listElement)
-    return list && !source.element.contains(listElement) && list.accepts(source) ? list : null
+    const shown = listElement.getClientRects().length > 0
+    return list && shown && !source.element.contains(listElement) && list.accepts(source) ? list : null
   }
   let listElement = hit?.closest<HTMLElement>('[data-drop-list]') ?? null
   while (listElement) {
