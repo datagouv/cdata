@@ -79,7 +79,10 @@
         </div>
       </div>
 
-      <div class="col-span-5 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] flex flex-col">
+      <div
+        class="col-span-5 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light"
+        :class="activePanel === 'assistant' ? 'lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] flex flex-col' : ''"
+      >
         <!-- Mode Formulaire : pickers + SQL + styles (scroll interne) + sauvegarde -->
         <SegmentedControl
           v-model="activePanel"
@@ -88,7 +91,7 @@
         />
 
         <template v-if="activePanel === 'form'">
-          <div class="flex-1 min-h-0 overflow-y-auto space-y-6 -mr-1 pr-1">
+          <div class="space-y-6">
             <fieldset class="min-w-0">
               <ProducerSelect
                 v-model="producer"
