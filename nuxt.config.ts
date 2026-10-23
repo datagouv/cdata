@@ -73,6 +73,12 @@ export default defineNuxtConfig({
       description: 'Plateforme des données publiques françaises : télécharger, partager et réutiliser les données de l\'État et des collectivités',
       apiBase: 'http://dev.local:7000',
       chartsApiBase: 'http://dev.local:7000',
+      features: {
+        // Forward the selected chart resource id to the assistant chat endpoint.
+        // The backend validates it (UUID) and injects the resource context into
+        // the conversation. Disable only if the deployed backend rejects the field.
+        assistantResourceContext: true,
+      },
       metricsApi: 'https://metric-api.data.gouv.fr',
       metricsSince: '2022-07-01',
       devApiKey: undefined,

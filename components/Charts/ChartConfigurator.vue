@@ -5,7 +5,7 @@
     @submit.prevent="saveChart"
   >
     <div class="grid lg:grid-cols-12 gap-4 lg:gap-8">
-      <div class="col-span-7 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
+      <div class="col-span-5 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
         <template v-if="selectedResource">
           <div>
             <label
@@ -79,7 +79,7 @@
         </div>
       </div>
 
-      <div class="col-span-5 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
+      <div class="col-span-4 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
         <fieldset class="min-w-0">
           <ProducerSelect
             v-model="producer"
@@ -263,6 +263,15 @@
           </div>
         </template>
       </div>
+
+      <div class="col-span-3 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
+        <ClientOnly>
+          <ChatPanel
+            :resource-id="selectedResource || null"
+            @use-query="onUseQuery"
+          />
+        </ClientOnly>
+      </div>
     </div>
   </form>
 </template>
@@ -275,6 +284,7 @@ import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import { RiText } from '@remixicon/vue'
 import { isMeAdmin } from '~/utils/auth'
 import ProducerSelect from '../ProducerSelect.vue'
+import ChatPanel from '../Assistant/ChatPanel.vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import type { DatasetSuggest } from '~/types/types'
@@ -339,6 +349,10 @@ const sourceText = computed<string>(() => {
 
 function getColumnTypeIcon(colType: ColumnType): Component {
   return typeConfig[colType]?.icon ?? RiText
+}
+
+function onUseQuery(query: string) {
+  form.value.query = query
 }
 
 async function loadMissingResourcesForChart(resourceIds: Array<string>) {

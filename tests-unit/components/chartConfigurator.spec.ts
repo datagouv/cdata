@@ -59,6 +59,20 @@ vi.mock('~/components/Accordion/Accordion.global.vue', () => ({
   }),
 }))
 
+vi.mock('~/components/Assistant/ChatPanel.vue', () => ({
+  default: defineComponent({
+    name: 'ChatPanel',
+    props: { resourceId: { type: String, default: null } },
+    emits: ['use-query'],
+    setup(props, { emit }) {
+      return () => h('div', { class: 'chat-panel-stub' }, [
+        h('span', { class: 'chat-panel-resource' }, props.resourceId || 'none'),
+        h('button', { class: 'chat-panel-use-query', onClick: () => emit('use-query', 'SELECT stub') }, 'use-query'),
+      ])
+    },
+  }),
+}))
+
 vi.mock('~/components/Accordion/AccordionGroup.global.vue', () => ({
   default: defineComponent({
     name: 'AccordionGroupStub',
@@ -299,5 +313,24 @@ describe('ChartConfigurator', () => {
     // The ChartViewerWrapper stub exposes no capture(): no PNG snapshot upload.
     expect(fileApiMock).not.toHaveBeenCalled()
     expect(toastSuccess).toHaveBeenCalledOnce()
+  })
+
+  it('renders the assistant chat panel with the selected resource', async () => {
+    const form = newForm()
+    const wrapper = await mountWithInitialChart(form)
+
+    const panel = wrapper.find('.chat-panel-stub')
+    expect(panel.exists()).toBe(true)
+    expect(panel.find('.chat-panel-resource').text()).toBe(RESOURCE_ID)
+  })
+
+  it('fills the form query when the chat panel emits use-query', async () => {
+    const form = newForm()
+    const wrapper = await mountWithInitialChart(form)
+
+    await wrapper.find('.chat-panel-use-query').trigger('click')
+    await flushPromises()
+
+    expect(form.query).toBe('SELECT stub')
   })
 })
