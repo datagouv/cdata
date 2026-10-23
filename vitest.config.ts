@@ -9,6 +9,7 @@ export default defineConfig({
       // The real package entry pulls every component (leaflet, chart.js, pdfjs…).
       // Unit tests only need a few pure functions, re-exported by the shim from
       // their real source modules.
+      '@datagouv/components-next/chart': fileURLToPath(new URL('./datagouv-components/src/chart.ts', import.meta.url)),
       '@datagouv/components-next': fileURLToPath(new URL('./tests-unit/shims/datagouv-components.ts', import.meta.url)),
       '~': fileURLToPath(new URL('.', import.meta.url)),
     },
