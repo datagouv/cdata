@@ -13,6 +13,7 @@
 
 <script setup lang = "ts">
 import { onMounted, ref, useTemplateRef } from 'vue'
+import { toast } from 'vue-sonner'
 import PreviewError from './PreviewError.vue'
 import type { Resource } from '../../types/resources'
 import { useTranslation } from '../../composables/useTranslation'
@@ -131,7 +132,12 @@ async function displayMap() {
     }
     else {
       const layerInfo = layerImportInternals._getCapResponseWMSLayers.filter(layer => layer.Name == props.resource.title)[0]
-      layerImportInternals._addGetCapWMSLayer(layerInfo)
+      // The service responded but no layer matched automatically: keep the map up
+      // (the user can add it via the import control) and signal it.
+      if (!layerInfo)
+        toast.info(t('La couche n\'a pas pu être détectée automatiquement. Ajoutez-la via l\'outil d\'import de couches depuis la carte'))
+      else
+        layerImportInternals._addGetCapWMSLayer(layerInfo)
     }
   }
   setTimeout(showLayer, waitTimeout)

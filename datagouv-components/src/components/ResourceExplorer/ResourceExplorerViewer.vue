@@ -44,12 +44,8 @@
                 :dataset="dataset"
               />
               <MapContainer
-                v-else-if="ogcWms && !ogcWmsNoLayer"
+                v-else-if="ogcWms"
                 :resource="resource"
-              />
-              <PreviewError
-                v-else-if="ogcWmsNoLayer"
-                :message="t('Le flux cartographique ne propose pas de couche exploitable.')"
               />
               <PreviewError
                 v-else-if="hasPmtilesError"
@@ -261,7 +257,6 @@ const {
   hasPmtilesError,
   pmtilesError,
   ogcWms,
-  ogcWmsNoLayer,
   tabsOptions,
 } = useResourceCapabilities(() => props.resource, () => props.dataset)
 

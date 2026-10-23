@@ -218,12 +218,8 @@
                 :dataset="dataset"
               />
               <MapContainer
-                v-else-if="ogcWms && !ogcWmsNoLayer"
+                v-else-if="ogcWms"
                 :resource="resource"
-              />
-              <PreviewError
-                v-else-if="ogcWmsNoLayer"
-                :message="t('Le flux cartographique ne propose pas de couche exploitable.')"
               />
               <PreviewError
                 v-else-if="hasPmtilesError"
@@ -338,7 +334,7 @@ import { filesize, summarize } from '../../functions/helpers'
 import FormattedDate from '../FormattedDate.vue'
 import TranslationT from '../TranslationT.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
-import type { CommunityResource, Resource, WfsMetadata } from '../../types/resources'
+import type { CommunityResource, Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 import TabGroup from '../Tabs/TabGroup.vue'
 import TabList from '../Tabs/TabList.vue'
@@ -413,12 +409,6 @@ const hasPmtiles = computed(() => {
 // (same behavior as the fullscreen explorer).
 const hasPmtilesError = computed(() => getParsingErrorStep(props.resource) === 'pmtiles_export')
 const pmtilesError = computed(() => hasPmtilesError.value ? getParsingErrorMessage(props.resource) : null)
-
-const ogcWmsNoLayer = computed(() => {
-  if (!ogcWms.value) return false
-  const metadata = props.resource.extras['analysis:parsing:ogc_metadata'] as WfsMetadata | null
-  return !!metadata && metadata.format === 'wms' && !metadata.detected_layer
-})
 
 const editDisabledReason = computed(() => {
   return isGeopfSynced(props.resource) ? t('Vous ne pouvez pas modifier cette ressource car elle est synchronisée avec cartes.gouv.fr') : null
