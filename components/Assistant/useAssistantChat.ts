@@ -1,7 +1,6 @@
 import type { Ref } from 'vue'
 import { useChat } from '@ai-sdk/vue'
 import { DefaultChatTransport } from 'ai'
-import { buildChatBody } from '~/utils/assistant'
 
 /**
  * useChat configured for the udata assistant endpoint.
@@ -20,9 +19,18 @@ export function useAssistantChat(resourceId: Ref<string | null>) {
     transport: new DefaultChatTransport({
       api: `${apiBase}/api/1/assistant/chat/`,
       credentials: 'include',
-      prepareSendMessagesRequest({ messages }) {
+      prepareSendMessagesRequest({ messages, id, trigger, messageId }) {
+        // Keep the protocol fields (id/trigger/messageId): the backend's
+        // VercelAIAdapter discriminates SubmitMessage on `trigger` and
+        // requires `id` — dropping them yields a 400 "invalid request body".
         return {
-          body: buildChatBody(messages, sendResourceContext ? resourceId.value : null),
+          body: {
+            id,
+            trigger,
+            messageId,
+            messages,
+            ...(sendResourceContext && resourceId.value ? { resource_id: resourceId.value } : {}),
+          },
         }
       },
     }),
