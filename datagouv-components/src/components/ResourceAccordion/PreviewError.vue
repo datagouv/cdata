@@ -20,7 +20,7 @@
 
     <!-- User CTA -->
     <div
-      v-if="errorInfo.userCta"
+      v-if="!showProducerCta && errorInfo.userCta"
       class="mb-4"
     >
       <BrandedButton
@@ -43,7 +43,9 @@
       class="mb-4"
     >
       <BrandedButton
+        :href="supportHref"
         color="secondary"
+        new-tab
         @click="handleProducerCta"
       >
         {{ errorInfo.producerCta }}
@@ -77,6 +79,7 @@ import BrandedButton from '../BrandedButton.vue'
 import type { Resource } from '../../types/resources'
 import { getPreviewErrorInfo, getPreviewErrorInfoByType, type PreviewErrorType } from '../../functions/previewErrors'
 import { trackEvent } from '../../functions/matomo'
+import { useComponentsConfig } from '../../config'
 import { RiDownloadLine } from '@remixicon/vue'
 
 const props = defineProps<{
@@ -92,6 +95,10 @@ const props = defineProps<{
 }>()
 
 const { t } = useTranslation()
+
+const config = useComponentsConfig()
+
+const supportHref = computed(() => config.supportUrl ?? '')
 
 const errorInfo = computed(() => {
   if (!props.resource) {

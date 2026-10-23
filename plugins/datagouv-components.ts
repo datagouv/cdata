@@ -44,5 +44,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     useRoute,
     forumUrl: runtimeConfig.public.forumUrl,
     searchDebounce: runtimeConfig.public.searchDebounce,
+    supportUrl: runtimeConfig.public.supportUrl,
   })
 })

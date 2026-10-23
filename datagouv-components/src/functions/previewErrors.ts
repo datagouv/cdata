@@ -79,7 +79,7 @@ export function getPreviewErrorInfoByType(errorType: PreviewErrorType, resource?
         type: 'cors',
         message: t('Ce fichier est hébergé sur un site externe qui n’autorise pas son affichage dans data.gouv.fr.'),
         userCta: '',
-        producerCta: t('Contactez-nous si ça vous semble être une erreur'),
+        producerCta: t('Signaler un problème'),
         isProducerFault: true,
       }
 
@@ -88,7 +88,7 @@ export function getPreviewErrorInfoByType(errorType: PreviewErrorType, resource?
         type: 'network',
         message: t('Ce fichier hébergé sur un site externe n’a pas pu être chargé.'),
         userCta: t('Faites le savoir au producteur'),
-        producerCta: t('Contactez-nous si ça vous semble être une erreur'),
+        producerCta: t('Signaler un problème'),
         isProducerFault: true,
       }
 
@@ -97,7 +97,7 @@ export function getPreviewErrorInfoByType(errorType: PreviewErrorType, resource?
         type: 'unavailable',
         message: t('Ce fichier est hébergé sur un site externe et n’est pas disponible'),
         userCta: t('Faites le savoir au producteur'),
-        producerCta: t('Contactez-nous'),
+        producerCta: t('Signaler un problème'),
         isProducerFault: true,
       }
 
@@ -117,7 +117,7 @@ export function getPreviewErrorInfoByType(errorType: PreviewErrorType, resource?
         type: 'malformed',
         message: t('La structure de ce fichier ne permet pas d\'afficher son aperçu'),
         userCta: '',
-        producerCta: t('Contactez-nous pour réparer'),
+        producerCta: t('Signaler un problème'),
         isProducerFault: true,
       }
 
@@ -136,7 +136,7 @@ export function getPreviewErrorInfoByType(errorType: PreviewErrorType, resource?
         type: 'unknown',
         message: t('Une erreur a empêché le chargement de l\'aperçu de ce fichier.'),
         userCta: t('Faites le savoir au producteur'),
-        producerCta: t('Contactez-nous pour réparer'),
+        producerCta: t('Signaler un problème'),
         isProducerFault: false,
       }
   }
