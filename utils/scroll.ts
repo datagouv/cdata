@@ -4,10 +4,14 @@ import type { LocationQueryRaw, RouteLocationNormalizedLoaded } from 'vue-router
  * Every step of a wizard lives under the same route, the step being a query
  * param, so the router keeps the scroll from one to the next. A step is a new
  * screen though, so move back to the top of it.
+ *
+ * On the server the navigation is a redirect, answered with a fresh page.
  */
 export async function goToStep(route: RouteLocationNormalizedLoaded, query: LocationQueryRaw) {
   await navigateTo({ path: route.path, query })
-  window.scrollTo({ top: 0 })
+  if (import.meta.client) {
+    window.scrollTo({ top: 0 })
+  }
 }
 
 /**
