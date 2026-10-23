@@ -54,6 +54,7 @@
         :key="bloc.id"
         class="relative"
         :class="bloc.class !== 'HeroBloc' && (striped ? 'py-24 odd:bg-gray-some even:bg-white' : 'py-12')"
+        data-testid="edito-bloc"
       >
         <!-- Add button above the bloc (absolute positioned) -->
         <div

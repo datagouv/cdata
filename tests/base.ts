@@ -33,12 +33,14 @@ export const test = base.extend<{ allowedConsoleMessages: Array<string>, assertN
   // A test that provokes an error on purpose declares the message it expects,
   // rather than adding it to the list above and silencing it for every test.
   allowedConsoleMessages: [[], { option: true }],
+  // Routed only when the server under test does not reach them on tests/fake-services.ts: a
+  // route makes every request of the page go through Playwright, with the browser cache off.
   metricsApi: [async ({ context }, use) => {
-    await fakeMetricsApi(context)
+    if (!process.env.FAKE_SERVICES_URL) await fakeMetricsApi(context)
     await use()
   }, { auto: true }],
   matomo: [async ({ context }, use) => {
-    await fakeMatomo(context)
+    if (!process.env.FAKE_SERVICES_URL) await fakeMatomo(context)
     await use()
   }, { auto: true }],
   assertNoConsoleErrors: [async ({ page, allowedConsoleMessages }, use) => {

@@ -1,4 +1,5 @@
 import { test, expect } from '../base'
+import { gotoHydrated } from '../helpers'
 
 test('page loads with results', async ({ page }) => {
   await page.goto('/organizations')
@@ -17,10 +18,8 @@ test('page loads with results', async ({ page }) => {
 })
 
 test('search filters results', async ({ page }) => {
-  await page.goto('/organizations')
-  // The search input is v-model controlled: typing before hydration completes
-  // gets wiped. Wait for the page to settle first.
-  await page.waitForLoadState('networkidle')
+  // The search input is v-model controlled: typing before hydration completes gets wiped
+  await gotoHydrated(page, '/organizations')
 
   const searchInput = page.getByRole('searchbox')
   await searchInput.fill('sobrana')
