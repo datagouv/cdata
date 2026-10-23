@@ -4,6 +4,7 @@
       v-if="!isSizeAllowed || hasError"
       :resource="resource"
       :message="errorMessage"
+      :show-producer-cta="canEdit"
     />
     <img
       v-else
@@ -25,6 +26,7 @@ import { useComponentsConfig } from '../../config'
 
 const props = defineProps<{
   resource: Resource
+  canEdit?: boolean
 }>()
 
 const { t } = useTranslation()

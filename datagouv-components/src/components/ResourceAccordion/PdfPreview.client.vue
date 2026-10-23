@@ -5,6 +5,7 @@
     :max-size="config.maxPdfPreviewByteSize"
     :load="load"
     :fill="fill"
+    :can-edit="canEdit"
     @loaded="renderAllPages"
   >
     <!-- While pdfjs downloads/parses the document, show the A4 skeleton instead of a
@@ -58,6 +59,7 @@ const props = defineProps<{
   resource: Resource
   // Fill the available height (fullscreen) instead of the default capped height.
   fill?: boolean
+  canEdit?: boolean
 }>()
 
 const config = useComponentsConfig()

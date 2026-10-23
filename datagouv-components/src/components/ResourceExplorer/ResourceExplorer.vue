@@ -49,12 +49,13 @@
         >
           <ResourceExplorerViewer
             :key="selectedResource.id"
-            :dataset
+            :dataset="dataset"
             :resource="selectedResource"
             :resources="flatResources"
             :resource-to="resourceTo"
             :explore-to="exploreTo"
             :resource-external-url="resourceExternalUrl"
+            :can-edit="canEdit"
             replace
             :fullscreen
           />
@@ -132,6 +133,7 @@ const props = withDefaults(defineProps<{
   exploreTo?: (resource: Resource) => string
   // Overrides the "Copier le lien" target.
   resourceExternalUrl?: (resource: Resource) => string
+  canEdit?: boolean
 }>(), {
   noResultsImage: '',
   fullscreen: false,

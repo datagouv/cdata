@@ -44,11 +44,15 @@
                 :dataset="dataset"
               />
               <MapContainer
-                v-if="ogcWms"
+                v-else-if="ogcWms && !ogcWmsNoLayer"
                 :resource="resource"
               />
               <PreviewError
-                v-if="!hasPmtiles && !ogcWms && hasPmtilesError"
+                v-else-if="ogcWmsNoLayer"
+                :message="t('Le flux cartographique ne propose pas de couche exploitable.')"
+              />
+              <PreviewError
+                v-else-if="hasPmtilesError"
                 :resource="resource"
                 :message="t('La carte n\'a pas pu être générée automatiquement pour ce fichier.')"
               >
@@ -93,6 +97,7 @@
                 v-else-if="previewKind === 'pdf'"
                 :resource="resource"
                 :fill="fullscreen"
+                :can-edit="canEdit"
               />
 
               <!-- Text previews stay padded inside the tab panel -->
@@ -100,17 +105,24 @@
                 v-else
                 class="p-4"
               >
-                <JsonPreview
-                  v-if="previewKind === 'json'"
+                <UrlPreview
+                  v-if="previewKind === 'url'"
                   :resource="resource"
+                />
+                <JsonPreview
+                  v-else-if="previewKind === 'json'"
+                  :resource="resource"
+                  :can-edit="canEdit"
                 />
                 <XmlPreview
                   v-else-if="previewKind === 'xml'"
                   :resource="resource"
+                  :can-edit="canEdit"
                 />
                 <ImagePreview
                   v-else-if="previewKind === 'image'"
                   :resource="resource"
+                  :can-edit="canEdit"
                 />
                 <DatafairPreview
                   v-else-if="previewKind === 'datafair'"
@@ -124,7 +136,7 @@
                 <PreviewError
                   v-else
                   :resource="resource"
-                  :show-producer-cta="isProducerView"
+                  :show-producer-cta="canEdit"
                 />
               </div>
             </div>
@@ -169,6 +181,7 @@
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import PreviewError from '../ResourceAccordion/PreviewError.vue'
+import UrlPreview from '../ResourceAccordion/UrlPreview.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
 import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
 import TabGroup from '../Tabs/TabGroup.vue'
@@ -231,7 +244,7 @@ const props = withDefaults(defineProps<{
   // bottom, and hide the inline download/visit/copy actions — they're shown in the
   // dataset context bar above. Inline mode (dataset page) shows them in the header.
   fullscreen?: boolean
-  isProducerView?: boolean
+  canEdit?: boolean
 }>(), {
   fullscreen: false,
 })
@@ -248,6 +261,7 @@ const {
   hasPmtilesError,
   pmtilesError,
   ogcWms,
+  ogcWmsNoLayer,
   tabsOptions,
 } = useResourceCapabilities(() => props.resource, () => props.dataset)
 

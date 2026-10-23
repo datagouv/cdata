@@ -7,6 +7,7 @@
       :dataset
       fullscreen
       :exit-to="exitTo"
+      :can-edit="dataset.permissions.edit_resources"
       no-results-image="/illustrations/dataset.svg"
     />
   </div>

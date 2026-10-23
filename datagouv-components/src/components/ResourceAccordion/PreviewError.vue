@@ -11,34 +11,37 @@
     <p class="text-sm text-gray-medium mb-4 text-center max-w-lg">
       {{ message ?? errorInfo.message }}
     </p>
+    <p
+      v-if="rawParsingError"
+      class="text-xs text-gray-medium mb-4 text-center max-w-lg"
+    >
+      {{ rawParsingError }}
+    </p>
 
     <!-- User CTA -->
     <div
       v-if="errorInfo.userCta"
       class="mb-4"
     >
-      <a
-        role="button"
-        tabindex="0"
+      <BrandedButton
+        color="secondary"
         @click="handleUserCta"
-        @keydown.enter.prevent="handleUserCta"
-        @keydown.space.prevent="handleUserCta"
       >
         {{ errorInfo.userCta }}
-      </a>
+      </BrandedButton>
     </div>
 
     <!-- Producer CTA -->
-    <div v-if="errorInfo.producerCta && showProducerCta">
-      <a
-        role="button"
-        tabindex="0"
+    <div
+      v-if="errorInfo.producerCta && showProducerCta"
+      class="mb-4"
+    >
+      <BrandedButton
+        color="secondary"
         @click="handleProducerCta"
-        @keydown.enter.prevent="handleProducerCta"
-        @keydown.space.prevent="handleProducerCta"
       >
         {{ errorInfo.producerCta }}
-      </a>
+      </BrandedButton>
     </div>
 
     <BrandedButton
@@ -62,12 +65,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { toast } from 'vue-sonner'
 import { useTranslation } from '../../composables/useTranslation'
 import microscopeSrc from '../../../assets/illustrations/microscope.svg?url'
 import BrandedButton from '../BrandedButton.vue'
 import type { Resource } from '../../types/resources'
-import { getPreviewErrorInfo } from '../../functions/previewErrors'
+import { getPreviewErrorInfo, getPreviewErrorInfoByType, type PreviewErrorType } from '../../functions/previewErrors'
 import { trackEvent } from '../../functions/matomo'
 import { RiDownloadLine } from '@remixicon/vue'
 
@@ -77,11 +79,10 @@ const props = defineProps<{
   resource?: Resource
   showProducerCta?: boolean
   message?: string
-}>()
-
-const emit = defineEmits<{
-  userCta: []
-  producerCta: []
+  // When an inline message (from the wrapper, e.g. size or CORS) is displayed, the
+  // error family that matches this cause drives the CTAs, even if the resource
+  // metadata alone would not trigger any.
+  fallbackErrorType?: PreviewErrorType
 }>()
 
 const { t } = useTranslation()
@@ -94,20 +95,31 @@ const errorInfo = computed(() => {
       isProducerFault: false,
     }
   }
-  return getPreviewErrorInfo(props.resource)
+  return props.fallbackErrorType
+    ? getPreviewErrorInfoByType(props.fallbackErrorType, props.resource)
+    : getPreviewErrorInfo(props.resource)
+})
+
+// The parsing error explains *why* the structure blocks the preview (encoding,
+// column names…): it is actionable for producers, so it is shown raw in small
+// print under the generic message.
+const rawParsingError = computed(() => {
+  if (props.fallbackErrorType || props.message) return null
+  return errorInfo.value.type === 'malformed'
+    ? props.resource?.extras['analysis:parsing:error'] ?? null
+    : null
 })
 
 const handleUserCta = () => {
   if (!props.resource) return
-  trackEvent('Aperçu', 'Demande de prévisualisation', props.resource.title || props.resource.id)
-  toast.info(t('Votre demande a bien été enregistrée.'))
-  emit('userCta')
+  // Matomo-only telemetry (no backend, no navigation yet): the stable id is the
+  // event name, and the error family rides in the action so requests are
+  // filterable there. The actual demand flow (discussion prefill) is deferred.
+  trackEvent('Aperçu', `Demande de prévisualisation (${errorInfo.value.type})`, props.resource.id)
 }
 
 const handleProducerCta = () => {
   if (!props.resource) return
-  trackEvent('Aperçu', 'Demande de prévisualisation producteur', props.resource.title || props.resource.id)
-  toast.info(t('Votre demande a bien été enregistrée.'))
-  emit('producerCta')
+  trackEvent('Aperçu', `Demande de prévisualisation producteur (${errorInfo.value.type})`, props.resource.id)
 }
 </script>

@@ -218,29 +218,49 @@
                 :dataset="dataset"
               />
               <MapContainer
-                v-if="ogcWms"
+                v-else-if="ogcWms && !ogcWmsNoLayer"
                 :resource="resource"
               />
+              <PreviewError
+                v-else-if="ogcWmsNoLayer"
+                :message="t('Le flux cartographique ne propose pas de couche exploitable.')"
+              />
+              <PreviewError
+                v-else-if="hasPmtilesError"
+                :resource="resource"
+                :message="t('La carte n\'a pas pu être générée automatiquement pour ce fichier.')"
+              >
+                <span class="text-gray-medium text-xs">{{ pmtilesError }}</span>
+              </PreviewError>
             </div>
             <div v-if="tab.key === 'data'">
-              <!-- Show JSON viewer for JSON files -->
-              <JsonPreview
-                v-if="resource.format && resource.format.toLowerCase() === 'json'"
+              <!-- A link resource points to an external page: offer the visit
+                   instead of a data preview or an error message. -->
+              <UrlPreview
+                v-if="isResourceUrl"
                 :resource="resource"
+              />
+              <JsonPreview
+                v-else-if="resource.format && resource.format.toLowerCase() === 'json'"
+                :resource="resource"
+                :can-edit="canEdit"
               />
               <!-- Show PDF viewer for PDF files -->
               <PdfPreview
                 v-else-if="resource.format && resource.format.toLowerCase() === 'pdf'"
                 :resource="resource"
+                :can-edit="canEdit"
               />
               <!-- Show XML viewer for XML files -->
               <XmlPreview
                 v-else-if="resource.format && resource.format.toLowerCase() === 'xml'"
                 :resource="resource"
+                :can-edit="canEdit"
               />
               <ImagePreview
                 v-else-if="isImagePreviewFormat(resource.format)"
                 :resource="resource"
+                :can-edit="canEdit"
               />
               <!-- Show Datafair embedded preview (koumoul) -->
               <DatafairPreview
@@ -257,6 +277,7 @@
               <Preview
                 v-else
                 :resource="resource"
+                :show-producer-cta="canEdit"
               />
             </div>
             <div
@@ -317,7 +338,7 @@ import { filesize, summarize } from '../../functions/helpers'
 import FormattedDate from '../FormattedDate.vue'
 import TranslationT from '../TranslationT.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
-import type { CommunityResource, Resource } from '../../types/resources'
+import type { CommunityResource, Resource, WfsMetadata } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 import TabGroup from '../Tabs/TabGroup.vue'
 import TabList from '../Tabs/TabList.vue'
@@ -328,7 +349,10 @@ import { trackEvent } from '../../functions/matomo'
 import CopyButton from '../CopyButton.vue'
 import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
-import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceFilesize, isGeopfSynced, isImagePreviewFormat, resolveResourceExternalUrl } from '../../functions/resources'
+import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceFilesize, isGeopfSynced, isImagePreviewFormat, resolveResourceExternalUrl, getParsingErrorStep, getParsingErrorMessage } from '../../functions/resources'
+import PreviewError from './PreviewError.vue'
+import UrlPreview from './UrlPreview.vue'
+import { hasPreviewError } from '../../functions/previewErrors'
 import BrandedButton from '../BrandedButton.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useHasTabularData } from '../../composables/useHasTabularData'
@@ -385,6 +409,17 @@ const hasPmtiles = computed(() => {
   return props.resource.extras['analysis:parsing:pmtiles_url'] || props.resource.format === 'pmtiles'
 })
 
+// When the map generation failed, keep the Carte tab visible with the reason
+// (same behavior as the fullscreen explorer).
+const hasPmtilesError = computed(() => getParsingErrorStep(props.resource) === 'pmtiles_export')
+const pmtilesError = computed(() => hasPmtilesError.value ? getParsingErrorMessage(props.resource) : null)
+
+const ogcWmsNoLayer = computed(() => {
+  if (!ogcWms.value) return false
+  const metadata = props.resource.extras['analysis:parsing:ogc_metadata'] as WfsMetadata | null
+  return !!metadata && metadata.format === 'wms' && !metadata.detected_layer
+})
+
 const editDisabledReason = computed(() => {
   return isGeopfSynced(props.resource) ? t('Vous ne pouvez pas modifier cette ressource car elle est synchronisée avec cartes.gouv.fr') : null
 })
@@ -422,11 +457,13 @@ const toggle = () => {
 const tabsOptions = computed(() => {
   const options = []
 
-  if (hasPmtiles.value || ogcWms.value) {
+  if (hasPmtiles.value || ogcWms.value || hasPmtilesError.value) {
     options.push({ key: 'map', label: t('Carte') })
   }
 
-  if (hasTabularData.value || hasPreview.value || hasDatafairPreview.value || hasOpenAPIPreview.value) {
+  // The map is the preview for pmtiles/WMS resources: the Aperçu tab stays a
+  // duplicate otherwise.
+  if (hasTabularData.value || hasPreview.value || hasDatafairPreview.value || hasOpenAPIPreview.value || (hasPreviewError(props.resource) && !hasPmtiles.value && !ogcWms.value) || isResourceUrl.value) {
     options.push({ key: 'data', label: t('Aperçu') })
   }
 

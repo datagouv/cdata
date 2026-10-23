@@ -13,7 +13,7 @@ const URL_FORMATS = ['url', 'doi', 'www:link', 'www:link-1.0-http--link', 'www:l
 // Which preview the data tab shows. Single source of truth: the viewer renders it and
 // the skeleton picks the matching placeholder shape, so each holding its own copy of
 // this precedence would let the two drift apart.
-export type PreviewKind = 'json' | 'pdf' | 'xml' | 'image' | 'datafair' | 'openapi' | 'tabular' | 'unavailable'
+export type PreviewKind = 'json' | 'pdf' | 'xml' | 'image' | 'datafair' | 'openapi' | 'tabular' | 'url' | 'unavailable'
 
 export function useResourceCapabilities(
   resource: MaybeRefOrGetter<Resource>,
@@ -48,6 +48,14 @@ export function useResourceCapabilities(
   const ogcService = computed(() => detectOgcService(toValue(resource)))
   const ogcWms = computed(() => ogcService.value === 'wms')
 
+  // A WMS flow whose GetCapabilities contains no usable layer cannot be mapped:
+  // rendering the map would show an empty base map as if the service was fine.
+  const ogcWmsNoLayer = computed(() => {
+    if (!ogcWms.value) return false
+    const metadata = toValue(resource).extras['analysis:parsing:ogc_metadata'] as WfsMetadata | null
+    return !!metadata && metadata.format === 'wms' && !metadata.detected_layer
+  })
+
   // The map is built from a pmtiles export; when that export fails we still want
   // to show the Carte tab, but with the reason it could not be generated.
   const hasPmtilesError = computed(() => getParsingErrorStep(toValue(resource)) === 'pmtiles_export')
@@ -72,6 +80,7 @@ export function useResourceCapabilities(
   // carries a parsing table is a PDF first.
   const previewKind = computed<PreviewKind>(() => {
     const format = toValue(resource).format?.toLowerCase()
+    if (isResourceUrl.value) return 'url'
     if (format === 'json') return 'json'
     if (format === 'pdf') return 'pdf'
     if (format === 'xml') return 'xml'
@@ -83,8 +92,9 @@ export function useResourceCapabilities(
   })
 
   // Whether opening the resource shows its content (a preview or a map), not just
-  // its metadata.
-  const hasPreview = computed(() => previewKind.value !== 'unavailable' || !!hasPmtiles.value || ogcWms.value)
+  // its metadata. A link resource is only ever meant to be visited, exploring
+  // nothing in product — the eye badge in lists must not claim otherwise.
+  const hasPreview = computed(() => (previewKind.value !== 'unavailable' && previewKind.value !== 'url') || !!hasPmtiles.value || ogcWms.value)
 
   const tabsOptions = computed(() => {
     const r = toValue(resource)
@@ -94,11 +104,14 @@ export function useResourceCapabilities(
     const mapTab = { key: 'map', label: t('Carte') }
     const hasMap = hasPmtiles.value || ogcWms.value
 
-    // The map is the most visual preview: when it is available, show it first.
-    // When its generation failed, keep the data preview first and surface the
-    // Carte tab (with its error) right after.
+    // The map is the most visual preview: when it is available, show it first,
+    // and keep the data tab only when another preview (table, PDF, JSON…)
+    // exists for the same resource.
     if (hasMap) {
-      options.push(mapTab, dataTab)
+      options.push(mapTab)
+      if (previewKind.value !== 'unavailable') {
+        options.push(dataTab)
+      }
     }
     else if (hasPmtilesError.value) {
       options.push(dataTab, mapTab)
@@ -135,6 +148,7 @@ export function useResourceCapabilities(
     hasOpenAPIPreview,
     ogcService,
     ogcWms,
+    ogcWmsNoLayer,
     generatedFormats,
     wfsFormats,
     defaultWfsProjection,

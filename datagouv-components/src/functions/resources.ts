@@ -207,6 +207,19 @@ export function isImagePreviewFormat(format: string | undefined | null): boolean
   return IMAGE_PREVIEW_FORMATS.includes(format.toLowerCase() as typeof IMAGE_PREVIEW_FORMATS[number])
 }
 
+// Formats turned into an interactive table server-side. Source of truth is
+// hydra's `data_formats/`: csv_like (Csv handling *.gz, Xls, Xlsx) and parquet
+// both convert to a PostgreSQL table; hydra does not expose this list via its
+// API yet (get it there before drifting).
+const TABULAR_PIPELINE_FORMATS = ['csv', 'csv.gz', 'xls', 'xlsx', 'parquet']
+
+export function isTabularPipelineFormat(format: string | undefined | null): boolean {
+  if (!format) return false
+  const normalized = format.toLowerCase()
+  return TABULAR_PIPELINE_FORMATS.includes(normalized)
+    || (normalized.endsWith('.gz') && TABULAR_PIPELINE_FORMATS.includes(normalized.slice(0, -3)))
+}
+
 // Parsing errors are stored as `<step>:<message>`, where `<step>` names the
 // analysis step that failed (e.g. `pmtiles_export`, `geojson_export`).
 
