@@ -1,5 +1,6 @@
 import type { Owned, OwnedWithId } from './owned'
 import type { ColumnType } from '../components/TabularExplorer/types'
+import type { TabularAggregateType } from '../functions/tabularApi'
 
 export type FilterCondition = 'exact' | 'differs' | 'is_null' | 'is_not_null' | 'greater' | 'less' | 'strictly_greater' | 'strictly_less'
 export type Filter = {
@@ -54,6 +55,29 @@ export type Chart = Owned & {
 }
 
 export type ChartForApi = OwnedWithId & Pick<Chart, 'title' | 'description' | 'private' | 'query' | 'resource_id' | 'y_axis' | 'extras'>
+
+export type ChartViewerSeriesType = 'line' | 'histogram'
+
+export type ChartViewerSeries = {
+  type: ChartViewerSeriesType
+  column_y: string
+  aggregate_y: TabularAggregateType | null
+  resource_id: string
+  column_x_name_override: string | null
+}
+
+export type ChartViewerXAxis = {
+  column_x: string
+  sort_x_by: 'axis_x' | 'axis_y' | null
+  sort_x_direction: 'asc' | 'desc' | null
+  type: 'discrete' | 'continuous'
+}
+
+export type ChartViewerConfig = {
+  x_axis: ChartViewerXAxis
+  y_axis: YAxis
+  series: Array<ChartViewerSeries>
+}
 
 export type ChartForm = Omit<ChartForApi, 'owner' | 'organization'> & {
   owned: OwnedWithId
