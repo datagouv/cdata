@@ -21,12 +21,16 @@
       :message="errorMessage"
       :fallback-error-type="fallbackErrorType"
       :show-producer-cta="canEdit"
-    />
+    >
+      <template #too-large-action>
+        <slot name="too-large-action" />
+      </template>
+    </PreviewError>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import PreviewError from './PreviewError.vue'
 import type { Resource } from '../../types/resources'
 import { getResourceFilesize, getResourceCorsStatus } from '../../functions/resources'
@@ -41,6 +45,9 @@ const props = defineProps<{
   // Fill the available height (fullscreen) instead of sizing to content.
   fill?: boolean
   canEdit?: boolean
+  // Bypass the size gate (the browser can still read a large PDF) while
+  // keeping the unavailable and CORS gates intact.
+  forceLoad?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -62,6 +69,7 @@ const corsStatus = computed(() => getResourceCorsStatus(props.resource))
 const unavailable = computed(() => props.resource.extras['check:available'] === false)
 
 const isSizeAllowed = computed(() => {
+  if (props.forceLoad) return true
   const size = fileSizeBytes.value
   const max = props.maxSize
   if (!size) return false
@@ -100,8 +108,9 @@ const errorMessage = computed<string | undefined>(() => {
   return undefined
 })
 
-onMounted(async () => {
+async function attemptLoad() {
   if (unavailable.value || !isSizeAllowed.value || corsStatus.value === 'blocked') return
+  if (data.value !== null || loading.value) return
 
   loading.value = true
   try {
@@ -116,5 +125,13 @@ onMounted(async () => {
   finally {
     loading.value = false
   }
+}
+
+onMounted(attemptLoad)
+
+// Re-attempt (and bypass the size gate) once forceLoad transitions to true,
+// e.g. the user forces a preview of an oversized PDF in fullscreen.
+watch(() => props.forceLoad, (force) => {
+  if (force) attemptLoad()
 })
 </script>

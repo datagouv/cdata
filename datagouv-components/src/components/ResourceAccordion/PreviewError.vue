@@ -15,7 +15,7 @@
       v-if="rawParsingError"
       class="text-xs text-gray-medium mb-4 text-center max-w-lg"
     >
-      {{ rawParsingError }}
+      {{ t('Erreur :') }} {{ rawParsingError }}
     </p>
 
     <!-- User CTA -->
@@ -31,9 +31,15 @@
       </BrandedButton>
     </div>
 
-    <!-- Producer CTA -->
+    <!-- Override action for too_large, visible to everyone (e.g. force preview) -->
     <div
-      v-if="errorInfo.producerCta && showProducerCta"
+      v-if="errorInfo.type === 'too_large' && $slots['too-large-action']"
+      class="mb-4"
+    >
+      <slot name="too-large-action" />
+    </div>
+    <div
+      v-else-if="errorInfo.producerCta && showProducerCta"
       class="mb-4"
     >
       <BrandedButton
@@ -100,9 +106,6 @@ const errorInfo = computed(() => {
     : getPreviewErrorInfo(props.resource)
 })
 
-// The parsing error explains *why* the structure blocks the preview (encoding,
-// column names…): it is actionable for producers, so it is shown raw in small
-// print under the generic message.
 const rawParsingError = computed(() => {
   if (props.fallbackErrorType || props.message) return null
   return errorInfo.value.type === 'malformed'
@@ -112,9 +115,6 @@ const rawParsingError = computed(() => {
 
 const handleUserCta = () => {
   if (!props.resource) return
-  // Matomo-only telemetry (no backend, no navigation yet): the stable id is the
-  // event name, and the error family rides in the action so requests are
-  // filterable there. The actual demand flow (discussion prefill) is deferred.
   trackEvent('Aperçu', `Demande de prévisualisation (${errorInfo.value.type})`, props.resource.id)
 }
 

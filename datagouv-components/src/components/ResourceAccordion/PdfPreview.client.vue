@@ -6,6 +6,7 @@
     :load="load"
     :fill="fill"
     :can-edit="canEdit"
+    :force-load="forceLoad"
     @loaded="renderAllPages"
   >
     <!-- While pdfjs downloads/parses the document, show the A4 skeleton instead of a
@@ -40,6 +41,15 @@
         </div>
       </div>
     </template>
+
+    <template #too-large-action>
+      <BrandedButton
+        color="secondary"
+        @click="forceLoad = true"
+      >
+        {{ t('Forcer la prévisualisation') }}
+      </BrandedButton>
+    </template>
   </PreviewWrapper>
 </template>
 
@@ -50,7 +60,9 @@ import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.min.mjs?url'
 import type { PDFDocumentProxy } from 'pdfjs-dist'
 import PreviewWrapper from './PreviewWrapper.vue'
 import PdfSkeleton from './PdfSkeleton.vue'
+import BrandedButton from '../BrandedButton.vue'
 import { useComponentsConfig } from '../../config'
+import { useTranslation } from '../../composables/useTranslation'
 import type { Resource } from '../../types/resources'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
@@ -63,6 +75,10 @@ const props = defineProps<{
 }>()
 
 const config = useComponentsConfig()
+
+const { t } = useTranslation()
+
+const forceLoad = ref(false)
 
 const containerRef = ref<HTMLElement | null>(null)
 let pdfDoc: PDFDocumentProxy | null = null
