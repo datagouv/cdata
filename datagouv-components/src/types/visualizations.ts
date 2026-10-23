@@ -1,4 +1,3 @@
-import type { TabularAggregateType } from '../functions/tabularApi'
 import type { Owned, OwnedWithId } from './owned'
 import type { ColumnType } from '../components/TabularExplorer/types'
 
@@ -22,23 +21,6 @@ export type OrFilters = {
 
 export type GenericFilter = Filter | AndFilters | OrFilters
 
-export type XAxisType = 'discrete' | 'continuous'
-
-export type XAxisSortBy = 'axis_x' | 'axis_y'
-
-export type SortDirection = 'asc' | 'desc'
-
-export type XAxis = {
-  column_x: string
-  sort_x_by: XAxisSortBy | null
-  sort_x_direction: SortDirection | null
-  type: XAxisType
-}
-
-export type CombinedSort = '' | 'axis_x-asc' | 'axis_x-desc' | 'axis_y-asc' | 'axis_y-desc'
-
-export type XAxisForm = Omit<XAxis, 'sort_x_by' | 'sort_x_direction'> & { sort_combined: CombinedSort }
-
 export type UnitPosition = 'prefix' | 'suffix'
 
 export type YAxis = {
@@ -48,20 +30,6 @@ export type YAxis = {
   unit: string | null
   unit_position: UnitPosition | null
 }
-
-export type DataSeriesType = 'line' | 'histogram'
-
-export type DataSeries = {
-  type: DataSeriesType
-  column_y: string
-  aggregate_y: TabularAggregateType | null
-  resource_id: string
-  column_x_name_override: string | null
-  filters: GenericFilter | null
-}
-
-// Type for form where aggregate_y can be empty string for select binding
-export type DataSeriesForm = Omit<DataSeries, 'aggregate_y'> & { aggregate_y: TabularAggregateType | '' | null }
 
 export type Chart = Owned & {
   id: string
@@ -75,9 +43,9 @@ export type Chart = Owned & {
   image: string | null
   uri: string
   page: string
-  x_axis: XAxis
+  query: string
+  resource_id: string
   y_axis: YAxis
-  series: Array<DataSeries>
   extras: Record<string, unknown>
   permissions: { delete: boolean, edit: boolean, read: boolean }
   metrics: {
@@ -85,14 +53,10 @@ export type Chart = Owned & {
   }
 }
 
-export type ChartForApi = OwnedWithId & Pick<Chart, 'title' | 'description' | 'private' | 'x_axis' | 'y_axis' | 'series' | 'extras'>
+export type ChartForApi = OwnedWithId & Pick<Chart, 'title' | 'description' | 'private' | 'query' | 'resource_id' | 'y_axis' | 'extras'>
 
-export type ChartForm = Omit<ChartForApi, 'x_axis' | 'series' | 'owner' | 'organization'> & {
+export type ChartForm = Omit<ChartForApi, 'owner' | 'organization'> & {
   owned: OwnedWithId
-  x_axis: XAxisForm
-  series: Array<DataSeriesForm>
-  chart_type?: DataSeriesType | null
-  filter: GenericFilter | null
 }
 
 export type ColumnDefinition = { name: string, type: ColumnType, min?: number, max?: number }
