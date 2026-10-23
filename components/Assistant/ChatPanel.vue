@@ -134,7 +134,9 @@ const input = ref('')
 const copied = ref(false)
 
 const waiting = computed(() => !props.resourceId)
-const busy = computed(() => status.value !== 'ready')
+// 'error' is not busy: a failed request leaves the status on 'error' until the
+// next one starts, and the composer must stay usable so the user can retry.
+const busy = computed(() => status.value === 'submitted' || status.value === 'streaming')
 const errorMessage = computed(() => (error.value ? mapAssistantError(error.value) : null))
 
 const lastAssistantText = computed(() => {
@@ -157,10 +159,16 @@ function useQuery() {
 
 async function copyQuery() {
   if (!lastSql.value) return
-  await navigator.clipboard.writeText(lastSql.value)
-  copied.value = true
-  setTimeout(() => {
-    copied.value = false
-  }, 2000)
+  try {
+    await navigator.clipboard.writeText(lastSql.value)
+    copied.value = true
+    setTimeout(() => {
+      copied.value = false
+    }, 2000)
+  }
+  catch {
+    // Clipboard unavailable (permissions, non-secure context): no feedback, no
+    // unhandled rejection — the user can still use the use-query button.
+  }
 }
 </script>

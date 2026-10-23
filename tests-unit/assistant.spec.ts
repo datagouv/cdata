@@ -195,4 +195,43 @@ describe('ChatPanel', () => {
     expect(alert.exists()).toBe(true)
     expect(alert.text()).toContain('Quota journalier dépassé')
   })
+
+  it('keeps the composer usable after an error status', async () => {
+    // useChat leaves the status on 'error' after a failed request until the next
+    // one starts: the composer must not stay disabled.
+    chatState.status.value = 'error'
+    chatState.error.value = Object.assign(new Error('fetch failed'), {})
+    const wrapper = mountPanel('resource-1')
+
+    const textarea = wrapper.find('textarea#assistant-input')
+    expect(textarea.attributes('disabled')).toBeUndefined()
+
+    await textarea.setValue('On réessaie ?')
+    await wrapper.find('form').trigger('submit.prevent')
+
+    expect(sendMessageMock).toHaveBeenCalledWith({ text: 'On réessaie ?' })
+  })
+
+  it('still disables the composer while a request is in flight', () => {
+    chatState.status.value = 'streaming'
+    const wrapper = mountPanel('resource-1')
+
+    expect(wrapper.find('textarea#assistant-input').attributes('disabled')).toBeDefined()
+  })
+
+  it('survives a clipboard rejection without feedback', async () => {
+    chatState.messages.value = [assistantTextMessage('```sql\nSELECT 1\n```')]
+    const writeText = vi.fn().mockRejectedValue(new Error('denied'))
+    vi.stubGlobal('navigator', { clipboard: { writeText } })
+
+    const wrapper = mountPanel('resource-1')
+    const button = wrapper.findAll('button').find(b => b.text() === 'Copier')
+    await button!.trigger('click')
+    await flushPromises()
+
+    expect(writeText).toHaveBeenCalledWith('SELECT 1')
+    expect(wrapper.text()).toContain('Copier')
+    expect(wrapper.text()).not.toContain('Copié !')
+    vi.unstubAllGlobals()
+  })
 })
