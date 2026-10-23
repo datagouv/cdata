@@ -34,8 +34,9 @@ function getPreviewErrorType(resource: Resource): PreviewErrorType {
   }
 
   // Mirrors the wrapper's ordering: CORS knowledge (the checker recorded a
-  // blocked origin) comes before the size/quota heuristics.
-  if (getResourceCorsStatus(resource) === 'blocked') {
+  // blocked origin) comes before the size/quota heuristics. Tabular files
+  // are ignored for CORS.
+  if (!isTabularPipelineFormat(resource.format) && getResourceCorsStatus(resource) === 'blocked') {
     return 'cors'
   }
 

@@ -287,7 +287,7 @@ export const getResourceCorsStatus = (resource: Resource): CorsStatus => {
   const allowedMethods = rawMethods
     ? rawMethods.split(',').map(m => m.trim().toUpperCase())
     : []
-  const supportsGet = allowedMethods.length === 0 || allowedMethods.includes('GET')
+  const supportsGet = allowedMethods.length === 0 || allowedMethods.some(m => m === '*' || m === 'GET')
 
   return isOriginAllowed && supportsGet ? 'allowed' : 'blocked'
 }
