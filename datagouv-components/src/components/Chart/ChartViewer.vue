@@ -14,13 +14,13 @@ import { init, type ECharts as EChartsType } from 'echarts'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { summarize } from '../../functions/helpers'
 import { useFormatDate } from '../../functions/dates'
-import type { Chart, ColumnDefinition, ColumnsDefinition, XAxis, YAxis, XAxisForm, ChartForApi } from '../../types/visualizations'
+import type { ChartViewerConfig, ChartViewerXAxis, ColumnDefinition, ColumnsDefinition, YAxis } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
 
 use([CanvasRenderer, LineChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent])
 
 const props = defineProps<{
-  chart: Chart | ChartForApi
+  chart: ChartViewerConfig
   series: {
     data: Record<string, Array<Record<string, unknown>>>
     columns: ColumnsDefinition
@@ -39,7 +39,7 @@ function capture(): string | null {
 defineExpose({ capture })
 
 // ECharts has a dedicated 'time' axis type for continuous date values.
-function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' | 'time' {
+function mapXAxisType(xAxis: ChartViewerXAxis): 'category' | 'value' | 'time' {
   if (!xAxis) return 'category'
   if (xAxis.type !== 'continuous') return 'category'
   return isDateAxis.value ? 'time' : 'value'
@@ -255,7 +255,7 @@ const echartsOption = computed(() => {
     },
     xAxis: {
       type: xAxisType,
-      name: (props.chart.x_axis as XAxis).column_x,
+      name: props.chart.x_axis.column_x,
       min: xAxisType !== 'category' ? xAxisColumn.value?.min ?? xAxisBounds.value.min ?? undefined : undefined,
       max: xAxisType !== 'category' ? xAxisColumn.value?.max ?? xAxisBounds.value.max ?? undefined : undefined,
       axisLabel: xAxisType === 'time'
