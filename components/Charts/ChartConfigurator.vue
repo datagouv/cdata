@@ -5,7 +5,7 @@
     @submit.prevent="saveChart"
   >
     <div class="grid lg:grid-cols-12 gap-4 lg:gap-8">
-      <div class="col-span-6 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
+      <div class="col-span-7 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
         <template v-if="selectedResource">
           <div>
             <label
@@ -79,7 +79,13 @@
         </div>
       </div>
 
-      <div class="col-span-6 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
+      <div class="col-span-5 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
+        <SegmentedControl
+          v-model="activePanel"
+          grow
+          :options="panelOptions"
+        />
+
         <fieldset class="min-w-0">
           <ProducerSelect
             v-model="producer"
@@ -132,12 +138,6 @@
           </div>
         </fieldset>
         <template v-if="selectedResource">
-          <SegmentedControl
-            v-model="activePanel"
-            grow
-            :options="panelOptions"
-          />
-
           <template v-if="activePanel === 'form'">
             <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
               <label
