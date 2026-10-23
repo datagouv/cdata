@@ -1,0 +1,6 @@
+{
+  "request": "/api/resources/3a6d6fe3-8548-43ed-ad09-72052771447c/data/?Num%C3%A9ro%20de%20dossier__exact=1&page=1&page_size=15",
+  "status": 200,
+  "contentType": "application/json; charset=utf-8",
+  "body": "{\"data\": [], \"links\": {\"profile\": \"https://tabular-api.data.gouv.fr/api/resources/3a6d6fe3-8548-43ed-ad09-72052771447c/profile/\", \"swagger\": \"https://tabular-api.data.gouv.fr/api/resources/3a6d6fe3-8548-43ed-ad09-72052771447c/swagger/\", \"next\": null, \"prev\": null}, \"meta\": {\"page\": 1, \"page_size\": 15, \"total\": 0}}"
+}

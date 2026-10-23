@@ -1,5 +1,5 @@
 import { test, expect } from '../base'
-import { API_BASE, clickOutside } from '../helpers'
+import { API_BASE, clickOutside, gotoHydrated } from '../helpers'
 
 // Smallest valid PNG (1x1 pixel): the reuse form requires an image to save
 const PNG_1X1 = Buffer.from(
@@ -43,8 +43,7 @@ test('can edit a reuse and changes are visible on the public page', async ({ pag
   })
   expect(imageUpload.ok()).toBeTruthy()
 
-  await page.goto(`/admin/reuses/${reuse.id}/`)
-  await page.waitForLoadState('networkidle')
+  await gotoHydrated(page, `/admin/reuses/${reuse.id}/`)
 
   // The image must be loaded in the form, otherwise saving is refused
   await expect(page.locator('img[src*="/images/"]')).toBeVisible()

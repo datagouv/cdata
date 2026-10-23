@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test'
 import { expect } from '@playwright/test'
 import { test } from '../base'
+import { gotoHydrated } from '../helpers'
 
 // The HVD table loads its data from the "Hvd" Grist table. The Grist endpoint is
 // not available in CI (NUXT_PUBLIC_HVD_GRIST_* are empty by default), so every test
@@ -79,7 +80,9 @@ const GRIST_TABLE_ROUTE = /\/tables\/[^/]*\/records(\?|$)/
 
 async function gotoHvdPage(page: Page) {
   await page.route(GRIST_TABLE_ROUTE, route => route.fulfill({ json: HVD_RECORDS }))
-  await page.goto('/suivi-de-publication')
+  // Before hydration the link is a plain one: the page would then load on the server,
+  // which fetches the records out of reach of the stub
+  await gotoHydrated(page, '/suivi-de-publication')
   await page.getByRole('link', { name: 'Données de forte valeur' }).click()
   await expect(page).toHaveURL(/\/suivi-de-publication\/donnees-de-forte-valeur$/)
 }

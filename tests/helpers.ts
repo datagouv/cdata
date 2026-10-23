@@ -84,9 +84,12 @@ export async function createDatasetWithRemoteResources(request: APIRequestContex
 
 // Typing into a server-rendered field before Vue hydrates it is lost: hydration resets each
 // input to its `v-model`. Use it before filling a form right after landing on a page.
+// The network going idle does not prove hydration ended on a busy CPU: Nuxt tells it, the
+// way @nuxt/test-utils waits for it.
 export async function gotoHydrated(page: Page, url: string): Promise<void> {
   await page.goto(url)
   await page.waitForLoadState('networkidle')
+  await page.waitForFunction(() => window.useNuxtApp?.().isHydrating === false)
 }
 
 // matomo.js is injected after the load event, and webfonts are only fetched once used,
@@ -136,14 +139,19 @@ export async function createReuse(request: APIRequestContext, title: string, url
   return await response.json()
 }
 
+// The API gives each bloc its id. Distributed over the union so each bloc keeps its own fields.
+type NewPageBloc = PageBloc extends infer Bloc ? Bloc extends PageBloc ? Omit<Bloc, 'id'> : never : never
+
 export async function createPost(request: APIRequestContext, data: {
   name: string
   kind: Post['kind']
   slug?: string
+  headline?: string
   content?: string
   body_type?: Post['body_type']
-  blocs?: Array<PageBloc>
+  blocs?: Array<NewPageBloc>
   parent?: string
+  sidemenu?: boolean
 }): Promise<ApiPost> {
   const response = await request.post(`${API_BASE}/api/1/posts/`, { data })
   if (!response.ok()) {

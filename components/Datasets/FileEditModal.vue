@@ -119,6 +119,25 @@
         </div>
 
         <BannerAction
+          v-if="dataset && resource.resource && !isCommunityResource(resource.resource) && isMeAdmin()"
+          class="w-full mt-6"
+          type="primary"
+          :title="$t(`Relancer l'analyse`)"
+        >
+          {{ $t(`Le fichier sera téléchargé et analysé à nouveau, même s'il n'a pas changé. Les résultats apparaîtront d'ici quelques minutes.`) }}
+          <template #button>
+            <BrandedButton
+              size="xs"
+              :icon="RiRefreshLine"
+              :loading="analysing"
+              @click="forceAnalysis(dataset, resource.resource)"
+            >
+              {{ $t(`Relancer l'analyse`) }}
+            </BrandedButton>
+          </template>
+        </BannerAction>
+
+        <BannerAction
           v-if="dataset && resource.resource"
           class="w-full mt-6"
           type="danger"
@@ -193,10 +212,10 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, isCommunityResource, useHasTabularData } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, isCommunityResource, toast, useHasTabularData } from '@datagouv/components-next'
 import type { Dataset, DatasetV2, Resource } from '@datagouv/components-next'
 import { cloneDeep } from 'lodash-es'
-import { RiDeleteBin6Line, RiPencilLine } from '@remixicon/vue'
+import { RiDeleteBin6Line, RiPencilLine, RiRefreshLine } from '@remixicon/vue'
 import ModalWithButton from '../Modal/ModalWithButton.vue'
 import DescribeResource from './DescribeResource.vue'
 import CdataLink from '../CdataLink.vue'
@@ -329,5 +348,17 @@ const deleteResource = async (dataset: Dataset | DatasetV2 | Omit<Dataset, 'reso
     deleting.value = false
   }
   close()
+}
+
+const analysing = ref(false)
+const forceAnalysis = async (dataset: Dataset | DatasetV2 | Omit<Dataset, 'resources' | 'community_resources'>, resource: Resource) => {
+  analysing.value = true
+  try {
+    await $api(`/api/1/datasets/${dataset.id}/resources/${resource.id}/analysis/`, { method: 'POST' })
+    toast.success(t('Analyse demandée !'))
+  }
+  finally {
+    analysing.value = false
+  }
 }
 </script>

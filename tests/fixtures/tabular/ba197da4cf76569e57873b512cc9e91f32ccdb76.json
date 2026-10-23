@@ -1,0 +1,6 @@
+{
+  "request": "/api/resources/63f39717-e5c9-4d70-a0d5-544773c1d742/data/?or=(code_r%C3%A9gion__contains.OCCITANIE,libelle_region__contains.OCCITANIE)&page=1&page_size=50",
+  "status": 200,
+  "contentType": "application/json; charset=utf-8",
+  "body": "{\"data\": [{\"__id\": 9, \"code_r\\u00e9gion\": \"76\", \"libelle_region\": \"Occitanie\", \"ann\\u00e9e_publication\": \"2018\", \"Nbre_bailleurs\": 84, \"Nbre_bailleurs_consolid\\u00e9\": 53, \"Nbre_logements\": 280910, \"Part_logement_sociaux_g\\u00e9r\\u00e9s_OPH (%)\": 53, \"Part_logement_sociaux_g\\u00e9r\\u00e9s_ESH (%)\": 43, \"Part_logement_sociaux_g\\u00e9r\\u00e9s_SEM (%)\": 2, \"Part_logements_sociaux_g\\u00e9r\\u00e9s_autres_bailleurs (%)\": 2}], \"links\": {\"profile\": \"https://tabular-api.data.gouv.fr/api/resources/63f39717-e5c9-4d70-a0d5-544773c1d742/profile/\", \"swagger\": \"https://tabular-api.data.gouv.fr/api/resources/63f39717-e5c9-4d70-a0d5-544773c1d742/swagger/\", \"next\": null, \"prev\": null}, \"meta\": {\"page\": 1, \"page_size\": 50, \"total\": 1}}"
+}
