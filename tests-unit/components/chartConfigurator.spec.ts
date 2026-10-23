@@ -23,11 +23,23 @@ vi.mock('~/utils/auth', () => ({
 }))
 
 vi.mock('@datagouv/components-next', async (importOriginal) => {
+  const { defineComponent, h } = await import('vue')
   const original = await importOriginal<typeof import('@datagouv/components-next')>()
   return {
     ...original,
     useGetProfile: () => getProfileMock,
     toast: { success: toastSuccess },
+    SearchableSelect: defineComponent({
+      name: 'SearchableSelect',
+      props: { modelValue: { type: Object, default: null } },
+      emits: ['update:modelValue'],
+      setup(_, { emit }) {
+        return () => h('button', {
+          class: 'switch-dataset',
+          onClick: () => emit('update:modelValue', { id: 'dataset-2', title: 'Autre jeu de données' }),
+        }, 'switch-dataset')
+      },
+    }),
   }
 })
 
@@ -83,6 +95,7 @@ vi.mock('~/components/Accordion/AccordionGroup.global.vue', () => ({
 }))
 
 const RESOURCE_ID = 'f47ac10b-58cc-4372-a567-0e02b2c3d479'
+const RESOURCE_B_ID = '9b2e5f4a-3c1d-4e6f-8a7b-1c2d3e4f5a6b'
 
 const profileResponse = {
   profile: {
@@ -102,6 +115,31 @@ const profileResponse = {
     separator: ',',
     categorical: ['label'],
     total_lines: 100,
+    nb_duplicates: 0,
+    columns_fields: {},
+    columns_labels: {},
+    header_row_idx: 0,
+    heading_columns: 0,
+    trailing_columns: 0,
+  },
+}
+
+const profileBResponse = {
+  profile: {
+    header: ['epci', 'nb'],
+    columns: {
+      epci: { score: 1, format: 'string', python_type: 'string' },
+      nb: { score: 1, format: 'int', python_type: 'int' },
+    },
+    formats: {},
+    profile: {
+      epci: { tops: [], nb_distinct: 5, nb_missing_values: 0 },
+      nb: { tops: [], nb_distinct: 5, nb_missing_values: 0, min: 1, max: 9 },
+    },
+    encoding: 'utf-8',
+    separator: ',',
+    categorical: ['epci'],
+    total_lines: 50,
     nb_duplicates: 0,
     columns_fields: {},
     columns_labels: {},
@@ -176,10 +214,28 @@ async function mountWithInitialChart(form: ChartForm) {
     if (url === `/api/2/datasets/resources/${RESOURCE_ID}/`) {
       return Promise.resolve({ resource: { id: RESOURCE_ID, title: 'data.csv' }, dataset_id: 'dataset-1' })
     }
+    if (url === `/api/2/datasets/resources/${RESOURCE_B_ID}/`) {
+      return Promise.resolve({ resource: { id: RESOURCE_B_ID, title: 'other.csv' }, dataset_id: 'dataset-1' })
+    }
     if (url === '/api/2/datasets/dataset-1/') {
       return Promise.resolve({ id: 'dataset-1', title: 'Mon jeu de données' })
     }
     if (url === '/api/2/datasets/dataset-1/resources/') {
+      return Promise.resolve({
+        data: [
+          { id: RESOURCE_ID, title: 'data.csv', extras: {} },
+          { id: RESOURCE_B_ID, title: 'other.csv', filetype: 'file', extras: { 'analysis:parsing:parsing_table': 'other_table' } },
+        ],
+        total: 2,
+        page: 1,
+        page_size: 10,
+        next_page: null,
+      })
+    }
+    if (url === '/api/2/datasets/dataset-2/') {
+      return Promise.resolve({ id: 'dataset-2', title: 'Autre jeu de données' })
+    }
+    if (url === '/api/2/datasets/dataset-2/resources/') {
       return Promise.resolve({ data: [], total: 0, page: 1, page_size: 10, next_page: null })
     }
     return Promise.reject(new Error(`Unexpected URL: ${url}`))
@@ -332,5 +388,51 @@ describe('ChartConfigurator', () => {
     await flushPromises()
 
     expect(form.query).toBe('SELECT stub')
+  })
+
+  it('clears the form resource_id when the dataset changes without a new resource', async () => {
+    const form = newForm({ resource_id: RESOURCE_ID })
+    const wrapper = await mountWithInitialChart(form)
+    expect(form.resource_id).toBe(RESOURCE_ID)
+
+    await wrapper.find('.switch-dataset').trigger('click')
+    await flushPromises()
+
+    expect(form.resource_id).toBe('')
+  })
+
+  it('ignores a stale profile response when the resource changed meanwhile', async () => {
+    const form = newForm()
+    const wrapper = await mountWithInitialChart(form)
+
+    let resolveSlowProfile: ((value: unknown) => void) | undefined
+    getProfileMock.mockImplementation((id: string) => {
+      if (id === RESOURCE_B_ID) {
+        return new Promise((resolve) => {
+          resolveSlowProfile = resolve
+        })
+      }
+      return Promise.resolve(profileResponse)
+    })
+
+    // Switch to B and let its watcher start (its profile response stays pending)…
+    await wrapper.find('#resource-select').setValue(RESOURCE_B_ID)
+    await flushPromises()
+    expect(resolveSlowProfile).toBeDefined()
+
+    // …then switch back to A, which resolves fast.
+    await wrapper.find('#resource-select').setValue(RESOURCE_ID)
+    await flushPromises()
+
+    const items = wrapper.find('ul').findAll('li').map(li => li.text())
+    expect(items.join(' ')).toContain('year')
+
+    // B's late response must not clobber A's schema.
+    resolveSlowProfile?.(profileBResponse)
+    await flushPromises()
+
+    const itemsAfter = wrapper.find('ul').findAll('li').map(li => li.text())
+    expect(itemsAfter.join(' ')).toContain('year')
+    expect(itemsAfter.join(' ')).not.toContain('epci')
   })
 })
