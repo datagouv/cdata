@@ -100,6 +100,9 @@ export default defineNuxtConfig({
       searchDebounce: 300,
       searchSirenUrl: 'https://recherche-entreprises.api.gouv.fr/search',
       csvDatasetId: undefined,
+      // Datasets in this topic get a banner linking to ecologie.data.gouv.fr.
+      // No banner when unset (NUXT_PUBLIC_ECOLOGIE_TOPIC_ID).
+      ecologieTopicId: undefined,
 
       // Without www/demo/dev
       baseDomain: 'data.gouv.fr',
