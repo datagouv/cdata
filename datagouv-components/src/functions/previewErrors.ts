@@ -45,12 +45,6 @@ function getPreviewErrorType(resource: Resource): PreviewErrorType {
     return 'too_large'
   }
 
-  // Check for network errors (HTTP status >= 400)
-  const checkStatus = extras['check:status']
-  if (typeof checkStatus === 'number' && checkStatus >= 400) {
-    return 'network'
-  }
-
   // Check for parsing errors (malformed)
   if (extras['analysis:parsing:error']) {
     return 'malformed'
@@ -78,7 +72,7 @@ export function getPreviewErrorInfoByType(errorType: PreviewErrorType, resource?
       return {
         type: 'cors',
         message: t('Ce fichier est hébergé sur un site externe qui n’autorise pas son affichage dans data.gouv.fr.'),
-        userCta: '',
+        userCta: t('Faites le savoir au producteur'),
         producerCta: t('Signaler un problème'),
         isProducerFault: true,
       }

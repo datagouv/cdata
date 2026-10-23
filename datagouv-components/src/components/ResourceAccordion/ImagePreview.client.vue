@@ -4,6 +4,7 @@
       v-if="!isSizeAllowed || hasError"
       :resource="resource"
       :message="errorMessage"
+      :fallback-error-type="hasError ? 'network' : undefined"
       :show-producer-cta="canEdit"
     />
     <img
