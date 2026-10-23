@@ -83,8 +83,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { RiBarChartBoxLine, RiDeleteBinLine, RiEyeLine, RiLineChartLine, RiLockLine, RiSubtractLine } from '@remixicon/vue'
+import { RiBarChartBoxLine, RiDeleteBinLine, RiEyeLine, RiLockLine, RiSubtractLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Chart } from '../types/visualizations'
 import { summarize } from '../functions/helpers'
@@ -98,7 +97,7 @@ import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import TranslationT from './TranslationT.vue'
 
-const props = defineProps<{
+defineProps<{
   chart: Chart
   chartUrl?: RouteLocationRaw
   organizationUrl?: RouteLocationRaw
@@ -106,7 +105,7 @@ const props = defineProps<{
 
 const { t } = useTranslation()
 
-const chartIcon = computed(() => {
-  return props.chart.series[0]?.type === 'line' ? RiLineChartLine : RiBarChartBoxLine
-})
+// The chart kind is inferred at render time from the query result, so the
+// card carries no line/bar information: use the generic chart icon.
+const chartIcon = RiBarChartBoxLine
 </script>
