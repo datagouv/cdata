@@ -168,7 +168,15 @@ test('chat message is sent with the selected resource and the reply is streamed'
   await expect(page.getByRole('button', { name: 'Utiliser cette requête' })).toBeVisible()
 
   await expect.poll(() => capture.chatBodies.length).toBe(1)
-  expect(capture.chatBodies[0]).toMatchObject({ resource_id: MOCK_RESOURCES[0]!.id })
+  expect(capture.chatBodies[0]).toMatchObject({
+    resource_id: MOCK_RESOURCES[0]!.id,
+    messages: expect.any(Array),
+  })
+  const messages = (capture.chatBodies[0] as { messages: Array<{ role: string }> }).messages
+  expect(messages.length).toBeGreaterThan(0)
+  const lastUserMessage = [...messages].reverse().find(m => m.role === 'user')
+  expect(lastUserMessage).toBeDefined()
+  expect(JSON.stringify(lastUserMessage)).toContain('Logements par région en histogramme')
 })
 
 test('using the assistant query fills the SQL field', async ({ page }) => {

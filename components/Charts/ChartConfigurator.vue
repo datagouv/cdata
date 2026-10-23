@@ -377,9 +377,11 @@ async function loadColumnsForResource(resourceId: string) {
   resourceColumnsId.value = resourceId
   try {
     const profile = await getProfile(resourceId)
+    if (resourceColumnsId.value !== resourceId) return
     resourceColumns.value = buildColumnsFromProfile(profile)
   }
   catch (error) {
+    if (resourceColumnsId.value !== resourceId) return
     console.error(`Failed to load columns for resource ${resourceId}:`, error)
     resourceColumns.value = []
   }
@@ -480,8 +482,8 @@ watch(dataset, async (newDataset) => {
 }, { immediate: true })
 
 watch(selectedResource, async (r) => {
+  form.value.resource_id = r
   if (r) {
-    form.value.resource_id = r
     if (!savedResources[r]) {
       await loadMissingResourcesForChart([r])
     }
