@@ -18,6 +18,13 @@ export type TabularDataResponse = {
 
 export type TabularAggregateType = 'avg' | 'sum' | 'count' | 'min' | 'max'
 
+export type SqlQueryResult = {
+  columns: Array<string>
+  rows: Array<Array<string | number | null>>
+}
+
+export const DEFAULT_SQL_ROW_LIMIT = 1000
+
 export type FetchTabularDataOptions = {
   resourceId: string
   page?: number
@@ -135,4 +142,44 @@ export async function getData(config: PluginConfig, id: string, page: number, so
 export function useGetProfile() {
   const config = useComponentsConfig()
   return (id: string) => ofetch<TabularProfileResponse>(`${config.tabularApiUrl}/api/resources/${id}/profile/`)
+}
+
+const SQL_TIMEOUT_MS = 30_000
+
+// contrat hypothétique — ajuster : POST {tabularApiUrl}/api/resources/{rid}/sql
+// avec corps JSON {"query": sql}, réponse {"columns": [...], "rows": [[...]]}.
+// Ce bloc est le seul endroit où le contrat SQL est construit.
+function sqlEndpointUrl(tabularApiUrl: string, resourceId: string): string {
+  return `${tabularApiUrl}/api/resources/${resourceId}/sql`
+}
+
+/**
+ * Execute a read-only SQL query against a tabular resource
+ * (hypothetical contract, see `sqlEndpointUrl`).
+ */
+export async function executeSqlQuery(tabularApiUrl: string, resourceId: string, sql: string): Promise<SqlQueryResult> {
+  try {
+    return await ofetch<SqlQueryResult>(sqlEndpointUrl(tabularApiUrl, resourceId), {
+      method: 'POST',
+      body: { query: sql },
+      timeout: SQL_TIMEOUT_MS,
+    })
+  }
+  catch (error) {
+    const detail = error instanceof Error ? error.message : String(error)
+    throw new Error(`L'exécution de la requête a échoué : ${detail}`, { cause: error })
+  }
+}
+
+/**
+ * Return the query unchanged if it already has a LIMIT clause, otherwise append
+ * `LIMIT <limit>` (default {@link DEFAULT_SQL_ROW_LIMIT}). A LIMIT inside a
+ * string literal does not count.
+ */
+export function ensureRowLimit(sql: string, limit = DEFAULT_SQL_ROW_LIMIT): string {
+  const withoutStrings = sql.replace(/'([^']|'')*'/g, '\'\'')
+  if (/\blimit\b/i.test(withoutStrings)) return sql
+  const trailingSemicolon = /;\s*$/.test(sql)
+  const body = trailingSemicolon ? sql.replace(/;\s*$/, '') : sql
+  return `${body} LIMIT ${limit}${trailingSemicolon ? ';' : ''}`
 }
