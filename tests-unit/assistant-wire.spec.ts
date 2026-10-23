@@ -6,7 +6,6 @@ import { ref } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useChat } from '@ai-sdk/vue'
 import { useAssistantChat } from '~/components/Assistant/useAssistantChat'
-import { buildChatBody } from '~/utils/assistant'
 
 vi.mock('@ai-sdk/vue', () => ({
   useChat: vi.fn(() => ({ messages: ref([]) })),
@@ -17,7 +16,7 @@ const MESSAGES = [{ id: '1', role: 'user', parts: [{ type: 'text', text: 'Bonjou
 type TransportInit = {
   api: string
   credentials: RequestCredentials
-  prepareSendMessagesRequest: (options: { messages: unknown[] }) => Promise<{ body: unknown }> | { body: unknown }
+  prepareSendMessagesRequest: (options: { messages: unknown[], id: string, trigger: 'submit-message', messageId: string | undefined }) => Promise<{ body: unknown }> | { body: unknown }
 }
 
 function capturedTransport() {
@@ -54,14 +53,14 @@ describe('useAssistantChat wire contract', () => {
     useAssistantChat(resourceId)
     const transport = capturedTransport()
 
-    const withResource = await transport.prepareSendMessagesRequest({ messages: MESSAGES })
-    expect(withResource.body).toEqual(buildChatBody(MESSAGES, 'f47ac10b-58cc-4372-a567-0e02b2c3d479'))
-    expect(withResource.body).toEqual({ messages: MESSAGES, resource_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479' })
+    const withResource = await transport.prepareSendMessagesRequest({ messages: MESSAGES, id: 'chat-1', trigger: 'submit-message' as const, messageId: undefined })
+    // Protocol fields (id/trigger/messageId) are required by the backend's
+    // VercelAIAdapter (SubmitMessage discriminated union) and must not be dropped.
+    expect(withResource.body).toEqual({ id: 'chat-1', trigger: 'submit-message', messageId: undefined, messages: MESSAGES, resource_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479' })
 
     resourceId.value = null
-    const withoutResource = await transport.prepareSendMessagesRequest({ messages: MESSAGES })
-    expect(withoutResource.body).toEqual(buildChatBody(MESSAGES, null))
-    expect(withoutResource.body).toEqual({ messages: MESSAGES })
+    const withoutResource = await transport.prepareSendMessagesRequest({ messages: MESSAGES, id: 'chat-1', trigger: 'submit-message' as const, messageId: undefined })
+    expect(withoutResource.body).toEqual({ id: 'chat-1', trigger: 'submit-message', messageId: undefined, messages: MESSAGES })
   })
 
   it('omits resource_id when the feature flag is off, even with a resource selected', async () => {
@@ -75,7 +74,7 @@ describe('useAssistantChat wire contract', () => {
     useAssistantChat(ref('f47ac10b-58cc-4372-a567-0e02b2c3d479'))
     const transport = capturedTransport()
 
-    const prepared = await transport.prepareSendMessagesRequest({ messages: MESSAGES })
-    expect(prepared.body).toEqual({ messages: MESSAGES })
+    const prepared = await transport.prepareSendMessagesRequest({ messages: MESSAGES, id: 'chat-1', trigger: 'submit-message' as const, messageId: undefined })
+    expect(prepared.body).toEqual({ id: 'chat-1', trigger: 'submit-message', messageId: undefined, messages: MESSAGES })
   })
 })
