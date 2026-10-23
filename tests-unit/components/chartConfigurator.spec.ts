@@ -405,18 +405,27 @@ describe('ChartConfigurator', () => {
     expect(wrapper.find('#y-axis-label').exists()).toBe(false)
   })
 
-  it('keeps pickers and the save button visible in both segments', async () => {
+  it('keeps pickers and the save button in the formulaire segment', async () => {
     const form = newForm()
     const wrapper = await mountWithInitialChart(form)
 
-    for (const segment of ['Formulaire', 'Assistant']) {
-      await switchSegment(wrapper, segment)
+    expect(wrapper.find('.producer-select-stub').exists()).toBe(true)
+    expect(wrapper.find('.switch-dataset').exists()).toBe(true)
+    expect(wrapper.find('#resource-select').exists()).toBe(true)
+    expect(saveButton(wrapper)).toBeDefined()
+  })
 
-      expect(wrapper.find('.producer-select-stub').exists()).toBe(true)
-      expect(wrapper.find('.switch-dataset').exists()).toBe(true)
-      expect(wrapper.find('#resource-select').exists()).toBe(true)
-      expect(saveButton(wrapper), `save button in "${segment}"`).toBeDefined()
-    }
+  it('hides the whole form (pickers and save) in the assistant segment', async () => {
+    const form = newForm()
+    const wrapper = await mountWithInitialChart(form)
+
+    await switchSegment(wrapper, 'Assistant')
+
+    expect(wrapper.find('.producer-select-stub').exists()).toBe(false)
+    expect(wrapper.find('.switch-dataset').exists()).toBe(false)
+    expect(wrapper.find('#resource-select').exists()).toBe(false)
+    expect(wrapper.find('button[type="submit"]').exists()).toBe(false)
+    expect(wrapper.find('.chat-panel-stub').exists()).toBe(true)
   })
 
   it('renders the assistant chat panel with the selected resource', async () => {
