@@ -167,7 +167,10 @@ export async function executeSqlQuery(tabularApiUrl: string, resourceId: string,
   }
   catch (error) {
     const detail = error instanceof Error ? error.message : String(error)
-    throw new Error(`L'exécution de la requête a échoué : ${detail}`, { cause: error })
+    const wrapped = new Error(`L'exécution de la requête a échoué : ${detail}`)
+    // @ts-expect-error Error.cause n'existe pas en lib ES2020
+    wrapped.cause = error
+    throw wrapped
   }
 }
 
