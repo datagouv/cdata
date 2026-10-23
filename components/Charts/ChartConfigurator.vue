@@ -79,204 +79,210 @@
         </div>
       </div>
 
-      <div class="col-span-5 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
+      <div class="col-span-5 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] flex flex-col">
+        <!-- Mode Formulaire : pickers + SQL + styles (scroll interne) + sauvegarde -->
         <SegmentedControl
           v-model="activePanel"
           grow
           :options="panelOptions"
         />
 
-        <fieldset class="min-w-0">
-          <ProducerSelect
-            v-model="producer"
-            :label="$t('Avec qui souhaitez-vous publier ?')"
-            :required="true"
-            all
-          />
-        </fieldset>
-        <fieldset
-          v-if="producer"
-          class="min-w-0"
-        >
-          <p class="mb-2 font-bold">
-            {{ $t('Source de données') }}
-          </p>
-          <SearchableSelect
-            v-model="dataset"
-            :label="$t('Jeu de données')"
-            :placeholder="$t('Recherchez un jeu de données...')"
-            :display-value="(option: DatasetSuggest) => option.title"
-            :get-option-id="(option: DatasetSuggest) => option.id"
-            :multiple="false"
-            :suggest="suggestDataset"
-            class="mb-4"
-          />
-          <div v-if="dataset">
-            <label
-              for="resource-select"
-              class="fr-label"
-            >{{ $t('Choix de la ressource') }}</label>
-            <select
-              id="resource-select"
-              v-model="selectedResource"
-              class="w-full fr-select"
-            >
-              <option
-                value=""
-                disabled
-              >
-                {{ $t('Sélectionnez une ressource') }}
-              </option>
-              <option
-                v-for="resource in resources"
-                :key="resource.id"
-                :value="resource.id"
-              >
-                {{ resource.title }}
-              </option>
-            </select>
-          </div>
-        </fieldset>
-        <template v-if="selectedResource">
-          <template v-if="activePanel === 'form'">
-            <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-              <label
-                for="chart-query"
-                class="fr-label font-bold"
-              >
-                {{ $t('Requête SQL') }}
-              </label>
-              <textarea
-                id="chart-query"
-                v-model="form.query"
-                aria-label="Requête SQL"
-                rows="6"
-                class="w-full fr-input font-mono text-sm"
-                :placeholder="$t('SELECT ...')"
+        <template v-if="activePanel === 'form'">
+          <div class="flex-1 min-h-0 overflow-y-auto space-y-6 -mr-1 pr-1">
+            <fieldset class="min-w-0">
+              <ProducerSelect
+                v-model="producer"
+                :label="$t('Avec qui souhaitez-vous publier ?')"
+                :required="true"
+                all
               />
             </fieldset>
-
-            <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-              <p class="font-bold mb-2">
-                {{ $t('Schéma de la ressource') }}
+            <fieldset
+              v-if="producer"
+              class="min-w-0"
+            >
+              <p class="mb-2 font-bold">
+                {{ $t('Source de données') }}
               </p>
-              <ul class="space-y-1 m-0 p-0 list-none">
-                <li
-                  v-for="column in resourceColumns"
-                  :key="column.name"
-                  class="flex items-center gap-2 text-sm"
+              <SearchableSelect
+                v-model="dataset"
+                :label="$t('Jeu de données')"
+                :placeholder="$t('Recherchez un jeu de données...')"
+                :display-value="(option: DatasetSuggest) => option.title"
+                :get-option-id="(option: DatasetSuggest) => option.id"
+                :multiple="false"
+                :suggest="suggestDataset"
+                class="mb-4"
+              />
+              <div v-if="dataset">
+                <label
+                  for="resource-select"
+                  class="fr-label"
+                >{{ $t('Choix de la ressource') }}</label>
+                <select
+                  id="resource-select"
+                  v-model="selectedResource"
+                  class="w-full fr-select"
                 >
-                  <component
-                    :is="getColumnTypeIcon(column.type)"
-                    class="size-4 text-new-gray-medium shrink-0"
-                  />
-                  <span class="font-mono">{{ column.name }}</span>
-                  <span class="text-new-gray-medium">{{ typeConfig[column.type]?.label || column.type }}</span>
-                </li>
-              </ul>
+                  <option
+                    value=""
+                    disabled
+                  >
+                    {{ $t('Sélectionnez une ressource') }}
+                  </option>
+                  <option
+                    v-for="resource in resources"
+                    :key="resource.id"
+                    :value="resource.id"
+                  >
+                    {{ resource.title }}
+                  </option>
+                </select>
+              </div>
             </fieldset>
+            <template v-if="selectedResource">
+              <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
+                <label
+                  for="chart-query"
+                  class="fr-label font-bold"
+                >
+                  {{ $t('Requête SQL') }}
+                </label>
+                <textarea
+                  id="chart-query"
+                  v-model="form.query"
+                  aria-label="Requête SQL"
+                  rows="6"
+                  class="w-full fr-input font-mono text-sm"
+                  :placeholder="$t('SELECT ...')"
+                />
+              </fieldset>
 
-            <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-              <p class="font-bold mb-2">
-                {{ $t('Axe Y') }}
-              </p>
-              <AccordionGroup>
-                <Accordion :title="$t('Styles')">
-                  <div class="space-y-4">
-                    <div>
-                      <label
-                        for="y-axis-label"
-                        class="fr-label"
-                      >{{ $t('Label') }}</label>
-                      <input
-                        id="y-axis-label"
-                        v-model="form.y_axis.label"
-                        type="text"
-                        class="w-full fr-input"
-                      >
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
+              <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
+                <p class="font-bold mb-2">
+                  {{ $t('Schéma de la ressource') }}
+                </p>
+                <ul class="space-y-1 m-0 p-0 list-none">
+                  <li
+                    v-for="column in resourceColumns"
+                    :key="column.name"
+                    class="flex items-center gap-2 text-sm"
+                  >
+                    <component
+                      :is="getColumnTypeIcon(column.type)"
+                      class="size-4 text-new-gray-medium shrink-0"
+                    />
+                    <span class="font-mono">{{ column.name }}</span>
+                    <span class="text-new-gray-medium">{{ typeConfig[column.type]?.label || column.type }}</span>
+                  </li>
+                </ul>
+              </fieldset>
+
+              <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
+                <p class="font-bold mb-2">
+                  {{ $t('Axe Y') }}
+                </p>
+                <AccordionGroup>
+                  <Accordion :title="$t('Styles')">
+                    <div class="space-y-4">
                       <div>
                         <label
-                          for="y-axis-min"
+                          for="y-axis-label"
                           class="fr-label"
-                        >{{ $t('Min') }}</label>
+                        >{{ $t('Label') }}</label>
                         <input
-                          id="y-axis-min"
-                          v-model.number="form.y_axis.min"
-                          type="number"
-                          class="w-full fr-input"
-                        >
-                      </div>
-                      <div>
-                        <label
-                          for="y-axis-max"
-                          class="fr-label"
-                        >{{ $t('Max') }}</label>
-                        <input
-                          id="y-axis-max"
-                          v-model.number="form.y_axis.max"
-                          type="number"
-                          class="w-full fr-input"
-                        >
-                      </div>
-                    </div>
-                    <div class="grid grid-cols-2 gap-4">
-                      <div>
-                        <label
-                          for="y-axis-unit"
-                          class="fr-label"
-                        >{{ $t('Unité') }}</label>
-                        <input
-                          id="y-axis-unit"
-                          v-model="form.y_axis.unit"
+                          id="y-axis-label"
+                          v-model="form.y_axis.label"
                           type="text"
                           class="w-full fr-input"
-                          :placeholder="$t('ex: €, %, kg')"
                         >
                       </div>
-                      <div>
-                        <label
-                          for="y-axis-unit-position"
-                          class="fr-label"
-                        >{{ $t('Position unité')
-                        }}</label>
-                        <select
-                          id="y-axis-unit-position"
-                          v-model="form.y_axis.unit_position"
-                          class="w-full fr-select"
-                        >
-                          <option value="suffix">
-                            {{ $t('Suffixe') }}
-                          </option>
-                          <option value="prefix">
-                            {{ $t('Préfixe') }}
-                          </option>
-                        </select>
+                      <div class="grid grid-cols-2 gap-4">
+                        <div>
+                          <label
+                            for="y-axis-min"
+                            class="fr-label"
+                          >{{ $t('Min') }}</label>
+                          <input
+                            id="y-axis-min"
+                            v-model.number="form.y_axis.min"
+                            type="number"
+                            class="w-full fr-input"
+                          >
+                        </div>
+                        <div>
+                          <label
+                            for="y-axis-max"
+                            class="fr-label"
+                          >{{ $t('Max') }}</label>
+                          <input
+                            id="y-axis-max"
+                            v-model.number="form.y_axis.max"
+                            type="number"
+                            class="w-full fr-input"
+                          >
+                        </div>
+                      </div>
+                      <div class="grid grid-cols-2 gap-4">
+                        <div>
+                          <label
+                            for="y-axis-unit"
+                            class="fr-label"
+                          >{{ $t('Unité') }}</label>
+                          <input
+                            id="y-axis-unit"
+                            v-model="form.y_axis.unit"
+                            type="text"
+                            class="w-full fr-input"
+                            :placeholder="$t('ex: €, %, kg')"
+                          >
+                        </div>
+                        <div>
+                          <label
+                            for="y-axis-unit-position"
+                            class="fr-label"
+                          >{{ $t('Position unité')
+                          }}</label>
+                          <select
+                            id="y-axis-unit-position"
+                            v-model="form.y_axis.unit_position"
+                            class="w-full fr-select"
+                          >
+                            <option value="suffix">
+                              {{ $t('Suffixe') }}
+                            </option>
+                            <option value="prefix">
+                              {{ $t('Préfixe') }}
+                            </option>
+                          </select>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Accordion>
-              </AccordionGroup>
-            </fieldset>
-          </template>
-
-          <ClientOnly v-else>
-            <ChatPanel
-              :resource-id="selectedResource || null"
-              @use-query="onUseQuery"
-            />
-          </ClientOnly>
+                  </Accordion>
+                </AccordionGroup>
+              </fieldset>
+            </template>
+          </div>
 
           <div
-            v-if="isAdmin"
-            class="min-w-0 space-y-4"
+            v-if="selectedResource && isAdmin"
+            class="shrink-0"
           >
             <BrandedButton type="submit">
               {{ $t('Sauvegarder le graphique') }}
             </BrandedButton>
           </div>
         </template>
+
+        <!-- Mode Assistant : le chat seul, conteneur borné à la hauteur du panneau -->
+        <ClientOnly v-else>
+          <div class="flex-1 min-h-0 flex flex-col">
+            <ChatPanel
+              :resource-id="selectedResource || null"
+              @use-query="onUseQuery"
+            />
+          </div>
+        </ClientOnly>
       </div>
     </div>
   </form>
