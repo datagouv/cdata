@@ -4,6 +4,7 @@
 // whole package entry (components, leaflet, chart.js…).
 // Placeholder components: unit tests stub or ignore them, and the real SFCs
 // pull the full package entry which this shim exists to avoid.
+import type { PropType } from 'vue'
 import { defineComponent, h } from 'vue'
 
 export { accessTypeToApi, accessTypeToForm, defaultAccessTypeForm } from '~/datagouv-components/src/types/access_types'
@@ -35,5 +36,23 @@ export const Listbox = defineComponent({
   name: 'Listbox',
   setup(_, { slots }) {
     return () => h('div', { class: 'listbox-stub' }, slots.default?.())
+  },
+})
+
+export const SegmentedControl = defineComponent({
+  name: 'SegmentedControl',
+  props: {
+    modelValue: { type: String, required: true },
+    options: { type: Array as PropType<Array<{ value: string, label: string }>>, default: () => [] },
+  },
+  emits: ['update:modelValue'],
+  setup(props, { emit }) {
+    return () => h('div', { class: 'segmented-control-stub', role: 'group' }, props.options.map(option =>
+      h('button', {
+        'type': 'button',
+        'aria-pressed': option.value === props.modelValue,
+        'onClick': () => emit('update:modelValue', option.value),
+      }, option.label),
+    ))
   },
 })

@@ -247,6 +247,17 @@ async function mountWithInitialChart(form: ChartForm) {
   return wrapper
 }
 
+async function switchSegment(wrapper: ReturnType<typeof mountConfigurator>, label: string) {
+  const button = wrapper.findAll('button[aria-pressed]').find(b => b.text() === label)
+  expect(button, `segment "${label}"`).toBeDefined()
+  await button!.trigger('click')
+  await flushPromises()
+}
+
+function saveButton(wrapper: ReturnType<typeof mountConfigurator>) {
+  return wrapper.findAll('form#chart-form button').find(b => b.text() === 'Sauvegarder le graphique')
+}
+
 describe('initial ChartForm literal (as in pages/admin/beta/chart.vue)', () => {
   it('converts to the exact reduced backend contract', () => {
     const api = toChartApi(newForm())
@@ -371,9 +382,48 @@ describe('ChartConfigurator', () => {
     expect(toastSuccess).toHaveBeenCalledOnce()
   })
 
+  it('shows the form panel by default and hides the assistant', async () => {
+    const form = newForm()
+    const wrapper = await mountWithInitialChart(form)
+
+    const pressed = wrapper.findAll('button[aria-pressed]').find(b => b.attributes('aria-pressed') === 'true')
+    expect(pressed?.text()).toBe('Formulaire')
+    expect(wrapper.find('textarea[aria-label="Requête SQL"]').exists()).toBe(true)
+    expect(wrapper.find('.chat-panel-stub').exists()).toBe(false)
+  })
+
+  it('switches to the assistant panel with the current resource and hides the form', async () => {
+    const form = newForm()
+    const wrapper = await mountWithInitialChart(form)
+
+    await switchSegment(wrapper, 'Assistant')
+
+    const panel = wrapper.find('.chat-panel-stub')
+    expect(panel.exists()).toBe(true)
+    expect(panel.find('.chat-panel-resource').text()).toBe(RESOURCE_ID)
+    expect(wrapper.find('textarea[aria-label="Requête SQL"]').exists()).toBe(false)
+    expect(wrapper.find('#y-axis-label').exists()).toBe(false)
+  })
+
+  it('keeps pickers and the save button visible in both segments', async () => {
+    const form = newForm()
+    const wrapper = await mountWithInitialChart(form)
+
+    for (const segment of ['Formulaire', 'Assistant']) {
+      await switchSegment(wrapper, segment)
+
+      expect(wrapper.find('.producer-select-stub').exists()).toBe(true)
+      expect(wrapper.find('.switch-dataset').exists()).toBe(true)
+      expect(wrapper.find('#resource-select').exists()).toBe(true)
+      expect(saveButton(wrapper), `save button in "${segment}"`).toBeDefined()
+    }
+  })
+
   it('renders the assistant chat panel with the selected resource', async () => {
     const form = newForm()
     const wrapper = await mountWithInitialChart(form)
+
+    await switchSegment(wrapper, 'Assistant')
 
     const panel = wrapper.find('.chat-panel-stub')
     expect(panel.exists()).toBe(true)
@@ -384,10 +434,15 @@ describe('ChartConfigurator', () => {
     const form = newForm()
     const wrapper = await mountWithInitialChart(form)
 
+    await switchSegment(wrapper, 'Assistant')
     await wrapper.find('.chat-panel-use-query').trigger('click')
     await flushPromises()
 
     expect(form.query).toBe('SELECT stub')
+
+    await switchSegment(wrapper, 'Formulaire')
+    const textarea = wrapper.find('textarea[aria-label="Requête SQL"]')
+    expect((textarea.element as HTMLTextAreaElement).value).toBe('SELECT stub')
   })
 
   it('clears the form resource_id when the dataset changes without a new resource', async () => {

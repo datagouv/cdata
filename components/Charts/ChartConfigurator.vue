@@ -5,7 +5,7 @@
     @submit.prevent="saveChart"
   >
     <div class="grid lg:grid-cols-12 gap-4 lg:gap-8">
-      <div class="col-span-5 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
+      <div class="col-span-6 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
         <template v-if="selectedResource">
           <div>
             <label
@@ -79,7 +79,7 @@
         </div>
       </div>
 
-      <div class="col-span-4 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
+      <div class="col-span-6 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
         <fieldset class="min-w-0">
           <ProducerSelect
             v-model="producer"
@@ -132,126 +132,141 @@
           </div>
         </fieldset>
         <template v-if="selectedResource">
-          <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-            <label
-              for="chart-query"
-              class="fr-label font-bold"
-            >
-              {{ $t('Requête SQL') }}
-            </label>
-            <textarea
-              id="chart-query"
-              v-model="form.query"
-              aria-label="Requête SQL"
-              rows="6"
-              class="w-full fr-input font-mono text-sm"
-              :placeholder="$t('SELECT ...')"
-            />
-          </fieldset>
+          <SegmentedControl
+            v-model="activePanel"
+            grow
+            :options="panelOptions"
+          />
 
-          <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-            <p class="font-bold mb-2">
-              {{ $t('Schéma de la ressource') }}
-            </p>
-            <ul class="space-y-1 m-0 p-0 list-none">
-              <li
-                v-for="column in resourceColumns"
-                :key="column.name"
-                class="flex items-center gap-2 text-sm"
+          <template v-if="activePanel === 'form'">
+            <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
+              <label
+                for="chart-query"
+                class="fr-label font-bold"
               >
-                <component
-                  :is="getColumnTypeIcon(column.type)"
-                  class="size-4 text-new-gray-medium shrink-0"
-                />
-                <span class="font-mono">{{ column.name }}</span>
-                <span class="text-new-gray-medium">{{ typeConfig[column.type]?.label || column.type }}</span>
-              </li>
-            </ul>
-          </fieldset>
+                {{ $t('Requête SQL') }}
+              </label>
+              <textarea
+                id="chart-query"
+                v-model="form.query"
+                aria-label="Requête SQL"
+                rows="6"
+                class="w-full fr-input font-mono text-sm"
+                :placeholder="$t('SELECT ...')"
+              />
+            </fieldset>
 
-          <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-            <p class="font-bold mb-2">
-              {{ $t('Axe Y') }}
-            </p>
-            <AccordionGroup>
-              <Accordion :title="$t('Styles')">
-                <div class="space-y-4">
-                  <div>
-                    <label
-                      for="y-axis-label"
-                      class="fr-label"
-                    >{{ $t('Label') }}</label>
-                    <input
-                      id="y-axis-label"
-                      v-model="form.y_axis.label"
-                      type="text"
-                      class="w-full fr-input"
-                    >
-                  </div>
-                  <div class="grid grid-cols-2 gap-4">
+            <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
+              <p class="font-bold mb-2">
+                {{ $t('Schéma de la ressource') }}
+              </p>
+              <ul class="space-y-1 m-0 p-0 list-none">
+                <li
+                  v-for="column in resourceColumns"
+                  :key="column.name"
+                  class="flex items-center gap-2 text-sm"
+                >
+                  <component
+                    :is="getColumnTypeIcon(column.type)"
+                    class="size-4 text-new-gray-medium shrink-0"
+                  />
+                  <span class="font-mono">{{ column.name }}</span>
+                  <span class="text-new-gray-medium">{{ typeConfig[column.type]?.label || column.type }}</span>
+                </li>
+              </ul>
+            </fieldset>
+
+            <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
+              <p class="font-bold mb-2">
+                {{ $t('Axe Y') }}
+              </p>
+              <AccordionGroup>
+                <Accordion :title="$t('Styles')">
+                  <div class="space-y-4">
                     <div>
                       <label
-                        for="y-axis-min"
+                        for="y-axis-label"
                         class="fr-label"
-                      >{{ $t('Min') }}</label>
+                      >{{ $t('Label') }}</label>
                       <input
-                        id="y-axis-min"
-                        v-model.number="form.y_axis.min"
-                        type="number"
-                        class="w-full fr-input"
-                      >
-                    </div>
-                    <div>
-                      <label
-                        for="y-axis-max"
-                        class="fr-label"
-                      >{{ $t('Max') }}</label>
-                      <input
-                        id="y-axis-max"
-                        v-model.number="form.y_axis.max"
-                        type="number"
-                        class="w-full fr-input"
-                      >
-                    </div>
-                  </div>
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <label
-                        for="y-axis-unit"
-                        class="fr-label"
-                      >{{ $t('Unité') }}</label>
-                      <input
-                        id="y-axis-unit"
-                        v-model="form.y_axis.unit"
+                        id="y-axis-label"
+                        v-model="form.y_axis.label"
                         type="text"
                         class="w-full fr-input"
-                        :placeholder="$t('ex: €, %, kg')"
                       >
                     </div>
-                    <div>
-                      <label
-                        for="y-axis-unit-position"
-                        class="fr-label"
-                      >{{ $t('Position unité')
-                      }}</label>
-                      <select
-                        id="y-axis-unit-position"
-                        v-model="form.y_axis.unit_position"
-                        class="w-full fr-select"
-                      >
-                        <option value="suffix">
-                          {{ $t('Suffixe') }}
-                        </option>
-                        <option value="prefix">
-                          {{ $t('Préfixe') }}
-                        </option>
-                      </select>
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          for="y-axis-min"
+                          class="fr-label"
+                        >{{ $t('Min') }}</label>
+                        <input
+                          id="y-axis-min"
+                          v-model.number="form.y_axis.min"
+                          type="number"
+                          class="w-full fr-input"
+                        >
+                      </div>
+                      <div>
+                        <label
+                          for="y-axis-max"
+                          class="fr-label"
+                        >{{ $t('Max') }}</label>
+                        <input
+                          id="y-axis-max"
+                          v-model.number="form.y_axis.max"
+                          type="number"
+                          class="w-full fr-input"
+                        >
+                      </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                      <div>
+                        <label
+                          for="y-axis-unit"
+                          class="fr-label"
+                        >{{ $t('Unité') }}</label>
+                        <input
+                          id="y-axis-unit"
+                          v-model="form.y_axis.unit"
+                          type="text"
+                          class="w-full fr-input"
+                          :placeholder="$t('ex: €, %, kg')"
+                        >
+                      </div>
+                      <div>
+                        <label
+                          for="y-axis-unit-position"
+                          class="fr-label"
+                        >{{ $t('Position unité')
+                        }}</label>
+                        <select
+                          id="y-axis-unit-position"
+                          v-model="form.y_axis.unit_position"
+                          class="w-full fr-select"
+                        >
+                          <option value="suffix">
+                            {{ $t('Suffixe') }}
+                          </option>
+                          <option value="prefix">
+                            {{ $t('Préfixe') }}
+                          </option>
+                        </select>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Accordion>
-            </AccordionGroup>
-          </fieldset>
+                </Accordion>
+              </AccordionGroup>
+            </fieldset>
+          </template>
+
+          <ClientOnly v-else>
+            <ChatPanel
+              :resource-id="selectedResource || null"
+              @use-query="onUseQuery"
+            />
+          </ClientOnly>
 
           <div
             v-if="isAdmin"
@@ -263,22 +278,13 @@
           </div>
         </template>
       </div>
-
-      <div class="col-span-3 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
-        <ClientOnly>
-          <ChatPanel
-            :resource-id="selectedResource || null"
-            @use-query="onUseQuery"
-          />
-        </ClientOnly>
-      </div>
     </div>
   </form>
 </template>
 
 <script setup lang="ts">
 import type { Resource, PaginatedArray, ChartForm, Chart, ColumnType, ColumnDefinition, Owned } from '@datagouv/components-next'
-import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, SearchableSelect, useTranslation } from '@datagouv/components-next'
+import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, SearchableSelect, SegmentedControl, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import { RiText } from '@remixicon/vue'
@@ -325,6 +331,11 @@ const producer = ref<Owned | null>(null)
 const dataset = ref<DatasetSuggest | null>(null)
 const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref<string>('')
+const activePanel = ref<string>('form')
+const panelOptions = computed(() => [
+  { value: 'form', label: t('Formulaire') },
+  { value: 'assistant', label: t('Assistant') },
+])
 const chartViewerWrapperRef = ref<InstanceType<typeof ChartViewerWrapper> | null>(null)
 
 watch(producer, (newProducer) => {
