@@ -20,7 +20,7 @@
     v-if="status === 'success' && !chartData"
     class="text-center py-8 text-gray-500"
   >
-    {{ t('Aucune donnée') }}
+    {{ noDataMessage }}
   </div>
 </template>
 
@@ -82,6 +82,23 @@ type ChartViewerData = {
   rows: Record<string, Array<Record<string, unknown>>>
   columns: ColumnsDefinition
 }
+
+// Why the result cannot be plotted, to surface a meaningful message instead
+// of a bare "no data": rows may exist but carry no numeric column for Y.
+const noDataReason = computed<'empty' | 'no-numeric-series' | null>(() => {
+  if (status.value !== 'success') return null
+  const result = queryResult.value
+  if (!result || result.rows.length === 0) return 'empty'
+  const { xColumn, seriesColumns } = inferChartConfig(result)
+  if (!xColumn || seriesColumns.length === 0) return 'no-numeric-series'
+  return null
+})
+
+const noDataMessage = computed(() =>
+  noDataReason.value === 'no-numeric-series'
+    ? t('Aucune colonne numérique à tracer : agrégez une colonne numérique (SUM, COUNT, AVG…) pour l\'ordonnée.')
+    : t('Aucune donnée'),
+)
 
 const chartData = computed<ChartViewerData | null>(() => {
   const result = queryResult.value

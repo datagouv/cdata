@@ -248,6 +248,23 @@ describe('ChartViewerWrapper', () => {
     expect(stub.props('series').columns[RESOURCE_ID]![0]).toEqual({ name: 'annee', type: 'categorical' })
   })
 
+  it('explains when rows exist but no numeric column can be plotted', async () => {
+    executeSqlQueryMock.mockResolvedValue({
+      columns: ['region', 'label'],
+      rows: [
+        ['Bretagne', 'faible'],
+        ['Corse', 'fort'],
+      ],
+    })
+
+    const wrapper = mountWrapper(chartFixture('SELECT region, label FROM votes', 'line'))
+    await waitForFetch()
+
+    expect(wrapper.find('.chart-viewer-stub').exists()).toBe(false)
+    expect(wrapper.text()).toContain('Aucune colonne numérique à tracer')
+    expect(wrapper.text()).toContain('SUM, COUNT, AVG')
+  })
+
   it('renders a French "Aucune donnée" message when the query returns no row', async () => {
     executeSqlQueryMock.mockResolvedValue({ columns: ['date', 'votes'], rows: [] })
 
