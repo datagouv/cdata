@@ -37,7 +37,7 @@ async function emptyPage(page: Page) {
 async function uploadImage(page: Page, bloc: Locator, button: string) {
   const fileChooser = page.waitForEvent('filechooser')
   await bloc.getByRole('button', { name: button }).click()
-  await (await fileChooser).setFiles(path.join(__dirname, '../../public/illustrations/administration.svg'))
+  await (await fileChooser).setFiles(path.join(import.meta.dirname, '../../public/illustrations/administration.svg'))
 }
 
 // Sections are the only blocs of a page: no menu to pick one from
