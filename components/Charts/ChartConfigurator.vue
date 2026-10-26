@@ -90,7 +90,12 @@
           :options="panelOptions"
         />
 
-        <template v-if="activePanel === 'form'">
+        <!-- Les deux panneaux restent montés : la bascule d'onglet se fait au CSS
+             (v-show) pour préserver l'état de la conversation de l'assistant. -->
+        <div
+          v-show="activePanel === 'form'"
+          data-testid="form-panel"
+        >
           <div class="space-y-6">
             <fieldset class="min-w-0">
               <ProducerSelect
@@ -275,11 +280,15 @@
               {{ $t('Sauvegarder le graphique') }}
             </BrandedButton>
           </div>
-        </template>
+        </div>
 
         <!-- Mode Assistant : le chat seul, conteneur borné à la hauteur du panneau -->
-        <ClientOnly v-else>
-          <div class="flex-1 min-h-0 flex flex-col">
+        <ClientOnly>
+          <div
+            v-show="activePanel === 'assistant'"
+            class="flex-1 min-h-0 flex flex-col"
+            data-testid="assistant-panel"
+          >
             <ChatPanel
               :resource-id="selectedResource || null"
               @use-query="onUseQuery"

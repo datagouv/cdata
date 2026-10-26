@@ -2,7 +2,7 @@
 import type { ChartForm } from '@datagouv/components-next'
 import { toChartApi } from '@datagouv/components-next'
 import { configKey } from '~/datagouv-components/src/config'
-import { flushPromises, mount } from '@vue/test-utils'
+import { flushPromises, mount, type VueWrapper } from '@vue/test-utils'
 import { defineComponent, h, nextTick, ref, Suspense } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ChartConfigurator from '~/components/Charts/ChartConfigurator.vue'
@@ -283,6 +283,11 @@ describe('initial ChartForm literal (as in pages/admin/beta/chart.vue)', () => {
   })
 })
 
+// v-show sets style.display directly (not the attribute); happy-dom's isVisible
+// ignores it, so assert on the element's inline style property.
+const displayOf = (wrapper: VueWrapper, selector: string) =>
+  (wrapper.find(selector).element as HTMLElement).style.display
+
 describe('ChartConfigurator', () => {
   beforeEach(() => {
     vi.stubGlobal('useNuxtApp', () => ({ $api: apiMock, $fileApi: fileApiMock }))
@@ -389,7 +394,8 @@ describe('ChartConfigurator', () => {
     const pressed = wrapper.findAll('button[aria-pressed]').find(b => b.attributes('aria-pressed') === 'true')
     expect(pressed?.text()).toBe('Formulaire')
     expect(wrapper.find('textarea[aria-label="Requête SQL"]').exists()).toBe(true)
-    expect(wrapper.find('.chat-panel-stub').exists()).toBe(false)
+    expect(wrapper.find('.chat-panel-stub').exists()).toBe(true)
+    expect(displayOf(wrapper, '[data-testid="assistant-panel"]')).toBe('none')
   })
 
   it('switches to the assistant panel with the current resource and hides the form', async () => {
@@ -401,8 +407,7 @@ describe('ChartConfigurator', () => {
     const panel = wrapper.find('.chat-panel-stub')
     expect(panel.exists()).toBe(true)
     expect(panel.find('.chat-panel-resource').text()).toBe(RESOURCE_ID)
-    expect(wrapper.find('textarea[aria-label="Requête SQL"]').exists()).toBe(false)
-    expect(wrapper.find('#y-axis-label').exists()).toBe(false)
+    expect(displayOf(wrapper, '[data-testid="form-panel"]')).toBe('none')
   })
 
   it('keeps pickers and the save button in the formulaire segment', async () => {
@@ -421,11 +426,23 @@ describe('ChartConfigurator', () => {
 
     await switchSegment(wrapper, 'Assistant')
 
-    expect(wrapper.find('.producer-select-stub').exists()).toBe(false)
-    expect(wrapper.find('.switch-dataset').exists()).toBe(false)
-    expect(wrapper.find('#resource-select').exists()).toBe(false)
-    expect(wrapper.find('button[type="submit"]').exists()).toBe(false)
+    // v-show : les deux panneaux restent montés, la bascule est CSS — la
+    // conversation de l'assistant survit au changement d'onglet.
+    expect(displayOf(wrapper, '[data-testid="form-panel"]')).toBe('none')
+    expect(displayOf(wrapper, '[data-testid="assistant-panel"]')).not.toBe('none')
+  })
+
+  it('keeps the assistant conversation mounted when switching back to the form', async () => {
+    const form = newForm()
+    const wrapper = await mountWithInitialChart(form)
+
+    await switchSegment(wrapper, 'Assistant')
+    expect(displayOf(wrapper, '[data-testid="assistant-panel"]')).not.toBe('none')
+    await switchSegment(wrapper, 'Formulaire')
     expect(wrapper.find('.chat-panel-stub').exists()).toBe(true)
+    expect(displayOf(wrapper, '[data-testid="assistant-panel"]')).toBe('none')
+    await switchSegment(wrapper, 'Assistant')
+    expect(displayOf(wrapper, '[data-testid="assistant-panel"]')).not.toBe('none')
   })
 
   it('renders the assistant chat panel with the selected resource', async () => {
