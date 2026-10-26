@@ -11,33 +11,6 @@ const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 // Real resource from the test DB: bailleurs_sociaux_region.csv in "Logements sociaux et bailleurs par région"
 export const RESOURCE_ID = '63f39717-e5c9-4d70-a0d5-544773c1d742'
 
-export const MOCK_DATASET_ID = 'a0a47300-0000-4000-8000-000000000001'
-export const MOCK_DATASET = {
-  id: MOCK_DATASET_ID,
-  title: 'Logements sociaux et bailleurs par région',
-  acronym: null,
-  slug: 'logements-sociaux-et-bailleurs-par-region',
-  page: `${API_BASE_URL}/fr/datasets/logements-sociaux-et-bailleurs-par-region/`,
-  image_url: null,
-}
-
-export const MOCK_RESOURCES = [
-  {
-    id: 'b0b47300-0000-4000-8000-000000000001',
-    title: 'bailleurs_sociaux_region.csv',
-    filetype: 'file',
-    format: 'csv',
-    extras: { 'analysis:parsing:parsing_table': true },
-  },
-  {
-    id: 'b0b47300-0000-4000-8000-000000000002',
-    title: 'logements_sociaux_epci.csv',
-    filetype: 'file',
-    format: 'csv',
-    extras: { 'analysis:parsing:parsing_table': true },
-  },
-]
-
 // Categorical first column: the preview infers a histogram from it
 export const SQL_RESULT_HISTOGRAM = {
   columns: ['nom_region', 'nb_logements'],
@@ -58,38 +31,15 @@ export const SQL_RESULT_LINE = {
   ],
 }
 
-export const ASSISTANT_REPLY = `Voici une requête qui répond à votre demande :
-
-\`\`\`sql
-SELECT nom_region, nb_logements
-FROM bailleurs_sociaux_region
-ORDER BY nb_logements DESC
-\`\`\`
-`
-
-export const ASSISTANT_SQL = 'SELECT nom_region, nb_logements\nFROM bailleurs_sociaux_region\nORDER BY nb_logements DESC'
-
-export type RouteCapture = {
-  /** Bodies of the POST /api/1/visualizations/ requests hit during the test */
-  visualizationBodies: Array<Record<string, unknown>>
-  /** Bodies of the POST /api/1/assistant/chat/ requests hit during the test */
-  chatBodies: Array<Record<string, unknown>>
-}
-
-export type MockChartRoutesOptions = {
+export type SetupChartOptions = {
   sqlResult?: { columns: Array<string>, rows: Array<Array<string | number | null>> }
-  assistantReply?: string
-}
-
-function sseBody(chunks: Array<Record<string, unknown>>): string {
-  return `${chunks.map(chunk => `data: ${JSON.stringify(chunk)}\n\n`).join('')}data: [DONE]\n\n`
 }
 
 /**
  * Mocks the tabular resource profile and the SQL execution endpoint so the
  * chart preview renders without hitting the real tabular API.
  */
-export async function mockTabular(page: Page, options: { sqlResult?: MockChartRoutesOptions['sqlResult'] } = {}) {
+export async function mockTabular(page: Page, options: SetupChartOptions = {}) {
   await page.route('**/api/resources/*/profile/', async (route) => {
     await route.fulfill({ json: profile })
   })
@@ -102,78 +52,10 @@ export async function mockTabular(page: Page, options: { sqlResult?: MockChartRo
 }
 
 /**
- * Mocks the udata endpoints used by the SQL-based chart configurator:
- * dataset suggest, dataset resources, chart save (201) and the assistant
- * chat endpoint (SSE stream). Returns the captured request bodies.
+ * Sets up the chart configurator with the shared backend dataset and resource.
  */
-export async function mockChartRoutes(page: Page, options: MockChartRoutesOptions = {}): Promise<RouteCapture> {
-  const capture: RouteCapture = { visualizationBodies: [], chatBodies: [] }
-
-  await page.route('**/api/1/datasets/suggest/**', async (route) => {
-    await route.fulfill({ json: [MOCK_DATASET] })
-  })
-  await page.route('**/api/2/datasets/*/resources/', async (route) => {
-    await route.fulfill({
-      json: {
-        data: MOCK_RESOURCES,
-        next_page: null,
-        page: 1,
-        page_size: 20,
-        total: MOCK_RESOURCES.length,
-      },
-    })
-  })
-  await page.route('**/api/1/visualizations/**', async (route) => {
-    if (route.request().method() !== 'POST') {
-      return route.continue()
-    }
-    const body = route.request().postDataJSON() as Record<string, unknown>
-    capture.visualizationBodies.push(body)
-    await route.fulfill({
-      status: 201,
-      json: {
-        id: 'c0c47300-0000-4000-8000-000000000001',
-        ...body,
-        owner: { id: 'd0d47300-0000-4000-8000-000000000001', first_name: 'Admin', last_name: 'User' },
-        organization: null,
-      },
-    })
-  })
-  await page.route('**/api/1/visualizations/*/image/**', async (route) => {
-    if (route.request().method() !== 'POST') {
-      return route.continue()
-    }
-    await route.fulfill({ json: { success: true } })
-  })
-  await page.route('**/api/1/assistant/chat/', async (route) => {
-    if (route.request().method() !== 'POST') {
-      return route.continue()
-    }
-    capture.chatBodies.push(route.request().postDataJSON() as Record<string, unknown>)
-    const reply = options.assistantReply ?? ASSISTANT_REPLY
-    await route.fulfill({
-      status: 200,
-      headers: { 'Content-Type': 'text/event-stream' },
-      body: sseBody([
-        { type: 'start', messageId: 'msg-assistant-1' },
-        { type: 'text-start', id: 'text-0' },
-        { type: 'text-delta', id: 'text-0', delta: reply },
-        { type: 'text-end', id: 'text-0' },
-        { type: 'finish', finishReason: 'stop' },
-      ]),
-    })
-  })
-
-  return capture
-}
-
-/**
- * Sets up the chart configurator with the shared mocked dataset: producer,
- * dataset (mocked suggest) and first resource. Returns the route capture.
- */
-export async function setupChart(page: Page, options: MockChartRoutesOptions = {}): Promise<RouteCapture> {
+export async function setupChart(page: Page, options: SetupChartOptions = {}): Promise<void> {
   await mockTabular(page, { sqlResult: options.sqlResult })
-  const capture = await mockChartRoutes(page, options)
   await page.goto('/admin/beta/chart')
   await page.waitForLoadState('networkidle')
 
@@ -189,10 +71,9 @@ export async function setupChart(page: Page, options: MockChartRoutesOptions = {
 
   const resourceSelect = page.getByLabel('Choix de la ressource')
   await expect(resourceSelect).toBeVisible()
-  await resourceSelect.selectOption(MOCK_RESOURCES[0]!.id)
+  await resourceSelect.selectOption(RESOURCE_ID)
 
   await expect(page.getByLabel('Titre')).toBeVisible()
-  return capture
 }
 
 export type SetupAndSaveChartOptions = {
@@ -206,9 +87,9 @@ export type SetupAndSaveChartOptions = {
 }
 
 /**
- * Runs the full UI flow to create a chart through the mocked API: configure
+ * Runs the full UI flow to create a chart through the backend API: configure
  * the resource, fill title/description/query, wait for the preview canvas,
- * save. Returns the chart as returned by the mocked save endpoint.
+ * save. Returns the chart created by the backend.
  */
 export async function setupAndSaveChart(page: Page, options: SetupAndSaveChartOptions = {}): Promise<Chart> {
   await setupChart(page, { sqlResult: options.type === 'line' ? SQL_RESULT_LINE : undefined })
@@ -218,7 +99,7 @@ export async function setupAndSaveChart(page: Page, options: SetupAndSaveChartOp
 
   await page.getByLabel('Titre').fill(title)
   await page.getByLabel('Description').fill(description)
-  await page.getByLabel('Requête SQL').fill('SELECT nom_region, nb_logements FROM bailleurs_sociaux_region')
+  await page.getByLabel('Requête SQL').fill('SELECT nom_region, nb_logements FROM logements ORDER BY nb_logements DESC')
 
   // The chart preview must be rendered before saving, otherwise the capture is empty
   // and no image upload happens.
