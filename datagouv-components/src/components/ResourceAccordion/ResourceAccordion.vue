@@ -362,7 +362,7 @@ import Preview from './Preview.vue'
 import { isOrganizationCertified } from '../../functions/organizations'
 import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
 
-const URL_FORMATS = ['url', 'doi', 'www:link', ' www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
+const URL_FORMATS = ['url', 'doi', 'www:link', 'www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
 
 const props = withDefaults(defineProps<{
   dataset: Dataset | DatasetV2
