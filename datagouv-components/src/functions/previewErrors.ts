@@ -16,7 +16,6 @@ export type PreviewErrorInfo = {
   message: string
   userCta?: string
   producerCta?: string
-  isProducerFault: boolean
 }
 
 /**
@@ -74,7 +73,6 @@ export function getPreviewErrorInfoByType(errorType: PreviewErrorType, resource?
         message: t('Ce fichier est hébergé sur un site externe qui n’autorise pas son affichage dans data.gouv.fr.'),
         userCta: t('Signaler un problème avec cet aperçu'),
         producerCta: t('Signaler un problème'),
-        isProducerFault: true,
       }
 
     case 'network':
@@ -83,7 +81,6 @@ export function getPreviewErrorInfoByType(errorType: PreviewErrorType, resource?
         message: t('Ce fichier hébergé sur un site externe n’a pas pu être chargé.'),
         userCta: t('Signaler un problème avec cet aperçu'),
         producerCta: t('Signaler un problème'),
-        isProducerFault: true,
       }
 
     case 'unavailable':
@@ -92,7 +89,6 @@ export function getPreviewErrorInfoByType(errorType: PreviewErrorType, resource?
         message: t('Ce fichier est hébergé sur un site externe et n’est pas disponible'),
         userCta: t('Signaler un problème avec cet aperçu'),
         producerCta: t('Signaler un problème'),
-        isProducerFault: true,
       }
 
     case 'too_large':
@@ -103,7 +99,6 @@ export function getPreviewErrorInfoByType(errorType: PreviewErrorType, resource?
         // larger quota: asking for it on a client-side preview (PDF…) is noise.
         userCta: resource && isTabularPipelineFormat(resource.format) ? t('Cette prévisualisation vous serait utile ?') : '',
         producerCta: t('Cette prévisualisation vous serait utile ?'),
-        isProducerFault: false,
       }
 
     case 'malformed':
@@ -112,7 +107,6 @@ export function getPreviewErrorInfoByType(errorType: PreviewErrorType, resource?
         message: t('La structure de ce fichier ne permet pas d\'afficher son aperçu'),
         userCta: '',
         producerCta: t('Signaler un problème'),
-        isProducerFault: true,
       }
 
     case 'none':
@@ -121,7 +115,6 @@ export function getPreviewErrorInfoByType(errorType: PreviewErrorType, resource?
         message: t('Ce fichier ne peut pas être prévisualisé.'),
         userCta: '',
         producerCta: '',
-        isProducerFault: false,
       }
 
     case 'unknown':
@@ -131,7 +124,6 @@ export function getPreviewErrorInfoByType(errorType: PreviewErrorType, resource?
         message: t('Une erreur a empêché le chargement de l\'aperçu de ce fichier.'),
         userCta: t('Signaler un problème avec cet aperçu'),
         producerCta: t('Signaler un problème'),
-        isProducerFault: false,
       }
   }
 }

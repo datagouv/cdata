@@ -105,7 +105,6 @@ const errorInfo = computed(() => {
     return {
       type: 'none' as const,
       message: '',
-      isProducerFault: false,
     }
   }
   return props.fallbackErrorType

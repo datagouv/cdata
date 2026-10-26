@@ -25,7 +25,6 @@ describe('getPreviewErrorInfo', () => {
   it('is none without any diagnosis', () => {
     const info = previewInfo({})
     expect(info.type).toBe('none')
-    expect(info.isProducerFault).toBe(false)
     expect(info.userCta).toBe('')
     expect(info.producerCta).toBe('')
   })
@@ -33,26 +32,22 @@ describe('getPreviewErrorInfo', () => {
   it('is unavailable when the checker could not reach the file', () => {
     const info = previewInfo({ 'check:available': false })
     expect(info.type).toBe('unavailable')
-    expect(info.isProducerFault).toBe(true)
     expect(info.userCta).toBe('Signaler un problème avec cet aperçu')
   })
 
   it('is too_large for the file-size analysis error', () => {
     const info = previewInfo({ 'analysis:error': 'File too large to download' })
     expect(info.type).toBe('too_large')
-    expect(info.isProducerFault).toBe(false)
   })
 
   it('is malformed for a parsing error', () => {
     const info = previewInfo({ 'analysis:parsing:error': 'tabular:bad column' })
     expect(info.type).toBe('malformed')
-    expect(info.isProducerFault).toBe(true)
   })
 
   it('is unknown for a generic analysis error', () => {
     const info = previewInfo({ 'analysis:error': 'Some step exploded' })
     expect(info.type).toBe('unknown')
-    expect(info.isProducerFault).toBe(false)
   })
 })
 
