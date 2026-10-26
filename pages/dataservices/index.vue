@@ -270,8 +270,6 @@ const description = t('Vous recherchez une API publique pour automatiser des tâ
 useSeoMeta({
   title,
   description,
-  ogTitle: title,
-  ogDescription: description,
 })
 defineOgImage('MainPage.takumi', {
   title: 'API',

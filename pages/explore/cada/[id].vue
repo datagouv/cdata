@@ -230,11 +230,11 @@ const meanings = computed(() => splitCadaValues(advice.value?.['Sens et motivati
 const tags = computed(() => splitCadaValues(advice.value?.['Mots clés']))
 
 const title = computed(() => t('Avis CADA {id}', { id: adviceId.value }))
-// Empty content renders an empty attribute, so return undefined to leave the
-// site-wide default description in place.
+// Leave the site-wide description when the advice has no subject text.
+// normalizeSeoDescription() collapses whitespace, so Objet needs no collapsing here.
 const description = computed(() => {
-  if (!advice.value) return t('Avis non trouvé')
-  return advice.value.Objet?.replace(/\s+/g, ' ').trim() || undefined
+  const source = advice.value ? advice.value.Objet : t('Avis non trouvé')
+  return normalizeSeoDescription(source)
 })
 
 useSeoMeta({

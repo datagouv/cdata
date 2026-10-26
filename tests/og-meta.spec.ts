@@ -34,4 +34,51 @@ test.describe('OG meta tags', () => {
 
     expect(await getMetaContent(page, 'meta[property="og:title"]')).toContain('Avis CADA 20237028')
   })
+
+  test('a CADA advice with no Objet falls back to the site-wide description', async ({ page }) => {
+    await page.goto('/')
+    await page.waitForLoadState('domcontentloaded')
+    const siteDescription = await getMetaContent(page, 'meta[name="description"]')
+    const siteOgDescription = await getMetaContent(page, 'meta[property="og:description"]')
+
+    // Load the list first and navigate client-side from a real row: the advice
+    // id is whatever the real data happens to put first, read back from the
+    // intercepted request itself, so the fixture below needs no id of its own.
+    await page.goto('/explore/cada')
+    await expect(page.getByTestId('row-count')).toBeVisible({ timeout: 30000 })
+
+    const readable = (url: string) => decodeURIComponent(url.replace(/\+/g, ' '))
+    await page.route(url => readable(url.href).includes('Numéro de dossier__exact='), async (route) => {
+      const dossier = readable(route.request().url()).match(/Numéro de dossier__exact=(\d+)/)?.[1] ?? '1'
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          data: [{
+            'Numéro de dossier': Number(dossier),
+            'Administration': 'Mairie de Test',
+            'Type': 'Avis',
+            'Année': 2024,
+            'Séance': '2024-01-01',
+            // Blank, not missing: normalizeSeoDescription() must treat whitespace-only
+            // the same as empty, and the page must leave the site-wide tags in place.
+            'Objet': '   ',
+            'Thème et sous thème': '',
+            'Mots clés': '',
+            'Sens et motivation': '',
+            'Partie': '',
+            'Avis': 'Texte intégral',
+          }],
+          links: { profile: '', swagger: '', next: '' },
+          meta: { total: 1 },
+        }),
+      })
+    })
+
+    await page.getByTestId('data-table').locator('a.link').first().click()
+    await page.waitForURL(/\/explore\/cada\/\d+/, { timeout: 30000 })
+
+    expect(await getMetaContent(page, 'meta[name="description"]')).toBe(siteDescription)
+    expect(await getMetaContent(page, 'meta[property="og:description"]')).toBe(siteOgDescription)
+  })
 })

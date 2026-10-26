@@ -543,7 +543,7 @@ const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
 
 const title = computed(() => t('Jeu de données - {title} | {site}', { title: dataset.value?.title ?? '', site: config.public.title }))
 const robots = computed(() => dataset.value && dataset.value.archived ? 'noindex' : undefined)
-const description = computed(() => dataset.value ? getDescriptionShort(dataset.value) : undefined)
+const description = computed(() => normalizeSeoDescription(dataset.value ? getDescriptionShort(dataset.value) : undefined))
 
 useSeoMeta({
   title,

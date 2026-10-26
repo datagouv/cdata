@@ -100,8 +100,6 @@ const description = computed(() => {
 useSeoMeta({
   title,
   description,
-  ogTitle: title,
-  ogDescription: description,
 })
 
 const ogTitles: Record<SearchType, string> = {

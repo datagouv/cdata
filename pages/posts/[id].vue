@@ -192,7 +192,7 @@ async function saveBlocs(blocs: Array<PageBloc>) {
 
 useSeoMeta({
   title: name,
-  description: () => post.value?.headline || undefined,
+  description: () => normalizeSeoDescription(post.value?.headline),
   robots: robots,
 })
 defineOgImage('MainPage.takumi', {

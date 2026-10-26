@@ -18,7 +18,7 @@ export const AI_SUGGESTION_MIN_DESCRIPTION_LENGTH = 200 // min `description` len
 export function getDescriptionShort({ description, description_short: descriptionShort }: {
   description: string | null | undefined
   description_short?: string | null | undefined
-}) {
+}): string {
   if (descriptionShort?.trim()) {
     return descriptionShort.replace(/\s+/g, ' ').trim()
   }
