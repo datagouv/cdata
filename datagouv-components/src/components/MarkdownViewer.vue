@@ -2,13 +2,12 @@
 <template>
   <div
     :class="size === 'sm' ? markdownSmClasses : markdownClasses"
-    v-html="formatMarkdown(content, { minDepth: minHeading, noHeadings, siteUrl: config.baseUrl, followLinks: followLinks || containerFollowsLinks })"
+    v-html="formatMarkdown(content, { minDepth: minHeading, noHeadings, followLinks: followLinks || containerFollowsLinks })"
   />
 </template>
 
 <script setup lang="ts">
 import { inject } from 'vue'
-import { useComponentsConfig } from '../config'
 import { followLinksKey, formatMarkdown, markdownClasses, markdownSmClasses } from '../functions/markdown'
 
 withDefaults(defineProps<{
@@ -25,6 +24,5 @@ withDefaults(defineProps<{
   followLinks: false,
 })
 
-const config = useComponentsConfig()
 const containerFollowsLinks = inject(followLinksKey, false)
 </script>

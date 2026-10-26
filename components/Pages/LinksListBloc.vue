@@ -71,6 +71,7 @@
                   '--link-color': link.color,
                 }"
                 :href="link.url"
+                :rel="followLinks ? undefined : 'ugc nofollow noopener noreferrer'"
               >
                 {{ link.title }}
                 <RiArrowRightUpLine class="size-6" />
@@ -149,7 +150,7 @@
 
 <script setup lang="ts">
 import type { ComponentProps } from 'vue-component-type-helpers'
-import type { BrandedButton } from '@datagouv/components-next'
+import { followLinksKey, type BrandedButton } from '@datagouv/components-next'
 import { RiAddLine, RiArrowRightUpLine, RiDeleteBinLine } from '@remixicon/vue'
 import CdataLink from '../CdataLink.vue'
 import EditableText from './EditableText.vue'
@@ -165,4 +166,7 @@ withDefaults(defineProps<{
 })
 
 const bloc = defineModel<LinksListBloc>({ required: true })
+
+// Links chosen by whoever wrote the bloc, see followLinksKey.
+const followLinks = inject(followLinksKey, false)
 </script>

@@ -40,29 +40,22 @@ describe('formatMarkdown', () => {
     expect(html).toContain('loading="lazy"')
   })
 
-  it('marks links leaving the site as user-generated and not followed', () => {
-    const siteUrl = 'https://www.data.gouv.fr'
+  it('marks absolute links as user-generated and not followed', () => {
     const rel = 'rel="ugc nofollow noopener"'
-    const render = (md: string) => formatMarkdown(md, { minDepth: 3, noHeadings: false, siteUrl })
 
-    expect(render('[spam](https://example.com)')).toContain(rel)
-    expect(render('https://example.com')).toContain(rel)
-    expect(render('[spam](//example.com)')).toContain(rel)
-    expect(render('<a href="https://example.com" rel="follow">spam</a>')).toContain(rel)
-    expect(render('[mail](mailto:contact@example.com)')).toContain(rel)
+    expect(formatMarkdown('[spam](https://example.com)')).toContain(rel)
+    expect(formatMarkdown('https://example.com')).toContain(rel)
+    expect(formatMarkdown('[spam](//example.com)')).toContain(rel)
+    expect(formatMarkdown('<a href="https://example.com" rel="follow">spam</a>')).toContain(rel)
+    expect(formatMarkdown('[mail](mailto:contact@example.com)')).toContain(rel)
+    expect(formatMarkdown('[dataset](https://www.data.gouv.fr/datasets/foo)')).toContain(rel)
 
-    expect(render('[dataset](https://www.data.gouv.fr/datasets/foo)')).not.toContain('rel=')
-    expect(render('[dataset](/datasets/foo)')).not.toContain('rel=')
-    expect(render('[section](#foo)')).not.toContain('rel=')
-  })
-
-  it('lets links leaving the site be followed in content written by the team', () => {
-    expect(formatMarkdown('[partner](https://example.com)', { minDepth: 3, noHeadings: false, followLinks: true })).not.toContain('rel=')
-  })
-
-  it('marks every absolute link as not followed when the site URL is unknown', () => {
-    expect(formatMarkdown('[dataset](https://www.data.gouv.fr/datasets/foo)')).toContain('rel="ugc nofollow noopener"')
     expect(formatMarkdown('[dataset](/datasets/foo)')).not.toContain('rel=')
+    expect(formatMarkdown('[section](#foo)')).not.toContain('rel=')
+  })
+
+  it('lets links be followed in content written by the team', () => {
+    expect(formatMarkdown('[partner](https://example.com)', { minDepth: 3, noHeadings: false, followLinks: true })).not.toContain('rel=')
   })
 
   it('renders GFM tables', () => {
