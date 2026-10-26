@@ -93,7 +93,7 @@
         <!-- Les deux panneaux restent montés : la bascule d'onglet se fait au CSS
              (v-show) pour préserver l'état de la conversation de l'assistant. -->
         <div
-          v-show="activePanel === 'form'"
+          :style="{ display: activePanel === 'form' ? undefined : 'none !important' }"
           data-testid="form-panel"
         >
           <div class="space-y-6">
@@ -301,11 +301,13 @@
         </div>
 
         <!-- Mode Assistant : le chat seul, conteneur borné à la hauteur du panneau -->
-        <!-- v-show sur le conteneur PARENT de ClientOnly : dans le navigateur,
-             le slot de ClientOnly est rendu hors du cycle de patch normal et un
-             v-show à l'intérieur n'est pas appliqué. -->
+        <!-- Bascule CSS (:style display) et non v-if : la conversation de
+             l'assistant survit aux changements d'onglet. Le `none` est en
+             !important : les utilitaires Tailwind du projet sont compilés avec
+             `important: true`, un style inline sans !important serait écrasé
+             (c'est aussi pourquoi v-show ne fonctionnait pas ici). -->
         <div
-          v-show="activePanel === 'assistant'"
+          :style="{ display: activePanel === 'assistant' ? undefined : 'none !important' }"
           class="flex-1 min-h-0 flex flex-col"
           data-testid="assistant-panel"
         >
