@@ -161,7 +161,7 @@ test.describe('Organization presentation tab', () => {
 
       // The draft presentation is shown to the admin.
       await page.goto(`/organizations/${org.slug}/presentation`)
-      const rel = 'ugc nofollow noopener noreferrer'
+      const rel = 'ugc nofollow noopener'
       await expect(page.getByRole('link', { name: 'Notre site' })).toHaveAttribute('rel', rel)
       await expect(page.getByRole('link', { name: 'Lien externe' })).toHaveAttribute('rel', rel)
       // Links to the site are marked too: telling them apart is not worth it for now

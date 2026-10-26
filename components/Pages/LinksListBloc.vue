@@ -71,7 +71,7 @@
                   '--link-color': link.color,
                 }"
                 :href="link.url"
-                :rel="followLinks ? undefined : 'ugc nofollow noopener noreferrer'"
+                :rel="followLinks ? undefined : 'ugc nofollow noopener'"
               >
                 {{ link.title }}
                 <RiArrowRightUpLine class="size-6" />

@@ -163,7 +163,7 @@
                       <a
                         :href="dataservice.base_api_url"
                         target="_blank"
-                        rel="ugc nofollow noopener noreferrer"
+                        rel="ugc nofollow noopener"
                         class="link block truncate"
                       >
                         {{ dataservice.base_api_url }}
@@ -188,7 +188,7 @@
                         :href="dataservice.rate_limiting_url"
                         :title="$t(`En savoir plus sur les limites d'appels`)"
                         target="_blank"
-                        rel="ugc nofollow noopener noreferrer"
+                        rel="ugc nofollow noopener"
                         :class="dataservice.rate_limiting ? 'inline-flex items-center gap-1' : 'block truncate'"
                       >
                         {{ dataservice.rate_limiting ? $t("En savoir plus") : dataservice.rate_limiting_url }}
@@ -217,7 +217,7 @@
                     size="sm"
                     :href="dataservice.business_documentation_url"
                     new-tab
-                    rel="ugc nofollow noopener noreferrer"
+                    rel="ugc nofollow noopener"
                     @click="$matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : documentation métier')"
                   >
                     {{ $t('Documentation métier') }}

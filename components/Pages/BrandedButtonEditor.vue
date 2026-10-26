@@ -39,7 +39,7 @@
   <BrandedButton
     v-else-if="title && href"
     :href="href!"
-    :rel="followLinks ? undefined : 'ugc nofollow noopener noreferrer'"
+    :rel="followLinks ? undefined : 'ugc nofollow noopener'"
     :class="$props.class"
     :color
   >

@@ -31,7 +31,7 @@
             <BrandedButton
               :href="reuse.url"
               :new-tab="true"
-              rel="ugc nofollow noopener noreferrer"
+              rel="ugc nofollow noopener"
               size="xs"
               @click="$matomo.trackEvent('Réutilisation', `Voir la réutilisation`, 'Bouton :  voir la reutilisation')"
             >
@@ -136,7 +136,7 @@
                 size="xs"
                 :href="reuse.url"
                 :new-tab="true"
-                rel="ugc nofollow noopener noreferrer"
+                rel="ugc nofollow noopener"
                 @click="$matomo.trackEvent('Réutilisation', `Voir la réutilisation`, 'Bouton : voir la reutilisation')"
               >
                 {{ $t('Voir la réutilisation') }}
