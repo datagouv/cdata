@@ -16,6 +16,11 @@ export const SECTION_COLOR: InjectionKey<Ref<SectionColor | null>> = Symbol('sec
 // one, when the page has no title of its own.
 export const PAGE_TITLE_ID: InjectionKey<Ref<string | null>> = Symbol('pageTitleId')
 
+// Whether search engines may follow the links leaving the site, provided by `EditoBlocs`. Only
+// for blocs written by the team, which keep helping the sites they point to: links chosen by
+// users must not pass on the site's search ranking, or they become worth spamming for.
+export const FOLLOW_LINKS: InjectionKey<boolean> = Symbol('followLinks')
+
 // Reads the bloc format served before the udata migration to sections (titles inside
 // each bloc, `*ListBloc`s, heroes, links with a paragraph and a main link). Mirrors that
 // migration; remove once it has run everywhere.

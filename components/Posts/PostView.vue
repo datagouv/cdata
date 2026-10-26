@@ -44,6 +44,7 @@
       :blocs="post.blocs ?? []"
       editable
       untitled
+      follow-links
       :sidemenu="post.sidemenu"
       :on-save="saveBlocs"
     />
@@ -102,6 +103,7 @@
           <EditoBlocs
             :blocs="post.blocs ?? []"
             editable
+            follow-links
             hide-edit-button
             :sidemenu="post.sidemenu"
             :on-save="saveBlocs"
@@ -123,6 +125,7 @@
               :content="post.content"
               :min-heading="2"
               size="md"
+              follow-links
             />
             <div
               v-else

@@ -29,6 +29,7 @@
   <BrandedButton
     v-else
     :href="bloc.url"
+    :rel="followLinks ? undefined : 'ugc nofollow noopener'"
     :color
   >
     {{ bloc.title }}
@@ -39,7 +40,7 @@
 import { BrandedButton } from '@datagouv/components-next'
 import EditableText from './EditableText.vue'
 import type { ButtonBloc } from '~/types/pages'
-import { BLOCS_MAIN_COLOR, SECTION_COLOR, type BlocsMainColor } from '~/utils/blocs'
+import { BLOCS_MAIN_COLOR, FOLLOW_LINKS, SECTION_COLOR, type BlocsMainColor } from '~/utils/blocs'
 
 defineProps<{
   edit: boolean
@@ -59,6 +60,9 @@ type Color = BlocsMainColor | 'secondary'
 const mainColor = inject(BLOCS_MAIN_COLOR, 'primary')
 const sectionColor = inject(SECTION_COLOR, ref(null))
 const color = computed<Color>(() => sectionColor.value ? 'secondary' : mainColor)
+
+// Link chosen by whoever wrote the bloc, see `FOLLOW_LINKS`.
+const followLinks = inject(FOLLOW_LINKS, false)
 
 // The look of the `BrandedButton` of each color, while its title is edited in place.
 const EDIT_COLORS: Record<Color, string> = {

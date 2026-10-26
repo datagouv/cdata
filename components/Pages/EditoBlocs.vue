@@ -226,7 +226,7 @@ import HeadingsSidemenu from '~/components/Sidemenu/HeadingsSidemenu.vue'
 import type { PageBloc, SectionBloc, SectionColor } from '~/types/pages'
 import { anchorHeadings, slugify, type Heading } from '~/utils/headings'
 import { isMeAdmin } from '~/utils/auth'
-import { BLOCS_MAIN_COLOR, PAGE_TITLE_ID, normalizeBlocs, withoutEmptyBlocs, type BlocsMainColor, type LegacyBloc } from '~/utils/blocs'
+import { BLOCS_MAIN_COLOR, FOLLOW_LINKS, PAGE_TITLE_ID, normalizeBlocs, withoutEmptyBlocs, type BlocsMainColor, type LegacyBloc } from '~/utils/blocs'
 import { heroBgColor } from '~/utils/hero'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
@@ -242,6 +242,8 @@ const props = withDefaults(defineProps<{
   forOrganization?: boolean
   // The page shows no title of its own: the first title bloc is the title of the page (`h1`).
   untitled?: boolean
+  // Only for blocs written by the team, see `FOLLOW_LINKS`.
+  followLinks?: boolean
   mainColor?: BlocsMainColor
   // When set, the empty state is also shown in view mode (not just while editing)
   // with this label on a CTA that enters edit mode. Hosts that pass it are
@@ -256,11 +258,13 @@ const props = withDefaults(defineProps<{
   hideEditButton: false,
   forOrganization: false,
   untitled: false,
+  followLinks: false,
   mainColor: 'primary',
   emptyCtaLabel: undefined,
 })
 
 provide(BLOCS_MAIN_COLOR, props.mainColor)
+provide(FOLLOW_LINKS, props.followLinks)
 
 // From the raw array, so that the working copy below can be `structuredClone`d (a
 // reactive proxy cannot be).

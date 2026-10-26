@@ -796,3 +796,35 @@ test.describe('Sections', () => {
     expect(section.blocs.map((bloc: { width: string | null }) => bloc.width)).toEqual([null, '1/3'])
   })
 })
+
+test.describe('Links in blocs written by the team', () => {
+  const createdIds: Array<string> = []
+
+  test.afterEach(async ({ request }) => {
+    await deletePosts(request, createdIds)
+  })
+
+  test('are followed by search engines', async ({ page, request }) => {
+    const post = await createPost(request, {
+      name: `Partenaires ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [{
+        class: 'SectionBloc',
+        id: crypto.randomUUID(),
+        color: null,
+        blocs: [
+          { class: 'MarkdownBloc', id: crypto.randomUUID(), width: null, content: '[Partenaire](https://example.com/partner)' },
+          { class: 'LinksListBloc', id: crypto.randomUUID(), width: null, links: [{ title: 'Lien externe', url: 'https://example.com/link', color: null }] },
+          { class: 'ButtonBloc', id: crypto.randomUUID(), width: null, title: 'Notre site', url: 'https://example.com/main' },
+        ],
+      }],
+    })
+    createdIds.push(post.id)
+
+    await page.goto(`/pages/${post.slug}`)
+    await expect(page.getByRole('link', { name: 'Partenaire' })).not.toHaveAttribute('rel', /nofollow/)
+    await expect(page.getByRole('link', { name: 'Notre site' })).not.toHaveAttribute('rel', /nofollow/)
+    await expect(page.getByRole('link', { name: 'Lien externe' })).not.toHaveAttribute('rel', /nofollow/)
+  })
+})

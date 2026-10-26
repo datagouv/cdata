@@ -141,6 +141,52 @@ test.describe('Organization presentation tab', () => {
     }
   })
 
+  test('links leaving the site are not followed by search engines', async ({ page }) => {
+    const uniqueId = Date.now()
+    const createResp = await page.request.post(`${API_BASE}/api/1/organizations/`, {
+      data: {
+        name: `Presentation links test ${uniqueId}`,
+        description: 'Organization used to test the links of the presentation tab.',
+      },
+    })
+    const org = await createResp.json()
+
+    try {
+      const updateResp = await page.request.put(`${API_BASE}/api/1/organizations/${org.id}/`, {
+        data: {
+          ...org,
+          presentation_blocs: [
+            { class: 'SectionBloc', blocs: [
+              { class: 'TitleBloc', title: 'Liens' },
+              { class: 'MarkdownBloc', content: 'Nos liens.' },
+              {
+                class: 'LinksListBloc',
+                links: [
+                  { title: 'Lien externe', url: 'https://example.com/link', color: '#000000' },
+                  { title: 'Lien interne', url: '/datasets', color: '#000000' },
+                ],
+              },
+              { class: 'ButtonBloc', title: 'Notre site', url: 'https://example.com/main' },
+            ] },
+          ],
+        },
+      })
+      expect(updateResp.ok()).toBe(true)
+
+      // The draft presentation is shown to the admin.
+      await page.goto(`/organizations/${org.slug}/presentation`)
+      const rel = 'ugc nofollow noopener'
+      await expect(page.getByRole('link', { name: 'Notre site' })).toHaveAttribute('rel', rel)
+      await expect(page.getByRole('link', { name: 'Lien externe' })).toHaveAttribute('rel', rel)
+      // Links to the site are marked too: telling them apart is not worth it for now
+      await expect(page.getByRole('link', { name: 'Lien interne' })).toHaveAttribute('rel', rel)
+      await page.waitForLoadState('networkidle')
+    }
+    finally {
+      await page.request.delete(`${API_BASE}/api/1/organizations/${org.id}/`)
+    }
+  })
+
   test('admin invite banner toggles with the presentation publication state', async ({ page }) => {
     const uniqueId = Date.now()
     const createResp = await page.request.post(`${API_BASE}/api/1/organizations/`, {

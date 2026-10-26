@@ -14,6 +14,7 @@
               '--link-color': colorOf(link),
             }"
             :href="link.url"
+            :rel="followLinks ? undefined : 'ugc nofollow noopener'"
           >
             {{ link.title }}
             <RiArrowRightUpLine class="size-6" />
@@ -83,7 +84,7 @@ import { RiAddLine, RiArrowRightUpLine, RiDeleteBinLine } from '@remixicon/vue'
 import CdataLink from '../CdataLink.vue'
 import EditableText from './EditableText.vue'
 import type { LinkInBloc, LinksListBloc } from '~/types/pages'
-import { SECTION_COLOR } from '~/utils/blocs'
+import { FOLLOW_LINKS, SECTION_COLOR } from '~/utils/blocs'
 
 defineProps<{
   edit: boolean
@@ -97,4 +98,7 @@ const sectionColor = inject(SECTION_COLOR, ref(null))
 function colorOf(link: LinkInBloc): string | null {
   return sectionColor.value ? '#fff' : link.color
 }
+
+// Links chosen by whoever wrote the bloc, see `FOLLOW_LINKS`.
+const followLinks = inject(FOLLOW_LINKS, false)
 </script>

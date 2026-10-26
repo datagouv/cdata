@@ -1,6 +1,7 @@
 import type hast from 'hast'
 import behead, { type Options } from 'remark-behead'
 import remarkBreaks from 'remark-breaks'
+import rehypeExternalLinks from 'rehype-external-links'
 import rehypeHighlight from 'rehype-highlight'
 import remarkParse from 'remark-parse'
 import remarkRehype from 'remark-rehype'
@@ -57,15 +58,17 @@ function rehypeNoHeadings(this: Processor): Transformer {
   }
 }
 
-export function formatMarkdown(md: string, config: number | { minDepth: number, noHeadings: boolean } = 3) {
+export function formatMarkdown(md: string, config: number | { minDepth: number, noHeadings: boolean, followLinks?: boolean } = 3) {
   let minDepth: number
   let noHeadings = false
+  let followLinks = false
   if (typeof config === 'number') {
     minDepth = config
   }
   else {
     minDepth = config.minDepth
     noHeadings = config.noHeadings
+    followLinks = config.followLinks ?? false
   }
   const result = unified()
     .use(behead, { minDepth: minDepth > 1 ? minDepth : undefined } as Options)
@@ -84,6 +87,12 @@ export function formatMarkdown(md: string, config: number | { minDepth: number, 
     .use(rehypeHighlight)
     .use(rehypeSlug)
     .use(rehypeSanitize)
+    // Markdown mostly comes from users: links leaving the site must not pass on its search
+    // ranking, or they become worth spamming for. `followLinks` is for content written by the team.
+    .use(rehypeExternalLinks, {
+      rel: followLinks ? [] : ['ugc', 'nofollow', 'noopener'],
+      protocols: ['http', 'https', 'mailto'],
+    })
     // Serialize syntax tree to HTML
     .use(rehypeStringify)
     .use(noHeadings ? [rehypeLazyLoad, rehypeNoHeadings] : [rehypeLazyLoad])

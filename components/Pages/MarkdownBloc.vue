@@ -21,6 +21,7 @@
       :content="bloc.content"
       :min-heading="2"
       size="md"
+      :follow-links="followLinks"
     />
   </div>
 </template>
@@ -29,7 +30,7 @@
 import { MarkdownViewer } from '@datagouv/components-next'
 import MarkdownEditor from '~/components/MarkdownEditor/MarkdownEditor.vue'
 import type { MarkdownBloc } from '~/types/pages'
-import { SECTION_COLOR } from '~/utils/blocs'
+import { FOLLOW_LINKS, SECTION_COLOR } from '~/utils/blocs'
 
 defineProps<{
   edit: boolean
@@ -40,4 +41,6 @@ const bloc = defineModel<MarkdownBloc>({ required: true })
 // On a colored section, the text is white. The links and the bold text too: important, as the
 // viewer gives them a gray of its own, on the same element.
 const sectionColor = inject(SECTION_COLOR, ref(null))
+
+const followLinks = inject(FOLLOW_LINKS, false)
 </script>
