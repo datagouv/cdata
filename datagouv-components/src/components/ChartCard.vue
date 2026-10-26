@@ -83,7 +83,8 @@
 </template>
 
 <script setup lang="ts">
-import { RiBarChartBoxLine, RiDeleteBinLine, RiEyeLine, RiLockLine, RiSubtractLine } from '@remixicon/vue'
+import { computed } from 'vue'
+import { RiBarChartBoxLine, RiDeleteBinLine, RiEyeLine, RiLineChartLine, RiLockLine, RiSubtractLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Chart } from '../types/visualizations'
 import { summarize } from '../functions/helpers'
@@ -97,7 +98,7 @@ import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import TranslationT from './TranslationT.vue'
 
-defineProps<{
+const props = defineProps<{
   chart: Chart
   chartUrl?: RouteLocationRaw
   organizationUrl?: RouteLocationRaw
@@ -105,7 +106,6 @@ defineProps<{
 
 const { t } = useTranslation()
 
-// The chart kind is inferred at render time from the query result, so the
-// card carries no line/bar information: use the generic chart icon.
-const chartIcon = RiBarChartBoxLine
+// Icon reflects the chart type stored on the model (like pre-reduction cards).
+const chartIcon = computed(() => props.chart.chart_type === 'line' ? RiLineChartLine : RiBarChartBoxLine)
 </script>
