@@ -39,6 +39,7 @@
   <BrandedButton
     v-else-if="title && href"
     :href="href!"
+    :rel="followLinks ? undefined : 'ugc nofollow noopener'"
     :class="$props.class"
     :color
   >
@@ -50,6 +51,7 @@
 import type { ComponentProps } from 'vue-component-type-helpers'
 import { BrandedButton } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
+import { followLinksKey } from './followLinksKey'
 
 const props = withDefaults(defineProps<{
   edit: boolean
@@ -66,6 +68,9 @@ const href = defineModel<string | null>('href')
 defineEmits<{
   clear: []
 }>()
+
+// Link chosen by whoever wrote the bloc, see followLinksKey.
+const followLinks = inject(followLinksKey, false)
 
 const buttonColors = computed(() => {
   const colors: Record<string, string> = {

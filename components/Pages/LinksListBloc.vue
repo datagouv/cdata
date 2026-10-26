@@ -71,6 +71,7 @@
                   '--link-color': link.color,
                 }"
                 :href="link.url"
+                :rel="followLinks ? undefined : 'ugc nofollow noopener'"
               >
                 {{ link.title }}
                 <RiArrowRightUpLine class="size-6" />
@@ -155,6 +156,7 @@ import CdataLink from '../CdataLink.vue'
 import EditableText from './EditableText.vue'
 import BrandedButtonEditor from './BrandedButtonEditor.vue'
 import BlocWithTitleAndSubtitle from './BlocWithTitleAndSubtitle.vue'
+import { followLinksKey } from './followLinksKey'
 import type { LinksListBloc } from '~/types/pages'
 
 withDefaults(defineProps<{
@@ -165,4 +167,7 @@ withDefaults(defineProps<{
 })
 
 const bloc = defineModel<LinksListBloc>({ required: true })
+
+// Links chosen by whoever wrote the bloc, see followLinksKey.
+const followLinks = inject(followLinksKey, false)
 </script>

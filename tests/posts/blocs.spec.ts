@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE } from '../helpers'
+import { API_BASE, createPost, deletePosts } from '../helpers'
 import { fillPostDescription } from './helpers'
 
 async function createPostWithBlocs(page: Page, options: {
@@ -100,5 +100,31 @@ test.describe('Post with blocs', () => {
     await expect(page.getByRole('heading', { level: 1, name: `Test News Blocs ${uniqueId}` })).toBeVisible()
     await expect(page.getByText('A news post with blocs')).toBeVisible()
     await expect(page.getByText('News content')).toBeVisible()
+  })
+})
+
+test.describe('Links in blocs written by the team', () => {
+  const createdIds: Array<string> = []
+
+  test.afterEach(async ({ request }) => {
+    await deletePosts(request, createdIds)
+  })
+
+  test('are followed by search engines', async ({ page, request }) => {
+    const post = await createPost(request, {
+      name: `Partenaires ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [
+        { class: 'MarkdownBloc', title: 'Texte', subtitle: null, content: '[Partenaire](https://example.com/partner)' },
+        { class: 'LinksListBloc', title: 'Liens', subtitle: null, paragraph: 'Nos liens.', main_link_title: 'Notre site', main_link_url: 'https://example.com/main', links: [{ title: 'Lien externe', url: 'https://example.com/link', color: null }] },
+      ],
+    })
+    createdIds.push(post.id)
+
+    await page.goto(`/pages/${post.slug}`)
+    await expect(page.getByRole('link', { name: 'Partenaire' })).not.toHaveAttribute('rel', /nofollow/)
+    await expect(page.getByRole('link', { name: 'Notre site' })).not.toHaveAttribute('rel', /nofollow/)
+    await expect(page.getByRole('link', { name: 'Lien externe' })).not.toHaveAttribute('rel', /nofollow/)
   })
 })

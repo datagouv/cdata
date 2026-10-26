@@ -57,6 +57,7 @@
     "pdfjs-dist": "^4.10.38",
     "pmtiles": "^4.5.0",
     "popmotion": "^11.0.5",
+    "rehype-external-links": "^3.0.0",
     "rehype-highlight": "^7.0.2",
     "rehype-raw": "^7.0.0",
     "rehype-sanitize": "^6.0.0",

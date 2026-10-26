@@ -21,6 +21,7 @@
           :content="data.content"
           :min-heading="1"
           size="md"
+          follow-links
         />
         <ComponentDefinedInSetup
           v-else

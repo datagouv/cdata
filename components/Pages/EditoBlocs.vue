@@ -216,6 +216,7 @@ import * as Sentry from '@sentry/nuxt'
 import { BrandedButton, formatMarkdown } from '@datagouv/components-next'
 import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine, RiEdit2Line } from '@remixicon/vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
+import { followLinksKey } from './followLinksKey'
 import HeadingsSidemenu from '~/components/Sidemenu/HeadingsSidemenu.vue'
 import type { PageBloc } from '~/types/pages'
 import type { Heading } from '~/utils/headings'
@@ -233,6 +234,8 @@ const props = withDefaults(defineProps<{
   // Trims the "add bloc" menu for organization presentation pages (no Hero, Markdown
   // moved into the layout group). See AddBlocDropdown.
   forOrganization?: boolean
+  // Only for blocs written by the team, see followLinksKey.
+  followLinks?: boolean
   mainColor?: ComponentProps<typeof BrandedButton>['color']
   // When set, the empty state is also shown in view mode (not just while editing)
   // with this label on a CTA that enters edit mode. Hosts that pass it are
@@ -246,9 +249,12 @@ const props = withDefaults(defineProps<{
   sidemenu: false,
   hideEditButton: false,
   forOrganization: false,
+  followLinks: false,
   mainColor: 'primary',
   emptyCtaLabel: undefined,
 })
+
+provide(followLinksKey, props.followLinks)
 
 watchEffect(() => {
   for (const bloc of props.blocs) {

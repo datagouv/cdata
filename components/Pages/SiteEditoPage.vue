@@ -40,6 +40,7 @@
       <EditoBlocs
         :blocs="blocs"
         edit
+        follow-links
         :on-save="saveBlocs"
       />
     </div>
