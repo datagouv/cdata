@@ -21,28 +21,20 @@
         :key="message.id"
       >
         <template
-          v-for="(part, index) in message.parts"
+          v-for="(item, index) in buildChatDisplayItems(message.parts)"
           :key="index"
         >
-          <details
-            v-if="part.type.startsWith('tool-')"
-            class="tool-trace border border-new-gray-light rounded-md mb-2"
-          >
-            <summary class="flex items-center gap-2 px-2 py-1.5 text-sm cursor-pointer">
-              <RiWrenchLine
-                class="size-4 shrink-0 text-new-gray-medium"
-                aria-hidden="true"
-              />
-              <span class="font-mono text-xs">{{ part.type }}</span>
-            </summary>
-            <pre class="m-0 px-2 pb-2 text-xs overflow-x-auto">{{ JSON.stringify(part, null, 2) }}</pre>
-          </details>
+          <ToolTrace
+            v-if="item.kind === 'trace'"
+            :trace="item.trace"
+            class="mb-2"
+          />
           <p
-            v-else-if="part.type === 'text'"
+            v-else
             class="whitespace-pre-wrap m-0"
             :class="message.role === 'user' ? 'font-medium' : ''"
           >
-            {{ part.text }}
+            {{ item.text }}
           </p>
         </template>
       </article>
@@ -88,37 +80,63 @@
     </div>
 
     <form
-      class="mt-auto space-y-2"
+      class="mt-auto overflow-hidden rounded-md border bg-white transition-[border-color,box-shadow] focus-within:border-new-primary focus-within:shadow-[0_0_0_1px_var(--color-new-primary)]"
       @submit.prevent="submit"
     >
-      <label
-        for="assistant-input"
-        class="fr-label"
-      >{{ $t('Votre demande') }}</label>
-      <textarea
-        id="assistant-input"
-        v-model="input"
-        class="w-full fr-input"
-        rows="3"
-        :disabled="waiting || busy"
-        :placeholder="$t('Décrivez le graphique souhaité…')"
-      />
-      <button
-        type="submit"
-        class="fr-btn"
-        :disabled="waiting || busy || !input.trim()"
-      >
-        {{ $t('Envoyer') }}
-      </button>
+      <div class="flex h-28 flex-col px-2 py-2">
+        <textarea
+          id="assistant-input"
+          v-model="input"
+          rows="3"
+          maxlength="4000"
+          class="min-h-0 w-full flex-1 resize-none border-0 bg-transparent text-sm outline-none placeholder:text-new-gray-medium"
+          :aria-label="$t('Votre demande')"
+          :disabled="waiting || busy"
+          :placeholder="$t('Décrivez le graphique souhaité…')"
+          @keydown.enter="handleEnter"
+        />
+        <footer class="flex items-center justify-end gap-2">
+          <span
+            v-if="input.length >= 3600"
+            class="mr-auto text-[11px] tabular-nums"
+            :class="input.length >= 4000 ? 'text-new-error' : 'text-new-gray-medium'"
+          >{{ input.length.toLocaleString('fr-FR') }} / {{ (4000).toLocaleString('fr-FR') }}</span>
+          <button
+            v-if="busy"
+            type="button"
+            class="flex h-7 shrink-0 items-center gap-1 rounded-md border border-new-gray-dark px-2 text-xs font-medium text-new-gray-dark hover:bg-gray-100"
+            @click="stop"
+          >
+            <RiStopMiniLine
+              class="size-4"
+              aria-hidden="true"
+            />
+            {{ $t('Arrêter') }}
+          </button>
+          <button
+            v-else
+            type="submit"
+            :aria-label="$t('Envoyer')"
+            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-new-primary text-white hover:bg-new-primary-hover disabled:cursor-not-allowed disabled:bg-new-gray-medium-clic"
+            :disabled="waiting || !input.trim()"
+          >
+            <RiArrowUpLine
+              class="size-4"
+              aria-hidden="true"
+            />
+          </button>
+        </footer>
+      </div>
     </form>
   </section>
 </template>
 
 <script setup lang="ts">
-import { RiCheckLine, RiFileCopyLine, RiWrenchLine } from '@remixicon/vue'
+import { RiArrowUpLine, RiCheckLine, RiFileCopyLine, RiStopMiniLine } from '@remixicon/vue'
 import { computed, ref, toRef } from 'vue'
+import ToolTrace from './ToolTrace.vue'
 import { useAssistantChat } from './useAssistantChat'
-import { extractLastSqlBlock, mapAssistantError } from '~/utils/assistant'
+import { buildChatDisplayItems, extractLastSqlBlock, mapAssistantError } from '~/utils/assistant'
 
 const props = defineProps<{
   resourceId: string | null
@@ -128,7 +146,7 @@ const emit = defineEmits<{
   (e: 'use-query', query: string): void
 }>()
 
-const { error, messages, sendMessage, status } = useAssistantChat(toRef(props, 'resourceId'))
+const { error, messages, sendMessage, status, stop } = useAssistantChat(toRef(props, 'resourceId'))
 
 const input = ref('')
 const copied = ref(false)
@@ -146,11 +164,23 @@ const lastAssistantText = computed(() => {
 })
 const lastSql = computed(() => (lastAssistantText.value ? extractLastSqlBlock(lastAssistantText.value) : null))
 
+// Guard against double submissions (double click, repeated Enter).
+const SEND_COOLDOWN_MS = 1000
+let lastSubmittedAt = 0
+
 function submit() {
   const text = input.value.trim()
-  if (!text || waiting.value || busy.value) return
+  const now = Date.now()
+  if (!text || waiting.value || busy.value || now - lastSubmittedAt < SEND_COOLDOWN_MS) return
+  lastSubmittedAt = now
   sendMessage({ text })
   input.value = ''
+}
+
+function handleEnter(event: KeyboardEvent) {
+  if (event.shiftKey || event.isComposing) return
+  event.preventDefault()
+  submit()
 }
 
 function useQuery() {
