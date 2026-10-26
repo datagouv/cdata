@@ -11,7 +11,6 @@ import rehypeSanitize from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
 import rehypeStringify from 'rehype-stringify'
 import { unified, type Processor, type Transformer } from 'unified'
-import type { InjectionKey } from 'vue'
 import type { Node } from 'unist'
 import { visit } from 'unist-util-visit'
 import remarkGfm from 'remark-gfm'
@@ -59,12 +58,6 @@ function rehypeNoHeadings(this: Processor): Transformer {
   }
 }
 
-// Provided by containers to tell whether search engines may follow the links leaving the site
-// they render. Only for links chosen by the team, which keep helping the sites they point to:
-// links chosen by users (any content coming from the API by default) must not pass on the site's
-// search ranking, or they become worth spamming for.
-export const followLinksKey = Symbol() as InjectionKey<boolean>
-
 export function formatMarkdown(md: string, config: number | { minDepth: number, noHeadings: boolean, followLinks?: boolean } = 3) {
   let minDepth: number
   let noHeadings = false
@@ -94,7 +87,8 @@ export function formatMarkdown(md: string, config: number | { minDepth: number, 
     .use(rehypeHighlight)
     .use(rehypeSlug)
     .use(rehypeSanitize)
-    // See followLinksKey
+    // Markdown mostly comes from users: links leaving the site must not pass on its search
+    // ranking, or they become worth spamming for. `followLinks` is for content written by the team.
     .use(rehypeExternalLinks, {
       rel: followLinks ? [] : ['ugc', 'nofollow', 'noopener'],
       protocols: ['http', 'https', 'mailto'],

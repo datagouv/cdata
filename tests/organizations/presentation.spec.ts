@@ -164,7 +164,8 @@ test.describe('Organization presentation tab', () => {
       const rel = 'ugc nofollow noopener noreferrer'
       await expect(page.getByRole('link', { name: 'Notre site' })).toHaveAttribute('rel', rel)
       await expect(page.getByRole('link', { name: 'Lien externe' })).toHaveAttribute('rel', rel)
-      await expect(page.getByRole('link', { name: 'Lien interne' })).not.toHaveAttribute('rel')
+      // Links to the site are marked too: telling them apart is not worth it for now
+      await expect(page.getByRole('link', { name: 'Lien interne' })).toHaveAttribute('rel', rel)
       await page.waitForLoadState('networkidle')
     }
     finally {

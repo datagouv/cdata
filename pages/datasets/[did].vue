@@ -427,6 +427,7 @@
                 :icon="RiExternalLinkLine"
                 icon-right
                 :href="dataset.authorization_request_url"
+                rel="ugc nofollow noopener noreferrer"
               >
                 {{ $t('Faire une demande d\'habilitation') }}
               </BrandedButton>

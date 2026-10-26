@@ -24,6 +24,7 @@
         :content="bloc.content"
         :min-heading="2"
         size="md"
+        :follow-links="followLinks"
       />
     </div>
   </BlocWithTitleAndSubtitle>
@@ -32,6 +33,7 @@
 <script setup lang="ts">
 import { MarkdownViewer } from '@datagouv/components-next'
 import BlocWithTitleAndSubtitle from './BlocWithTitleAndSubtitle.vue'
+import { followLinksKey } from './followLinksKey'
 import MarkdownEditor from '~/components/MarkdownEditor/MarkdownEditor.vue'
 import type { MarkdownBloc } from '~/types/pages'
 
@@ -40,4 +42,6 @@ defineProps<{
 }>()
 
 const bloc = defineModel<MarkdownBloc>({ required: true })
+
+const followLinks = inject(followLinksKey, false)
 </script>

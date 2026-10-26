@@ -49,8 +49,9 @@
 
 <script setup lang="ts">
 import type { ComponentProps } from 'vue-component-type-helpers'
-import { BrandedButton, followLinksKey } from '@datagouv/components-next'
+import { BrandedButton } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
+import { followLinksKey } from './followLinksKey'
 
 const props = withDefaults(defineProps<{
   edit: boolean

@@ -150,12 +150,13 @@
 
 <script setup lang="ts">
 import type { ComponentProps } from 'vue-component-type-helpers'
-import { followLinksKey, type BrandedButton } from '@datagouv/components-next'
+import type { BrandedButton } from '@datagouv/components-next'
 import { RiAddLine, RiArrowRightUpLine, RiDeleteBinLine } from '@remixicon/vue'
 import CdataLink from '../CdataLink.vue'
 import EditableText from './EditableText.vue'
 import BrandedButtonEditor from './BrandedButtonEditor.vue'
 import BlocWithTitleAndSubtitle from './BlocWithTitleAndSubtitle.vue'
+import { followLinksKey } from './followLinksKey'
 import type { LinksListBloc } from '~/types/pages'
 
 withDefaults(defineProps<{

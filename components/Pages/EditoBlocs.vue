@@ -213,9 +213,10 @@
 <script setup lang="ts">
 import type { ComponentProps } from 'vue-component-type-helpers'
 import * as Sentry from '@sentry/nuxt'
-import { BrandedButton, followLinksKey, formatMarkdown } from '@datagouv/components-next'
+import { BrandedButton, formatMarkdown } from '@datagouv/components-next'
 import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine, RiEdit2Line } from '@remixicon/vue'
 import AddBlocDropdown from './AddBlocDropdown.vue'
+import { followLinksKey } from './followLinksKey'
 import HeadingsSidemenu from '~/components/Sidemenu/HeadingsSidemenu.vue'
 import type { PageBloc } from '~/types/pages'
 import type { Heading } from '~/utils/headings'
