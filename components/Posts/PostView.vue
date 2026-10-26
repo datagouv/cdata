@@ -43,6 +43,8 @@
       v-if="isFullPageBlocs"
       :blocs="post.blocs ?? []"
       editable
+      untitled
+      follow-links
       :sidemenu="post.sidemenu"
       :on-save="saveBlocs"
     />
@@ -101,6 +103,7 @@
           <EditoBlocs
             :blocs="post.blocs ?? []"
             editable
+            follow-links
             hide-edit-button
             :sidemenu="post.sidemenu"
             :on-save="saveBlocs"
@@ -122,6 +125,7 @@
               :content="post.content"
               :min-heading="2"
               size="md"
+              follow-links
             />
             <div
               v-else
@@ -205,8 +209,10 @@ async function saveBlocs(blocs: Array<PageBloc>) {
     await props.onRefresh()
     toast.success(t('Page sauvegardée'))
   }
-  catch {
+  catch (error) {
     toast.error(t('Erreur lors de la sauvegarde'))
+    // The editor keeps the changes that could not be saved
+    throw error
   }
 }
 

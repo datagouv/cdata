@@ -16,15 +16,24 @@
     </div>
 
     <!-- Side menu, outside of the edit mode whose toolbar lives in the side margins: the
-         full-width blocs opening the page stay above it, the others go next to it -->
+         colored sections opening the page stay above it as banners, the others go next to it -->
     <template v-if="sidemenu && !isEditing">
-      <component
-        :is="blocsTypes[bloc.class].component"
-        v-for="bloc in leadingFullWidthBlocs"
-        :key="bloc.id"
-        :model-value="(bloc as any)"
-        :edit="false"
-      />
+      <div
+        v-for="section in leadingColoredSections"
+        :key="section.id"
+        class="py-24"
+        :class="heroBgColor(section.color!)"
+        data-testid="page-SectionBloc"
+      >
+        <div class="container">
+          <BlocsList
+            :model-value="section.blocs"
+            :edit="false"
+            level="section"
+            :color="section.color"
+          />
+        </div>
+      </div>
       <div class="container md:flex md:gap-8 py-12">
         <HeadingsSidemenu
           v-if="sidemenuHeadings.length"
@@ -32,120 +41,115 @@
           class="md:w-1/4 shrink-0"
         />
         <div class="flex-1 min-w-0 space-y-12">
-          <template
-            v-for="bloc in workingBlocs.slice(leadingFullWidthBlocs.length)"
-            :key="bloc.id"
-          >
-            <component
-              :is="blocsTypes[bloc.class].component"
-              v-if="blocsTypes[bloc.class]?.component"
-              :model-value="(bloc as any)"
-              :edit="false"
-              v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
-            />
-          </template>
+          <BlocsList
+            v-for="section in workingBlocs.slice(leadingColoredSections.length)"
+            :key="section.id"
+            :model-value="section.blocs"
+            :edit="false"
+            level="section"
+            :color="section.color"
+            :class="section.color && [heroBgColor(section.color), 'rounded-lg p-8']"
+            data-testid="page-SectionBloc"
+          />
         </div>
       </div>
     </template>
 
-    <template v-else>
-      <div
+    <div
+      v-else
+      ref="listRef"
+      data-drop-list
+    >
+      <EditItem
         v-for="(bloc, index) in workingBlocs"
         :key="bloc.id"
-        class="relative"
-        :class="bloc.class !== 'HeroBloc' && (striped ? 'py-24 odd:bg-gray-some even:bg-white' : 'py-12')"
-        data-testid="edito-bloc"
+        :edit="isEditing"
+        :label="labels[bloc.class] ?? bloc.class"
+        draggable
+        band
+        class="group/section"
+        :class="[striped ? 'py-24' : 'py-12', bloc.color ? heroBgColor(bloc.color) : striped && 'odd:bg-gray-some even:bg-white']"
+        :data-testid="`page-${bloc.class}`"
+        data-drop-item
+        @delete="workingBlocs.splice(index, 1)"
+        @drag-start="startBlocsDrag($event, { list: listRef!, index, kind: 'band', label: labels[bloc.class] ?? bloc.class })"
+        @keyboard-move="moveWithKeyboard(workingBlocs, $event, index)"
       >
-        <!-- Add button above the bloc (absolute positioned) -->
-        <div
-          v-if="isEditing"
-          class="absolute -top-4 left-0 right-0 flex items-center justify-center"
+        <!-- The background of the section; an organization page sits under the banner of
+             the organization, its sections keep neutral ones -->
+        <template
+          v-if="!forOrganization"
+          #actions
         >
-          <AddBlocDropdown
-            :for-organization="forOrganization"
-            @new-bloc="workingBlocs.splice(index, 0, $event)"
+          <MenuItem
+            v-for="color in SECTION_COLORS"
+            :key="color.value ?? 'neutral'"
+            v-slot="{ active }"
           >
-            <BrandedButton
-              color="tertiary"
-              size="xs"
-              class="bg-white shadow-sm"
-              :icon="RiAddLine"
+            <button
+              type="button"
+              class="flex w-full items-center gap-2 px-3 py-1.5"
+              :class="{ 'bg-gray-100': active }"
+              @click="bloc.color = color.value"
             >
-              {{ $t('Ajouter un bloc') }}
-            </BrandedButton>
-          </AddBlocDropdown>
-        </div>
-        <!-- Bloc toolbar in edit mode -->
+              <span
+                class="size-4 rounded-full border border-gray-300"
+                :class="color.value ? heroBgColor(color.value) : 'bg-gray-some'"
+              />
+              {{ color.label }}
+              <RiCheckLine
+                v-if="bloc.color === color.value"
+                class="size-4 ml-auto"
+              />
+            </button>
+          </MenuItem>
+        </template>
+        <!-- Adds a section above this one. Only on hover: one per section would crowd the page,
+             the one below the last section stays -->
         <div
           v-if="isEditing"
-          class="absolute left-4 top-4 flex flex-row gap-2 z-10 min-[1530px]:left-8 min-[1530px]:top-1/2 min-[1530px]:-translate-y-1/2 min-[1530px]:flex-col"
+          class="absolute -top-4 left-0 right-0 flex items-center justify-center z-20 opacity-0 group-hover/section:opacity-100 focus-within:opacity-100 transition-opacity delay-400 group-hover/section:delay-0 focus-within:delay-0"
+          data-edit-control
         >
           <BrandedButton
             color="tertiary"
-            :icon="RiArrowUpLine"
-            :disabled="index === 0"
-            :title="$t('Monter')"
-            @click="moveBloc(index, -1)"
-          />
-          <BrandedButton
-            color="tertiary"
-            :icon="RiArrowDownLine"
-            :disabled="index === workingBlocs.length - 1"
-            :title="$t('Descendre')"
-            @click="moveBloc(index, 1)"
-          />
-          <BrandedButton
-            color="tertiary"
-            :icon="RiDeleteBinLine"
-            :title="$t('Supprimer')"
-            @click="workingBlocs.splice(index, 1)"
-          />
+            size="xs"
+            class="bg-white shadow-sm"
+            :icon="RiAddLine"
+            @click="workingBlocs.splice(index, 0, newSection())"
+          >
+            {{ $t('Ajouter une section') }}
+          </BrandedButton>
         </div>
-
-        <!-- Full-width blocs (like HeroBloc) -->
-        <component
-          :is="blocsTypes[bloc.class].component"
-          v-if="blocsTypes[bloc.class] && 'fullWidth' in blocsTypes[bloc.class] && blocsTypes[bloc.class].component"
-          v-model="(workingBlocs[index] as any)"
-          :edit="isEditing"
-          v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
-        />
-
-        <!-- Other blocs use container layout -->
-        <div
-          v-else
-          class="container"
-        >
-          <component
-            :is="blocsTypes[bloc.class].component"
-            v-if="blocsTypes[bloc.class]?.component"
-            v-model="(workingBlocs[index] as any)"
+        <div class="container">
+          <BlocsList
+            v-model="workingBlocs[index].blocs"
             :edit="isEditing"
-            v-bind="bloc.class === 'LinksListBloc' ? { 'main-color': mainColor } : {}"
+            level="section"
+            :color="bloc.color"
           />
         </div>
 
-        <!-- Add button below the last bloc -->
+        <!-- Add button below the last bloc, always shown: the way to grow the page -->
         <div
           v-if="isEditing && index === workingBlocs.length - 1"
-          class="absolute -bottom-4 left-0 right-0 flex items-center justify-center"
+          class="absolute -bottom-4 left-0 right-0 flex items-center justify-center z-20"
+          data-edit-control
         >
-          <AddBlocDropdown
-            :for-organization="forOrganization"
-            @new-bloc="workingBlocs.push($event)"
+          <BrandedButton
+            color="tertiary"
+            size="xs"
+            class="bg-white shadow-sm"
+            :icon="RiAddLine"
+            @click="workingBlocs.push(newSection())"
           >
-            <BrandedButton
-              color="tertiary"
-              size="xs"
-              class="bg-white shadow-sm"
-              :icon="RiAddLine"
-            >
-              {{ $t('Ajouter un bloc') }}
-            </BrandedButton>
-          </AddBlocDropdown>
+            {{ $t('Ajouter une section') }}
+          </BrandedButton>
         </div>
-      </div>
-    </template>
+      </EditItem>
+    </div>
+
+    <BlocsDragLayer v-if="isEditing" />
 
     <!-- Empty state. In edit mode it invites adding a first bloc; in view mode it
          is only shown when the host opts in via `emptyCtaLabel` (e.g. an org admin
@@ -168,15 +172,13 @@
           {{ $t('Ajoutez un premier bloc pour commencer à composer la page.') }}
         </p>
       </slot>
-      <AddBlocDropdown
+      <BrandedButton
         v-if="isEditing"
-        :for-organization="forOrganization"
-        @new-bloc="workingBlocs.push($event)"
+        :icon="RiAddLine"
+        @click="workingBlocs.push(newSection())"
       >
-        <BrandedButton :icon="RiAddLine">
-          {{ $t('Ajouter un bloc') }}
-        </BrandedButton>
-      </AddBlocDropdown>
+        {{ $t('Ajouter une section') }}
+      </BrandedButton>
       <BrandedButton
         v-else
         :icon="RiEdit2Line"
@@ -187,9 +189,11 @@
     </div>
 
     <!-- Save bar -->
+    <!-- The add menus keep clear of it (see `AddBlocDropdown`) -->
     <div
       v-if="isEditing"
       class="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4 flex items-center justify-end gap-8 z-50"
+      data-blocs-save-bar
     >
       <!-- Hosts can add controls applied on save (e.g. a publish toggle), grouped on
            the right next to the save actions but spaced apart so the action buttons
@@ -211,29 +215,36 @@
 </template>
 
 <script setup lang="ts">
-import type { ComponentProps } from 'vue-component-type-helpers'
-import * as Sentry from '@sentry/nuxt'
 import { BrandedButton, formatMarkdown } from '@datagouv/components-next'
-import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine, RiEdit2Line } from '@remixicon/vue'
-import AddBlocDropdown from './AddBlocDropdown.vue'
+import { MenuItem } from '@headlessui/vue'
+import { RiAddLine, RiCheckLine, RiEdit2Line } from '@remixicon/vue'
+import { v4 as uuidv4 } from 'uuid'
+import BlocsDragLayer from './BlocsDragLayer.vue'
+import BlocsList from './BlocsList.vue'
+import EditItem from './EditItem.vue'
 import HeadingsSidemenu from '~/components/Sidemenu/HeadingsSidemenu.vue'
-import type { PageBloc } from '~/types/pages'
-import type { Heading } from '~/utils/headings'
+import type { PageBloc, SectionBloc, SectionColor } from '~/types/pages'
+import { anchorHeadings, slugify, type Heading } from '~/utils/headings'
 import { isMeAdmin } from '~/utils/auth'
-
-const blocsTypes = useBlocsTypes()
+import { BLOCS_MAIN_COLOR, FOLLOW_LINKS, PAGE_TITLE_ID, normalizeBlocs, withoutEmptyBlocs, type BlocsMainColor, type LegacyBloc } from '~/utils/blocs'
+import { heroBgColor } from '~/utils/hero'
+import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 const props = withDefaults(defineProps<{
-  blocs: Array<PageBloc>
+  blocs: Array<PageBloc | LegacyBloc>
   edit?: boolean
   editable?: boolean
   striped?: boolean
   sidemenu?: boolean
   hideEditButton?: boolean
-  // Trims the "add bloc" menu for organization presentation pages (no Hero, Markdown
-  // moved into the layout group). See AddBlocDropdown.
+  // Organization presentation pages have no colored section (udata's
+  // `check_no_colored_sections`).
   forOrganization?: boolean
-  mainColor?: ComponentProps<typeof BrandedButton>['color']
+  // The page shows no title of its own: the first title bloc is the title of the page (`h1`).
+  untitled?: boolean
+  // Only for blocs written by the team, see `FOLLOW_LINKS`.
+  followLinks?: boolean
+  mainColor?: BlocsMainColor
   // When set, the empty state is also shown in view mode (not just while editing)
   // with this label on a CTA that enters edit mode. Hosts that pass it are
   // responsible for only making the page editable (`editable`) for allowed users.
@@ -246,17 +257,18 @@ const props = withDefaults(defineProps<{
   sidemenu: false,
   hideEditButton: false,
   forOrganization: false,
+  untitled: false,
+  followLinks: false,
   mainColor: 'primary',
   emptyCtaLabel: undefined,
 })
 
-watchEffect(() => {
-  for (const bloc of props.blocs) {
-    if (!blocsTypes[bloc.class]) {
-      Sentry.captureMessage(`Unknown bloc type: "${bloc.class}"`, 'warning')
-    }
-  }
-})
+provide(BLOCS_MAIN_COLOR, props.mainColor)
+provide(FOLLOW_LINKS, props.followLinks)
+
+// From the raw array, so that the working copy below can be `structuredClone`d (a
+// reactive proxy cannot be).
+const normalizedBlocs = computed(() => normalizeBlocs(toRaw(props.blocs), !props.forOrganization))
 
 const emit = defineEmits<{
   cancel: []
@@ -272,35 +284,51 @@ const localBlocs = ref<Array<PageBloc> | null>(null)
 
 watchEffect(() => {
   if (isEditing.value && !localBlocs.value) {
-    localBlocs.value = structuredClone(toRaw(props.blocs))
+    localBlocs.value = structuredClone(normalizedBlocs.value)
   }
 })
 
-const workingBlocs = computed(() => localBlocs.value ?? props.blocs)
+const workingBlocs = computed(() => localBlocs.value ?? normalizedBlocs.value)
 
-const isFullWidth = (bloc: PageBloc) => 'fullWidth' in (blocsTypes[bloc.class] ?? {})
-const leadingFullWidthBlocs = computed(() => {
-  const index = workingBlocs.value.findIndex(bloc => !isFullWidth(bloc))
+// The title of the page: the first bloc of the page, when it is a title.
+const pageTitleId = computed(() => {
+  const first = workingBlocs.value[0]?.blocs[0]
+  return props.untitled && first?.class === 'TitleBloc' ? first.id : null
+})
+provide(PAGE_TITLE_ID, pageTitleId)
+
+const { t } = useTranslation()
+
+const SECTION_COLORS: Array<{ value: SectionColor | null, label: string }> = [
+  { value: null, label: t('Fond neutre') },
+  { value: 'primary', label: t('Fond bleu') },
+  { value: 'green', label: t('Fond vert') },
+  { value: 'purple', label: t('Fond violet') },
+]
+
+const leadingColoredSections = computed(() => {
+  const index = workingBlocs.value.findIndex(section => !section.color)
   return workingBlocs.value.slice(0, index === -1 ? workingBlocs.value.length : index)
 })
-// The title of each bloc, then the headings of its Markdown, rendered with the same options
-// as MarkdownBloc so that their ids are the ones on the page
+// The titles of the sections next to the menu, then the headings of their Markdown, rendered
+// with the same options as MarkdownBloc so that their ids are the ones on the page. The title
+// of the page is not one of its parts, and the content of the accordions is folded.
 const sidemenuHeadings = computed<Array<Heading>>(() => workingBlocs.value
-  .filter(bloc => !isFullWidth(bloc))
-  .flatMap(bloc => [
-    ...(bloc.title ? [{ id: slugify(bloc.title), label: bloc.title, level: 2 }] : []),
-    ...(bloc.class === 'MarkdownBloc' ? anchorHeadings(formatMarkdown(bloc.content, { minDepth: 2, noHeadings: false })).headings : []),
-  ]),
+  .slice(leadingColoredSections.value.length)
+  .flatMap(section => section.blocs)
+  .flatMap((bloc) => {
+    if (bloc.class === 'TitleBloc') return bloc.id === pageTitleId.value ? [] : [{ id: slugify(bloc.title), label: bloc.title, level: 2 }]
+    if (bloc.class === 'MarkdownBloc') return anchorHeadings(formatMarkdown(bloc.content, { minDepth: 2, noHeadings: false })).headings
+    return []
+  }),
 )
 
 // Check if there are unsaved changes
 const hasUnsavedChanges = computed(() => {
-  return localBlocs.value !== null && JSON.stringify(toRaw(localBlocs.value)) !== JSON.stringify(toRaw(props.blocs))
+  return localBlocs.value !== null && JSON.stringify(toRaw(localBlocs.value)) !== JSON.stringify(normalizedBlocs.value)
 })
 
 // Warn before leaving with unsaved changes.
-const { t } = useTranslation()
-
 const handleBeforeUnload = (e: BeforeUnloadEvent) => {
   if (hasUnsavedChanges.value) {
     e.preventDefault()
@@ -320,16 +348,20 @@ onBeforeRouteLeave(() => {
   return window.confirm(t('Vous avez des modifications non enregistrées. Êtes-vous sûr de vouloir quitter ?'))
 })
 
-// Bloc manipulation functions
-function moveBloc(index: number, direction: -1 | 1) {
-  const newIndex = index + direction
-  if (newIndex < 0 || newIndex >= workingBlocs.value.length) return
+const labels = useBlocLabels()
 
-  const blocs = workingBlocs.value
-  const temp = blocs[index]
-  blocs[index] = blocs[newIndex]
-  blocs[newIndex] = temp
+// A page only holds sections: they are added directly, without a menu to pick from.
+function newSection(): SectionBloc {
+  return { class: 'SectionBloc', id: uuidv4(), color: null, blocs: [] }
 }
+
+// Sections only move among themselves.
+const listRef = ref<HTMLElement | null>(null)
+useDropList(listRef, {
+  orientation: 'vertical',
+  items: () => workingBlocs.value,
+  accepts: dragged => dragged.kind === 'band',
+})
 
 // Edit mode management
 function enterEditMode() {
@@ -344,7 +376,13 @@ function exitEditMode() {
 async function save() {
   if (!localBlocs.value) return
 
-  await props.onSave(localBlocs.value)
+  try {
+    await props.onSave(withoutEmptyBlocs(localBlocs.value))
+  }
+  catch {
+    // The host reported the error: the changes stay, to be fixed and saved again.
+    return
+  }
   localBlocs.value = null
   if (props.editable) {
     exitEditMode()

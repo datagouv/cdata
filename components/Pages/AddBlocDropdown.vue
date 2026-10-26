@@ -1,5 +1,6 @@
 <template>
   <Menu
+    ref="menu"
     as="div"
     class="relative inline-block text-left"
   >
@@ -14,73 +15,44 @@
       leave-from-class="transform opacity-100 scale-100"
       leave-to-class="transform opacity-0 scale-95"
     >
-      <!-- Content only: simple flat list -->
+      <!-- Below its button, or above when there is more room there; scrolling when it is
+           taller than the room it has. Above the header of the site too (`z-index: 750`),
+           which it can reach once above its button. -->
       <MenuItems
-        v-if="contentOnly"
-        class="absolute left-0 z-50 mt-2 w-80 origin-top-left divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden"
-      >
-        <MenuItem
-          v-for="key in contentBlocKeys"
-          :key="contentBlocsTypes[key].name"
-          v-slot="{ active }"
-        >
-          <button
-            class="block px-4 py-2 text-sm w-full text-left space-y-1"
-            :class="[active ? 'bg-gray-100 text-gray-900 outline-hidden' : 'text-gray-700']"
-            type="button"
-            :data-testid="`add-content-${key}`"
-            @click="$emit('newBloc', { id: uuidv4(), ...contentBlocsTypes[key].default() } as PageBloc)"
-          >
-            <div class="flex space-x-1 items-center text-gray-title">
-              <component
-                :is="contentBlocsTypes[key].icon"
-                class="size-4"
-              />
-              <div class="text-sm">
-                {{ contentBlocsTypes[key].name }}
-              </div>
-            </div>
-            <div class="text-xs text-gray-plain">
-              {{ contentBlocsTypes[key].description }}
-            </div>
-          </button>
-        </MenuItem>
-      </MenuItems>
-
-      <!-- All blocs: grouped list -->
-      <MenuItems
-        v-else
-        class="overflow-hidden absolute right-0 z-10 mt-2 w-96 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden"
+        ref="items"
+        class="overflow-y-auto z-[800] w-80 divide-y divide-gray-100 rounded-md bg-white shadow-lg ring-1 ring-black/5 focus:outline-hidden"
+        :style="floatingStyles"
       >
         <div
-          v-for="groupOfBloc in newBlocsTypes"
-          :key="groupOfBloc.name"
+          v-for="group in groups"
+          :key="group.name"
         >
           <div class="px-4 py-2 uppercase font-bold bg-gray-lowest-2 text-sm border-b border-gray-default">
-            {{ groupOfBloc.name }}
+            {{ group.name }}
           </div>
           <MenuItem
-            v-for="key in groupOfBloc.blocsTypes"
-            :key="blocsTypes[key].name"
+            v-for="choice in group.choices"
+            :key="choice.key"
             v-slot="{ active }"
           >
             <button
               class="block px-4 py-2 text-sm w-full text-left space-y-1"
               :class="[active ? 'bg-gray-100 text-gray-900 outline-hidden' : 'text-gray-700']"
               type="button"
-              @click="$emit('newBloc', { id: uuidv4(), ...blocsTypes[key].default() })"
+              :data-testid="`add-bloc-${choice.key}`"
+              @click="pick(choice)"
             >
               <div class="flex space-x-1 items-center text-gray-title">
                 <component
-                  :is="blocsTypes[key].icon"
+                  :is="choice.icon"
                   class="size-4"
                 />
                 <div class="text-sm">
-                  {{ blocsTypes[key].name }}
+                  {{ choice.name }}
                 </div>
               </div>
               <div class="text-xs text-gray-plain">
-                {{ blocsTypes[key].description }}
+                {{ choice.description }}
               </div>
             </button>
           </MenuItem>
@@ -88,41 +60,61 @@
       </MenuItems>
     </transition>
   </Menu>
+
+  <ObjectsSelectorModal
+    v-if="objectClass"
+    v-model="isSelectorOpen"
+    :type="objectClass"
+    @select="emit('newBlocs', $event)"
+  />
 </template>
 
 <script setup lang="ts">
+import type { ComponentPublicInstance } from 'vue'
 import { Menu, MenuButton, MenuItem, MenuItems } from '@headlessui/vue'
-import { v4 as uuidv4 } from 'uuid'
-import type { PageBloc } from '~/types/pages'
+import ObjectsSelectorModal from './ObjectsSelectorModal.vue'
+import { useEditorMenu } from '~/composables/useEditorMenu'
+import type { ObjectBloc, SectionContentBloc } from '~/types/pages'
+import type { BlocChoice } from '~/utils/pages'
+import { ACCEPTED_BLOCS, type BlocsLevel } from '~/utils/blocsLayout'
 
 const props = defineProps<{
-  contentOnly?: boolean
-  // Organization presentation pages use a trimmed set: no Hero bloc, and the
-  // Markdown bloc lives in the layout group instead of its own "Texte" group.
-  forOrganization?: boolean
+  level: BlocsLevel
 }>()
 
-defineEmits<{
-  newBloc: [PageBloc]
+const emit = defineEmits<{
+  newBlocs: [Array<SectionContentBloc>]
 }>()
 
 const { t } = useTranslation()
-const blocsTypes = useBlocsTypes()
-const contentBlocsTypes = useContentBlocsTypes()
-const contentBlocKeys = Object.keys(contentBlocsTypes) as Array<keyof typeof contentBlocsTypes>
+const choices = useBlocChoices()
 
-const newBlocsTypes = computed<Array<{ name: string, blocsTypes: Array<keyof typeof blocsTypes> }>>(() => {
-  if (props.forOrganization) {
-    return [
-      { name: t('Mise en page'), blocsTypes: ['AccordionListBloc', 'MarkdownBloc'] },
-      { name: t('Contenus à la une'), blocsTypes: ['DatasetsListBloc', 'ReusesListBloc', 'DataservicesListBloc', 'LinksListBloc'] },
-    ]
-  }
+const menu = useTemplateRef<ComponentPublicInstance>('menu')
+const items = useTemplateRef<ComponentPublicInstance>('items')
+const floatingStyles = useEditorMenu(menu, items, 'bottom')
 
-  return [
-    { name: t('Mise en page'), blocsTypes: ['HeroBloc', 'AccordionListBloc'] },
-    { name: t('Contenus à la une'), blocsTypes: ['DatasetsListBloc', 'ReusesListBloc', 'DataservicesListBloc', 'LinksListBloc'] },
-    { name: t('Texte'), blocsTypes: ['MarkdownBloc'] },
+// The choices whose blocs the level accepts (see `ACCEPTED_BLOCS`).
+const groups = computed(() => {
+  const accepted = ACCEPTED_BLOCS[props.level]
+  const all: Array<{ name: string, choices: Array<BlocChoice> }> = [
+    { name: t('Mise en page'), choices: [choices.AccordionListBloc] },
+    { name: t('Contenus'), choices: [choices.TitleBloc, choices.MarkdownBloc, choices.LinksListBloc, choices.ButtonBloc] },
+    { name: t('Contenus à la une'), choices: [choices.DatasetBloc, choices.DataserviceBloc, choices.ReuseBloc] },
   ]
+  return all
+    .map(group => ({ ...group, choices: group.choices.filter(choice => accepted.includes(choice.key)) }))
+    .filter(group => group.choices.length)
 })
+
+const objectClass = ref<ObjectBloc['class'] | null>(null)
+const isSelectorOpen = ref(false)
+
+function pick(choice: BlocChoice) {
+  if ('create' in choice) {
+    emit('newBlocs', [choice.create()])
+    return
+  }
+  objectClass.value = choice.key
+  isSelectorOpen.value = true
+}
 </script>
