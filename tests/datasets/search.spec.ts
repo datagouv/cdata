@@ -1,5 +1,6 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
+import { gotoHydrated } from '../helpers'
 
 test('search launch without params', async ({ page }) => {
   await page.goto('/datasets/search/')
@@ -19,7 +20,7 @@ test('search launch without params', async ({ page }) => {
 })
 
 test('dataset label filter is available and functional', async ({ page }) => {
-  await page.goto('/datasets/search/')
+  await gotoHydrated(page, '/datasets/search/')
 
   // Badge filter is now a RadioGroup with legend "Label de donnée"
   const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
@@ -41,7 +42,7 @@ test('dataset label filter is available and functional', async ({ page }) => {
 })
 
 test('search results update when badge filter is applied', async ({ page }) => {
-  await page.goto('/datasets/search/')
+  await gotoHydrated(page, '/datasets/search/')
 
   // Wait for initial results to load
   await expect(page.getByTestId('search-result-count')).toBeVisible()
@@ -79,7 +80,7 @@ const slowDownSearch = (page: Page) => page.route('**/api/2/datasets/search/**',
 })
 
 test('counts stay on screen while a sort change reloads the results', async ({ page }) => {
-  await page.goto('/datasets/search/')
+  await gotoHydrated(page, '/datasets/search/')
   await expect(page.getByTestId('search-result-count')).toBeVisible()
 
   const count = typeCount(page)
@@ -98,7 +99,7 @@ test('counts stay on screen while a sort change reloads the results', async ({ p
 })
 
 test('counts show their loading state while a filter change reloads the results', async ({ page }) => {
-  await page.goto('/datasets/search/')
+  await gotoHydrated(page, '/datasets/search/')
   await expect(page.getByTestId('search-result-count')).toBeVisible()
 
   const count = typeCount(page)
@@ -117,7 +118,7 @@ test('counts show their loading state while a filter change reloads the results'
 })
 
 test('counts keep their loading state when a sort change follows a filter change', async ({ page }) => {
-  await page.goto('/datasets/search/')
+  await gotoHydrated(page, '/datasets/search/')
   await expect(page.getByTestId('search-result-count')).toBeVisible()
 
   const count = typeCount(page)
@@ -145,7 +146,7 @@ test('counts keep their loading state when a sort change follows a filter change
 
 test('badge filter can be cleared', async ({ page }) => {
   // Start with a badge filter applied
-  await page.goto('/datasets/search/?badge=hvd')
+  await gotoHydrated(page, '/datasets/search/?badge=hvd')
 
   // Find the reset filters button in the sidebar (first one)
   const resetButton = page.getByRole('button', { name: 'Réinitialiser les filtres' }).first()
@@ -161,7 +162,7 @@ test('badge filter can be cleared', async ({ page }) => {
 })
 
 test('badge filter persists on page reload', async ({ page }) => {
-  await page.goto('/datasets/search/')
+  await gotoHydrated(page, '/datasets/search/')
 
   // Badge filter is now a RadioGroup
   const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
@@ -192,7 +193,7 @@ test('custom theme filter is visible on design search page', async ({ page }) =>
 })
 
 test('custom theme filter updates URL', async ({ page }) => {
-  await page.goto('/design/dataset-search')
+  await gotoHydrated(page, '/design/dataset-search')
 
   const themeSelect = page.locator('#theme-filter')
   await themeSelect.scrollIntoViewIfNeeded()
@@ -217,7 +218,7 @@ test('custom theme filter persists on reload', async ({ page }) => {
 })
 
 test('custom theme filter is cleared by reset button', async ({ page }) => {
-  await page.goto('/design/dataset-search?theme=sante')
+  await gotoHydrated(page, '/design/dataset-search?theme=sante')
 
   await expect(page.locator('#theme-filter')).toHaveValue('sante')
 
@@ -230,7 +231,7 @@ test('custom theme filter is cleared by reset button', async ({ page }) => {
 })
 
 test('custom theme filter is hidden on non-dataset types', async ({ page }) => {
-  await page.goto('/design/dataset-search')
+  await gotoHydrated(page, '/design/dataset-search')
 
   await expect(page.locator('#theme-filter')).toBeVisible()
 
@@ -241,7 +242,7 @@ test('custom theme filter is hidden on non-dataset types', async ({ page }) => {
 })
 
 test('custom theme filter URL param is cleared when switching to a type that hides it', async ({ page }) => {
-  await page.goto('/design/dataset-search?theme=transport')
+  await gotoHydrated(page, '/design/dataset-search?theme=transport')
 
   await expect(page.locator('#theme-filter')).toHaveValue('transport')
 
@@ -254,7 +255,7 @@ test('custom theme filter URL param is cleared when switching to a type that hid
 })
 
 test('custom theme filter URL param persists when switching between types that both show it', async ({ page }) => {
-  await page.goto('/design/dataset-search?theme=transport')
+  await gotoHydrated(page, '/design/dataset-search?theme=transport')
 
   await expect(page.locator('#theme-filter')).toHaveValue('transport')
 
@@ -268,7 +269,7 @@ test('custom theme filter URL param persists when switching between types that b
 })
 
 test('custom theme filter resets page to 1 on change', async ({ page }) => {
-  await page.goto('/design/dataset-search?page=2')
+  await gotoHydrated(page, '/design/dataset-search?page=2')
 
   const themeSelect = page.locator('#theme-filter')
   await themeSelect.scrollIntoViewIfNeeded()
@@ -293,7 +294,7 @@ test('custom theme filter preserves page param on initial load', async ({ page }
 })
 
 test('custom theme filter applies its apiParam mapping to the results', async ({ page }) => {
-  await page.goto('/design/dataset-search')
+  await gotoHydrated(page, '/design/dataset-search')
 
   const results = page.locator('.search-results ul')
   await expect(results.locator('li')).not.toHaveCount(0)
@@ -324,8 +325,7 @@ test('custom filter scoped to dataset types never appears in the parallel datase
     }
   })
 
-  await page.goto('/design/dataset-search')
-  await page.waitForLoadState('networkidle')
+  await gotoHydrated(page, '/design/dataset-search')
 
   // Change the theme filter and wait for the all-datasets search to re-fetch with tag=transport
   // (confirms the filter change was processed before we check dataservices)
@@ -348,8 +348,7 @@ test('custom filter scoped to dataset types never appears in the parallel datase
 test('switching search type resets page to 1', async ({ page }) => {
   // Reproduces the bug: deep into datasets results (page 18), switching to the
   // organizations type used to carry the stale page over to /organizations.
-  await page.goto('/datasets/search/?q=biblioth%C3%A8que&page=18')
-  await page.waitForLoadState('networkidle')
+  await gotoHydrated(page, '/datasets/search/?q=biblioth%C3%A8que&page=18')
 
   const organizationsRadio = page.getByRole('radio', { name: 'Organisations' })
   await organizationsRadio.click({ force: true })
@@ -362,8 +361,7 @@ test('switching search type resets page to 1', async ({ page }) => {
 test('switching type in-component resets page to 1', async ({ page }) => {
   // Same reset, but exercised through GlobalSearch's internal type model (no
   // navigation) as used on the design search page.
-  await page.goto('/design/dataset-search?page=2')
-  await page.waitForLoadState('networkidle')
+  await gotoHydrated(page, '/design/dataset-search?page=2')
 
   const reusesRadio = page.getByRole('radio', { name: 'Réutilisations' })
   await reusesRadio.click({ force: true })
@@ -377,9 +375,8 @@ test('switching type resets page and clears a type-scoped custom filter in one g
   // Combined case: a deep page AND an active custom filter the target type hides.
   // Both URL updates must batch into a single navigation without clobbering each
   // other (page reset via useRouteQuery vs. the custom filter being cleared).
-  await page.goto('/design/dataset-search?theme=transport&page=18')
+  await gotoHydrated(page, '/design/dataset-search?theme=transport&page=18')
   await expect(page.locator('#theme-filter')).toHaveValue('transport')
-  await page.waitForLoadState('networkidle')
 
   const reusesRadio = page.getByRole('radio', { name: 'Réutilisations' })
   await reusesRadio.click({ force: true })
@@ -398,8 +395,7 @@ test.describe('mobile', () => {
     // panel was collapsed from a JS media query, a narrow client dropped it from
     // its vdom and Vue tore the subtree down mid-hydration. The console fixture in
     // tests/base.ts turns the resulting mismatch into a failure.
-    await page.goto('/datasets/search/?badge=hvd')
-    await page.waitForLoadState('networkidle')
+    await gotoHydrated(page, '/datasets/search/?badge=hvd')
 
     const badgeFieldset = page.locator('fieldset').filter({ hasText: 'Label de donnée' })
     await expect(badgeFieldset).toBeHidden()
@@ -410,9 +406,8 @@ test.describe('mobile', () => {
 })
 
 test('clicking dataset navigates to detail', async ({ page }) => {
-  await page.goto('/datasets/search/')
   // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
-  await page.waitForLoadState('networkidle')
+  await gotoHydrated(page, '/datasets/search/')
 
   const datasetLink = page.getByRole('link', { name: /SIRENE/i }).first()
   await expect(datasetLink).toBeVisible()

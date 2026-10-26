@@ -18,6 +18,10 @@ const fixture = (name: string) => path.join(FIXTURES, name)
 
 const SCHEMA_HOST = 'https://schema.test.local'
 
+// Opening a file parses it, builds the whole table and only then validates it: on a busy
+// CPU, Firefox takes over 5 s to get there with the 228 columns of these files.
+const SPREADSHEET_OPENED = { timeout: 20_000 }
+
 // Column counts are measured against the fixture file, not assumed.
 // The names are the real ones: udata validates a resource's schema against its own
 // catalog (udata/core/dataset/models.py), so a made-up name fails publication with a 400.
@@ -299,7 +303,7 @@ test.describe('import de fichiers', () => {
     await startWizard(page, 'durabilite')
     await uploadAndOpenSpreadsheet(page, 'lave-linge-virgule.csv')
 
-    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible()
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible(SPREADSHEET_OPENED)
     await expect(page.getByRole('button', { name: 'Suivant' })).toBeEnabled()
     await expect(page.getByText('8690842902635-FR001088_05WVDO-2026-07-31', { exact: true })).toBeVisible()
     await expect(page.getByText('8690842902635', { exact: true })).toBeVisible()
@@ -312,7 +316,7 @@ test.describe('import de fichiers', () => {
     await startWizard(page, 'durabilite')
     await uploadAndOpenSpreadsheet(page, 'lave-linge-point-virgule.csv')
 
-    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible()
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible(SPREADSHEET_OPENED)
     await expect(page.getByText('8690842902635', { exact: true })).toBeVisible()
     // A missed delimiter would leave one column holding the whole line
     await expect(page.getByText('colonnes de votre fichier sont inconnues')).toHaveCount(0)
@@ -326,7 +330,7 @@ test.describe('import de fichiers', () => {
     await startWizard(page, 'durabilite')
     await uploadAndOpenSpreadsheet(page, 'lave-linge-tabulation.csv')
 
-    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible()
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible(SPREADSHEET_OPENED)
     await expect(page.getByText('8690842902635', { exact: true })).toBeVisible()
     await expect(page.getByText('colonnes de votre fichier sont inconnues')).toHaveCount(0)
   })
@@ -339,7 +343,7 @@ test.describe('import de fichiers', () => {
     await startWizard(page, 'durabilite')
     await uploadAndOpenSpreadsheet(page, 'lave-linge-point-virgule-latin1.csv')
 
-    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible()
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible(SPREADSHEET_OPENED)
     await expect(page.getByText('Générateurs de chaleurs').first()).toBeVisible()
     await expect(page.getByText('�')).toHaveCount(0)
   })
@@ -352,8 +356,9 @@ test.describe('import de fichiers', () => {
     await startWizard(page, 'durabilite')
     await uploadAndOpenSpreadsheet(page, 'lave-linge-utf8-64ko.csv')
 
-    // 17 rows on 228 columns is a lot of cells for the table to build in Firefox
-    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible({ timeout: 20_000 })
+    // 17 rows on 228 columns is a lot of cells for the table to build: on a busy CPU,
+    // Firefox takes up to 25 s
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible({ timeout: 40_000 })
     await expect(page.getByText('Générateurs').first()).toBeVisible()
     await expect(page.getByText('Ã©')).toHaveCount(0)
     await expect(page.getByText('�')).toHaveCount(0)
@@ -366,7 +371,7 @@ test.describe('import de fichiers', () => {
     await uploadAndOpenSpreadsheet(page, 'lave-linge.xlsx')
 
     // The General format renders this 13 digit identifier as 8.69084E+12
-    await expect(page.getByText('8690842902635', { exact: true })).toBeVisible()
+    await expect(page.getByText('8690842902635', { exact: true })).toBeVisible(SPREADSHEET_OPENED)
     await expect(page.getByText('2026-07-31', { exact: true })).toBeVisible()
   })
 
@@ -376,7 +381,7 @@ test.describe('import de fichiers', () => {
     await startWizard(page, 'durabilite')
     await uploadAndOpenSpreadsheet(page, 'lave-linge.ods')
 
-    await expect(page.getByText('8690842902635', { exact: true })).toBeVisible()
+    await expect(page.getByText('8690842902635', { exact: true })).toBeVisible(SPREADSHEET_OPENED)
     await expect(page.getByText('2026-07-31', { exact: true })).toBeVisible()
   })
 })
@@ -398,7 +403,7 @@ test.describe('fichier illisible', () => {
     })
     await page.getByRole('button', { name: 'Suivant' }).click()
 
-    await expect(page.getByText('Ce fichier n’a pas pu être lu.')).toBeVisible()
+    await expect(page.getByText('Ce fichier n’a pas pu être lu.')).toBeVisible(SPREADSHEET_OPENED)
   })
 })
 
@@ -411,7 +416,7 @@ test.describe('fichier qui ne correspond pas au schéma', () => {
 
     await expect(page.getByText(
       `${FILE_COLUMNS} colonnes de votre fichier sur ${FILE_COLUMNS} sont inconnues du schéma « ${SCHEMAS.irve.title} »`,
-    )).toBeVisible()
+    )).toBeVisible(SPREADSHEET_OPENED)
     await expect(page.getByRole('button', { name: 'Changer de schéma' })).toBeVisible()
 
     // The table is shown like in any other case, only its rows are dropped: keeping
@@ -431,7 +436,7 @@ test.describe('fichier qui ne correspond pas au schéma', () => {
 
     await expect(page.getByText(
       `${UNKNOWN_FOR_REPARABILITE} colonnes de votre fichier sur ${FILE_COLUMNS} sont inconnues du schéma « ${SCHEMAS.reparabilite.title} »`,
-    )).toBeVisible()
+    )).toBeVisible(SPREADSHEET_OPENED)
     await expect(page.getByRole('button', { name: 'Changer de schéma' })).toBeVisible()
   })
 
@@ -441,7 +446,7 @@ test.describe('fichier qui ne correspond pas au schéma', () => {
 
     await startWizard(page, 'reparabilite')
     await uploadAndOpenSpreadsheet(page, 'lave-linge-virgule.csv')
-    await expect(page.getByText('3 erreurs sur 1 ligne à corriger pour pouvoir continuer.')).toBeVisible()
+    await expect(page.getByText('3 erreurs sur 1 ligne à corriger pour pouvoir continuer.')).toBeVisible(SPREADSHEET_OPENED)
     await expect(page.getByRole('button', { name: 'Suivant' })).toBeDisabled()
 
     // Back to the first step through the banner's own action
@@ -457,7 +462,7 @@ test.describe('fichier qui ne correspond pas au schéma', () => {
     await expect(page.locator('input[type="file"]')).toHaveCount(0)
     await page.getByRole('button', { name: 'Suivant' }).click()
 
-    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible()
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible(SPREADSHEET_OPENED)
     await expect(page.getByText('à corriger pour pouvoir continuer')).toHaveCount(0)
     await expect(page.getByText('colonnes de votre fichier sont inconnues')).toHaveCount(0)
     await expect(page.getByRole('button', { name: 'Suivant' })).toBeEnabled()
@@ -472,7 +477,7 @@ test.describe('validation', () => {
     await startWizard(page, 'durabilite')
     await uploadAndOpenSpreadsheet(page, 'lave-linge-virgule.csv')
 
-    await expect(page.getByText('2 erreurs sur 1 ligne à corriger pour pouvoir continuer.')).toBeVisible()
+    await expect(page.getByText('2 erreurs sur 1 ligne à corriger pour pouvoir continuer.')).toBeVisible(SPREADSHEET_OPENED)
     await expect(page.getByRole('button', { name: 'Suivant' })).toBeDisabled()
 
     // The detail is collapsed until the banner's title is used as a toggle
@@ -489,7 +494,7 @@ test.describe('validation', () => {
     await startWizard(page, 'durabilite')
     await uploadAndOpenSpreadsheet(page, 'lave-linge-virgule.csv')
 
-    await expect(page.getByText('1 erreur sur 1 ligne à corriger pour pouvoir continuer.')).toBeVisible()
+    await expect(page.getByText('1 erreur sur 1 ligne à corriger pour pouvoir continuer.')).toBeVisible(SPREADSHEET_OPENED)
   })
 
   test('revalider sans erreur referme le rapport laissé ouvert', async ({ page }) => {
@@ -501,7 +506,7 @@ test.describe('validation', () => {
     await startWizard(page, 'reparabilite')
     await uploadAndOpenSpreadsheet(page, 'lave-linge-virgule.csv')
 
-    await page.getByRole('button', { name: /erreurs sur 1 ligne/ }).click()
+    await page.getByRole('button', { name: /erreurs sur 1 ligne/ }).click(SPREADSHEET_OPENED)
     await expect(page.getByText('La valeur de la colonne 1 est incorrecte')).toBeVisible()
 
     apis.validation = VALID_REPORT
@@ -517,7 +522,7 @@ test.describe('validation', () => {
     await startWizard(page, 'durabilite')
     await page.getByRole('group', { name: 'Saisir vos données' }).getByRole('button', { name: `Utiliser l'outil tableur` }).click()
 
-    await expect(page.getByText('Validez vos données pour pouvoir continuer.')).toBeVisible()
+    await expect(page.getByText('Validez vos données pour pouvoir continuer.')).toBeVisible(SPREADSHEET_OPENED)
     await expect(page.getByRole('button', { name: 'Suivant' })).toBeDisabled()
   })
 })
@@ -541,7 +546,7 @@ test.describe('navigation', () => {
 
     await startWizard(page, 'durabilite')
     await uploadAndOpenSpreadsheet(page, 'lave-linge-virgule.csv')
-    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible()
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible(SPREADSHEET_OPENED)
     await page.getByRole('button', { name: 'Suivant' }).click()
 
     // The title and the description are prefilled from the schema, only the frequency

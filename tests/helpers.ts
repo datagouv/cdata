@@ -84,9 +84,12 @@ export async function createDatasetWithRemoteResources(request: APIRequestContex
 
 // Typing into a server-rendered field before Vue hydrates it is lost: hydration resets each
 // input to its `v-model`. Use it before filling a form right after landing on a page.
+// The network going idle does not prove hydration ended on a busy CPU: Nuxt tells it, the
+// way @nuxt/test-utils waits for it.
 export async function gotoHydrated(page: Page, url: string): Promise<void> {
   await page.goto(url)
   await page.waitForLoadState('networkidle')
+  await page.waitForFunction(() => window.useNuxtApp?.().isHydrating === false)
 }
 
 // The tab of an item of the blocs editor (`EditItem`) only reacts once the item is hovered

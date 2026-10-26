@@ -78,7 +78,9 @@ test('the WMS map preview renders the GetCapabilities strings as text', async ({
 
   await page.goto(`/datasets/${dataset.id}/?resource_id=${resource.id}`)
 
-  await expect(page.locator('.GPimportGetCapProposal')).toHaveText(PAYLOAD)
+  // The map library takes several seconds to start on a busy CPU, and the preview then
+  // polls the GetCapabilities response for up to 10 s before giving up.
+  await expect(page.locator('.GPimportGetCapProposal')).toHaveText(PAYLOAD, { timeout: 20_000 })
   // The OSM base layer, titled "0", sits below the WMS layer.
   await expect(page.locator('.GPlayerName')).toHaveText([PAYLOAD, '0'])
 

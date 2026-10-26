@@ -1,6 +1,10 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { deleteEditItem, focusedDragHandle } from '../helpers'
+import { deleteEditItem, focusedDragHandle, gotoHydrated } from '../helpers'
+
+// Both tests save the edito page of the site's datasets: run in parallel, one would
+// overwrite what the other just saved.
+test.describe.configure({ mode: 'serial' })
 
 test('can save edito page from admin without error toast', async ({ page }) => {
   await page.goto('/admin/site/edito/datasets')
@@ -48,26 +52,28 @@ async function addTitleInLastSection(page: Page, title: string, subtitle?: strin
   }
 }
 
-// Picks several objects in one go in the selector opened by the "add" menu
-async function selectObjects(page: Page, placeholder: string, searchTerms: Array<string>) {
-  for (const term of searchTerms) {
-    const searchInput = page.getByPlaceholder(placeholder)
-    await searchInput.clear()
-    await searchInput.fill(term)
-    await page.waitForTimeout(500)
-
-    await page.getByRole('option').first().click()
-    await page.keyboard.press('Escape')
-    await page.waitForTimeout(200)
+// Picks each object, in the selector opened by the "add" menu, by the option bearing its
+// title, so a slow search answering after the next keystroke cannot get the wrong object
+// picked, or none at all.
+async function pickObjects(page: Page, dialogTitle: string, picks: Array<{ search: string, title: RegExp }>): Promise<void> {
+  const dialog = page.getByRole('dialog', { name: dialogTitle })
+  const search = dialog.getByRole('combobox')
+  for (const pick of picks) {
+    await search.fill(pick.search)
+    await dialog.getByRole('option', { name: pick.title }).click()
   }
-  await page.getByRole('button', { name: 'Valider' }).click()
-  await page.waitForTimeout(500)
+  // The suggestions stay open after a pick and would cover the footer
+  await search.press('Escape')
+  await expect(dialog.getByRole('listbox')).toBeHidden()
+  await dialog.getByRole('button', { name: 'Valider' }).click()
+  await expect(dialog).toBeHidden()
 }
 
 test('can edit edito page with all bloc types', async ({ page }) => {
-  // Go directly to the datasets page in edit mode
-  await page.goto('/datasets?edit=true')
-  await page.waitForLoadState('networkidle')
+  // A dozen blocs are filled in, each object picked through a search
+  test.setTimeout(120_000)
+
+  await gotoHydrated(page, '/datasets?edit=true')
 
   // === Step 0: Delete all existing sections to start fresh ===
   const pageBlocs = page.locator('[data-testid^="page-"][data-drop-item]')
@@ -76,6 +82,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
     await deleteEditItem(pageBlocs.first())
     await expect(pageBlocs).toHaveCount(before - 1)
   }
+  await expect(page.getByText('Cette page est vide')).toBeVisible()
 
   // === Step 1: A green section, with a title and a button, as the heroes were ===
   await addSection(page)
@@ -96,21 +103,34 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await addSection(page)
   await addTitleInLastSection(page, 'Nos jeux de données phares', 'Découvrez les données les plus consultées')
   await addBlocInLastSection(page, 'DatasetBloc')
-  await selectObjects(page, 'Rechercher un jeu de données…', ['marché', 'adresse', 'véhicule', 'covid'])
+  await pickObjects(page, 'Sélectionner des jeux de données', [
+    { search: 'marché', title: /Marchés publics de la Métropole de Lyon/ },
+    { search: 'adresse', title: /Base Adresse Nationale/ },
+    { search: 'véhicule', title: /Véhicules à faibles et à très faibles émissions/ },
+    { search: 'covid', title: /personnes vaccinées contre/ },
+  ])
   await expect(page.getByTestId('page-SectionBloc').last().getByTestId('bloc-DatasetBloc')).toHaveCount(4)
 
   // === Step 3: A section of reuses ===
   await addSection(page)
   await addTitleInLastSection(page, 'Réutilisations innovantes')
   await addBlocInLastSection(page, 'ReuseBloc')
-  await selectObjects(page, 'Rechercher une réutilisation…', ['itineriz', 'kbis', 'infonet', 'proximap'])
+  await pickObjects(page, 'Sélectionner des réutilisations', [
+    { search: 'itineriz', title: /Itineriz/ },
+    { search: 'kbis', title: /Extrait kbis/ },
+    { search: 'infonet', title: /Extrait infonet/ },
+    { search: 'proximap', title: /Proximap/ },
+  ])
   await expect(page.getByTestId('page-SectionBloc').last().getByTestId('bloc-ReuseBloc')).toHaveCount(4)
 
   // === Step 4: A section of API, two per row, then a text ===
   await addSection(page)
   await addTitleInLastSection(page, 'API essentielles')
   await addBlocInLastSection(page, 'DataserviceBloc')
-  await selectObjects(page, 'Rechercher une API…', ['sirene', 'explore'])
+  await pickObjects(page, 'Sélectionner des API', [
+    { search: 'sirene', title: /API Sirene/ },
+    { search: 'explore', title: /Explore API/ },
+  ])
   const lastSection = page.getByTestId('page-SectionBloc').last()
   await expect(lastSection.getByTestId('bloc-DataserviceBloc')).toHaveCount(2)
   await addBlocInLastSection(page, 'MarkdownBloc')
@@ -181,9 +201,25 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.getByRole('button', { name: 'Sauvegarder' }).click()
   await expect(page.getByText('Page créée').or(page.getByText('Page sauvegardée'))).toBeVisible()
 
-  // === Step 10: Final screenshot for visual regression ===
-  await page.waitForLoadState('networkidle')
-  await page.waitForTimeout(500)
+  // === Step 10: What was saved is what a visitor gets ===
+  // Looked for within the sections: the site menu has links of its own.
+  await gotoHydrated(page, '/datasets')
+  const sections = page.getByTestId('page-SectionBloc')
+  for (const title of ['Bienvenue sur data.gouv.fr', 'Nos jeux de données phares', 'API essentielles', 'Ressources utiles', 'Questions fréquemment posées']) {
+    await expect(sections.getByRole('heading', { name: title, level: 2 })).toBeVisible()
+  }
+  await expect(page.getByText('Réutilisations innovantes')).toHaveCount(0)
+  await expect(sections.getByRole('link', { name: 'Découvrir les données' })).toBeVisible()
+  await expect(sections.getByRole('link', { name: /Base Adresse Nationale/ }).first()).toBeVisible()
+  await expect(sections.getByRole('link', { name: /API Sirene/ }).first()).toBeVisible()
+  for (const link of ['Documentation', 'Voir tous les guides']) {
+    await expect(sections.getByRole('link', { name: link, exact: true })).toBeVisible()
+  }
+  await expect(sections.getByRole('heading', { name: 'Titre de section' })).toBeVisible()
+  await expect(sections.getByRole('button', { name: 'Comment acceder aux donnees ?' })).toBeVisible()
+  await expect(sections.getByRole('button', { name: 'Où trouver de l\'aide ?' })).toBeVisible()
+
+  // === Step 11: Final screenshot for visual regression ===
 
   await expect(page).toHaveScreenshot('edito-page-final.png', {
     mask: [page.getByTestId('user-avatar'), page.getByTestId('commit-version'), page.getByTestId('udata-version')],
