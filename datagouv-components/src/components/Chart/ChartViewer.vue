@@ -227,7 +227,8 @@ const echartsOption = computed(() => {
     textStyle: {
       fontFamily: 'Marianne, arial, sans-serif',
     },
-    color: '#000091',
+    // One color per Y series, cycled by ECharts (DSFR-compatible palette).
+    color: ['#000091', '#e1000f', '#18753c', '#b7a73f', '#6e445a', '#d0805a'],
     tooltip: {
       trigger: 'axis' as const,
       formatter: (params: Array<{ value: Record<string, unknown>, axisValueLabel: string, seriesName: string }>) => {
