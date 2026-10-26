@@ -28,6 +28,9 @@ test('external link button is visible', async ({ page }) => {
 
   const externalLink = page.getByRole('link', { name: 'Voir la réutilisation' }).first()
   await expect(externalLink).toBeVisible()
+  // The reuse URL is set by its author: search engines must not count it as endorsed by the site
+  await expect(externalLink).toHaveAttribute('rel', 'ugc nofollow noopener noreferrer')
+  await expect(page.getByRole('link', { name: 'ALLOHOUSTON' }).first()).not.toHaveAttribute('rel')
 })
 
 test('discussions tab is accessible', async ({ page }) => {

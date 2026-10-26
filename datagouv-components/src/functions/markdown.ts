@@ -1,6 +1,7 @@
 import type hast from 'hast'
 import behead, { type Options } from 'remark-behead'
 import remarkBreaks from 'remark-breaks'
+import rehypeExternalLinks from 'rehype-external-links'
 import rehypeHighlight from 'rehype-highlight'
 import remarkParse from 'remark-parse'
 import remarkRehype from 'remark-rehype'
@@ -10,6 +11,7 @@ import rehypeSanitize from 'rehype-sanitize'
 import rehypeSlug from 'rehype-slug'
 import rehypeStringify from 'rehype-stringify'
 import { unified, type Processor, type Transformer } from 'unified'
+import type { InjectionKey } from 'vue'
 import type { Node } from 'unist'
 import { visit } from 'unist-util-visit'
 import remarkGfm from 'remark-gfm'
@@ -57,16 +59,36 @@ function rehypeNoHeadings(this: Processor): Transformer {
   }
 }
 
-export function formatMarkdown(md: string, config: number | { minDepth: number, noHeadings: boolean } = 3) {
+function isLinkToOrigin(el: hast.Element, origin: string) {
+  try {
+    return new URL(String(el.properties.href)).origin === origin
+  }
+  catch {
+    return false
+  }
+}
+
+// Provided by containers to tell whether search engines may follow the links leaving the site
+// they render. Only for links chosen by the team, which keep helping the sites they point to:
+// links chosen by users (any content coming from the API by default) must not pass on the site's
+// search ranking, or they become worth spamming for.
+export const followLinksKey = Symbol() as InjectionKey<boolean>
+
+export function formatMarkdown(md: string, config: number | { minDepth: number, noHeadings: boolean, siteUrl?: string, followLinks?: boolean } = 3) {
   let minDepth: number
   let noHeadings = false
+  let siteUrl: string | undefined
+  let followLinks = false
   if (typeof config === 'number') {
     minDepth = config
   }
   else {
     minDepth = config.minDepth
     noHeadings = config.noHeadings
+    siteUrl = config.siteUrl
+    followLinks = config.followLinks ?? false
   }
+  const siteOrigin = siteUrl ? new URL(siteUrl).origin : null
   const result = unified()
     .use(behead, { minDepth: minDepth > 1 ? minDepth : undefined } as Options)
     // Take Markdown as input and turn it into MD syntax tree
@@ -84,6 +106,12 @@ export function formatMarkdown(md: string, config: number | { minDepth: number, 
     .use(rehypeHighlight)
     .use(rehypeSlug)
     .use(rehypeSanitize)
+    // See followLinksKey. Without the site URL, absolute links to the site are flagged too.
+    .use(rehypeExternalLinks, {
+      rel: ['ugc', 'nofollow', 'noopener'],
+      protocols: ['http', 'https', 'mailto'],
+      test: (el: hast.Element) => !followLinks && (!siteOrigin || !isLinkToOrigin(el, siteOrigin)),
+    })
     // Serialize syntax tree to HTML
     .use(rehypeStringify)
     .use(noHeadings ? [rehypeLazyLoad, rehypeNoHeadings] : [rehypeLazyLoad])
