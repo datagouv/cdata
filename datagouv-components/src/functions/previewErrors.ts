@@ -1,4 +1,4 @@
-import { getResourceCorsStatus, isTabularPipelineFormat } from './resources'
+import { getResourceCorsStatus, hasTabularParsingError, isTabularPipelineFormat } from './resources'
 import type { Resource } from '../types/resources'
 import { useTranslation } from '../composables/useTranslation'
 
@@ -11,7 +11,7 @@ export type PreviewErrorType
     | 'unknown'
     | 'none'
 
-export type PreviewErrorInfo = {
+type PreviewErrorInfo = {
   type: PreviewErrorType
   message: string
   userCta?: string
@@ -44,8 +44,8 @@ function getPreviewErrorType(resource: Resource): PreviewErrorType {
     return 'too_large'
   }
 
-  // Check for parsing errors (malformed)
-  if (extras['analysis:parsing:error']) {
+  // Check for tabular parsing errors (malformed).
+  if (hasTabularParsingError(resource)) {
     return 'malformed'
   }
 

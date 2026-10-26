@@ -45,6 +45,11 @@ describe('getPreviewErrorInfo', () => {
     expect(info.type).toBe('malformed')
   })
 
+  it('is not malformed for a non-fatal geo export parsing error', () => {
+    const info = previewInfo({ 'analysis:parsing:error': 'pmtiles_export:timeout' })
+    expect(info.type).toBe('none')
+  })
+
   it('is unknown for a generic analysis error', () => {
     const info = previewInfo({ 'analysis:error': 'Some step exploded' })
     expect(info.type).toBe('unknown')
