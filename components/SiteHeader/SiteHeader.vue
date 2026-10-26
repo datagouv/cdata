@@ -624,6 +624,9 @@ onMounted(() => {
     change_email_expired: { type: 'error', text: t('Le code de vérification de votre adresse email a expiré, un nouveau mail vous a été envoyé.') },
     change_email_invalid: { type: 'error', text: t('Le code de vérification de votre adresse email est incorrect.') },
     change_email_already_taken: { type: 'error', text: t('Cette adresse email est déjà utilisée par un autre compte. Votre adresse email n\'a pas été modifiée.') },
+    proconnect_reauth_success: { type: 'success', text: t('Compte confirmé.') },
+    proconnect_reauth_failed: { type: 'error', text: t('La confirmation de votre identité avec ProConnect a échoué. Veuillez réessayer.') },
+    proconnect_reauth_identity_mismatch: { type: 'error', text: t('Vous vous êtes identifié sur ProConnect avec une autre adresse email que celle de ce compte.') },
   }
 
   if (route.query.flash) {

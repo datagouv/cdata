@@ -2,7 +2,7 @@
   <div class="bg-gray-some py-6 space-y-6">
     <div class="container bg-white max-w-xl p-6 border border-gray-lower">
       <h1 class="text-center text-gray-title font-extrabold text-2xl">
-        {{ $t('Confirmer votre mot de passe') }}
+        {{ $t('Confirmer votre identité') }}
       </h1>
 
       <div class="space-y-6">
@@ -39,6 +39,22 @@
             </BrandedButton>
           </div>
         </form>
+
+        <Divider>{{ $t('ou') }}</Divider>
+
+        <form :action="proconnectUrl">
+          <input
+            type="hidden"
+            name="reauth"
+            value="1"
+          >
+          <div class="fr-connect-group flex flex-col items-center">
+            <button class="fr-connect">
+              <span class="fr-connect__login">{{ $t('S’identifier avec') }}</span>
+              <span class="fr-connect__brand">ProConnect</span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
@@ -54,6 +70,7 @@ definePageMeta({
 })
 
 const { t } = useTranslation()
+const config = useRuntimeConfig()
 
 useSeoMeta({ title: t('Réauthentification'), robots: 'noindex' })
 
@@ -63,10 +80,28 @@ const errors = ref<FieldsErrors>({})
 const me = useMe()
 
 const route = useRoute()
+// Read before the site header consumes the flash and strips it from the URL.
+const proconnectSucceeded = route.query.flash === 'proconnect_reauth_success'
 
-onMounted(() => {
+const proconnectUrl = computed(() => `${config.public.apiBase}/api/1/proconnect/login/`)
+
+const goToNext = async () => {
+  const next = sessionStorage.getItem('next')
+  if (next) {
+    navigateTo(next)
+  }
+  else {
+    await navigateTo('/')
+  }
+}
+
+onMounted(async () => {
   if (route.query.next) {
     sessionStorage.setItem('next', route.query.next as string)
+  }
+  // Back from ProConnect: udata redirects here, the destination stayed in `sessionStorage`.
+  if (proconnectSucceeded) {
+    await goToNext()
   }
 })
 
@@ -82,14 +117,7 @@ const connect = async () => {
 
     toast.success(t('Compte confirmé.'))
     await loadMe(me)
-
-    const next = sessionStorage.getItem('next')
-    if (next) {
-      navigateTo(next)
-    }
-    else {
-      await navigateTo('/')
-    }
+    await goToNext()
   }
   catch (e) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
