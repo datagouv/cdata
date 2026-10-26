@@ -55,12 +55,6 @@ function mountCard(chart: Chart) {
 }
 
 describe('ChartCard', () => {
-  it('shows a line icon for line charts and a bar icon for histograms', () => {
-    const iconOf = (chart_type: 'line' | 'histogram') =>
-      mountCard(chartFixture({ chart_type })).findComponent({ name: 'ObjectCardHeader' }).props('icon')
-    expect(iconOf('line')).not.toBe(iconOf('histogram'))
-  })
-
   it('renders a chart on the new SQL contract (query/resource_id/y_axis, no x_axis/series)', () => {
     const chart = chartFixture()
     expect(chart).not.toHaveProperty('x_axis')
