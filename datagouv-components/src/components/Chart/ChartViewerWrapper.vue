@@ -72,7 +72,15 @@ function inferXColumnType(result: SqlQueryResult, xColumn: string): ColumnType {
     return 'date'
   }
   if (values.length > 0 && values.every(value => typeof value === 'number')) {
-    return 'number'
+    // Numbers are a continuous axis only when regularly spaced (years, months,
+    // sequences). Irregular numbers are identifiers (dossier_ref, codes) and
+    // must plot as categories, or the line zigzags between meaningless positions.
+    const unique = [...new Set(values as number[])].sort((a, b) => a - b)
+    if (unique.length < 2) return 'categorical'
+    const gaps = unique.slice(1).map((value, index) => value - unique[index]!)
+    const meanGap = gaps.reduce((sum, gap) => sum + gap, 0) / gaps.length
+    const variance = gaps.reduce((sum, gap) => sum + (gap - meanGap) ** 2, 0) / gaps.length
+    return Math.sqrt(variance) / meanGap < 0.15 ? 'number' : 'categorical'
   }
   return 'categorical'
 }
