@@ -55,8 +55,9 @@ test.describe('Pages tree', () => {
     })
     createdIds.push(childId)
 
-    await page.goto(`/posts/${childId}`)
-    await expect(page).toHaveURL(new RegExp(`/pages/${parent.slug}/enfant-${uniqueId}$`))
+    const response = await request.get(`/posts/${childId}`, { maxRedirects: 0 })
+    expect(response.status()).toBe(301)
+    expect(response.headers().location).toMatch(new RegExp(`/pages/${parent.slug}/enfant-${uniqueId}$`))
   })
 
   test('the parent picker of a page proposes neither the page nor its sub-pages', async ({ page, request }) => {
@@ -95,7 +96,8 @@ test.describe('Pages tree', () => {
     const newsId = await saveNewPost(page)
     createdIds.push(newsId)
 
-    await page.goto(`/posts/${newsId}`)
-    await expect(page).toHaveURL(new RegExp(`/posts/actualite-${uniqueId}$`))
+    const response = await request.get(`/posts/${newsId}`, { maxRedirects: 0 })
+    expect(response.status()).toBe(301)
+    expect(response.headers().location).toMatch(new RegExp(`/posts/actualite-${uniqueId}$`))
   })
 })
