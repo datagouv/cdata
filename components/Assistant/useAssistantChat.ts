@@ -7,13 +7,13 @@ import { DefaultChatTransport } from 'ai'
  *
  * The browser talks to udata directly (no nuxt-api proxy), so the transport
  * sends cookies (`credentials: 'include'`) for the session to be authenticated.
- * The selected chart resource id is forwarded as `resource_id` when the
- * runtimeConfig feature flag allows it and a resource is selected.
+ * The selected chart resource id is forwarded as `resource_id` when set;
+ * the backend validates it (UUID) and injects the resource context into the
+ * conversation.
  */
 export function useAssistantChat(resourceId: Ref<string | null>) {
   const runtimeConfig = useRuntimeConfig()
   const apiBase = runtimeConfig.public.apiBase as string
-  const sendResourceContext = runtimeConfig.public.features?.assistantResourceContext ?? true
 
   return useChat({
     transport: new DefaultChatTransport({
@@ -29,7 +29,7 @@ export function useAssistantChat(resourceId: Ref<string | null>) {
             trigger,
             messageId,
             messages,
-            ...(sendResourceContext && resourceId.value ? { resource_id: resourceId.value } : {}),
+            ...(resourceId.value ? { resource_id: resourceId.value } : {}),
           },
         }
       },
