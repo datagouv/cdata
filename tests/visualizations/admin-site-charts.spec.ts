@@ -76,6 +76,17 @@ test.describe('with charts', () => {
     }
   })
 
+  test('line and histogram cards render different header icons', async ({ page }) => {
+    const iconOf = async (chart: typeof lineChart) => {
+      const icon = page.locator('article').filter({ hasText: chart.title }).getByRole('link', { name: chart.title }).locator('svg.remixicon')
+      await expect(icon).toBeVisible()
+      return icon.innerHTML()
+    }
+    const lineIcon = await iconOf(lineChart)
+    const histogramIcon = await iconOf(histogramChart)
+    expect(lineIcon).not.toBe(histogramIcon)
+  })
+
   test('private chart card displays a draft badge', async ({ page }) => {
     const card = page.locator('article').filter({ hasText: privateChart.title })
     await expect(card.locator('.fr-badge')).toHaveText('Brouillon')
