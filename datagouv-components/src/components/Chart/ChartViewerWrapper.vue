@@ -83,7 +83,7 @@ const chartData = computed<ChartViewerData | null>(() => {
   if (!result || result.rows.length === 0) return null
 
   const { xColumn, seriesColumns } = inferChartConfig(result)
-  if (!xColumn) return null
+  if (!xColumn || seriesColumns.length === 0) return null
 
   // The rendered kind always comes from the chart's chart_type field; inference
   // only picks the X column and the series columns.
