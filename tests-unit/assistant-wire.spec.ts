@@ -30,7 +30,6 @@ describe('useAssistantChat wire contract', () => {
     vi.stubGlobal('useRuntimeConfig', () => ({
       public: {
         apiBase: 'https://api.example',
-        features: { assistantResourceContext: true },
       },
     }))
   })
@@ -61,20 +60,5 @@ describe('useAssistantChat wire contract', () => {
     resourceId.value = null
     const withoutResource = await transport.prepareSendMessagesRequest({ messages: MESSAGES, id: 'chat-1', trigger: 'submit-message' as const, messageId: undefined })
     expect(withoutResource.body).toEqual({ id: 'chat-1', trigger: 'submit-message', messageId: undefined, messages: MESSAGES })
-  })
-
-  it('omits resource_id when the feature flag is off, even with a resource selected', async () => {
-    vi.stubGlobal('useRuntimeConfig', () => ({
-      public: {
-        apiBase: 'https://api.example',
-        features: { assistantResourceContext: false },
-      },
-    }))
-
-    useAssistantChat(ref('f47ac10b-58cc-4372-a567-0e02b2c3d479'))
-    const transport = capturedTransport()
-
-    const prepared = await transport.prepareSendMessagesRequest({ messages: MESSAGES, id: 'chat-1', trigger: 'submit-message' as const, messageId: undefined })
-    expect(prepared.body).toEqual({ id: 'chat-1', trigger: 'submit-message', messageId: undefined, messages: MESSAGES })
   })
 })
