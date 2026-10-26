@@ -1,6 +1,6 @@
-import type { Locator, Page } from '@playwright/test'
+import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { gotoHydrated } from '../helpers'
+import { deleteEditItem, focusedDragHandle, gotoHydrated } from '../helpers'
 
 // Both tests save the edito page of the site's datasets: run in parallel, one would
 // overwrite what the other just saved.
@@ -23,25 +23,48 @@ test('can save edito page from admin without error toast', async ({ page }) => {
   await expect(page.getByText('Erreur lors de la sauvegarde')).not.toBeVisible()
 })
 
-// The returned locator stands for the last bloc whenever it is used: use it before the next
-// bloc is added.
-async function addBloc(page: Page, name: string): Promise<Locator> {
-  await page.getByRole('button', { name: 'Ajouter un bloc' }).last().click()
-  await page.getByRole('menuitem', { name }).click()
-  return page.getByTestId('edito-bloc').last()
+// Sections are the only blocs of a page: no menu to pick one from
+async function addSection(page: Page) {
+  const sections = page.getByTestId('page-SectionBloc')
+  const before = await sections.count()
+  await page.getByRole('button', { name: 'Ajouter une section' }).last().click()
+  await expect(sections).toHaveCount(before + 1)
 }
 
-// An editable text only hands its value to the bloc once it loses the focus. Moved away with
-// the keyboard: a textbox found by its placeholder text no longer matches once filled.
-async function editText(textbox: Locator, value: string) {
-  await textbox.fill(value)
-  await textbox.page().keyboard.press('Tab')
+async function pickInLastSectionAddMenu(page: Page, key: string) {
+  await page.getByTestId('add-bloc-in-section').last().click()
+  await page.getByTestId(`add-bloc-${key}`).click()
 }
 
-// Picks each object by the option bearing its title, so a slow search answering after
-// the next keystroke cannot get the wrong object picked, or none at all.
-async function pickObjects(page: Page, bloc: Locator, addLabel: string, dialogTitle: string, picks: Array<{ search: string, title: RegExp }>): Promise<void> {
-  await bloc.getByRole('button', { name: addLabel }).click()
+// Adds a bloc at the end of the last section
+async function addBlocInLastSection(page: Page, key: string) {
+  const blocs = page.getByTestId('page-SectionBloc').last().getByTestId(`bloc-${key}`)
+  const before = await blocs.count()
+  await pickInLastSectionAddMenu(page, key)
+  await expect(blocs).toHaveCount(before + 1)
+}
+
+async function addTitleInLastSection(page: Page, title: string, subtitle?: string) {
+  await addBlocInLastSection(page, 'TitleBloc')
+  const titleBloc = page.getByTestId('bloc-TitleBloc').last()
+  const titleInput = titleBloc.locator('[contenteditable="true"]').first()
+  await titleInput.click()
+  await titleInput.fill(title)
+  await page.mouse.click(1, 1)
+  if (subtitle) {
+    await titleBloc.getByText('Ajouter un sous-titre').click()
+    const subtitleInput = titleBloc.locator('[contenteditable="true"]').nth(1)
+    await subtitleInput.click()
+    await subtitleInput.fill(subtitle)
+    await page.mouse.click(1, 1)
+  }
+}
+
+// Adds object blocs at the end of the last section, picking each object by the option bearing
+// its title, so a slow search answering after the next keystroke cannot get the wrong object
+// picked, or none at all.
+async function addObjectsInLastSection(page: Page, key: string, dialogTitle: string, picks: Array<{ search: string, title: RegExp }>): Promise<void> {
+  await pickInLastSectionAddMenu(page, key)
   const dialog = page.getByRole('dialog', { name: dialogTitle })
   const search = dialog.getByRole('combobox')
   for (const pick of picks) {
@@ -55,83 +78,96 @@ async function pickObjects(page: Page, bloc: Locator, addLabel: string, dialogTi
   await expect(dialog).toBeHidden()
 }
 
-async function addLink(bloc: Locator, title: string, url: string) {
-  await bloc.getByRole('button', { name: 'Ajouter un lien' }).click()
-  await editText(bloc.getByRole('textbox').filter({ hasText: 'Titre du lien' }), title)
-  await bloc.getByRole('textbox', { name: 'URL du lien' }).last().fill(url)
-}
-
-async function editMainButton(bloc: Locator, title: string, url: string) {
-  await editText(bloc.getByRole('textbox', { name: 'Titre du bouton' }), title)
-  await bloc.getByRole('textbox', { name: 'URL du bouton' }).fill(url)
-}
-
 test('can edit edito page with all bloc types', async ({ page }) => {
   // A dozen blocs are filled in, each object picked through a search
   test.setTimeout(120_000)
 
   await gotoHydrated(page, '/datasets?edit=true')
-  const blocs = page.getByTestId('edito-bloc')
 
-  // Start from an empty page
-  const existingBlocs = await blocs.count()
-  for (let left = existingBlocs; left > 0; left--) {
-    await blocs.first().getByRole('button', { name: 'Supprimer' }).first().click()
-    await expect(blocs).toHaveCount(left - 1)
+  // === Step 0: Delete all existing sections to start fresh ===
+  const pageBlocs = page.locator('[data-testid^="page-"][data-drop-item]')
+  while (await pageBlocs.count() > 0) {
+    const before = await pageBlocs.count()
+    await deleteEditItem(pageBlocs.first())
+    await expect(pageBlocs).toHaveCount(before - 1)
   }
   await expect(page.getByText('Cette page est vide')).toBeVisible()
 
-  // Hero
-  const hero = await addBloc(page, 'Hero')
-  await editText(hero.getByRole('textbox').first(), 'Bienvenue sur data.gouv.fr')
-  await hero.getByRole('button', { name: 'Ajouter une description' }).click()
-  await editText(hero.getByRole('textbox').nth(1), 'La plateforme ouverte des données publiques françaises')
-  await hero.getByTitle('Vert').click()
-  await editMainButton(hero, 'Découvrir les données', 'https://www.data.gouv.fr/fr/datasets/')
+  // === Step 1: A green section, with a title and a button, as the heroes were ===
+  await addSection(page)
+  await addTitleInLastSection(page, 'Bienvenue sur data.gouv.fr', 'La plateforme ouverte des données publiques françaises')
+  await addBlocInLastSection(page, 'ButtonBloc')
+  const buttonTitle = page.getByLabel('Titre du bouton')
+  await buttonTitle.click()
+  await buttonTitle.fill('Découvrir les données')
+  await page.mouse.click(1, 1)
+  await page.getByLabel('URL du bouton').fill('https://www.data.gouv.fr/fr/datasets/')
 
-  // Datasets, two rows of them
-  const datasets = await addBloc(page, 'Données à la une')
-  await editText(datasets.getByRole('textbox').first(), 'Nos jeux de données phares')
-  await datasets.getByRole('button', { name: 'Ajouter un sous-titre' }).click()
-  await editText(datasets.getByRole('textbox').nth(1), 'Découvrez les données les plus consultées')
-  await pickObjects(page, datasets, 'Ajouter un jeu de données', 'Sélectionner des jeux de données', [
+  const firstSection = page.getByTestId('page-SectionBloc').first()
+  await firstSection.hover({ position: { x: 20, y: 20 } })
+  await firstSection.getByRole('button', { name: 'Actions sur Section' }).click()
+  await page.getByRole('menuitem', { name: 'Fond vert' }).click()
+
+  // === Step 2: A section of datasets, side by side ===
+  await addSection(page)
+  await addTitleInLastSection(page, 'Nos jeux de données phares', 'Découvrez les données les plus consultées')
+  await addObjectsInLastSection(page, 'DatasetBloc', 'Sélectionner des jeux de données', [
     { search: 'marché', title: /Marchés publics de la Métropole de Lyon/ },
     { search: 'adresse', title: /Base Adresse Nationale/ },
     { search: 'véhicule', title: /Véhicules à faibles et à très faibles émissions/ },
     { search: 'covid', title: /personnes vaccinées contre/ },
   ])
-  await expect(datasets.getByRole('link', { name: /Marchés publics de la Métropole de Lyon/ })).toBeVisible()
+  await expect(page.getByTestId('page-SectionBloc').last().getByTestId('bloc-DatasetBloc')).toHaveCount(4)
 
-  // Reuses, deleted further down
-  const reuses = await addBloc(page, 'Réutilisations à la une')
-  await editText(reuses.getByRole('textbox').first(), 'Réutilisations innovantes')
-  await pickObjects(page, reuses, 'Ajouter une réutilisation', 'Sélectionner des réutilisations', [
+  // === Step 3: A section of reuses ===
+  await addSection(page)
+  await addTitleInLastSection(page, 'Réutilisations innovantes')
+  await addObjectsInLastSection(page, 'ReuseBloc', 'Sélectionner des réutilisations', [
     { search: 'itineriz', title: /Itineriz/ },
     { search: 'kbis', title: /Extrait kbis/ },
     { search: 'infonet', title: /Extrait infonet/ },
     { search: 'proximap', title: /Proximap/ },
   ])
+  await expect(page.getByTestId('page-SectionBloc').last().getByTestId('bloc-ReuseBloc')).toHaveCount(4)
 
-  // API
-  const dataservices = await addBloc(page, 'API à la une')
-  await editText(dataservices.getByRole('textbox').first(), 'API essentielles')
-  await pickObjects(page, dataservices, 'Ajouter une API', 'Sélectionner des API', [
+  // === Step 4: A section of API, two per row, then a text ===
+  await addSection(page)
+  await addTitleInLastSection(page, 'API essentielles')
+  await addObjectsInLastSection(page, 'DataserviceBloc', 'Sélectionner des API', [
     { search: 'sirene', title: /API Sirene/ },
     { search: 'explore', title: /Explore API/ },
   ])
+  const lastSection = page.getByTestId('page-SectionBloc').last()
+  await expect(lastSection.getByTestId('bloc-DataserviceBloc')).toHaveCount(2)
+  await addBlocInLastSection(page, 'MarkdownBloc')
+  await page.locator('.milkdown').last().click()
+  await page.keyboard.type('Les API les plus utilisées de la plateforme.')
 
-  // Links with a paragraph, the main button sitting under it
-  const resources = await addBloc(page, 'Liens à la une')
-  await editText(resources.getByRole('textbox').first(), 'Ressources utiles')
-  await resources.getByRole('button', { name: 'Ajouter un paragraphe' }).click()
-  await editText(resources.getByRole('textbox').filter({ hasText: 'Texte du paragraphe' }), 'Découvrez nos guides et ressources pour mieux exploiter les données publiques.')
-  await addLink(resources, 'Documentation', 'https://doc.data.gouv.fr')
-  await addLink(resources, 'Guides', 'https://guides.data.gouv.fr')
-  await editMainButton(resources, 'Voir tous les guides', 'https://guides.data.gouv.fr')
+  // === Step 5: Links, then a button under them ===
+  await addSection(page)
+  await addTitleInLastSection(page, 'Ressources utiles')
+  await addBlocInLastSection(page, 'LinksListBloc')
 
-  // Markdown. The bloc is labelled "Texte" like its group header: its description is unique.
-  const markdown = await addBloc(page, 'Ajouter du contenu texte riche')
-  await markdown.locator('.milkdown').click()
+  const links = page.getByTestId('page-SectionBloc').last().getByTestId('bloc-LinksListBloc')
+  await links.getByRole('button', { name: 'Ajouter un lien' }).click()
+  const linkTitle = links.getByRole('textbox').filter({ hasText: 'Titre du lien' })
+  await linkTitle.click()
+  await linkTitle.fill('Documentation')
+  await page.mouse.click(1, 1)
+  await expect(links.getByRole('textbox').filter({ hasText: 'Documentation' })).toBeVisible()
+  await links.getByRole('textbox', { name: 'URL du lien' }).fill('https://doc.data.gouv.fr')
+
+  await addBlocInLastSection(page, 'ButtonBloc')
+  const guidesButton = page.getByLabel('Titre du bouton').last()
+  await guidesButton.click()
+  await guidesButton.fill('Voir tous les guides')
+  await page.mouse.click(1, 1)
+  await page.getByLabel('URL du bouton').last().fill('https://guides.data.gouv.fr')
+
+  // === Step 6: A MarkdownBloc in the same section ===
+  await addBlocInLastSection(page, 'MarkdownBloc')
+  const markdownEditor = page.locator('.milkdown').last()
+  await markdownEditor.click()
   await page.keyboard.type('# Titre de section')
   await page.keyboard.press('Enter')
   await page.keyboard.type('Voici un paragraphe avec du **texte en gras** et du *texte en italique*.')
@@ -141,62 +177,58 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await page.keyboard.press('Enter')
   await page.keyboard.type('- Deuxième élément')
 
-  // Links without a paragraph, the main button sitting next to them
-  const shortcuts = await addBloc(page, 'Liens à la une')
-  await editText(shortcuts.getByRole('textbox').first(), 'Liens rapides')
-  await addLink(shortcuts, 'API', 'https://api.data.gouv.fr')
-  await addLink(shortcuts, 'Support', 'https://support.data.gouv.fr')
-  await editMainButton(shortcuts, 'Contacter le support', 'https://support.data.gouv.fr')
+  // === Step 7: An AccordionBloc ===
+  await addSection(page)
+  await addTitleInLastSection(page, 'Questions fréquemment posées')
+  await addBlocInLastSection(page, 'AccordionListBloc')
 
-  // Accordion
-  const accordion = await addBloc(page, 'Accordéon')
-  await accordion.getByRole('button', { name: 'Ajouter une description' }).click()
-  await editText(accordion.getByRole('textbox').nth(1), 'Questions fréquemment posées')
-  // Typed key by key: a space typed in an accordion title used to toggle the accordion
-  const newItemTitle = accordion.getByTestId('accordion-new-item-title')
-  await newItemTitle.pressSequentially('Comment acceder aux donnees ?')
-  await newItemTitle.blur()
+  // Typing the title character by character tests that spaces can be typed (they were
+  // blocked by DisclosureButton before the fix)
+  const firstItemTitle = page.getByTestId('accordion-new-item-title')
+  await firstItemTitle.click()
+  await firstItemTitle.pressSequentially('Comment acceder aux donnees ?')
+  await page.mouse.click(1, 1)
+  const accordion = page.getByTestId('page-SectionBloc').last().getByTestId('bloc-AccordionListBloc')
   await expect(accordion.getByRole('textbox').filter({ hasText: 'Comment acceder aux donnees ?' })).toBeVisible()
-  await newItemTitle.fill('Où trouver de l\'aide ?')
-  await newItemTitle.blur()
+
+  const secondItemTitle = page.getByTestId('accordion-new-item-title')
+  await secondItemTitle.click()
+  await secondItemTitle.fill('Où trouver de l\'aide ?')
+  await page.mouse.click(1, 1)
   await expect(accordion.getByRole('textbox').filter({ hasText: 'Où trouver de l\'aide ?' })).toBeVisible()
 
-  // Moving the hero down, then back up
-  await blocs.first().getByRole('button', { name: 'Descendre' }).click()
-  await expect(blocs.first()).toContainText('Nos jeux de données phares')
-  await blocs.nth(1).getByRole('button', { name: 'Monter' }).click()
-  await expect(blocs.first()).toContainText('Bienvenue sur data.gouv.fr')
+  // === Step 8: Section manipulation ===
+  const sectionTitles = page.getByTestId('page-SectionBloc').getByTestId('bloc-TitleBloc')
+  // Move the datasets section (after the green one) below the reuses one with the keyboard on
+  // its drag handle, then delete the reuses section
+  await (await focusedDragHandle(page.getByTestId('page-SectionBloc').nth(1))).press('ArrowDown')
+  await expect(sectionTitles.nth(1)).toContainText('Réutilisations innovantes')
+  await deleteEditItem(page.getByTestId('page-SectionBloc').nth(1))
+  await expect(sectionTitles.nth(1)).toContainText('Nos jeux de données phares')
 
-  // Deleting the reuses bloc, then adding another one at the end
-  await blocs.filter({ hasText: 'Réutilisations innovantes' }).getByRole('button', { name: 'Supprimer' }).first().click()
-  await expect(blocs.filter({ hasText: 'Réutilisations innovantes' })).toHaveCount(0)
-  const otherReuses = await addBloc(page, 'Réutilisations à la une')
-  await pickObjects(page, otherReuses, 'Ajouter une réutilisation', 'Sélectionner des réutilisations', [
-    { search: 'mobby', title: /Mobby/ },
-    { search: 'chalandise', title: /chalandise/ },
-  ])
-
+  // === Step 9: Save the page ===
   await page.getByRole('button', { name: 'Sauvegarder' }).click()
-  await expect(page.getByText('Page sauvegardée')).toBeVisible()
+  await expect(page.getByText('Page créée').or(page.getByText('Page sauvegardée'))).toBeVisible()
 
-  // What was saved is what a visitor gets. Looked for within the blocs: the site menu has
-  // links of its own, an "API" one among them.
+  // === Step 10: What was saved is what a visitor gets ===
+  // Looked for within the sections: the site menu has links of its own.
   await gotoHydrated(page, '/datasets')
-  await expect(blocs.getByRole('heading', { name: 'Bienvenue sur data.gouv.fr', level: 1 })).toBeVisible()
-  await expect(blocs.getByRole('link', { name: 'Découvrir les données' })).toBeVisible()
-  for (const title of ['Nos jeux de données phares', 'API essentielles', 'Ressources utiles', 'Liens rapides', 'Mon accordéon', 'Mes réutilisations']) {
-    await expect(blocs.getByRole('heading', { name: title, level: 2 })).toBeVisible()
+  const sections = page.getByTestId('page-SectionBloc')
+  for (const title of ['Bienvenue sur data.gouv.fr', 'Nos jeux de données phares', 'API essentielles', 'Ressources utiles', 'Questions fréquemment posées']) {
+    await expect(sections.getByRole('heading', { name: title, level: 2 })).toBeVisible()
   }
   await expect(page.getByText('Réutilisations innovantes')).toHaveCount(0)
-  await expect(blocs.getByRole('link', { name: /Base Adresse Nationale/ }).first()).toBeVisible()
-  await expect(blocs.getByRole('link', { name: /API Sirene/ }).first()).toBeVisible()
-  await expect(blocs.getByRole('link', { name: /Mobby/ }).first()).toBeVisible()
-  for (const link of ['Documentation', 'Guides', 'Voir tous les guides', 'API', 'Support', 'Contacter le support']) {
-    await expect(blocs.getByRole('link', { name: link, exact: true })).toBeVisible()
+  await expect(sections.getByRole('link', { name: 'Découvrir les données' })).toBeVisible()
+  await expect(sections.getByRole('link', { name: /Base Adresse Nationale/ }).first()).toBeVisible()
+  await expect(sections.getByRole('link', { name: /API Sirene/ }).first()).toBeVisible()
+  for (const link of ['Documentation', 'Voir tous les guides']) {
+    await expect(sections.getByRole('link', { name: link, exact: true })).toBeVisible()
   }
-  await expect(blocs.getByRole('heading', { name: 'Titre de section' })).toBeVisible()
-  await expect(blocs.getByRole('button', { name: 'Comment acceder aux donnees ?' })).toBeVisible()
-  await expect(blocs.getByRole('button', { name: 'Où trouver de l\'aide ?' })).toBeVisible()
+  await expect(sections.getByRole('heading', { name: 'Titre de section' })).toBeVisible()
+  await expect(sections.getByRole('button', { name: 'Comment acceder aux donnees ?' })).toBeVisible()
+  await expect(sections.getByRole('button', { name: 'Où trouver de l\'aide ?' })).toBeVisible()
+
+  // === Step 11: Final screenshot for visual regression ===
 
   await expect(page).toHaveScreenshot('edito-page-final.png', {
     mask: [page.getByTestId('user-avatar'), page.getByTestId('commit-version'), page.getByTestId('udata-version')],

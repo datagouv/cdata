@@ -1,200 +1,112 @@
 <template>
-  <BlocWithTitleAndSubtitle
-    v-model="bloc"
-    :edit
-  >
-    <!-- Accordion items -->
-    <AccordionGroup>
-      <div ref="sortableRef">
-        <div
-          v-for="(item, itemIndex) in bloc.items"
-          :key="itemIndex"
-          class="relative"
-          :class="{ 'cursor-grab active:cursor-grabbing': edit }"
-        >
-          <!-- Delete button in edit mode -->
-          <button
-            v-if="edit"
-            type="button"
-            class="absolute -left-8 top-3 text-gray-500 hover:text-gray-700 z-10"
-            :title="$t('Supprimer')"
-            @click="bloc.items.splice(itemIndex, 1)"
-          >
-            <RiDeleteBinLine class="size-5" />
-          </button>
-
-          <Accordion
-            :id="`accordion-${bloc.id}-${itemIndex}`"
-            :title="item.title || $t('Titre de l\'élément')"
-          >
-            <template
-              v-if="edit"
-              #title
-            >
-              <EditableText
-                :model-value="item.title || $t('Titre de l\'élément')"
-                tag="span"
-                class="flex-1"
-                @update:model-value="item.title = $event"
-              />
-            </template>
-
-            <div class="space-y-8">
-              <template
-                v-for="(contentBloc, contentIndex) in item.content"
-                :key="contentBloc.id"
-              >
-                <!-- Add button above each bloc -->
-                <div
-                  v-if="edit"
-                  class="flex items-center justify-center"
-                >
-                  <AddBlocDropdown
-                    content-only
-                    @new-bloc="item.content.splice(contentIndex, 0, $event as ContentBloc)"
-                  >
-                    <button
-                      type="button"
-                      class="text-gray-400 hover:text-gray-600 flex items-center gap-1 text-sm"
-                    >
-                      <RiAddLine class="size-4" />
-                      {{ $t('Ajouter un bloc') }}
-                    </button>
-                  </AddBlocDropdown>
-                </div>
-
-                <div
-                  class="relative"
-                  data-testid="accordion-content-bloc"
-                >
-                  <!-- Content bloc toolbar -->
-                  <div
-                    v-if="edit"
-                    class="absolute -left-14 top-1/2 -translate-y-1/2 flex flex-col gap-1"
-                  >
-                    <BrandedButton
-                      color="tertiary"
-                      size="xs"
-                      :icon="RiArrowUpLine"
-                      :disabled="contentIndex === 0"
-                      :title="$t('Monter')"
-                      @click="moveContent(item.content, contentIndex, -1)"
-                    />
-                    <BrandedButton
-                      color="tertiary"
-                      size="xs"
-                      :icon="RiArrowDownLine"
-                      :disabled="contentIndex === item.content.length - 1"
-                      :title="$t('Descendre')"
-                      @click="moveContent(item.content, contentIndex, 1)"
-                    />
-                    <BrandedButton
-                      color="tertiary"
-                      size="xs"
-                      :icon="RiDeleteBinLine"
-                      :title="$t('Supprimer')"
-                      @click="item.content.splice(contentIndex, 1)"
-                    />
-                  </div>
-
-                  <component
-                    :is="contentBlocsTypes[contentBloc.class].component"
-                    v-model="(item.content[contentIndex] as any)"
-                    :edit
-                  />
-                </div>
-              </template>
-
-              <!-- Add button at the end (or when empty) -->
-              <div
-                v-if="edit"
-                class="flex items-center justify-center"
-              >
-                <AddBlocDropdown
-                  content-only
-                  @new-bloc="item.content.push($event as ContentBloc)"
-                >
-                  <button
-                    type="button"
-                    class="text-gray-400 hover:text-gray-600 flex items-center gap-1 text-sm"
-                    data-testid="accordion-add-content"
-                  >
-                    <RiAddLine class="size-4" />
-                    {{ $t('Ajouter un bloc') }}
-                  </button>
-                </AddBlocDropdown>
-              </div>
-            </div>
-          </Accordion>
-        </div>
-      </div>
-
-      <!-- New accordion placeholder in edit mode -->
-      <div
-        v-if="edit"
-        data-testid="accordion-new-item"
+  <!-- On a colored section, the accordion is a white card: its titles and its content keep
+       the colors of a neutral background. -->
+  <AccordionGroup :class="{ 'bg-white rounded-lg px-6 py-4': sectionColor }">
+    <div
+      ref="listRef"
+      data-drop-list
+    >
+      <EditItem
+        v-for="(item, itemIndex) in bloc.items"
+        :key="item.id"
+        :edit
+        :label="labels.AccordionItem"
+        draggable
+        data-drop-item
+        @delete="bloc.items.splice(itemIndex, 1)"
+        @drag-start="startBlocsDrag($event, { list: listRef!, index: itemIndex, kind: 'accordion-item', label: labels.AccordionItem })"
+        @keyboard-move="moveWithKeyboard(bloc.items, $event, itemIndex)"
       >
         <Accordion
-          :id="`accordion-${bloc.id}-new-${newItemKey}`"
-          :key="newItemKey"
-          :title="$t('Titre de l\'élément')"
+          :id="`accordion-${bloc.id}-${item.id}`"
+          :title="item.title || $t('Titre de l\'élément')"
         >
-          <template #title>
+          <template
+            v-if="edit"
+            #title
+          >
             <EditableText
-              :model-value="newItemTitle"
+              :model-value="item.title || $t('Titre de l\'élément')"
               tag="span"
               class="flex-1"
-              data-testid="accordion-new-item-title"
-              :placeholder="$t('Titre de l\'élément')"
-              @update:model-value="createNewItem($event)"
+              @update:model-value="item.title = $event"
             />
           </template>
-          <div class="text-gray-400 text-sm">
-            {{ $t('Renseignez un titre pour créer un nouvel élément') }}
-          </div>
+
+          <BlocsList
+            v-model="item.content"
+            :edit
+            level="accordion"
+          />
         </Accordion>
-      </div>
-    </AccordionGroup>
-  </BlocWithTitleAndSubtitle>
+      </EditItem>
+    </div>
+
+    <!-- New accordion placeholder in edit mode -->
+    <div
+      v-if="edit"
+      data-testid="accordion-new-item"
+    >
+      <Accordion
+        :id="`accordion-${bloc.id}-new-${newItemKey}`"
+        :key="newItemKey"
+        :title="$t('Titre de l\'élément')"
+      >
+        <template #title>
+          <EditableText
+            :model-value="newItemTitle"
+            tag="span"
+            class="flex-1"
+            data-testid="accordion-new-item-title"
+            :placeholder="$t('Titre de l\'élément')"
+            @update:model-value="createNewItem($event)"
+          />
+        </template>
+        <div class="text-gray-400 text-sm">
+          {{ $t('Renseignez un titre pour créer un nouvel élément') }}
+        </div>
+      </Accordion>
+    </div>
+  </AccordionGroup>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { RiAddLine, RiArrowDownLine, RiArrowUpLine, RiDeleteBinLine } from '@remixicon/vue'
-import BlocWithTitleAndSubtitle from './BlocWithTitleAndSubtitle.vue'
 import EditableText from './EditableText.vue'
-import AddBlocDropdown from './AddBlocDropdown.vue'
-import type { AccordionListBloc, ContentBloc } from '~/types/pages'
+import BlocsList from './BlocsList.vue'
+import EditItem from './EditItem.vue'
+import { v4 as uuidv4 } from 'uuid'
+import type { AccordionListBloc } from '~/types/pages'
+import { SECTION_COLOR } from '~/utils/blocs'
+import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
-const contentBlocsTypes = useContentBlocsTypes()
-
-const props = defineProps<{
+defineProps<{
   edit: boolean
 }>()
 
 const bloc = defineModel<AccordionListBloc>({ required: true })
 
-const { sortableRef } = useBlocSortable(
-  computed(() => bloc.value.items),
-  toRef(props, 'edit'),
-)
+const labels = useBlocLabels()
+
+// On a colored section, the content of the items is drawn on the white card.
+const sectionColor = inject(SECTION_COLOR, ref(null))
+provide(SECTION_COLOR, ref(null))
+
+// Items move between accordions, and nowhere else.
+const listRef = ref<HTMLElement | null>(null)
+useDropList(listRef, {
+  orientation: 'vertical',
+  items: () => bloc.value.items,
+  accepts: dragged => dragged.kind === 'accordion-item',
+})
 
 const newItemTitle = ref('')
 const newItemKey = ref(0)
 
 function createNewItem(title: string) {
   if (title.trim()) {
-    bloc.value.items.push({ title, content: [] })
+    bloc.value.items.push({ id: uuidv4(), title, content: [] })
     newItemTitle.value = ''
     newItemKey.value++
   }
-}
-
-function moveContent(content: Array<ContentBloc>, index: number, direction: -1 | 1) {
-  const newIndex = index + direction
-  if (newIndex < 0 || newIndex >= content.length) return
-  const temp = content[index]
-  content[index] = content[newIndex]
-  content[newIndex] = temp
 }
 </script>
