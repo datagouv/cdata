@@ -5,6 +5,7 @@ import ChatPanel from '~/components/Assistant/ChatPanel.vue'
 import { buildChatBody, extractLastSqlBlock, mapAssistantError } from '~/utils/assistant'
 
 const sendMessageMock = vi.hoisted(() => vi.fn())
+const stopMock = vi.hoisted(() => vi.fn())
 
 // State shared with the mocked useAssistantChat. The mock factory (which runs
 // after imports) fills it with real Vue refs; tests set state before mounting.
@@ -20,7 +21,7 @@ vi.mock('~/components/Assistant/useAssistantChat', async () => {
   chatState.status = ref('ready')
   chatState.error = ref(null)
   return {
-    useAssistantChat: () => ({ ...chatState, sendMessage: sendMessageMock }),
+    useAssistantChat: () => ({ ...chatState, sendMessage: sendMessageMock, stop: stopMock }),
   }
 })
 
@@ -133,6 +134,82 @@ describe('ChatPanel', () => {
     expect((wrapper.find('textarea#assistant-input').element as HTMLTextAreaElement).value).toBe('')
   })
 
+  it('sends on Enter but inserts a newline on Shift+Enter', async () => {
+    const wrapper = mountPanel('resource-1')
+
+    const textarea = wrapper.find('textarea#assistant-input')
+    await textarea.setValue('Bonjour')
+
+    await textarea.trigger('keydown.enter', { shiftKey: true })
+    expect(sendMessageMock).not.toHaveBeenCalled()
+
+    await textarea.trigger('keydown.enter')
+    expect(sendMessageMock).toHaveBeenCalledWith({ text: 'Bonjour' })
+  })
+
+  it('caps the composer at 4000 characters', () => {
+    const wrapper = mountPanel('resource-1')
+
+    expect(wrapper.find('textarea#assistant-input').attributes('maxlength')).toBe('4000')
+  })
+
+  it('disables the send button when the input is empty or while waiting', async () => {
+    const wrapper = mountPanel('resource-1')
+    const send = () => wrapper.find('button[type="submit"]')
+
+    expect(send().attributes('disabled')).toBeDefined()
+
+    await wrapper.find('textarea#assistant-input').setValue('ok')
+    expect(send().attributes('disabled')).toBeUndefined()
+
+    await wrapper.unmount()
+    const waitingWrapper = mountPanel(null)
+    expect(waitingWrapper.find('button[type="submit"]').attributes('disabled')).toBeDefined()
+  })
+
+  it('shows the character counter beyond 3600 characters, in red at the max', async () => {
+    const wrapper = mountPanel('resource-1')
+    const textarea = wrapper.find('textarea#assistant-input')
+    const expected = `${(3601).toLocaleString('fr-FR')} / ${(4000).toLocaleString('fr-FR')}`
+
+    expect(wrapper.text()).not.toContain('/ 4 000')
+
+    await textarea.setValue('a'.repeat(3601))
+    expect(wrapper.text()).toContain(expected)
+
+    await textarea.setValue('a'.repeat(4000))
+    const counter = wrapper.findAll('footer span').find(span => span.text().includes('/'))
+    expect(counter).toBeDefined()
+    expect(counter!.classes()).toContain('text-new-error')
+  })
+
+  it('shows a stop button while responding that stops the stream', async () => {
+    chatState.status.value = 'streaming'
+    const wrapper = mountPanel('resource-1')
+
+    const button = wrapper.findAll('button').find(b => b.text() === 'Arrêter')
+    expect(button).toBeDefined()
+    expect(wrapper.find('button[type="submit"]').exists()).toBe(false)
+
+    await button!.trigger('click')
+    expect(stopMock).toHaveBeenCalled()
+  })
+
+  it('ignores a second submit within the anti-double-send cooldown', async () => {
+    const now = vi.spyOn(Date, 'now').mockReturnValue(10_000)
+    const wrapper = mountPanel('resource-1')
+    const textarea = wrapper.find('textarea#assistant-input')
+
+    await textarea.setValue('premier')
+    await wrapper.find('form').trigger('submit.prevent')
+    await textarea.setValue('second')
+    await wrapper.find('form').trigger('submit.prevent')
+
+    expect(sendMessageMock).toHaveBeenCalledTimes(1)
+    expect(sendMessageMock).toHaveBeenCalledWith({ text: 'premier' })
+    now.mockRestore()
+  })
+
   it('emits use-query with the SQL of the last assistant message', async () => {
     chatState.messages.value = [
       { id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Une requête ?' }] },
@@ -169,21 +246,96 @@ describe('ChatPanel', () => {
     vi.unstubAllGlobals()
   })
 
-  it('renders tool parts as collapsible traces', () => {
+  it('renders execute_sql traces with the SQL, not raw JSON', () => {
     chatState.messages.value = [{
       id: 'a1',
       role: 'assistant',
       parts: [
-        { type: 'tool-search_datasets', state: 'output-available', output: { count: 3 } },
-        { type: 'text', text: 'J’ai trouvé 3 jeux de données.' },
+        {
+          type: 'tool-execute_sql',
+          state: 'output-available',
+          input: { sql: 'SELECT year, COUNT(*) AS nb FROM data GROUP BY year', purpose: 'Compter par année' },
+          output: { rowCount: 12, columns: ['year', 'nb'] },
+        },
+        { type: 'text', text: 'J’ai trouvé 12 lignes.' },
       ],
     }]
     const wrapper = mountPanel('resource-1')
 
-    const details = wrapper.find('details.tool-trace')
-    expect(details.exists()).toBe(true)
-    expect(details.find('summary').text()).toContain('tool-search_datasets')
-    expect(wrapper.text()).toContain('J’ai trouvé 3 jeux de données.')
+    const trace = wrapper.find('.tool-trace')
+    expect(trace.exists()).toBe(true)
+    expect(trace.text()).toContain('Exécution de la requête SQL')
+    expect(trace.find('pre').text()).toContain('SELECT year, COUNT(*) AS nb FROM data GROUP BY year')
+    expect(trace.text()).not.toContain('{"sql"')
+    expect(wrapper.text()).toContain('J’ai trouvé 12 lignes.')
+  })
+
+  it('maps tool types to French labels and first-person summaries', () => {
+    chatState.messages.value = [{
+      id: 'a1',
+      role: 'assistant',
+      parts: [
+        { type: 'tool-get_dataset_metadata', state: 'output-available', input: {}, output: { title: 'Mon jeu', organization: 'Ministère', license: 'LOOL' } },
+        { type: 'tool-inspect_schema', state: 'output-available', input: {}, output: { columns: ['year', 'rate'], rowCount: 42 } },
+        { type: 'tool-request_clarification', state: 'output-available', input: { question: 'Quelle année ?' }, output: {} },
+      ],
+    }]
+    const wrapper = mountPanel('resource-1')
+    const text = wrapper.text()
+
+    expect(text).toContain('Lecture des métadonnées')
+    expect(text).toContain('Je consulte la fiche du jeu de données')
+    expect(text).toContain('Inspection du schéma')
+    expect(text).toContain('Je vérifie les colonnes et les types disponibles')
+    expect(text).toContain('Demande de clarification')
+    expect(text).toContain('Je précise ce qui est ambigu')
+  })
+
+  it('groups consecutive calls to the same tool and state into a single card', () => {
+    chatState.messages.value = [{
+      id: 'a1',
+      role: 'assistant',
+      parts: [
+        { type: 'tool-execute_sql', state: 'output-available', input: { sql: 'SELECT 1' }, output: { rowCount: 1 } },
+        { type: 'tool-execute_sql', state: 'output-available', input: { sql: 'SELECT 2' }, output: { rowCount: 1 } },
+        { type: 'text', text: 'ok' },
+      ],
+    }]
+    const wrapper = mountPanel('resource-1')
+
+    const traces = wrapper.findAll('.tool-trace')
+    expect(traces).toHaveLength(1)
+    expect(traces[0].text()).toContain('×2')
+  })
+
+  it('keeps consecutive calls in separate cards when their states differ', () => {
+    chatState.messages.value = [{
+      id: 'a1',
+      role: 'assistant',
+      parts: [
+        { type: 'tool-execute_sql', state: 'output-error', input: { sql: 'SELECT 1' }, errorText: 'syntax error' },
+        { type: 'tool-execute_sql', state: 'output-available', input: { sql: 'SELECT 2' }, output: { rowCount: 1 } },
+      ],
+    }]
+    const wrapper = mountPanel('resource-1')
+
+    expect(wrapper.findAll('.tool-trace')).toHaveLength(2)
+  })
+
+  it('renders failed tool traces in red with the error message', () => {
+    chatState.messages.value = [{
+      id: 'a1',
+      role: 'assistant',
+      parts: [
+        { type: 'tool-execute_sql', state: 'output-error', input: { sql: 'SELECT 1' }, errorText: 'relation « data » inexistante' },
+      ],
+    }]
+    const wrapper = mountPanel('resource-1')
+
+    const trace = wrapper.find('.tool-trace')
+    expect(trace.text()).toContain('relation « data » inexistante')
+    const summary = wrapper.findAll('span').find(span => span.text() === 'relation « data » inexistante')
+    expect(summary!.classes()).toContain('text-new-error')
   })
 
   it('displays the mapped French error message', async () => {
