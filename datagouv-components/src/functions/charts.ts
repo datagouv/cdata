@@ -6,11 +6,9 @@ import { resolveColumnType } from './tabular'
 export type InferredChartConfig = {
   xColumn: string
   seriesColumns: Array<string>
-  chartKind: 'line' | 'bar'
 }
 
 // Above this length an X value is a text (sentence/paragraph), not a category label.
-const MAX_CATEGORICAL_X_LENGTH = 50
 
 /**
  * Infer a render config from a SQL query result: first column is the X axis,
@@ -22,8 +20,7 @@ export function inferChartConfig(result: SqlQueryResult): InferredChartConfig {
   const seriesColumns = result.columns.filter((column, index) => {
     return index > 0 && isNumericColumn(result.rows, index)
   })
-  const chartKind = isCategoricalColumn(result.rows, 0) ? 'bar' : 'line'
-  return { xColumn, seriesColumns, chartKind }
+  return { xColumn, seriesColumns }
 }
 
 function isNumericColumn(rows: SqlQueryResult['rows'], index: number): boolean {
@@ -32,19 +29,6 @@ function isNumericColumn(rows: SqlQueryResult['rows'], index: number): boolean {
     const value = row[index]
     if (value === null || value === undefined) continue
     if (typeof value !== 'number' || Number.isNaN(value)) return false
-    sawValue = true
-  }
-  return sawValue
-}
-
-function isCategoricalColumn(rows: SqlQueryResult['rows'], index: number): boolean {
-  let sawValue = false
-  for (const row of rows) {
-    const value = row[index]
-    if (value === null || value === undefined) continue
-    if (typeof value !== 'string') return false
-    if (value.length > MAX_CATEGORICAL_X_LENGTH) return false
-    if (!Number.isNaN(new Date(value).getTime())) return false
     sawValue = true
   }
   return sawValue
