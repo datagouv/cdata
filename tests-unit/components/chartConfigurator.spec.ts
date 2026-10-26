@@ -157,6 +157,7 @@ function newForm(overrides: Partial<ChartForm> = {}): ChartForm {
     private: false,
     query: '',
     resource_id: '',
+    chart_type: 'line',
     y_axis: { label: '', min: null, max: null, unit: '', unit_position: 'suffix' },
     extras: {},
     ...overrides,
@@ -172,6 +173,7 @@ const initialChart = {
   owner: null,
   query: 'SELECT year, rate FROM data',
   resource_id: RESOURCE_ID,
+  chart_type: 'line',
   y_axis: { label: null, min: null, max: null, unit: null, unit_position: null },
   extras: {},
 } as unknown as Chart
@@ -263,6 +265,7 @@ describe('initial ChartForm literal (as in pages/admin/beta/chart.vue)', () => {
     const api = toChartApi(newForm())
 
     expect(Object.keys(api).sort()).toEqual([
+      'chart_type',
       'description',
       'extras',
       'organization',
@@ -275,8 +278,8 @@ describe('initial ChartForm literal (as in pages/admin/beta/chart.vue)', () => {
     ])
     expect(api).not.toHaveProperty('x_axis')
     expect(api).not.toHaveProperty('series')
-    expect(api).not.toHaveProperty('chart_type')
     expect(api).not.toHaveProperty('filter')
+    expect(api.chart_type).toBe('line')
     expect(api.query).toBe('')
     expect(api.resource_id).toBe('')
     expect(api.y_axis).toEqual({ label: null, min: null, max: null, unit: null, unit_position: 'suffix' })
@@ -301,7 +304,7 @@ describe('ChartConfigurator', () => {
     vi.clearAllMocks()
   })
 
-  it('renders a SQL query textarea and no declarative chart controls', async () => {
+  it('renders a SQL query textarea and no declarative x-axis/filter controls', async () => {
     const form = newForm({ query: 'SELECT year, rate FROM data' })
     const wrapper = await mountWithInitialChart(form)
 
@@ -310,10 +313,22 @@ describe('ChartConfigurator', () => {
     expect((textarea.element as HTMLTextAreaElement).value).toBe('SELECT year, rate FROM data')
 
     expect(wrapper.text()).not.toContain('Filtres')
-    expect(wrapper.text()).not.toContain('Type de graphique')
-    expect(wrapper.find('#chart-type').exists()).toBe(false)
     expect(wrapper.find('#x-axis-column').exists()).toBe(false)
     expect(wrapper.find('#resource-select').exists()).toBe(true)
+  })
+
+  it('renders a line/histogram chart type select bound to the form', async () => {
+    const form = newForm()
+    const wrapper = await mountWithInitialChart(form)
+
+    const select = wrapper.find('select#chart-type')
+    expect(select.exists()).toBe(true)
+    expect((select.element as HTMLSelectElement).value).toBe('line')
+    const options = select.findAll('option').map(option => (option.element as HTMLOptionElement).value)
+    expect(options).toEqual(['line', 'histogram'])
+
+    await select.setValue('histogram')
+    expect(form.chart_type).toBe('histogram')
   })
 
   it('edits the form query through the SQL textarea', async () => {
@@ -350,7 +365,7 @@ describe('ChartConfigurator', () => {
     expect(wrapper.find('#y-axis-unit').exists()).toBe(true)
   })
 
-  it('saves the reduced contract without x_axis/series/chart_type/filter', async () => {
+  it('saves the reduced contract without x_axis/series/filter', async () => {
     const form = newForm({ query: 'SELECT year, rate FROM data', resource_id: RESOURCE_ID })
     const wrapper = await mountWithInitialChart(form)
 
@@ -364,6 +379,7 @@ describe('ChartConfigurator', () => {
 
     const body = JSON.parse(options.body)
     expect(Object.keys(body).sort()).toEqual([
+      'chart_type',
       'description',
       'extras',
       'organization',
@@ -376,8 +392,8 @@ describe('ChartConfigurator', () => {
     ])
     expect(body).not.toHaveProperty('x_axis')
     expect(body).not.toHaveProperty('series')
-    expect(body).not.toHaveProperty('chart_type')
     expect(body).not.toHaveProperty('filter')
+    expect(body.chart_type).toBe('line')
     expect(body.query).toBe('SELECT year, rate FROM data')
     expect(body.resource_id).toBe(RESOURCE_ID)
     expect(body.y_axis).toEqual({ label: null, min: null, max: null, unit: null, unit_position: 'suffix' })

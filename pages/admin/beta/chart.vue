@@ -32,6 +32,7 @@ const chart = ref<ChartForm>({
   private: false,
   query: '',
   resource_id: '',
+  chart_type: 'line',
   y_axis: {
     label: '',
     min: null,

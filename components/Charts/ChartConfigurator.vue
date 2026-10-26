@@ -195,6 +195,24 @@
                     <div class="space-y-4">
                       <div>
                         <label
+                          for="chart-type"
+                          class="fr-label"
+                        >{{ $t('Type de graphique') }}</label>
+                        <select
+                          id="chart-type"
+                          v-model="form.chart_type"
+                          class="w-full fr-select"
+                        >
+                          <option value="line">
+                            {{ $t('Ligne') }}
+                          </option>
+                          <option value="histogram">
+                            {{ $t('Histogramme') }}
+                          </option>
+                        </select>
+                      </div>
+                      <div>
+                        <label
                           for="y-axis-label"
                           class="fr-label"
                         >{{ $t('Label') }}</label>
@@ -283,18 +301,21 @@
         </div>
 
         <!-- Mode Assistant : le chat seul, conteneur borné à la hauteur du panneau -->
-        <ClientOnly>
-          <div
-            v-show="activePanel === 'assistant'"
-            class="flex-1 min-h-0 flex flex-col"
-            data-testid="assistant-panel"
-          >
+        <!-- v-show sur le conteneur PARENT de ClientOnly : dans le navigateur,
+             le slot de ClientOnly est rendu hors du cycle de patch normal et un
+             v-show à l'intérieur n'est pas appliqué. -->
+        <div
+          v-show="activePanel === 'assistant'"
+          class="flex-1 min-h-0 flex flex-col"
+          data-testid="assistant-panel"
+        >
+          <ClientOnly>
             <ChatPanel
               :resource-id="selectedResource || null"
               @use-query="onUseQuery"
             />
-          </div>
-        </ClientOnly>
+          </ClientOnly>
+        </div>
       </div>
     </div>
   </form>
