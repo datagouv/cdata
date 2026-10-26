@@ -48,14 +48,6 @@ export function useResourceCapabilities(
   const ogcService = computed(() => detectOgcService(toValue(resource)))
   const ogcWms = computed(() => ogcService.value === 'wms')
 
-  // A WMS flow whose GetCapabilities contains no usable layer cannot be mapped:
-  // rendering the map would show an empty base map as if the service was fine.
-  const ogcWmsNoLayer = computed(() => {
-    if (!ogcWms.value) return false
-    const metadata = toValue(resource).extras['analysis:parsing:ogc_metadata'] as WfsMetadata | null
-    return !!metadata && metadata.format === 'wms' && !metadata.detected_layer
-  })
-
   // The map is built from a pmtiles export; when that export fails we still want
   // to show the Carte tab, but with the reason it could not be generated.
   const hasPmtilesError = computed(() => getParsingErrorStep(toValue(resource)) === 'pmtiles_export')
@@ -148,7 +140,6 @@ export function useResourceCapabilities(
     hasOpenAPIPreview,
     ogcService,
     ogcWms,
-    ogcWmsNoLayer,
     generatedFormats,
     wfsFormats,
     defaultWfsProjection,
