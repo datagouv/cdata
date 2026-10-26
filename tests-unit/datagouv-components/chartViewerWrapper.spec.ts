@@ -231,6 +231,42 @@ describe('ChartViewerWrapper', () => {
     expect(stub.props('chart').series[0]!.type).toBe('line')
   })
 
+  it('treats irregular numeric identifiers as categorical X axis', async () => {
+    executeSqlQueryMock.mockResolvedValue({
+      columns: ['dossier_ref', 'total_pour', 'total_contre'],
+      rows: [
+        [47026, 208, 113],
+        [54903, 22, 252],
+        [56782, 207, 126],
+      ],
+    })
+
+    const wrapper = mountWrapper(chartFixture('SELECT dossier_ref, …', 'histogram'))
+    await waitForFetch()
+
+    const stub = wrapper.findComponent(ChartViewerStub)
+    expect(stub.props('chart').x_axis.type).toBe('discrete')
+    expect(stub.props('chart').series.length).toBe(2)
+  })
+
+  it('keeps regularly spaced numbers (years) as a continuous X axis', async () => {
+    executeSqlQueryMock.mockResolvedValue({
+      columns: ['annee', 'nb'],
+      rows: [
+        [2019, 10],
+        [2020, 12],
+        [2021, 11],
+        [2022, 14],
+      ],
+    })
+
+    const wrapper = mountWrapper(chartFixture('SELECT annee, nb FROM votes', 'line'))
+    await waitForFetch()
+
+    const stub = wrapper.findComponent(ChartViewerStub)
+    expect(stub.props('chart').x_axis.type).toBe('continuous')
+  })
+
   it('treats bare year strings as categorical, not as a date axis', async () => {
     executeSqlQueryMock.mockResolvedValue({
       columns: ['annee', 'nb'],
