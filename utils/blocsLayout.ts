@@ -12,7 +12,7 @@ export type BlocsLevel = 'section' | 'accordion'
 export const BLOCS_LEVEL: InjectionKey<BlocsLevel> = Symbol('blocs-level')
 
 // Mirrors the layout udata enforces (`check_blocs_layout`).
-const LEAF_BLOCS: Array<BlocClass> = ['TitleBloc', 'MarkdownBloc', 'LinksListBloc', 'ButtonBloc', 'ExploreBloc', 'DatasetBloc', 'DataserviceBloc', 'ReuseBloc']
+const LEAF_BLOCS: Array<BlocClass> = ['TitleBloc', 'MarkdownBloc', 'LinksListBloc', 'ButtonBloc', 'ImageBloc', 'CardBloc', 'ExploreBloc', 'DatasetBloc', 'DataserviceBloc', 'ReuseBloc']
 export const ACCEPTED_BLOCS: Record<BlocsLevel, Array<BlocClass>> = {
   section: [...LEAF_BLOCS, 'AccordionListBloc'],
   // The explorer is too wide for an accordion.
