@@ -58,6 +58,7 @@ export function toChartForm(chart: Chart): ChartForm {
     owned: chart.organization ? { organization: chart.organization.id, owner: null } : { owner: chart.owner.id, organization: null },
     query: chart.query,
     resource_id: chart.resource_id,
+    chart_type: chart.chart_type ?? 'line',
     y_axis: {
       label: chart.y_axis.label || '',
       min: chart.y_axis.min,
@@ -77,6 +78,7 @@ export function toChartApi(chartForm: ChartForm): ChartForApi {
     private: chartForm.private,
     query: chartForm.query,
     resource_id: chartForm.resource_id,
+    chart_type: chartForm.chart_type ?? 'line',
     y_axis: {
       label: chartForm.y_axis.label || null,
       min: chartForm.y_axis.min ?? null,

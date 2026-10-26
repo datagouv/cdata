@@ -11,11 +11,28 @@ const baseChart = {
   owner: null,
   query: 'SELECT region, COUNT(*) AS total FROM data GROUP BY region',
   resource_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+  chart_type: 'line',
   y_axis: { label: 'Total', min: 0, max: 100, unit: '€', unit_position: 'suffix' },
   extras: {},
 } as unknown as Chart
 
 describe('toChartForm / toChartApi', () => {
+  it('round-trips the chart type', () => {
+    const histogramChart = { ...baseChart, chart_type: 'histogram' } as unknown as Chart
+    const form = toChartForm(histogramChart)
+    expect(form.chart_type).toBe('histogram')
+    expect(toChartApi(form).chart_type).toBe('histogram')
+  })
+
+  it('defaults the chart type to line when absent', () => {
+    const legacyChart = { ...baseChart } as Record<string, unknown>
+    delete legacyChart.chart_type
+
+    const form = toChartForm(legacyChart as unknown as Chart)
+    expect(form.chart_type).toBe('line')
+    expect(toChartApi(form).chart_type).toBe('line')
+  })
+
   it('round-trips query, resource_id and y_axis', () => {
     const form = toChartForm(baseChart)
     expect(form.query).toEqual('SELECT region, COUNT(*) AS total FROM data GROUP BY region')

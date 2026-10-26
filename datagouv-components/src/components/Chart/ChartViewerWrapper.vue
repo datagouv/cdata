@@ -37,7 +37,7 @@ import { useTranslation } from '../../composables/useTranslation'
 import { watchDebounced } from '@vueuse/shared'
 
 const props = defineProps<{
-  chart: Pick<Chart, 'query' | 'resource_id' | 'y_axis'>
+  chart: Pick<Chart, 'query' | 'resource_id' | 'y_axis' | 'chart_type'>
   tabularApiUrl?: string
 }>()
 
@@ -82,8 +82,13 @@ const chartData = computed<ChartViewerData | null>(() => {
   const result = queryResult.value
   if (!result || result.rows.length === 0) return null
 
-  const { xColumn, seriesColumns, chartKind } = inferChartConfig(result)
+  const { xColumn, seriesColumns } = inferChartConfig(result)
   if (!xColumn) return null
+
+  // The rendered kind always comes from the chart's chart_type field; inference
+  // only picks the X column and the series columns.
+  const xColumnType = inferXColumnType(result, xColumn)
+  const isHistogram = props.chart.chart_type === 'histogram'
 
   const rows = result.rows.map((row) => {
     return Object.fromEntries(result.columns.map((column, index) => [column, row[index] ?? null]))
@@ -91,7 +96,7 @@ const chartData = computed<ChartViewerData | null>(() => {
 
   const columns: ColumnsDefinition = {
     [props.chart.resource_id]: [
-      { name: xColumn, type: inferXColumnType(result, xColumn) },
+      { name: xColumn, type: xColumnType },
       ...seriesColumns.map(name => ({ name, type: 'number' as ColumnType })),
     ],
   }
@@ -102,11 +107,11 @@ const chartData = computed<ChartViewerData | null>(() => {
         column_x: xColumn,
         sort_x_by: null,
         sort_x_direction: null,
-        type: chartKind === 'bar' ? 'discrete' : 'continuous',
+        type: xColumnType === 'categorical' ? 'discrete' : 'continuous',
       },
       y_axis: props.chart.y_axis,
       series: seriesColumns.map(column_y => ({
-        type: chartKind === 'bar' ? 'histogram' : 'line',
+        type: isHistogram ? 'histogram' : 'line',
         column_y,
         aggregate_y: null,
         resource_id: props.chart.resource_id,

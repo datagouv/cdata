@@ -19,10 +19,11 @@ const executeSqlQueryMock = vi.mocked(executeSqlQuery)
 const TABULAR_API_URL = 'https://tabular.example.com'
 const RESOURCE_ID = '847057e0-4c03-4099-85aa-9796fb6003bf'
 
-function chartFixture(query: string): Pick<Chart, 'query' | 'resource_id' | 'y_axis'> {
+function chartFixture(query: string, chart_type: 'line' | 'histogram' = 'line'): Pick<Chart, 'query' | 'resource_id' | 'y_axis' | 'chart_type'> {
   return {
     query,
     resource_id: RESOURCE_ID,
+    chart_type,
     y_axis: { label: null, min: null, max: null, unit: null, unit_position: null },
   }
 }
@@ -38,7 +39,7 @@ const ChartViewerStub = defineComponent({
   },
 })
 
-function mountWrapper(chart: Pick<Chart, 'query' | 'resource_id' | 'y_axis'>) {
+function mountWrapper(chart: Pick<Chart, 'query' | 'resource_id' | 'y_axis' | 'chart_type'>) {
   return mount(ChartViewerWrapper, {
     props: { chart },
     global: {
@@ -189,13 +190,45 @@ describe('ChartViewerWrapper', () => {
       rows: [['Bretagne', 10]],
     })
 
-    const wrapper = mountWrapper(chartFixture('SELECT region, nb FROM votes'))
+    const wrapper = mountWrapper(chartFixture('SELECT region, nb FROM votes', 'histogram'))
     await waitForFetch()
 
     const stub = wrapper.findComponent(ChartViewerStub)
     expect(stub.props('chart').x_axis.type).toBe('discrete')
     expect(stub.props('chart').series[0]!.type).toBe('histogram')
     expect(stub.props('series').columns[RESOURCE_ID]![0]).toEqual({ name: 'region', type: 'categorical' })
+  })
+
+  it('renders a bar chart even when X values are dates', async () => {
+    executeSqlQueryMock.mockResolvedValue({
+      columns: ['date', 'votes'],
+      rows: [
+        ['2024-01-01', 10],
+        ['2024-01-02', 12],
+      ],
+    })
+
+    const wrapper = mountWrapper(chartFixture('SELECT date, votes FROM votes', 'histogram'))
+    await waitForFetch()
+
+    const stub = wrapper.findComponent(ChartViewerStub)
+    expect(stub.props('chart').x_axis.type).toBe('continuous')
+    expect(stub.props('chart').series[0]!.type).toBe('histogram')
+    expect(stub.props('series').columns[RESOURCE_ID]![0]).toEqual({ name: 'date', type: 'date' })
+  })
+
+  it('renders a line chart even when X values are categorical', async () => {
+    executeSqlQueryMock.mockResolvedValue({
+      columns: ['region', 'nb'],
+      rows: [['Bretagne', 10]],
+    })
+
+    const wrapper = mountWrapper(chartFixture('SELECT region, nb FROM votes', 'line'))
+    await waitForFetch()
+
+    const stub = wrapper.findComponent(ChartViewerStub)
+    expect(stub.props('chart').x_axis.type).toBe('discrete')
+    expect(stub.props('chart').series[0]!.type).toBe('line')
   })
 
   it('renders a French "Aucune donnée" message when the query returns no row', async () => {

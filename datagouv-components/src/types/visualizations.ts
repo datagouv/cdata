@@ -24,6 +24,8 @@ export type GenericFilter = Filter | AndFilters | OrFilters
 
 export type UnitPosition = 'prefix' | 'suffix'
 
+export type ChartType = 'line' | 'histogram'
+
 export type YAxis = {
   min: number | null
   max: number | null
@@ -46,6 +48,7 @@ export type Chart = Owned & {
   page: string
   query: string
   resource_id: string
+  chart_type: ChartType
   y_axis: YAxis
   extras: Record<string, unknown>
   permissions: { delete: boolean, edit: boolean, read: boolean }
@@ -54,9 +57,9 @@ export type Chart = Owned & {
   }
 }
 
-export type ChartForApi = OwnedWithId & Pick<Chart, 'title' | 'description' | 'private' | 'query' | 'resource_id' | 'y_axis' | 'extras'>
+export type ChartForApi = OwnedWithId & Pick<Chart, 'title' | 'description' | 'private' | 'query' | 'resource_id' | 'chart_type' | 'y_axis' | 'extras'>
 
-export type ChartViewerSeriesType = 'line' | 'histogram'
+export type ChartViewerSeriesType = ChartType
 
 export type ChartViewerSeries = {
   type: ChartViewerSeriesType
