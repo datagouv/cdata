@@ -68,7 +68,7 @@ describe('inferChartConfig', () => {
         ['2024-01-02', 12],
       ],
     }
-    expect(inferChartConfig(result)).toEqual({ xColumn: 'date', seriesColumns: ['votes'], chartKind: 'line' })
+    expect(inferChartConfig(result)).toEqual({ xColumn: 'date', seriesColumns: ['votes'] })
   })
 
   it('infers a line chart when X values are dates', () => {
@@ -79,7 +79,7 @@ describe('inferChartConfig', () => {
         ['2024-03-02', 3, 4],
       ],
     }
-    expect(inferChartConfig(result)).toEqual({ xColumn: 'date', seriesColumns: ['a', 'b'], chartKind: 'line' })
+    expect(inferChartConfig(result)).toEqual({ xColumn: 'date', seriesColumns: ['a', 'b'] })
   })
 
   it('infers a bar chart when X values are short non-date strings', () => {
@@ -90,7 +90,7 @@ describe('inferChartConfig', () => {
         ['Occitanie', 20],
       ],
     }
-    expect(inferChartConfig(result)).toEqual({ xColumn: 'region', seriesColumns: ['nb'], chartKind: 'bar' })
+    expect(inferChartConfig(result)).toEqual({ xColumn: 'region', seriesColumns: ['nb'] })
   })
 
   it('ignores non-numeric columns as series', () => {
@@ -101,7 +101,7 @@ describe('inferChartConfig', () => {
         ['Occitanie', 'Toulouse', 20],
       ],
     }
-    expect(inferChartConfig(result)).toEqual({ xColumn: 'region', seriesColumns: ['nb'], chartKind: 'bar' })
+    expect(inferChartConfig(result)).toEqual({ xColumn: 'region', seriesColumns: ['nb'] })
   })
 
   it('tolerates null values inside a numeric series column', () => {
@@ -117,7 +117,7 @@ describe('inferChartConfig', () => {
 
   it('returns an empty config for an empty result', () => {
     expect(inferChartConfig({ columns: ['date', 'nb'], rows: [] }))
-      .toEqual({ xColumn: 'date', seriesColumns: [], chartKind: 'line' })
+      .toEqual({ xColumn: 'date', seriesColumns: [] })
   })
 })
 

@@ -7,6 +7,8 @@ import {
   mockTabular,
 } from './fixtures'
 
+const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
+
 test('title input updates form value without debounce', async ({ page }) => {
   await setupChart(page)
 
@@ -156,6 +158,23 @@ test('assistant waits for a resource before accepting messages', async ({ page }
 
   await expect(page.locator('#assistant-waiting')).toBeVisible()
   await expect(page.getByLabel('Votre demande')).toBeDisabled()
+})
+
+test.describe('for users without organizations', () => {
+  test.use({ storageState: 'playwright/.auth/normal-user.json' })
+
+  test('hides the no-organization notice in the chart configurator', async ({ page }) => {
+    const meResponse = await page.request.get(`${API_BASE_URL}/api/1/me/`)
+    expect(meResponse.ok()).toBe(true)
+    const me = await meResponse.json() as { organizations: Array<unknown> }
+    expect(me.organizations).toHaveLength(0)
+
+    await page.goto('/admin/beta/chart')
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.getByTestId('searchable-select-avec-qui-souhaitez-vous-publier')).toBeVisible()
+    await expect(page.getByText('Vous n\'appartenez à aucune organisation', { exact: true })).toHaveCount(0)
+  })
 })
 
 test('chat message is sent with the selected resource and the reply is streamed', async ({ page }) => {

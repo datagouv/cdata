@@ -102,6 +102,7 @@
                 v-model="producer"
                 :label="$t('Avec qui souhaitez-vous publier ?')"
                 :required="true"
+                hide-no-organization-notice
                 all
               />
             </fieldset>
