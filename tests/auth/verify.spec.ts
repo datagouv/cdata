@@ -12,6 +12,20 @@ test('a successful ProConnect reauthentication goes on to the remembered destina
   await expect(page.getByText('Compte confirmé.')).toBeVisible()
 })
 
+test('the ProConnect button asks udata for a reauthentication, not a login', async ({ page }) => {
+  let requested: URL | undefined
+  // Stop at udata: the round-trip itself goes through ProConnect.
+  await page.route('**/api/1/proconnect/login/**', (route) => {
+    requested = new URL(route.request().url())
+    return route.abort()
+  })
+  await page.goto('/verify')
+
+  await page.getByRole('button', { name: 'S’identifier avec ProConnect' }).click()
+
+  await expect.poll(() => requested?.searchParams.get('reauth')).toBe('1')
+})
+
 test('a failed ProConnect reauthentication stays on the page and says so', async ({ page }) => {
   await page.goto('/verify?next=/admin/me/profile')
   await expect(page.getByRole('heading', { level: 1, name: 'Confirmer votre identité' })).toBeVisible()

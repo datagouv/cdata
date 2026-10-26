@@ -5,7 +5,17 @@
         {{ $t('Confirmer votre identité') }}
       </h1>
 
-      <div class="space-y-6">
+      <!-- Back from a successful ProConnect reauthentication: only leaving remains. -->
+      <div
+        v-if="proconnectSucceeded"
+        class="flex justify-center py-6"
+      >
+        <AnimatedLoader />
+      </div>
+      <div
+        v-else
+        class="space-y-6"
+      >
         <SimpleBanner
           v-if="getAllErrorsInErrorFields(errors, '')"
           type="danger"
@@ -55,7 +65,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
+import { AnimatedLoader, BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 import { usePostApiWithCsrf } from '~/utils/api'
 
@@ -76,15 +86,7 @@ const route = useRoute()
 // Read before the site header consumes the flash and strips it from the URL.
 const proconnectSucceeded = route.query.flash === 'proconnect_reauth_success'
 
-const goToNext = async () => {
-  const next = sessionStorage.getItem('next')
-  if (next) {
-    navigateTo(next)
-  }
-  else {
-    await navigateTo('/')
-  }
-}
+const goToNext = () => navigateTo(sessionStorage.getItem('next') || '/')
 
 onMounted(async () => {
   if (route.query.next) {
