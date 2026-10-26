@@ -1,7 +1,7 @@
 <template>
   <div
     :data-edit-item="edit ? (band ? 'band' : '') : undefined"
-    class="relative"
+    class="relative h-full"
   >
     <!-- Above the item, so that it never covers the item's own controls. The bottom padding
          bridges the gap down to the outline: the pointer stays on the item on its way up.

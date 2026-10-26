@@ -17,8 +17,8 @@
       >
       <div class="flex-1 space-y-2">
         <template v-if="edit">
-          <!-- A title and a URL are required: emptying one keeps the previous one, the bloc
-               is deleted instead. -->
+          <!-- A title is required: emptying it keeps the previous one, the bloc is deleted
+               instead. -->
           <EditableText
             :model-value="bloc.title"
             tag="span"
@@ -41,18 +41,25 @@
           >
             + {{ $t('Ajouter une description') }}
           </button>
-          <input
-            :value="bloc.url"
-            type="text"
-            class="block text-sm text-gray-title placeholder:text-gray-500 bg-white border rounded px-2 py-1 w-full"
-            :placeholder="$t('URL de la carte')"
-            :aria-label="$t('URL de la carte')"
-            @change="changeUrl"
-          >
-          <BlocImageInput
-            v-model="bloc.image"
-            removable
+          <BlocUrlInput
+            v-model="bloc.url"
+            :label="$t('URL de la carte')"
           />
+          <div class="flex flex-wrap items-center gap-2">
+            <BlocImageInput
+              :replacing="!!bloc.image"
+              @uploaded="bloc.image = $event"
+            />
+            <BrandedButton
+              v-if="bloc.image"
+              size="xs"
+              color="tertiary"
+              :icon="RiDeleteBinLine"
+              @click="bloc.image = null"
+            >
+              {{ $t("Retirer l'image") }}
+            </BrandedButton>
+          </div>
         </template>
         <template v-else>
           <component
@@ -74,8 +81,11 @@
 </template>
 
 <script setup lang="ts">
+import { BrandedButton } from '@datagouv/components-next'
+import { RiDeleteBinLine } from '@remixicon/vue'
 import LinkCard from '../LinkCard.vue'
 import BlocImageInput from './BlocImageInput.vue'
+import BlocUrlInput from './BlocUrlInput.vue'
 import EditableText from './EditableText.vue'
 import type { CardBloc } from '~/types/pages'
 import { FOLLOW_LINKS } from '~/utils/blocs'
@@ -86,12 +96,6 @@ defineProps<{
 }>()
 
 const bloc = defineModel<CardBloc>({ required: true })
-
-function changeUrl(event: Event) {
-  const input = event.target as HTMLInputElement
-  bloc.value.url = input.value.trim() || bloc.value.url
-  input.value = bloc.value.url
-}
 
 // Under the title of the section (`h2`), or of the content of an accordion item (`h4`).
 const TAGS: Record<BlocsLevel, string> = { section: 'h3', accordion: 'h5' }

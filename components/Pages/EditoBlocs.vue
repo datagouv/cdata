@@ -233,7 +233,10 @@
         >
           {{ $t('Annuler') }}
         </BrandedButton>
-        <BrandedButton @click="save">
+        <BrandedButton
+          :loading="uploads > 0"
+          @click="save"
+        >
           {{ $t('Sauvegarder') }}
         </BrandedButton>
       </div>
@@ -253,7 +256,7 @@ import HeadingsSidemenu from '~/components/Sidemenu/HeadingsSidemenu.vue'
 import type { PageBloc, SectionBloc, SectionColor } from '~/types/pages'
 import { anchorHeadings, slugify, type Heading } from '~/utils/headings'
 import { isMeAdmin } from '~/utils/auth'
-import { BLOCS_MAIN_COLOR, FOLLOW_LINKS, PAGE_TITLE_ID, normalizeBlocs, withoutEmptyBlocs, type BlocsMainColor, type LegacyBloc } from '~/utils/blocs'
+import { BLOCS_MAIN_COLOR, FOLLOW_LINKS, PAGE_TITLE_ID, UPLOADS_IN_PROGRESS, normalizeBlocs, withoutEmptyBlocs, type BlocsMainColor, type LegacyBloc } from '~/utils/blocs'
 import { heroBgColor } from '~/utils/hero'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
@@ -292,6 +295,8 @@ const props = withDefaults(defineProps<{
 
 provide(BLOCS_MAIN_COLOR, props.mainColor)
 provide(FOLLOW_LINKS, props.followLinks)
+const uploads = ref(0)
+provide(UPLOADS_IN_PROGRESS, uploads)
 
 // From the raw array, so that the working copy below can be `structuredClone`d (a
 // reactive proxy cannot be).

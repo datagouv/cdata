@@ -21,6 +21,10 @@ export const PAGE_TITLE_ID: InjectionKey<Ref<string | null>> = Symbol('pageTitle
 // users must not pass on the site's search ranking, or they become worth spamming for.
 export const FOLLOW_LINKS: InjectionKey<boolean> = Symbol('followLinks')
 
+// The images being uploaded, provided by `EditoBlocs`: saving before they are done would save
+// their blocs without them.
+export const UPLOADS_IN_PROGRESS: InjectionKey<Ref<number>> = Symbol('uploadsInProgress')
+
 // Reads the bloc format served before the udata migration to sections (titles inside
 // each bloc, `*ListBloc`s, heroes, links with a paragraph and a main link). Mirrors that
 // migration; remove once it has run everywhere.

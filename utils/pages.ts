@@ -61,7 +61,7 @@ export type BlocChoice = {
   name: string
   description: string
 } & (
-  | { key: Exclude<SectionContentBloc['class'], ObjectBloc['class']>, create: () => TitleBloc | MarkdownBloc | LinksListBloc | ButtonBloc | ImageBloc | CardBloc | AccordionListBloc }
+  | { key: Exclude<SectionContentBloc['class'], ObjectBloc['class']>, create: () => Exclude<SectionContentBloc, ObjectBloc> }
   // Objects are picked in a selector before their blocs can be built.
   | { key: ObjectBloc['class'] }
 )

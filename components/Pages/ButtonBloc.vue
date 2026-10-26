@@ -17,14 +17,11 @@
         @update:model-value="bloc.title = $event.trim() || bloc.title"
       />
     </div>
-    <input
-      :value="bloc.url"
-      type="text"
-      class="block text-sm text-gray-title placeholder:text-gray-500 bg-white border rounded px-2 py-1 w-full max-w-xs"
-      :placeholder="$t('URL du bouton')"
-      :aria-label="$t('URL du bouton')"
-      @change="changeUrl"
-    >
+    <BlocUrlInput
+      v-model="bloc.url"
+      :label="$t('URL du bouton')"
+      class="max-w-xs"
+    />
   </div>
   <BrandedButton
     v-else
@@ -38,6 +35,7 @@
 
 <script setup lang="ts">
 import { BrandedButton } from '@datagouv/components-next'
+import BlocUrlInput from './BlocUrlInput.vue'
 import EditableText from './EditableText.vue'
 import type { ButtonBloc } from '~/types/pages'
 import { BLOCS_MAIN_COLOR, FOLLOW_LINKS, SECTION_COLOR, type BlocsMainColor } from '~/utils/blocs'
@@ -47,12 +45,6 @@ defineProps<{
 }>()
 
 const bloc = defineModel<ButtonBloc>({ required: true })
-
-function changeUrl(event: Event) {
-  const input = event.target as HTMLInputElement
-  bloc.value.url = input.value.trim() || bloc.value.url
-  input.value = bloc.value.url
-}
 
 // White on a colored section, elsewhere the main color of the page.
 type Color = BlocsMainColor | 'secondary'

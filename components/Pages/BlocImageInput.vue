@@ -1,50 +1,44 @@
 <template>
-  <div class="flex flex-wrap items-center gap-2">
-    <BrandedButton
-      size="xs"
-      color="secondary"
-      :icon="RiImageAddLine"
-      :loading
-      @click="input?.click()"
-    >
-      {{ image ? $t("Remplacer l'image") : $t('Choisir une image') }}
-    </BrandedButton>
-    <BrandedButton
-      v-if="image && removable"
-      size="xs"
-      color="tertiary"
-      :icon="RiDeleteBinLine"
-      @click="image = null"
-    >
-      {{ $t("Retirer l'image") }}
-    </BrandedButton>
-    <input
-      ref="input"
-      type="file"
-      class="hidden"
-      accept="image/png,image/jpeg,image/webp,image/svg+xml"
-      :aria-label="$t('Image')"
-      @change="upload"
-    >
-  </div>
+  <BrandedButton
+    size="xs"
+    color="secondary"
+    :icon="RiImageAddLine"
+    :loading
+    @click="input?.click()"
+  >
+    {{ replacing ? $t("Remplacer l'image") : $t('Choisir une image') }}
+  </BrandedButton>
+  <input
+    ref="input"
+    type="file"
+    class="hidden"
+    accept="image/png,image/jpeg,image/webp,image/svg+xml"
+    :aria-label="$t('Image')"
+    @change="upload"
+  >
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
-import { RiDeleteBinLine, RiImageAddLine } from '@remixicon/vue'
+import { BrandedButton, toast } from '@datagouv/components-next'
+import { RiImageAddLine } from '@remixicon/vue'
+import { FetchError } from 'ofetch'
+import { UPLOADS_IN_PROGRESS } from '~/utils/blocs'
 
 defineProps<{
-  // Whether the bloc can do without an image.
-  removable?: boolean
+  // The bloc has an image already.
+  replacing: boolean
 }>()
 
-// The URL of the image, once uploaded.
-const image = defineModel<string | null>({ required: true })
+const emit = defineEmits<{
+  uploaded: [url: string]
+}>()
 
 const { $fileApi } = useNuxtApp()
+const { t } = useTranslation()
 
 const input = useTemplateRef('input')
 const loading = ref(false)
+const uploads = inject(UPLOADS_IN_PROGRESS, ref(0))
 
 async function upload() {
   const file = input.value?.files?.[0]
@@ -52,14 +46,20 @@ async function upload() {
   const body = new FormData()
   body.set('file', file)
   loading.value = true
+  uploads.value++
   try {
-    image.value = (await $fileApi<{ url: string }>('/api/1/images/', { method: 'POST', body })).url
+    emit('uploaded', (await $fileApi<{ url: string }>('/api/1/images/', { method: 'POST', body })).url)
   }
-  catch {
-    // `$fileApi` told why the image was refused: the bloc keeps its previous one.
+  catch (error) {
+    // `$fileApi` tells why the server refused the image; it says nothing when there was no
+    // answer at all.
+    if (!(error instanceof FetchError) || !error.response) {
+      toast.error(t('L\'image n\'a pas pu être envoyée, vérifiez votre connexion.'))
+    }
   }
   finally {
     loading.value = false
+    uploads.value--
     // Picking the same file again uploads it again.
     input.value!.value = ''
   }
