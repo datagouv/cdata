@@ -81,8 +81,9 @@ test.describe('Post with blocs', () => {
     await page.goto(`/posts/${result.postSlug}`)
     await page.waitForLoadState('networkidle')
 
-    // Full page mode: no breadcrumb, no title of its own, the first title bloc is the page's
-    await expect(page.locator('nav').filter({ hasText: 'Accueil' })).not.toBeVisible()
+    // Full page mode: the breadcrumb at the top of the first section, no title of its own, the
+    // first title bloc is the page's
+    await expect(page.getByTestId('page-SectionBloc').first().getByLabel('Vous êtes ici :')).toContainText(`Test Full Page ${uniqueId}`)
     await expect(page.getByRole('heading', { level: 1, name: `Test Full Page ${uniqueId}` })).not.toBeVisible()
     await expect(page.getByRole('heading', { level: 1, name: 'Full page content' })).toBeVisible()
   })

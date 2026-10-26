@@ -193,6 +193,13 @@
       @apply p-1! font-mono! bg-gray-lower! text-sm! text-gray-medium! rounded!;
   }
 
+  /* The DSFR numbers the items of a list with `counters()`, which also prints the counter of
+     any list earlier in the page: under a breadcrumb of three links, "3.1." instead of "1.".
+     The two spaces after the number are no-break spaces, as in the DSFR. */
+  .prose ol {
+    --ol-content: counter(li-counter) ".  ";
+  }
+
   /* Vue Sonner Toast custom colors */
   [data-sonner-toast][data-type="success"] {
     background-color: var(--color-new-success-light) !important;

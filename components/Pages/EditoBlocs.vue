@@ -19,13 +19,18 @@
          colored sections opening the page stay above it as banners, the others go next to it -->
     <template v-if="sidemenu && !isEditing">
       <div
-        v-for="section in leadingColoredSections"
+        v-for="(section, index) in leadingColoredSections"
         :key="section.id"
-        class="py-24"
-        :class="heroBgColor(section.color!)"
+        :class="[sectionPadding(index), heroBgColor(section.color!)]"
         data-testid="page-SectionBloc"
       >
         <div class="container">
+          <div
+            v-if="index === 0 && $slots.breadcrumb"
+            class="hero-breadcrumb mb-16"
+          >
+            <slot name="breadcrumb" />
+          </div>
           <BlocsList
             :model-value="section.blocs"
             :edit="false"
@@ -34,7 +39,16 @@
           />
         </div>
       </div>
-      <div class="container md:flex md:gap-8 py-12">
+      <div
+        v-if="$slots.breadcrumb && !leadingColoredSections.length"
+        class="container pt-4"
+      >
+        <slot name="breadcrumb" />
+      </div>
+      <div
+        class="container md:flex md:gap-8 pb-12"
+        :class="{ 'pt-12': !$slots.breadcrumb || leadingColoredSections.length }"
+      >
         <HeadingsSidemenu
           v-if="sidemenuHeadings.length"
           :headings="sidemenuHeadings"
@@ -55,8 +69,15 @@
       </div>
     </template>
 
+    <!-- No section to hold the breadcrumb -->
     <div
-      v-else
+      v-if="!workingBlocs.length && $slots.breadcrumb && !(sidemenu && !isEditing)"
+      class="container pt-4"
+    >
+      <slot name="breadcrumb" />
+    </div>
+    <div
+      v-if="!(sidemenu && !isEditing)"
       ref="listRef"
       data-drop-list
     >
@@ -68,7 +89,7 @@
         draggable
         band
         class="group/section"
-        :class="[striped ? 'py-24' : 'py-12', bloc.color ? heroBgColor(bloc.color) : striped && 'odd:bg-gray-some even:bg-white']"
+        :class="[sectionPadding(index), bloc.color ? heroBgColor(bloc.color) : striped && neutralBackground(index)]"
         :data-testid="`page-${bloc.class}`"
         data-drop-item
         @delete="workingBlocs.splice(index, 1)"
@@ -122,6 +143,12 @@
           </BrandedButton>
         </div>
         <div class="container">
+          <div
+            v-if="index === 0 && $slots.breadcrumb"
+            :class="bloc.color ? 'hero-breadcrumb mb-16' : 'mb-6'"
+          >
+            <slot name="breadcrumb" />
+          </div>
           <BlocsList
             v-model="workingBlocs[index].blocs"
             :edit="isEditing"
@@ -305,6 +332,23 @@ const SECTION_COLORS: Array<{ value: SectionColor | null, label: string }> = [
   { value: 'green', label: t('Fond vert') },
   { value: 'purple', label: t('Fond violet') },
 ]
+
+const slots = useSlots()
+
+// The first section holds the breadcrumb at its top, as the banner of an organization does: it
+// gives up its top padding for it.
+function sectionPadding(index: number): string {
+  const bottom = props.striped ? 'pb-24' : 'pb-12'
+  if (index === 0 && slots.breadcrumb) return `pt-4 ${bottom}`
+  return props.striped ? 'py-24' : 'py-12'
+}
+
+// The neutral sections alternate their backgrounds. A page opening on one, right under the site
+// header, starts on white: a gray band there would set the top of the page apart for nothing.
+const neutralOffset = computed(() => props.untitled && workingBlocs.value[0] && !workingBlocs.value[0].color ? 1 : 0)
+function neutralBackground(index: number): string {
+  return (index + neutralOffset.value) % 2 === 0 ? 'bg-gray-some' : 'bg-white'
+}
 
 const leadingColoredSections = computed(() => {
   const index = workingBlocs.value.findIndex(section => !section.color)

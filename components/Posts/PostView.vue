@@ -1,9 +1,8 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <div>
-    <!-- A full page blocs page shows the breadcrumb only when it is a sub-page -->
     <div
-      v-if="!isFullPageBlocs || post.ancestors.length"
+      v-if="!isFullPageBlocs"
       class="container"
     >
       <div class="flex items-center">
@@ -18,7 +17,7 @@
         </Breadcrumb>
 
         <div
-          v-if="!isFullPageBlocs && isMeAdmin()"
+          v-if="isMeAdmin()"
           class="flex gap-2"
         >
           <EditButton
@@ -38,7 +37,8 @@
       </div>
     </div>
 
-    <!-- Full page blocs mode: no header, just the blocs -->
+    <!-- Full page blocs mode: no header, just the blocs, the breadcrumb at the top of the first
+         section, on its background. -->
     <EditoBlocs
       v-if="isFullPageBlocs"
       :blocs="post.blocs ?? []"
@@ -47,7 +47,19 @@
       follow-links
       :sidemenu="post.sidemenu"
       :on-save="saveBlocs"
-    />
+    >
+      <template #breadcrumb>
+        <Breadcrumb>
+          <BreadcrumbItem
+            v-for="crumb in breadcrumb"
+            :key="crumb.to ?? 'current'"
+            :to="crumb.to"
+          >
+            {{ crumb.label }}
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </template>
+    </EditoBlocs>
 
     <!-- Header mode: news, and pages that are not full page blocs -->
     <div
