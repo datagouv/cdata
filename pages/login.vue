@@ -83,23 +83,7 @@
 
         <Divider>{{ $t('ou') }}</Divider>
 
-        <form :action="proconnectUrl">
-          <div class="fr-connect-group flex flex-col items-center">
-            <button class="fr-connect">
-              <span class="fr-connect__login">{{ $t('Se connecter avec') }}</span>
-              <span class="fr-connect__brand">ProConnect</span>
-            </button>
-            <p>
-              <CdataLink
-                :href="config.public.proconnect.homepage"
-                target="_blank"
-                rel="noopener"
-              >
-                {{ $t(`Qu'est-ce que ProConnect ?`) }}
-              </CdataLink>
-            </p>
-          </div>
-        </form>
+        <ProConnectButton :label="$t('Se connecter avec')" />
       </div>
     </div>
     <div class="container bg-white max-w-xl p-6 border border-gray-lower flex flex-col sm:items-center">
@@ -184,6 +168,4 @@ const connect = async () => {
     loading.value = false
   }
 }
-
-const proconnectUrl = computed(() => `${config.public.apiBase}/api/1/proconnect/login/`)
 </script>

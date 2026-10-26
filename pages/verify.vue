@@ -42,19 +42,13 @@
 
         <Divider>{{ $t('ou') }}</Divider>
 
-        <form :action="proconnectUrl">
+        <ProConnectButton :label="$t('S’identifier avec')">
           <input
             type="hidden"
             name="reauth"
             value="1"
           >
-          <div class="fr-connect-group flex flex-col items-center">
-            <button class="fr-connect">
-              <span class="fr-connect__login">{{ $t('S’identifier avec') }}</span>
-              <span class="fr-connect__brand">ProConnect</span>
-            </button>
-          </div>
-        </form>
+        </ProConnectButton>
       </div>
     </div>
   </div>
@@ -70,7 +64,6 @@ definePageMeta({
 })
 
 const { t } = useTranslation()
-const config = useRuntimeConfig()
 
 useSeoMeta({ title: t('Réauthentification'), robots: 'noindex' })
 
@@ -82,8 +75,6 @@ const me = useMe()
 const route = useRoute()
 // Read before the site header consumes the flash and strips it from the URL.
 const proconnectSucceeded = route.query.flash === 'proconnect_reauth_success'
-
-const proconnectUrl = computed(() => `${config.public.apiBase}/api/1/proconnect/login/`)
 
 const goToNext = async () => {
   const next = sessionStorage.getItem('next')
