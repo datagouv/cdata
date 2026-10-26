@@ -60,10 +60,15 @@ const errorMessage = computed(() => {
   return error.value?.message ?? t('Une erreur est survenue lors du chargement des données du graphique.')
 })
 
+// ISO 8601 date(-time) only: `new Date(v)` would also parse bare years ("2017"),
+// numeric strings ("113") or relative input, misclassifying categorical codes
+// as a continuous date axis.
+const ISO_DATE_LIKE = /^\d{4}-\d{2}-\d{2}([T ]\d{2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+-]\d{2}:?\d{2})?)?$/
+
 function inferXColumnType(result: SqlQueryResult, xColumn: string): ColumnType {
   const index = result.columns.indexOf(xColumn)
   const values = result.rows.map(row => row[index]).filter(value => value !== null && value !== undefined)
-  if (values.length > 0 && values.every(value => typeof value === 'string' && !Number.isNaN(new Date(value).getTime()))) {
+  if (values.length > 0 && values.every(value => typeof value === 'string' && ISO_DATE_LIKE.test(value))) {
     return 'date'
   }
   if (values.length > 0 && values.every(value => typeof value === 'number')) {

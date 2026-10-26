@@ -231,6 +231,23 @@ describe('ChartViewerWrapper', () => {
     expect(stub.props('chart').series[0]!.type).toBe('line')
   })
 
+  it('treats bare year strings as categorical, not as a date axis', async () => {
+    executeSqlQueryMock.mockResolvedValue({
+      columns: ['annee', 'nb'],
+      rows: [
+        ['2017', 10],
+        ['2018', 12],
+      ],
+    })
+
+    const wrapper = mountWrapper(chartFixture('SELECT annee, nb FROM votes', 'line'))
+    await waitForFetch()
+
+    const stub = wrapper.findComponent(ChartViewerStub)
+    expect(stub.props('chart').x_axis.type).toBe('discrete')
+    expect(stub.props('series').columns[RESOURCE_ID]![0]).toEqual({ name: 'annee', type: 'categorical' })
+  })
+
   it('renders a French "Aucune donnée" message when the query returns no row', async () => {
     executeSqlQueryMock.mockResolvedValue({ columns: ['date', 'votes'], rows: [] })
 
