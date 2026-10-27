@@ -61,6 +61,7 @@ test.describe('OG meta tags', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
+        headers: { 'access-control-allow-origin': '*' },
         body: JSON.stringify({
           data: [{
             'Numéro de dossier': Number(dossier),
@@ -85,6 +86,7 @@ test.describe('OG meta tags', () => {
 
     await page.getByTestId('data-table').locator('a.link').first().click()
     await page.waitForURL(/\/explore\/cada\/\d+/, { timeout: 30000 })
+    await expect(page.getByText('Texte intégral')).toBeVisible({ timeout: 30000 })
 
     expect(await getMetaContent(page, 'meta[name="description"]')).toBe(siteDescription)
     expect(await getMetaContent(page, 'meta[property="og:description"]')).toBe(siteOgDescription)
