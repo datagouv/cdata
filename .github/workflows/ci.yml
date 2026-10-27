@@ -13,7 +13,7 @@ env:
   CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
   UDATA_WORKING_DIR: udata
   MONGODB_TOOLS: mongodb-database-tools-ubuntu2404-x86_64-100.13.0
-  # Serves the metrics API, matomo.js and the Tabular API to the E2E tests, see tests/fake-services.ts
+  # Serves the assistant, metrics, matomo.js and Tabular APIs to the E2E tests, see tests/fake-services.ts
   FAKE_SERVICES_URL: http://localhost:3100
   # Set to record the Tabular API fixtures from the real API instead of replaying them: each
   # E2E shard then uploads what it recorded
@@ -339,6 +339,7 @@ jobs:
 
       - name: Start cdata server
         env:
+          NUXT_PUBLIC_ASSISTANT_API_BASE: ${{ env.FAKE_SERVICES_URL }}
           NUXT_PUBLIC_API_BASE: http://localhost:7000
           NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "hero_15.png"
           # Lets the matomo plugin load (tests/fake-services.ts serves an empty matomo.js,

@@ -13,6 +13,9 @@ if (existsSync(envPath)) {
   process.loadEnvFile(envPath)
 }
 
+const fakeServicesUrl = process.env.FAKE_SERVICES_URL || 'http://localhost:3100'
+const assistantApiBase = process.env.NUXT_PUBLIC_ASSISTANT_API_BASE || fakeServicesUrl
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -105,14 +108,13 @@ export default defineConfig({
       command: 'pnpm run dev',
       url: process.env.BASE_URL || 'http://localhost:3000',
       reuseExistingServer: true,
+      env: { NUXT_PUBLIC_ASSISTANT_API_BASE: assistantApiBase },
     },
-    // Only when the server under test is configured to reach its third-party services there
-    ...(process.env.FAKE_SERVICES_URL
-      ? [{
-          command: 'node tests/fake-services.ts',
-          url: `${process.env.FAKE_SERVICES_URL}/matomo.js`,
-          reuseExistingServer: true,
-        }]
-      : []),
+    // Also serves the assistant endpoint used by the chart configurator E2E tests.
+    {
+      command: 'node tests/fake-services.ts',
+      url: `${fakeServicesUrl}/matomo.js`,
+      reuseExistingServer: true,
+    },
   ],
 })

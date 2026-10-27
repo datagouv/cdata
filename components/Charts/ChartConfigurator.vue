@@ -83,17 +83,14 @@
         class="col-span-5 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light"
         :class="activePanel === 'assistant' ? 'lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] flex flex-col' : ''"
       >
-        <!-- Mode Formulaire : pickers + SQL + styles (scroll interne) + sauvegarde -->
         <SegmentedControl
           v-model="activePanel"
           grow
           :options="panelOptions"
         />
 
-        <!-- Les deux panneaux restent montés : la bascule d'onglet se fait au CSS
-             (v-show) pour préserver l'état de la conversation de l'assistant. -->
         <div
-          :style="{ display: activePanel === 'form' ? undefined : 'none !important' }"
+          :class="{ hidden: activePanel !== 'form' }"
           data-testid="form-panel"
         >
           <div class="space-y-6">
@@ -301,14 +298,8 @@
           </div>
         </div>
 
-        <!-- Mode Assistant : le chat seul, conteneur borné à la hauteur du panneau -->
-        <!-- Bascule CSS (:style display) et non v-if : la conversation de
-             l'assistant survit aux changements d'onglet. Le `none` est en
-             !important : les utilitaires Tailwind du projet sont compilés avec
-             `important: true`, un style inline sans !important serait écrasé
-             (c'est aussi pourquoi v-show ne fonctionnait pas ici). -->
         <div
-          :style="{ display: activePanel === 'assistant' ? undefined : 'none !important' }"
+          :class="{ hidden: activePanel !== 'assistant' }"
           class="flex-1 min-h-0 flex flex-col"
           data-testid="assistant-panel"
         >

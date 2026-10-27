@@ -34,24 +34,12 @@
       </template>
     </SearchableSelect>
   </div>
-  <div v-if="!hasOrganizations && !hideNoOrganizationNotice && !noOrganizationNoticeDismissed">
+  <div v-if="!hasOrganizations && !hideNoOrganizationNotice">
     <br>
     <PaddedContainer
-      class="flex flex-col items-center relative"
+      class="flex flex-col items-center"
       color="alt-grey"
     >
-      <button
-        type="button"
-        class="absolute top-2 right-2 fr-btn fr-btn--tertiary-no-outline fr-btn--sm !p-1"
-        :title="t('Masquer ce message')"
-        :aria-label="t('Masquer ce message')"
-        @click="noOrganizationNoticeDismissed = true"
-      >
-        <RiCloseLine
-          class="size-4"
-          aria-hidden="true"
-        />
-      </button>
       <p class="fr-text--bold fr-mb-2w text-center">
         {{ t("Vous n'appartenez à aucune organisation") }}
       </p>
@@ -69,14 +57,9 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import { RiCloseLine } from '@remixicon/vue'
 import { useGetUserAvatar, BrandedButton, PaddedContainer, OrganizationLogo, SearchableSelect, type Owned, type OrganizationReference, type UserReference } from '@datagouv/components-next'
 
 const getUserAvatar = useGetUserAvatar()
-
-// The "no organization" notice is dismissible per visit (not persisted).
-const noOrganizationNoticeDismissed = ref(false)
 
 const props = withDefaults(defineProps<{
   label: string
