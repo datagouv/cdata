@@ -60,21 +60,21 @@ const errorMessage = computed(() => {
   return error.value?.message ?? t('Une erreur est survenue lors du chargement des données du graphique.')
 })
 
-// ISO 8601 date(-time) only: `new Date(v)` would also parse bare years ("2017"),
-// numeric strings ("113") or relative input, misclassifying categorical codes
-// as a continuous date axis.
-const ISO_DATE_LIKE = /^\d{4}-\d{2}-\d{2}([T ]\d{2}:\d{2}(:\d{2})?(\.\d+)?(Z|[+-]\d{2}:?\d{2})?)?$/
+// Date.parse accepts bare years and numeric identifiers, so require a date prefix.
+const ISO_DATE_PREFIX = /^\d{4}-\d{2}-\d{2}(?:[T ]|$)/
+
+function isDateValue(value: string): boolean {
+  return ISO_DATE_PREFIX.test(value) && !Number.isNaN(Date.parse(value))
+}
 
 function inferXColumnType(result: SqlQueryResult, xColumn: string): ColumnType {
   const index = result.columns.indexOf(xColumn)
   const values = result.rows.map(row => row[index]).filter(value => value !== null && value !== undefined)
-  if (values.length > 0 && values.every(value => typeof value === 'string' && ISO_DATE_LIKE.test(value))) {
+  if (values.length > 0 && values.every(value => typeof value === 'string' && isDateValue(value))) {
     return 'date'
   }
   if (values.length > 0 && values.every(value => typeof value === 'number')) {
-    // Numbers are a continuous axis only when regularly spaced (years, months,
-    // sequences). Irregular numbers are identifiers (dossier_ref, codes) and
-    // must plot as categories, or the line zigzags between meaningless positions.
+    // Irregular numeric identifiers belong on a categorical axis.
     const unique = [...new Set(values as number[])].sort((a, b) => a - b)
     if (unique.length < 2) return 'categorical'
     const gaps = unique.slice(1).map((value, index) => value - unique[index]!)

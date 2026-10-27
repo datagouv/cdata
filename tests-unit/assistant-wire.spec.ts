@@ -47,6 +47,19 @@ describe('useAssistantChat wire contract', () => {
     expect(transport.credentials).toBe('include')
   })
 
+  it('uses the configured assistant API base when provided', () => {
+    vi.stubGlobal('useRuntimeConfig', () => ({
+      public: {
+        apiBase: 'https://api.example',
+        assistantApiBase: 'https://assistant.example',
+      },
+    }))
+
+    useAssistantChat(ref(null))
+
+    expect(capturedTransport().api).toBe('https://assistant.example/api/1/assistant/chat/')
+  })
+
   it('sends resource_id only when a resource is selected', async () => {
     const resourceId = ref<string | null>('f47ac10b-58cc-4372-a567-0e02b2c3d479')
     useAssistantChat(resourceId)

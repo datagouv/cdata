@@ -284,6 +284,20 @@ describe('ChartViewerWrapper', () => {
     expect(stub.props('series').columns[RESOURCE_ID]![0]).toEqual({ name: 'annee', type: 'categorical' })
   })
 
+  it('treats invalid ISO-like timestamps as categorical', async () => {
+    executeSqlQueryMock.mockResolvedValue({
+      columns: ['timestamp', 'nb'],
+      rows: [['2024-01-01T99:99', 10]],
+    })
+
+    const wrapper = mountWrapper(chartFixture('SELECT timestamp, nb FROM votes', 'line'))
+    await waitForFetch()
+
+    const stub = wrapper.findComponent(ChartViewerStub)
+    expect(stub.props('chart').x_axis.type).toBe('discrete')
+    expect(stub.props('series').columns[RESOURCE_ID]![0]).toEqual({ name: 'timestamp', type: 'categorical' })
+  })
+
   it('explains when rows exist but no numeric column can be plotted', async () => {
     executeSqlQueryMock.mockResolvedValue({
       columns: ['region', 'label'],

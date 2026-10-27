@@ -9,6 +9,7 @@ import {
 } from './fixtures'
 
 const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
+const ASSISTANT_API_BASE = (process.env.NUXT_PUBLIC_ASSISTANT_API_BASE || process.env.FAKE_SERVICES_URL || 'http://localhost:3100').replace(/\/$/, '')
 const CHART_QUERY = 'SELECT nom_region, nb_logements FROM logements ORDER BY nb_logements DESC'
 const CHART_API_KEYS = [
   'chart_type',
@@ -31,7 +32,9 @@ async function sendAssistantMessage(page: Page, prompt: string) {
   )
   await page.getByLabel('Votre demande').fill(prompt)
   await page.getByRole('button', { name: 'Envoyer' }).click()
-  return requestPromise
+  const request = await requestPromise
+  expect(request.url()).toBe(`${ASSISTANT_API_BASE}/api/1/assistant/chat/`)
+  return request
 }
 
 async function otherResourceId(page: Page) {
