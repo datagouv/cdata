@@ -28,7 +28,7 @@ type PreviewErrorInfo = {
 /**
  * Determine the type of preview error based on resource metadata
  */
-function getPreviewErrorType(resource: Resource): PreviewErrorType {
+export function getPreviewErrorType(resource: Resource): PreviewErrorType {
   const extras = resource.extras
 
   // A diagnosed availability failure (the robot's check could not reach the
