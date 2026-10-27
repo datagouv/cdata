@@ -1,5 +1,8 @@
 <template>
-  <div class="space-y-2.5 max-w-4xl">
+  <div
+    class="space-y-2.5 max-w-4xl"
+    :class="{ 'pb-6': isPageTitle && !sectionColor }"
+  >
     <!-- A title is required: emptying it keeps the previous one, the bloc is deleted instead. -->
     <EditableText
       v-if="edit"
@@ -66,7 +69,8 @@ const heading = HEADINGS[level]
 
 // The first title of a page without a title of its own is that of the page.
 const pageTitleId = inject(PAGE_TITLE_ID, ref(null))
-const tag = computed(() => pageTitleId.value === bloc.value.id ? 'h1' : heading.tag)
+const isPageTitle = computed(() => pageTitleId.value === bloc.value.id)
+const tag = computed(() => isPageTitle.value ? 'h1' : heading.tag)
 
 // On a colored section, the title of the section is a banner: white, very large, its subtitle
 // in italics, as the banners at the top of the datasets, reuses and API pages.
@@ -76,6 +80,9 @@ const style = computed(() => {
     return { title: 'text-white font-extrabold text-5xl', subtitle: 'italic font-spectral text-2xl text-white' }
   }
   if (sectionColor.value) return { title: `text-white ${heading.class}`, subtitle: 'text-white' }
+  // The title of the page outranks the titles of its sections, and those of its texts, which
+  // have the size of a section title: that of the title of an article.
+  if (isPageTitle.value) return { title: 'text-gray-title text-4.5xl font-extrabold', subtitle: 'text-gray-plain' }
   return { title: `text-gray-title ${heading.class}`, subtitle: 'text-gray-plain' }
 })
 </script>

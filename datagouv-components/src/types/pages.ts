@@ -40,6 +40,24 @@ export type ButtonBloc = Sized & {
   url: string
 }
 
+export type ImageBloc = Sized & {
+  class: 'ImageBloc'
+  id: string
+  image: string
+  // `null`: a decorative image, which screen readers skip.
+  alt: string | null
+}
+
+// A link to a page, shown as a card: the summary pages list their subpages with them.
+export type CardBloc = Sized & {
+  class: 'CardBloc'
+  id: string
+  title: string
+  url: string
+  description: string | null
+  image: string | null
+}
+
 export type ExploreBloc = Sized & {
   class: 'ExploreBloc'
   id: string
@@ -66,7 +84,7 @@ export type ReuseBloc = Sized & {
 
 export type ObjectBloc = DatasetBloc | DataserviceBloc | ReuseBloc
 
-export type LeafBloc = TitleBloc | MarkdownBloc | LinksListBloc | ButtonBloc | ExploreBloc | ObjectBloc
+export type LeafBloc = TitleBloc | MarkdownBloc | LinksListBloc | ButtonBloc | ImageBloc | CardBloc | ExploreBloc | ObjectBloc
 
 export type AccordionContentBloc = Exclude<LeafBloc, ExploreBloc>
 

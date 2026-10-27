@@ -1,11 +1,13 @@
 import type { Component } from 'vue'
-import { RiCursorLine, RiDatabase2Line, RiHeading, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine } from '@remixicon/vue'
+import { RiCursorLine, RiDatabase2Line, RiHeading, RiImageLine, RiLayoutGridLine, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine } from '@remixicon/vue'
 import { v4 as uuidv4 } from 'uuid'
-import type { AccordionListBloc, BlocWidth, ButtonBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionContentBloc, TitleBloc } from '~/types/pages'
+import type { AccordionListBloc, BlocWidth, ButtonBloc, CardBloc, ImageBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionContentBloc, TitleBloc } from '~/types/pages'
 import TitleBlocComponent from '~/components/Pages/TitleBloc.vue'
 import MarkdownBlocComponent from '~/components/Pages/MarkdownBloc.vue'
 import LinksListBlocComponent from '~/components/Pages/LinksListBloc.vue'
 import ButtonBlocComponent from '~/components/Pages/ButtonBloc.vue'
+import ImageBlocComponent from '~/components/Pages/ImageBloc.vue'
+import CardBlocComponent from '~/components/Pages/CardBloc.vue'
 import DatasetBlocComponent from '~/components/Pages/DatasetBloc.vue'
 import DataserviceBlocComponent from '~/components/Pages/DataserviceBloc.vue'
 import ReuseBlocComponent from '~/components/Pages/ReuseBloc.vue'
@@ -18,6 +20,8 @@ export const BLOC_COMPONENTS: Record<string, Component> = {
   MarkdownBloc: MarkdownBlocComponent,
   LinksListBloc: LinksListBlocComponent,
   ButtonBloc: ButtonBlocComponent,
+  ImageBloc: ImageBlocComponent,
+  CardBloc: CardBlocComponent,
   DatasetBloc: DatasetBlocComponent,
   DataserviceBloc: DataserviceBlocComponent,
   ReuseBloc: ReuseBlocComponent,
@@ -37,6 +41,8 @@ export function useBlocLabels(): Record<string, string> {
   return {
     SectionBloc: t('Section'),
     ButtonBloc: t('Bouton'),
+    ImageBloc: t('Image'),
+    CardBloc: t('Carte'),
     AccordionListBloc: t('Accordéon'),
     AccordionItem: t('Élément'),
     TitleBloc: t('Titre'),
@@ -55,7 +61,7 @@ export type BlocChoice = {
   name: string
   description: string
 } & (
-  | { key: Exclude<SectionContentBloc['class'], ObjectBloc['class']>, create: () => TitleBloc | MarkdownBloc | LinksListBloc | ButtonBloc | AccordionListBloc }
+  | { key: Exclude<SectionContentBloc['class'], ObjectBloc['class']>, create: () => Exclude<SectionContentBloc, ObjectBloc> }
   // Objects are picked in a selector before their blocs can be built.
   | { key: ObjectBloc['class'] }
 )
@@ -92,6 +98,22 @@ export function useBlocChoices() {
       description: t('Un lien mis en avant par un bouton'),
       // Saved as soon as added: its URL is required, the home page of the site until changed.
       create: (): ButtonBloc => ({ class: 'ButtonBloc', id: uuidv4(), width: null, title: t('Titre du bouton'), url: '/' }),
+    },
+    ImageBloc: {
+      key: 'ImageBloc',
+      icon: RiImageLine,
+      name: t('Image'),
+      description: t('Une illustration, à côté d\'un titre par exemple'),
+      // Without its image until one is uploaded, see `withoutEmptyBlocs`.
+      create: (): ImageBloc => ({ class: 'ImageBloc', id: uuidv4(), width: null, image: '', alt: null }),
+    },
+    CardBloc: {
+      key: 'CardBloc',
+      icon: RiLayoutGridLine,
+      name: t('Carte'),
+      description: t('Un lien vers une page, avec une image et une description'),
+      // Saved as soon as added, like the button: its URL is required.
+      create: (): CardBloc => ({ class: 'CardBloc', id: uuidv4(), width: '1/4', title: t('Titre de la carte'), url: '/', description: null, image: null }),
     },
     AccordionListBloc: {
       key: 'AccordionListBloc',

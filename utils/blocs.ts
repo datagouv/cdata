@@ -19,11 +19,19 @@ export const PAGE_TITLE_ID: InjectionKey<Ref<string | null>> = Symbol('pageTitle
 // users must not pass on the site's search ranking, or they become worth spamming for.
 export const FOLLOW_LINKS: InjectionKey<boolean> = Symbol('followLinks')
 
+// The images being uploaded, provided by `EditoBlocs`: saving before they are done would save
+// their blocs without them.
+export const UPLOADS_IN_PROGRESS: InjectionKey<Ref<number>> = Symbol('uploadsInProgress')
+
 // What only exists for the editor, where content is added to it, and that no reader would
-// see: an accordion without items, links without a link, then the sections left empty.
+// see: an accordion without items, links without a link, an image not uploaded yet, then the
+// sections left empty.
 export function withoutEmptyBlocs(sections: Array<SectionBloc>): Array<SectionBloc> {
+  const isEmpty = (bloc: SectionContentBloc) => (bloc.class === 'AccordionListBloc' && !bloc.items.length)
+    || (bloc.class === 'LinksListBloc' && !bloc.links.length)
+    || (bloc.class === 'ImageBloc' && !bloc.image)
   const shown = <T extends SectionContentBloc>(blocs: Array<T>): Array<T> => blocs
-    .filter(bloc => !(bloc.class === 'AccordionListBloc' && !bloc.items.length) && !(bloc.class === 'LinksListBloc' && !bloc.links.length))
+    .filter(bloc => !isEmpty(bloc))
     .map(bloc => bloc.class === 'AccordionListBloc'
       ? { ...bloc, items: bloc.items.map(item => ({ ...item, content: shown(item.content) })) }
       : bloc)

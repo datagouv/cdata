@@ -1,16 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import { withoutEmptyBlocs } from '~/utils/blocs'
-import type { AccordionListBloc, LinksListBloc, MarkdownBloc, SectionBloc } from '~/types/pages'
+import type { AccordionListBloc, ImageBloc, LinksListBloc, MarkdownBloc, SectionBloc } from '~/types/pages'
 
 describe('withoutEmptyBlocs', () => {
   const text: MarkdownBloc = { class: 'MarkdownBloc', id: 'text', width: null, content: 'Texte' }
   const noLinks: LinksListBloc = { class: 'LinksListBloc', id: 'links', width: null, links: [] }
+  const noImage: ImageBloc = { class: 'ImageBloc', id: 'image', width: '1/3', image: '', alt: null }
 
-  it('drops the accordions without items and the links without a link, then the sections left empty', () => {
+  it('drops the accordions without items, the links without a link and the images not uploaded, then the sections left empty', () => {
     const sections: Array<SectionBloc> = [
       { class: 'SectionBloc', id: 'empty-accordion', color: 'green', blocs: [{ class: 'AccordionListBloc', id: 'accordion', width: null, items: [] }] },
       { class: 'SectionBloc', id: 'empty-links', color: null, blocs: [noLinks] },
-      { class: 'SectionBloc', id: 'kept', color: null, blocs: [noLinks, text] },
+      { class: 'SectionBloc', id: 'empty-image', color: null, blocs: [noImage] },
+      { class: 'SectionBloc', id: 'kept', color: null, blocs: [noLinks, noImage, text] },
     ]
 
     expect(withoutEmptyBlocs(sections)).toEqual([{ class: 'SectionBloc', id: 'kept', color: null, blocs: [text] }])

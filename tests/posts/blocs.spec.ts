@@ -81,8 +81,9 @@ test.describe('Post with blocs', () => {
     await page.goto(`/posts/${result.postSlug}`)
     await page.waitForLoadState('networkidle')
 
-    // Full page mode: no breadcrumb, no title of its own, the first title bloc is the page's
-    await expect(page.locator('nav').filter({ hasText: 'Accueil' })).not.toBeVisible()
+    // Full page mode: the breadcrumb at the top of the first section, no title of its own, the
+    // first title bloc is the page's
+    await expect(page.getByTestId('page-SectionBloc').first().getByLabel('Vous êtes ici :')).toContainText(`Test Full Page ${uniqueId}`)
     await expect(page.getByRole('heading', { level: 1, name: `Test Full Page ${uniqueId}` })).not.toBeVisible()
     await expect(page.getByRole('heading', { level: 1, name: 'Full page content' })).toBeVisible()
   })
@@ -817,6 +818,7 @@ test.describe('Links in blocs written by the team', () => {
           { class: 'MarkdownBloc', id: crypto.randomUUID(), width: null, content: '[Partenaire](https://example.com/partner)' },
           { class: 'LinksListBloc', id: crypto.randomUUID(), width: null, links: [{ title: 'Lien externe', url: 'https://example.com/link', color: null }] },
           { class: 'ButtonBloc', id: crypto.randomUUID(), width: null, title: 'Notre site', url: 'https://example.com/main' },
+          { class: 'CardBloc', id: crypto.randomUUID(), width: '1/4', title: 'Carte', url: 'https://example.com/card', description: null, image: null },
         ],
       }],
     })
@@ -826,5 +828,6 @@ test.describe('Links in blocs written by the team', () => {
     await expect(page.getByRole('link', { name: 'Partenaire' })).not.toHaveAttribute('rel', /nofollow/)
     await expect(page.getByRole('link', { name: 'Notre site' })).not.toHaveAttribute('rel', /nofollow/)
     await expect(page.getByRole('link', { name: 'Lien externe' })).not.toHaveAttribute('rel', /nofollow/)
+    await expect(page.getByRole('link', { name: 'Carte' })).not.toHaveAttribute('rel', /nofollow/)
   })
 })

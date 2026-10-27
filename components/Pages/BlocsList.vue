@@ -21,11 +21,14 @@
       :class="{ 'min-h-8': edit }"
     >
       <!-- One element per bloc, holding the bloc and its controls: the drop item, whose
-           position decides where a dragged bloc lands. -->
+           position decides where a dragged bloc lands. A title or an image beside a taller bloc
+           (a hero and its illustration) is centered on it; the others fill the height of the
+           row, so that the cards of a row are as tall as each other. -->
       <div
         v-for="(bloc, index) in blocs"
         :key="bloc.id"
         class="relative min-w-0 sm:col-span-(--span) max-sm:mt-(--stacked-space) sm:mt-(--row-space)"
+        :class="{ 'self-center': bloc.class === 'TitleBloc' || bloc.class === 'ImageBloc' }"
         :style="placement(index)"
         :data-bloc-class="bloc.class"
         data-drop-item
