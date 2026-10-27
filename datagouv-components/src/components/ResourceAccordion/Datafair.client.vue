@@ -12,7 +12,7 @@
     <PreviewError
       v-else
       :resource="resource"
-      :message="errorMessage"
+      :error-type="errorType"
     />
   </div>
 </template>
@@ -22,21 +22,14 @@ import { computed } from 'vue'
 import PreviewError from './PreviewError.vue'
 import type { Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
-import { useTranslation } from '../../composables/useTranslation'
-import { getPreviewErrorInfo } from '../../functions/previewErrors'
+import { getTransientErrorType } from '../../functions/previewErrors'
 
 const props = defineProps<{
   resource: Resource
   dataset: Dataset | DatasetV2
 }>()
 
-const { t } = useTranslation()
-
-const errorMessage = computed(() => {
-  return getPreviewErrorInfo(props.resource).type === 'none'
-    ? t('L\'aperçu de ce fichier n\'a pas pu être chargé.')
-    : undefined
-})
+const errorType = computed(() => getTransientErrorType(props.resource))
 
 const datafairOrigin = computed(() => {
   return props.resource.extras['datafairOrigin'] || props.dataset.extras['datafairOrigin']

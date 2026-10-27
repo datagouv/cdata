@@ -2,10 +2,9 @@
   <div class="flex min-h-0 flex-1 flex-col">
     <PreviewError
       v-if="previewError"
-      :message="t('L\'aperçu de ce fichier n\'a pas pu être chargé.')"
-    >
-      <span class="text-xs break-words">{{ previewError }}</span>
-    </PreviewError>
+      error-type="load_failed"
+      :detail="typeof previewError === 'string' ? previewError : undefined"
+    />
 
     <!-- Same skeleton as the Suspense fallback above us: in both cases the slot isn't
          rendered yet, so its toolbar is a placeholder too. -->

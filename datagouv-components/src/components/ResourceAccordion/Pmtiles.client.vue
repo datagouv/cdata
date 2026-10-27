@@ -3,8 +3,7 @@
     <PreviewError
       v-if="hasError"
       :resource="resource"
-      :message="t('L\'aperçu cartographique de ce fichier n\'a pas pu être chargé.')"
-      fallback-error-type="network"
+      error-type="map_load"
     />
     <div
       v-else

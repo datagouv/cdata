@@ -3,8 +3,8 @@
     <PreviewError
       v-if="!isSizeAllowed || hasError"
       :resource="resource"
-      :message="errorMessage"
-      :fallback-error-type="hasError ? 'network' : 'too_large'"
+      :error-type="errorType"
+      :file-type="fileType"
       :show-producer-cta="canEdit"
     />
     <img
@@ -22,6 +22,7 @@ import { computed, ref } from 'vue'
 import PreviewError from './PreviewError.vue'
 import type { Resource } from '../../types/resources'
 import { getResourceFilesize } from '../../functions/resources'
+import type { PreviewErrorType } from '../../functions/previewErrors'
 import { useTranslation } from '../../composables/useTranslation'
 import { useComponentsConfig } from '../../config'
 
@@ -45,12 +46,11 @@ const isSizeAllowed = computed(() => {
   return size <= max
 })
 
-const errorMessage = computed(() => {
-  if (!isSizeAllowed.value) {
-    return fileSizeBytes.value
-      ? t('Le fichier {fileType} est trop volumineux pour être prévisualisé. Téléchargez-le pour le consulter.', { fileType: fileType.value })
-      : t('La taille du fichier est inconnue, l\'aperçu n\'est pas disponible. Téléchargez-le pour le consulter.')
-  }
-  return t('L\'aperçu de ce fichier n\'a pas pu être chargé. Téléchargez-le pour le consulter.')
+// The metadata cannot know about a runtime failure, so an explicit error type is
+// always passed: `network` for a failed load, otherwise the right too_large
+// variant (the size is unknown when `fileSizeBytes` is falsy).
+const errorType = computed<PreviewErrorType>(() => {
+  if (hasError.value) return 'network'
+  return fileSizeBytes.value ? 'too_large' : 'too_large_unsized'
 })
 </script>

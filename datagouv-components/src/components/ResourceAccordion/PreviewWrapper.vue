@@ -18,19 +18,28 @@
     <PreviewError
       v-else
       :resource="resource"
-      :message="errorMessage"
-      :fallback-error-type="fallbackErrorType"
+      :error-type="diagnosis"
+      :file-type="fileType"
       :show-producer-cta="canEdit"
     >
-      <template #too-large-action>
-        <slot name="too-large-action" />
+      <!-- Forward the slot only when the parent actually filled it: otherwise
+        (Json/Xml previews) `$slots['too-large-action']` in PreviewError would
+         always be truthy and shadow the producer CTA with an empty div. -->
+      <template
+        v-if="$slots['too-large-action']"
+        #too-large-action
+      >
+        <slot
+          name="too-large-action"
+          :force="force"
+        />
       </template>
     </PreviewError>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import PreviewError from './PreviewError.vue'
 import type { Resource } from '../../types/resources'
 import { getResourceFilesize, getResourceCorsStatus } from '../../functions/resources'
@@ -45,9 +54,6 @@ const props = defineProps<{
   // Fill the available height (fullscreen) instead of sizing to content.
   fill?: boolean
   canEdit?: boolean
-  // Bypass the size gate (the browser can still read a large PDF) while
-  // keeping the unavailable and CORS gates intact.
-  forceLoad?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -59,6 +65,8 @@ const { t } = useTranslation()
 const data = ref<unknown>(null)
 const loading = ref(false)
 const error = ref<'network' | 'generic' | null>(null)
+// Set by the too-large slot's `force()` (below).
+const forced = ref(false)
 
 const fileSizeBytes = computed(() => getResourceFilesize(props.resource))
 const corsStatus = computed(() => getResourceCorsStatus(props.resource))
@@ -69,7 +77,7 @@ const corsStatus = computed(() => getResourceCorsStatus(props.resource))
 const unavailable = computed(() => props.resource.extras['check:available'] === false)
 
 const isSizeAllowed = computed(() => {
-  if (props.forceLoad) return true
+  if (forced.value) return true
   const size = fileSizeBytes.value
   const max = props.maxSize
   if (!size) return false
@@ -77,33 +85,18 @@ const isSizeAllowed = computed(() => {
   return size <= max
 })
 
-const fallbackErrorType = computed<PreviewErrorType | undefined>(() => {
+// The runtime diagnosis, passed as the explicit error type to PreviewError: the
+// metadata cannot know about this wrapper's runtime failures (load, CORS,
+// size), so the texts and CTAs come from these error types instead.
+const diagnosis = computed<PreviewErrorType | undefined>(() => {
   if (unavailable.value) return 'unavailable'
   if (error.value === 'network') return 'network'
   if (error.value) return 'unknown'
   if (corsStatus.value === 'blocked') return 'cors'
-  if (!isSizeAllowed.value) return 'too_large'
-  return undefined
-})
-
-const errorMessage = computed<string | undefined>(() => {
-  // No inline message when a family diagnosis exists: PreviewError then
-  // displays the family message and its matching CTAs.
-  if (unavailable.value) return undefined
-  if (error.value === 'network') {
-    return t('Ce fichier est hébergé sur un site externe qui ne permet pas la prévisualisation.')
-  }
-  if (error.value) {
-    return t('L\'aperçu de ce fichier n\'a pas pu être chargé.')
-  }
-  if (corsStatus.value === 'blocked') {
-    return t('Ce fichier est hébergé sur un site externe qui n\'autorise pas son affichage dans data.gouv.fr.')
-  }
   if (!isSizeAllowed.value) {
-    if (!fileSizeBytes.value) {
-      return t('La taille du fichier est inconnue. Il est possible que le fichier soit trop volumineux pour être prévisualisé.')
-    }
-    return t('Ce fichier {fileType} est trop volumineux pour être prévisualisé.', { fileType: props.fileType })
+    // `fileSizeBytes` is falsy when the size is unknown, in which case the
+    // diagnosis cannot even assert the file is too large.
+    return fileSizeBytes.value ? 'too_large' : 'too_large_unsized'
   }
   return undefined
 })
@@ -129,9 +122,11 @@ async function attemptLoad() {
 
 onMounted(attemptLoad)
 
-// Re-attempt (and bypass the size gate) once forceLoad transitions to true,
-// e.g. the user forces a preview of an oversized PDF in fullscreen.
-watch(() => props.forceLoad, (force) => {
-  if (force) attemptLoad()
-})
+// Exposed to the too-large slot: re-attempt the load and bypass ONLY the size
+// gate (the browser can still read a large PDF) while the unavailable and CORS
+// gates stay intact.
+function force() {
+  forced.value = true
+  attemptLoad()
+}
 </script>

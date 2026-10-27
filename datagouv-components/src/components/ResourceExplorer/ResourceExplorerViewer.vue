@@ -50,10 +50,9 @@
               <PreviewError
                 v-else-if="hasPmtilesError"
                 :resource="resource"
-                :message="t('La carte n\'a pas pu être générée automatiquement pour ce fichier.')"
-              >
-                <span class="text-gray-medium text-xs">{{ pmtilesError }}</span>
-              </PreviewError>
+                error-type="map_generation"
+                :detail="pmtilesError ?? undefined"
+              />
             </div>
             <div
               v-if="tab.key === 'data'"

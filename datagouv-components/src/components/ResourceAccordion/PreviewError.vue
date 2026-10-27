@@ -9,13 +9,13 @@
       {{ t("Aperçu indisponible.") }}
     </p>
     <p class="text-sm text-gray-medium mb-4 text-center max-w-lg">
-      {{ message ?? errorInfo.message }}
+      {{ errorInfo.message }}
     </p>
     <p
-      v-if="rawParsingError"
+      v-if="detailText"
       class="text-xs text-gray-medium mb-4 text-center max-w-lg"
     >
-      {{ t('Erreur :') }} {{ rawParsingError }}
+      {{ detailText }}
     </p>
 
     <!-- User CTA -->
@@ -52,22 +52,21 @@
       </BrandedButton>
     </div>
 
+    <!-- An OGC endpoint is a live service, not a file: `latest` points at its
+         GetCapabilities description — often the very request that just failed —
+         so never offer it as a download, like ResourceMainAction already does. -->
     <BrandedButton
-      v-if="resource"
+      v-if="resource && !ogcService"
       :href="resource.latest"
       :icon="RiDownloadLine"
       rel="ugc nofollow noopener"
       download
       external
-      class="shrink-0"
+      class="matomo_download shrink-0"
+      @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
     >
       {{ t('Télécharger') }}
     </BrandedButton>
-
-    <!-- Original slot for backwards compatibility -->
-    <div v-if="$slots.default">
-      <slot />
-    </div>
   </div>
 </template>
 
@@ -78,20 +77,26 @@ import microscopeSrc from '../../../assets/illustrations/microscope.svg?url'
 import BrandedButton from '../BrandedButton.vue'
 import type { Resource } from '../../types/resources'
 import { getPreviewErrorInfo, getPreviewErrorInfoByType, type PreviewErrorType } from '../../functions/previewErrors'
+import { getParsingErrorMessage, detectOgcService } from '../../functions/resources'
 import { trackEvent } from '../../functions/matomo'
 import { useComponentsConfig } from '../../config'
 import { RiDownloadLine } from '@remixicon/vue'
 
 const props = defineProps<{
-  // Optional: some callers (e.g. the tabular explorer) only know the resource id,
-  // so they pass a message instead and get no diagnostics or download button.
+  // Optional: some callers (e.g. the tabular explorer) only know the resource
+  // id, so they get no diagnostics or download button.
   resource?: Resource
   showProducerCta?: boolean
-  message?: string
-  // When an inline message (from the wrapper, e.g. size or CORS) is displayed, the
-  // error family that matches this cause drives the CTAs, even if the resource
-  // metadata alone would not trigger any.
-  fallbackErrorType?: PreviewErrorType
+  // Explicit error type: callers use it when they know the cause better than
+  // the resource metadata does (a runtime failure in the wrapper, a failed
+  // map build…). Without it, the error type (and thus the message and CTAs) is
+  // diagnosed from the metadata alone.
+  errorType?: PreviewErrorType
+  // File type shown in some error types' texts (e.g. "Ce fichier CSV est trop volumineux…").
+  fileType?: string
+  // Raw, error-specific output shown under the diagnosis (a parsing error, a
+  // failed map generation) when the caller knows more than a message.
+  detail?: string
 }>()
 
 const { t } = useTranslation()
@@ -100,22 +105,23 @@ const config = useComponentsConfig()
 
 const supportHref = computed(() => config.supportUrl ?? '')
 
+// Defined when the resource is a live OGC service (WMS/WFS…): the download
+// button then offers the GetCapabilities description, so it is hidden instead.
+const ogcService = computed(() => props.resource ? detectOgcService(props.resource) : null)
+
 const errorInfo = computed(() => {
-  if (!props.resource) {
-    return {
-      type: 'none' as const,
-      message: '',
-    }
-  }
-  return props.fallbackErrorType
-    ? getPreviewErrorInfoByType(props.fallbackErrorType, props.resource)
-    : getPreviewErrorInfo(props.resource)
+  return props.errorType
+    ? getPreviewErrorInfoByType(props.errorType, props.resource, props.fileType)
+    : props.resource
+      ? getPreviewErrorInfo(props.resource)
+      : getPreviewErrorInfoByType('none')
 })
 
-const rawParsingError = computed(() => {
-  if (props.fallbackErrorType || props.message) return null
-  return errorInfo.value.type === 'malformed'
-    ? props.resource?.extras['analysis:parsing:error'] ?? null
+const detailText = computed(() => {
+  if (props.detail) return props.detail
+  if (props.errorType) return null
+  return errorInfo.value.type === 'malformed' && props.resource
+    ? `${t('Erreur :')} ${getParsingErrorMessage(props.resource)}`
     : null
 })
 
