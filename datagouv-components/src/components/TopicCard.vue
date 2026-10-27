@@ -1,50 +1,72 @@
 <template>
-  <ObjectCard>
-    <template v-if="showLogo" #media>
+  <ObjectCard class="dg-content-card dg-catalog-card">
+    <template
+      v-if="showLogo"
+      #media
+    >
       <OrganizationLogo
         v-if="topic.organization"
         :organization="topic.organization"
         size-class="size-12"
       />
-      <Avatar v-else-if="topic.owner" :user="topic.owner" :size="48" />
-      <Placeholder v-else type="Topic" class="size-12" />
+      <Avatar
+        v-else-if="topic.owner"
+        :user="topic.owner"
+        :size="48"
+      />
+      <Placeholder
+        v-else
+        type="Topic"
+        class="size-12"
+      />
     </template>
 
-    <ObjectCardHeader :icon="RiBookShelfLine" :url="topicUrl || topic.page || '#'">
+    <ObjectCardHeader
+      :icon="RiBookShelfLine"
+      :url="topicUrl || topic.page || '#'"
+    >
       {{ topic.name }}
     </ObjectCardHeader>
 
-    <div
+    <ObjectCardOwner
       v-if="topic.organization || topic.owner"
-      class="text-sm flex flex-wrap gap-y-1 items-center"
-    >
-      <ObjectCardOwner
-        :organization="topic.organization"
-        :owner="topic.owner"
-        :organization-url="organizationUrl"
-      />
-    </div>
+      :show-logo="!showLogo"
+      show-details
+      :organization="topic.organization"
+      :owner="topic.owner"
+      :organization-url="organizationUrl"
+    />
     <TranslationT
       v-if="topic.last_modified"
       tag="div"
-      class="card-date"
+      class="dg-card-updated"
       keypath="Mis à jour {date}"
     >
-      <template #date
-        ><FormattedDate
+      <template #date>
+        <FormattedDate
           :date="topic.last_modified"
           format="relative"
           :options="{ dateStyle: 'medium' }"
-      /></template>
+        />
+      </template>
     </TranslationT>
-    <div v-if="showStats && metrics.length" class="card-metrics">
+    <div
+      v-if="showStats && metrics.length"
+      class="dg-card-metrics dg-topic-metrics"
+    >
       <span
         v-for="metric in metrics"
         :key="metric.label"
-        class="card-metric"
+        class="dg-card-metric"
         :aria-label="`${metric.value} ${metric.label}`"
       >
-        <component :is="metric.icon" aria-hidden="true" />{{ summarize(metric.value) }}
+        <component
+          :is="metric.icon"
+          class="dg-ds-icon"
+          data-icon-size="compact"
+          aria-hidden="true"
+          focusable="false"
+        />{{ summarize(metric.value) }}
       </span>
     </div>
     <ObjectCardShortDescription :text="topic.description" />
@@ -54,7 +76,10 @@
 </template>
 
 <script setup lang="ts">
+import '../../assets/cards.css'
 import { computed } from 'vue'
+import { summarize } from '../functions/helpers'
+import { useTranslation } from '../composables/useTranslation'
 import { RiBookShelfLine, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { TopicV2 } from '../types/topics'
@@ -67,8 +92,6 @@ import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
 import FormattedDate from './FormattedDate.vue'
 import TranslationT from './TranslationT.vue'
-import { summarize } from '../functions/helpers'
-import { useTranslation } from '../composables/useTranslation'
 
 type TopicWithStats = TopicV2 & {
   nb_datasets?: number
@@ -89,7 +112,6 @@ const props = withDefaults(
     showStats: true,
   },
 )
-
 const { t } = useTranslation()
 const metrics = computed(() =>
   [
@@ -104,29 +126,9 @@ const metrics = computed(() =>
 </script>
 
 <style scoped>
-.card-date {
-  color: #555;
-  font-size: 0.875rem;
-  line-height: 1.5rem;
-  font-variant-numeric: tabular-nums;
-}
-.card-metrics {
+.dg-topic-metrics {
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
-  gap: 0.75rem;
-  color: #555;
-  font-variant-numeric: tabular-nums;
-}
-.card-metric {
-  display: inline-flex;
   align-items: center;
-  gap: 0.125rem;
-  font-size: 0.75rem;
-  line-height: 1.125rem;
-}
-.card-metric svg {
-  width: 0.875rem;
-  height: 0.875rem;
 }
 </style>

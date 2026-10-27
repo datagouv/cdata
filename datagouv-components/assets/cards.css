@@ -1,0 +1,518 @@
+/* Shared foundations for content cards. */
+:root {
+  --dg-card-border: #e5e5e5;
+  --dg-card-brand: #000091;
+  --dg-card-focus: #0a76f6;
+  --dg-card-focus-offset: 3px;
+  --dg-card-focus-width: 2px;
+  --dg-card-font-sans: Marianne, Arial, sans-serif;
+  --dg-card-icon: 16px;
+  --dg-card-info-bg: #e8edff;
+  --dg-card-leading-body: 22px;
+  --dg-card-leading-caption: 18px;
+  --dg-card-leading-control: 20px;
+  --dg-card-leading-heading: 32px;
+  --dg-card-leading-title: 24px;
+  --dg-card-radius: 4px;
+  --dg-card-radius-technical: 2px;
+  --dg-card-shadow-overlay: 0 8px 24px #16161614;
+  --dg-card-space-12: 12px;
+  --dg-card-space-16: 16px;
+  --dg-card-space-32: 32px;
+  --dg-card-space-4: 4px;
+  --dg-card-space-48: 48px;
+  --dg-card-space-8: 8px;
+  --dg-card-space-optical: 3px;
+  --dg-card-surface: #ffffff;
+  --dg-card-surface-active: #f0f0f0;
+  --dg-card-surface-subtle: #f6f6f6;
+  --dg-card-text: #161616;
+  --dg-card-text-body: 14px;
+  --dg-card-text-caption: 12px;
+  --dg-card-text-heading: 24px;
+  --dg-card-text-secondary: #555555;
+  --dg-card-text-title: 16px;
+  --dg-card-weight-medium: 500;
+  --dg-card-weight-regular: 400;
+  --dg-card-weight-semibold: 600;
+}
+/* Card layout and shared typography. */
+.dg-object-card,
+.dg-content-card {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--dg-card-border);
+  border-radius: var(--dg-card-radius);
+  background: var(--dg-card-surface);
+  color: var(--dg-card-text);
+  font: 400 var(--dg-card-text-body)/var(--dg-card-leading-body) var(--dg-card-font-sans);
+}
+.dg-object-card {
+  padding: var(--dg-card-space-16);
+  container-type: inline-size;
+}
+.dg-object-card-layout {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dg-card-space-16);
+  min-width: 0;
+}
+.dg-object-card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dg-card-space-8);
+  flex: 1;
+  min-width: 0;
+}
+.dg-object-card-body > * {
+  min-width: 0;
+  margin-block: 0;
+}
+.dg-object-card-media {
+  flex: none;
+  max-width: 100%;
+}
+.dg-object-card-media-frame {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  border: 1px solid var(--dg-card-border);
+  border-radius: var(--dg-card-radius);
+  background: var(--dg-card-surface);
+  overflow: hidden;
+}
+.dg-object-card-media-sm {
+  padding: 0;
+}
+.dg-object-card-media-lg {
+  width: 192px;
+  height: 120px;
+}
+.dg-object-card-media-xl {
+  width: 224px;
+  height: 160px;
+}
+.dg-object-card-media-frame img {
+  max-width: 100%;
+}
+.dg-object-card-badges:empty {
+  display: none;
+}
+.dg-object-card-badges:has(> *) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.dg-catalog-card .dg-object-card-body,
+.dg-card-details,
+.dg-dataset-details {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+.dg-card-heading {
+  margin: 0;
+  color: var(--dg-card-text);
+  font: 600 16px/24px var(--dg-card-font-sans);
+  overflow-wrap: anywhere;
+}
+.dg-card-heading-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+}
+.dg-card-heading-row > :is(.dg-card-title, .dg-card-heading) {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+}
+.dg-card-heading-row > .object-card-badge {
+  flex: none;
+}
+.dg-catalog-card .dg-card-title-text,
+.dg-catalog-card .dg-reuse-title {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  white-space: normal;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+.dg-ds-icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+.dg-ds-icon[data-icon-size='compact'] {
+  width: 14px;
+  height: 14px;
+}
+.dg-ds-icon[data-icon-size='major'] {
+  width: 20px;
+  height: 20px;
+}
+.dg-card-media-slot {
+  position: relative;
+  aspect-ratio: 16/9;
+  width: 100%;
+}
+.dg-card-media-slot > .dg-card-media {
+  position: absolute;
+  inset: 0;
+}
+.dg-reuse-body {
+  padding: 16px;
+}
+.dg-reuse-media {
+  overflow: hidden;
+  border-radius: 3px 3px 0 0;
+  border-bottom: 1px solid var(--dg-card-border);
+}
+.dg-reuse-title {
+  color: var(--dg-card-text);
+  font: inherit;
+}
+
+/* The primary link covers the card; independent controls stay above it. */
+:is(.dg-object-card, .dg-content-card) :is(a.dg-card-title-link, a.dg-reuse-title)[href] {
+  text-decoration: none !important;
+  background-image: none !important;
+}
+a.dg-card-title-link[href] > span.absolute.inset-0 {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+a.dg-reuse-title[href]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.dg-reuse-title::after {
+  display: none;
+}
+.dg-object-card:has(.dg-card-title-link:focus-visible),
+.dg-content-card:has(.dg-reuse-title:focus-visible) {
+  outline: 2px solid var(--dg-card-focus);
+  outline-offset: 3px;
+}
+.dg-content-card :is(.dg-card-title-link, .dg-reuse-title):focus-visible {
+  outline: none !important;
+}
+@media (hover: hover) {
+  :is(.dg-object-card, .dg-content-card):has(
+    :is(a.dg-card-title-link, a.dg-reuse-title)[href]:hover
+  ) {
+    background: var(--dg-card-surface-subtle);
+  }
+}
+:is(.dg-object-card, .dg-content-card):has(
+  :is(a.dg-card-title-link, a.dg-reuse-title)[href]:active
+) {
+  background: var(--dg-card-surface-active);
+}
+/* Tailwind uses important utilities: base-layer overrides preserve their cascade order. */
+@layer base {
+  @media (hover: hover) {
+    :is(.dg-object-card, .dg-content-card):has(
+        :is(a.dg-card-title-link, a.dg-reuse-title)[href]:hover
+      )
+      :is(.dg-card-title-link, .dg-card-title-link .truncate, .dg-reuse-title) {
+      color: var(--dg-card-brand) !important;
+    }
+  }
+  .dg-catalog-card .dg-card-title-text .truncate {
+    font: inherit !important;
+    white-space: normal !important;
+  }
+  .dg-catalog-card .dg-card-owner :is(a, .truncate) {
+    color: var(--dg-card-text) !important;
+    line-height: 24px !important;
+  }
+  .dg-organization-details-footer:is(a, a:hover, a:visited) {
+    color: var(--dg-card-text) !important;
+  }
+}
+
+/* Identity and secondary information. */
+.dg-catalog-card .dg-card-owner {
+  max-width: 100%;
+  line-height: 24px;
+}
+.dg-catalog-card .dg-card-owner > :is(a, span) {
+  max-width: 100%;
+  min-width: 0;
+}
+.dg-catalog-card .dg-card-owner .truncate {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.dg-organization-trigger {
+  display: flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  position: relative;
+  z-index: 2;
+  background: none;
+  color: var(--dg-card-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  text-decoration: none;
+}
+.dg-organization-trigger:focus-visible {
+  outline: 2px solid var(--dg-card-focus);
+  outline-offset: 3px;
+}
+.dg-organization-trigger[aria-expanded='true'] {
+  background: var(--dg-card-surface-active);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+@media (hover: hover) {
+  .dg-organization-trigger:hover {
+    background: var(--dg-card-surface-subtle);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+}
+.dg-organization-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dg-organization-details p {
+  margin: 0;
+}
+.dg-card-owner .dg-organization-name > svg {
+  position: relative;
+  top: -1px;
+}
+.dg-dataset-update-row,
+.dg-card-update-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.dg-dataset-updated,
+.dg-card-updated {
+  margin: 0;
+  color: var(--dg-card-text-secondary);
+  font: 400 14px/24px var(--dg-card-font-sans);
+  font-variant-numeric: tabular-nums;
+}
+.dg-dataset-metadata-row,
+.dg-card-metadata-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 12px;
+  max-width: 100%;
+}
+.dg-card-type {
+  color: var(--dg-card-text-secondary);
+  font: 400 14px/24px var(--dg-card-font-sans);
+}
+.dg-card-metrics {
+  color: var(--dg-card-text-secondary);
+  font-variant-numeric: tabular-nums;
+  gap: 8px 12px;
+}
+.dg-dataset-metadata-row > .dg-card-metrics,
+.dg-card-has-quality > .dg-card-metrics,
+.dg-card-usage {
+  border-inline-start: 1px solid var(--dg-card-border);
+  padding-inline-start: 12px;
+}
+.dg-card-usage-only {
+  border-inline-start: 0;
+  padding-inline-start: 0;
+}
+.dg-card-usage,
+.dg-card-usage p,
+.dg-organization-counts {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.dg-card-metrics p {
+  margin: 0;
+  font-size: 12px !important;
+  line-height: 18px !important;
+}
+.dg-card-usage p,
+.dg-card-metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font: 400 12px/18px var(--dg-card-font-sans);
+}
+.dg-reuse-metadata .dg-card-usage {
+  gap: 12px;
+}
+.dg-reuse-metadata .dg-card-usage p {
+  gap: 4px;
+}
+.dg-organization-content-card .dg-card-organization-type + .dg-organization-counts {
+  margin-top: 12px;
+}
+.dg-organization-vertical .dg-object-card-layout {
+  flex-direction: column;
+}
+.dg-organization-vertical .dg-object-card-body {
+  width: 100%;
+}
+.dg-organization-with-banner .dg-organization-card-banner {
+  height: 64px;
+  margin: -16px -16px 0;
+  background: var(--dg-card-surface-subtle);
+  border-radius: 3px 3px 0 0;
+  overflow: hidden;
+}
+.dg-organization-card-banner img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.dg-organization-with-banner .dg-object-card-media {
+  margin-top: -24px;
+  position: relative;
+}
+.dg-schema-card {
+  padding: 16px;
+}
+.dg-schema-card p {
+  overflow-wrap: anywhere;
+}
+.dg-schema-card[aria-selected='true'] {
+  border-color: var(--dg-card-brand);
+  box-shadow: inset 0 0 0 1px var(--dg-card-brand);
+  background: var(--dg-card-info-bg);
+}
+.dg-schema-card.border-blue-outline {
+  outline: 2px solid var(--dg-card-focus);
+  outline-offset: 3px;
+}
+.dg-schema-card a {
+  position: relative;
+}
+.dg-schema-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-block: 8px;
+}
+.dg-discussion-message-card .dg-object-card-body {
+  gap: 12px;
+}
+
+/* Details are teleported outside cards so overlays are never clipped. */
+.dg-quality-popover {
+  position: relative;
+  min-width: 0;
+}
+.dg-quality-panel {
+  position: absolute;
+  z-index: 800;
+  width: min(384px, calc(100vw - 32px));
+  max-height: 70vh;
+  overflow: auto;
+  padding: 16px;
+  border: 1px solid var(--dg-card-border);
+  border-radius: 4px;
+  background: var(--dg-card-surface);
+  box-shadow: var(--dg-card-shadow-overlay);
+  font: 400 14px/22px var(--dg-card-font-sans);
+  color: var(--dg-card-text);
+}
+.dg-quality-inline {
+  min-width: 0;
+  max-width: 100%;
+}
+.dg-quality-trigger {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 0;
+  min-height: 24px;
+  border: 0;
+  border-radius: 4px;
+  color: var(--dg-card-text-secondary);
+  font: 400 14px/24px var(--dg-card-font-sans);
+  position: relative;
+  z-index: 2;
+  text-align: left;
+  cursor: pointer;
+}
+.dg-quality-trigger:hover {
+  background: var(--dg-card-surface-subtle);
+}
+.dg-quality-trigger:focus-visible {
+  outline: 2px solid var(--dg-card-focus);
+  outline-offset: 3px;
+}
+.dg-card-quality-score {
+  width: 64px;
+}
+
+@container (max-width:480px) {
+  .dg-object-card-layout:has(.dg-object-card-media-lg, .dg-object-card-media-xl) {
+    flex-direction: column;
+  }
+  .dg-object-card-media:has(.dg-object-card-media-lg, .dg-object-card-media-xl) {
+    width: 100%;
+  }
+  .dg-object-card-media-lg,
+  .dg-object-card-media-xl {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 16/9;
+  }
+}
+@container (max-width:280px) {
+  .dg-object-card-layout {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .dg-object-card-body {
+    width: 100%;
+  }
+}
+@media (max-width: 767px) {
+  .dg-catalog-card.dg-content-card .dg-card-description {
+    display: none;
+  }
+}
+@media (max-width: 479px) {
+  .dg-catalog-card
+    :is(
+      .dg-dataset-metadata-row,
+      .dg-card-metadata-row,
+      .dg-organization-counts,
+      .dg-card-organization-type,
+      .dg-card-metrics
+    ) {
+    display: none;
+  }
+}
+
+/* Keep the existing accessible meter while matching the compact card scale. */
+@layer base {
+  .dg-card-quality-score {
+    width: 64px !important;
+    min-width: 64px !important;
+    height: 6px !important;
+    border: 0 !important;
+  }
+}

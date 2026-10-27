@@ -1,15 +1,23 @@
 <template>
-  <ObjectCard class="catalog-card">
+  <ObjectCard class="dg-content-card dg-catalog-card dg-dataset-card">
     <template #media>
       <OrganizationLogo
         v-if="dataset.organization"
         :organization="dataset.organization"
         size-class="size-12"
       />
-      <Avatar v-else-if="dataset.owner" :user="dataset.owner" :size="48" />
-      <Placeholder v-else type="Dataset" class="size-12" />
+      <Avatar
+        v-else-if="dataset.owner"
+        :user="dataset.owner"
+        :size="48"
+      />
+      <Placeholder
+        v-else
+        type="Dataset"
+        class="size-12"
+      />
     </template>
-    <div class="card-heading-row">
+    <div class="dg-card-heading-row">
       <ObjectCardHeader
         :icon="RiDatabase2Line"
         :url="datasetUrl || dataset.page"
@@ -17,57 +25,112 @@
         :title-tag="titleTag"
       >
         {{ dataset.title }}
-        <template v-if="dataset.acronym" #extra
-          ><small class="flex-1 ml-2">{{ dataset.acronym }}</small></template
+        <template
+          v-if="dataset.acronym"
+          #extra
         >
+          <small class="flex-1 ml-2">{{ dataset.acronym }}</small>
+        </template>
       </ObjectCardHeader>
-      <ObjectCardBadge v-if="dataset.private" :icon="RiLockLine">
+
+      <ObjectCardBadge
+        v-if="dataset.private"
+        :icon="RiLockLine"
+      >
         {{ t('Brouillon') }}
       </ObjectCardBadge>
-      <ObjectCardBadge v-else-if="dataset.archived" :icon="RiArchiveLine">
+
+      <ObjectCardBadge
+        v-else-if="dataset.archived"
+        :icon="RiArchiveLine"
+        tone="neutral"
+      >
         {{ t('Archivé') }}
       </ObjectCardBadge>
     </div>
-    <ObjectCardOwner
-      v-if="dataset.organization || dataset.owner"
-      :organization="dataset.organization"
-      :owner="dataset.owner"
-      :organization-url="organizationUrl"
-    />
-    <TranslationT tag="div" class="card-date" keypath="Mis à jour {date}">
-      <template #date
-        ><FormattedDate
-          :date="dataset.last_update"
-          format="relative"
-          :options="{ dateStyle: 'medium' }"
-      /></template>
-    </TranslationT>
-    <div class="card-metadata-row">
-      <DatasetQualityInline :quality="dataset.quality" />
-      <div class="card-metrics">
-        <p :aria-label="t('{n} vues | {n} vue | {n} vues', dataset.metrics.views)">
-          <RiEyeLine aria-hidden="true" />{{ summarize(dataset.metrics.views) }}
-        </p>
-        <p
-          :aria-label="
-            t(
-              '{n} téléchargements des ressources | {n} téléchargement des ressources | {n} téléchargements des ressources',
-              dataset.metrics.resources_downloads,
-            )
-          "
+    <div class="dg-dataset-details">
+      <ObjectCardOwner
+        v-if="dataset.organization || dataset.owner"
+        show-details
+        :organization="dataset.organization"
+        :owner="dataset.owner"
+        :organization-url="organizationUrl"
+      />
+      <div class="dg-dataset-update-row">
+        <TranslationT
+          tag="div"
+          class="dg-dataset-updated"
+          keypath="Mis à jour {date}"
         >
-          <RiDownloadLine aria-hidden="true" />{{ summarize(dataset.metrics.resources_downloads) }}
-        </p>
-        <p
-          :aria-label="
-            t('{n} réutilisations | {n} réutilisation | {n} réutilisations', dataset.metrics.reuses)
-          "
-        >
-          <RiLineChartLine aria-hidden="true" />{{ summarize(dataset.metrics.reuses) }}
-        </p>
-        <p :aria-label="t('{n} abonnés | {n} abonné | {n} abonnés', dataset.metrics.followers)">
-          <RiStarLine aria-hidden="true" />{{ summarize(dataset.metrics.followers) }}
-        </p>
+          <template #date>
+            <FormattedDate
+              :date="dataset.last_update"
+              format="relative"
+              :options="{ dateStyle: 'medium' }"
+            />
+          </template>
+        </TranslationT>
+      </div>
+      <div class="dg-dataset-metadata-row">
+        <DatasetQualityInline :quality="dataset.quality" />
+        <div class="dg-card-metrics flex flex-wrap items-center text-sm text-gray-medium">
+          <div class="dg-card-metrics flex flex-wrap items-center gap-3">
+            <p
+              class="text-sm mb-0 flex items-center gap-0.5"
+              :aria-label="t('{n} vues | {n} vue | {n} vues', dataset.metrics.views)"
+            >
+              <RiEyeLine
+                data-icon-size="compact"
+                focusable="false"
+                aria-hidden="true"
+                class="dg-ds-icon"
+              />{{ summarize(dataset.metrics.views) }}
+            </p>
+            <p
+              class="text-sm mb-0 flex items-center gap-0.5"
+              :aria-label="
+                t(
+                  '{n} téléchargements des ressources | {n} téléchargement des ressources | {n} téléchargements des ressources',
+                  dataset.metrics.resources_downloads,
+                )
+              "
+            >
+              <RiDownloadLine
+                data-icon-size="compact"
+                focusable="false"
+                aria-hidden="true"
+                class="dg-ds-icon"
+              />{{ summarize(dataset.metrics.resources_downloads) }}
+            </p>
+            <p
+              class="text-sm mb-0 flex items-center gap-0.5"
+              :aria-label="
+                t(
+                  '{n} réutilisations | {n} réutilisation | {n} réutilisations',
+                  dataset.metrics.reuses,
+                )
+              "
+            >
+              <RiLineChartLine
+                data-icon-size="compact"
+                focusable="false"
+                aria-hidden="true"
+                class="dg-ds-icon"
+              />{{ summarize(dataset.metrics.reuses) }}
+            </p>
+            <p
+              class="text-sm mb-0 flex items-center gap-0.5"
+              :aria-label="t('{n} abonnés | {n} abonné | {n} abonnés', dataset.metrics.followers)"
+            >
+              <RiStarLine
+                data-icon-size="compact"
+                focusable="false"
+                aria-hidden="true"
+                class="dg-ds-icon"
+              />{{ summarize(dataset.metrics.followers) }}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
     <slot>
@@ -80,6 +143,7 @@
 </template>
 
 <script setup lang="ts">
+import '../../assets/cards.css'
 import type { RouteLocationRaw } from 'vue-router'
 import {
   RiArchiveLine,
@@ -123,52 +187,3 @@ const props = withDefaults(defineProps<Props>(), {
 
 const { t } = useTranslation()
 </script>
-
-<style scoped>
-.card-heading-row {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  flex-wrap: wrap;
-  gap: 0.25rem 0.5rem;
-}
-.card-heading-row > :first-child {
-  flex: 1 1 auto;
-}
-.card-date {
-  color: #555;
-  font-size: 0.875rem;
-  line-height: 1.5rem;
-  font-variant-numeric: tabular-nums;
-}
-.card-metadata-row {
-  display: flex;
-  align-items: center;
-  max-width: 100%;
-  flex-wrap: wrap;
-  gap: 0.25rem 0.75rem;
-  color: #555;
-}
-.card-metrics {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem 0.75rem;
-  padding-inline-start: 0.75rem;
-  border-inline-start: 1px solid #e5e5e5;
-  font-variant-numeric: tabular-nums;
-}
-.card-metrics p {
-  display: flex;
-  align-items: center;
-  gap: 0.125rem;
-  margin: 0;
-  font-size: 0.75rem;
-  line-height: 1.125rem;
-}
-.card-metrics svg {
-  width: 0.875rem;
-  height: 0.875rem;
-  flex: none;
-}
-</style>

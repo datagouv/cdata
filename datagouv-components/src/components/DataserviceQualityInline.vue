@@ -1,13 +1,16 @@
 <template>
-  <div class="m-0 text-sm text-gray-medium">
+  <div class="dg-quality-inline">
     <Toggletip
-      :styled-button="false"
-      button-class="border-transparent -outline-offset-2 inline-flex items-center justify-center hover:bg-gray-lower transition-colors"
-      :button-props="{ class: 'relative z-2 gap-1 rounded-sm px-1 -mx-1 group/quality', title: t('Qualité des métadonnées') }"
+      button-class="dg-details-trigger dg-quality-trigger dg-quality-trigger-inline dg-quality-trigger-link"
+      :button-props="{ title: t('Qualité des métadonnées') }"
     >
-      <RiInformationLine class="size-3.5 shrink-0" />
-      <span class="text-gray-medium text-sm group-hover/quality:underline">{{ t('Métadonnées :') }}</span>
-      <QualityScore :score="quality.score" />
+      <span class="dg-quality-trigger-label">
+        <span>{{ t('Métadonnées') }}</span>
+      </span>
+      <QualityScore
+        :score="quality.score"
+        class="dg-card-quality-score"
+      />
       <template #toggletip>
         <DataserviceQualityTooltipContent :quality />
       </template>
@@ -16,11 +19,11 @@
 </template>
 
 <script setup lang="ts">
-import { RiInformationLine } from '@remixicon/vue'
+import '../../assets/cards.css'
 import type { DataserviceQuality } from '../types/dataservices'
 import QualityScore from './QualityScore.vue'
 import DataserviceQualityTooltipContent from './DataserviceQualityTooltipContent.vue'
-import Toggletip from './Toggletip.vue'
+import Toggletip from './CardDetailsPopover.vue'
 import { useTranslation } from '../composables/useTranslation'
 
 defineProps<{

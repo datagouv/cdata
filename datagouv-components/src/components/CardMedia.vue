@@ -1,11 +1,5 @@
-<template>
-  <div class="card-media" :data-empty="!hasImage" :data-fit="fit">
-    <img v-if="hasImage" :src="src!" :alt="alt || ''" loading="lazy" @error="failed = true" />
-    <component :is="icon" v-else class="card-media__placeholder" aria-hidden="true" />
-  </div>
-</template>
-
 <script setup lang="ts">
+import '../../assets/cards.css'
 import { computed, ref, watch } from 'vue'
 import { RiArticleLine, RiBarChartBoxLine, RiLineChartLine } from '@remixicon/vue'
 
@@ -15,7 +9,6 @@ const props = defineProps<{
   kind: 'post' | 'reuse' | 'chart'
   fit?: 'cover' | 'contain'
 }>()
-
 const failed = ref(false)
 watch(
   () => props.src,
@@ -29,31 +22,57 @@ const icon = computed(
 )
 </script>
 
+<template>
+  <div
+    class="dg-card-media"
+    :data-empty="!hasImage"
+    :data-fit="fit"
+  >
+    <img
+      v-if="hasImage"
+      :src="src!"
+      :alt="alt || ''"
+      loading="lazy"
+      @error="failed = true"
+    >
+    <component
+      :is="icon"
+      v-else
+      class="dg-card-empty-symbol dg-ds-icon"
+      data-icon-size="fluid"
+      aria-hidden="true"
+      focusable="false"
+    />
+  </div>
+</template>
+
 <style scoped>
-.card-media {
+.dg-card-media {
   display: grid;
   place-items: center;
   width: 100%;
   height: 100%;
   min-width: 0;
   overflow: hidden;
-  background: #f6f6f6;
-  color: #555;
+  background: var(--dg-card-surface-subtle);
+  color: var(--dg-card-text-secondary);
 }
-.card-media img {
+.dg-card-media img {
   display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-.card-media[data-fit='contain'] img {
-  box-sizing: border-box;
-  padding: 1rem;
+.dg-card-media[data-fit='contain'] img {
   object-fit: contain;
+  padding: var(--dg-card-space-16);
+  box-sizing: border-box;
 }
-.card-media__placeholder {
-  width: 3rem;
-  height: 3rem;
+/* Media placeholder, not a control icon: deliberately larger than interface icons. */
+.dg-card-empty-symbol {
+  width: var(--dg-card-space-48);
+  height: var(--dg-card-space-48);
   flex: none;
+  pointer-events: none;
 }
 </style>

@@ -1,17 +1,27 @@
 <template>
-  <ObjectCard media-size="lg">
+  <ObjectCard
+    class="dg-content-card dg-catalog-card"
+    media-size="lg"
+  >
     <template #media>
-      <CardMedia :src="post.image" :alt="post.name" kind="post" />
+      <CardMedia
+        :src="post.image"
+        :alt="post.name"
+        kind="post"
+      />
     </template>
 
-    <ObjectCardHeader :icon="RiArticleLine" :url="postUrl || post.page || '#'">
+    <ObjectCardHeader
+      :icon="RiArticleLine"
+      :url="postUrl || post.page || '#'"
+    >
       {{ post.name }}
     </ObjectCardHeader>
 
     <TranslationT
       v-if="post.published || post.created_at"
       tag="div"
-      class="card-date"
+      class="dg-card-updated"
       keypath="Publié {date}"
     >
       <template #date>
@@ -22,13 +32,14 @@
         />
       </template>
     </TranslationT>
-    <ObjectCardShortDescription :text="post.headline || post.content" />
 
+    <ObjectCardShortDescription :text="post.headline || post.content" />
     <slot />
   </ObjectCard>
 </template>
 
 <script setup lang="ts">
+import '../../assets/cards.css'
 import { RiArticleLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Post } from '../types/posts'
@@ -44,12 +55,3 @@ defineProps<{
   postUrl?: RouteLocationRaw
 }>()
 </script>
-
-<style scoped>
-.card-date {
-  color: #555;
-  font-size: 0.875rem;
-  line-height: 1.5rem;
-  font-variant-numeric: tabular-nums;
-}
-</style>

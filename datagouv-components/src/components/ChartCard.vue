@@ -1,49 +1,88 @@
 <template>
-  <ObjectCard media-size="xl">
+  <ObjectCard
+    class="dg-content-card dg-catalog-card"
+    media-size="xl"
+  >
     <template #media>
-      <CardMedia :src="chart.image" :alt="chart.title" kind="chart" />
+      <CardMedia
+        :src="chart.image"
+        :alt="chart.title"
+        kind="chart"
+      />
     </template>
-    <div class="card-heading-row">
-      <ObjectCardHeader :icon="chartIcon" :url="chartUrl || chart.page">{{
-        chart.title
-      }}</ObjectCardHeader>
-      <ObjectCardBadge v-if="chart.deleted_at" :icon="RiDeleteBinLine" tone="danger">{{
-        t('Supprimé')
-      }}</ObjectCardBadge>
-      <ObjectCardBadge v-else-if="chart.private" :icon="RiLockLine">{{
-        t('Brouillon')
-      }}</ObjectCardBadge>
+
+    <div class="dg-card-heading-row">
+      <ObjectCardHeader
+        :icon="chartIcon"
+        :url="chartUrl || chart.page"
+      >
+        {{ chart.title }}
+      </ObjectCardHeader>
+
+      <ObjectCardBadge
+        v-if="chart.deleted_at"
+        :icon="RiDeleteBinLine"
+        tone="danger"
+      >
+        {{ t('Supprimé') }}
+      </ObjectCardBadge>
+
+      <ObjectCardBadge
+        v-else-if="chart.private"
+        :icon="RiLockLine"
+      >
+        {{ t('Brouillon') }}
+      </ObjectCardBadge>
     </div>
 
     <div
       v-if="chart.organization || chart.owner"
-      class="text-sm flex flex-wrap gap-y-1 items-center"
+      class="text-sm flex flex-wrap gap-x-2 gap-y-1 items-center"
     >
       <ObjectCardOwner
+        show-details
         :organization="chart.organization"
         :owner="chart.owner"
         :organization-url="organizationUrl"
       />
     </div>
-    <TranslationT tag="div" class="card-date" keypath="Mis à jour {date}">
-      <template #date
-        ><FormattedDate
-          :date="chart.last_modified"
-          format="relative"
-          :options="{ dateStyle: 'medium' }"
-      /></template>
-    </TranslationT>
-    <p class="card-metric" :aria-label="t('{n} vues | {n} vue | {n} vues', chart.metrics.views)">
-      <RiEyeLine aria-hidden="true" />{{ summarize(chart.metrics.views) }}
-    </p>
+    <div class="dg-card-update-row">
+      <TranslationT
+        tag="p"
+        class="dg-card-updated"
+        keypath="Mis à jour {date}"
+      >
+        <template #date>
+          <FormattedDate
+            :date="chart.last_modified"
+            format="relative"
+            :options="{ dateStyle: 'medium' }"
+          />
+        </template>
+      </TranslationT>
+    </div>
+
+    <div class="dg-card-metrics flex flex-wrap items-center text-sm text-gray-medium mt-1">
+      <p
+        class="text-sm mb-0 flex items-center gap-0.5"
+        :aria-label="t('{n} vues | {n} vue | {n} vues', chart.metrics.views)"
+      >
+        <RiEyeLine
+          data-icon-size="compact"
+          focusable="false"
+          aria-hidden="true"
+          class="dg-ds-icon"
+        />{{ summarize(chart.metrics.views) }}
+      </p>
+    </div>
 
     <ObjectCardShortDescription :text="chart.description" />
-
     <slot />
   </ObjectCard>
 </template>
 
 <script setup lang="ts">
+import '../../assets/cards.css'
 import { computed } from 'vue'
 import {
   RiBarChartBoxLine,
@@ -77,36 +116,3 @@ const chartIcon = computed(() => {
   return props.chart.series[0]?.type === 'line' ? RiLineChartLine : RiBarChartBoxLine
 })
 </script>
-
-<style scoped>
-.card-heading-row {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  flex-wrap: wrap;
-  gap: 0.25rem 0.5rem;
-}
-.card-heading-row > :first-child {
-  flex: 1 1 auto;
-}
-.card-date {
-  color: #555;
-  font-size: 0.875rem;
-  line-height: 1.5rem;
-  font-variant-numeric: tabular-nums;
-}
-.card-metric {
-  display: flex;
-  align-items: center;
-  gap: 0.125rem;
-  margin: 0;
-  color: #555;
-  font-size: 0.75rem;
-  line-height: 1.125rem;
-  font-variant-numeric: tabular-nums;
-}
-.card-metric svg {
-  width: 0.875rem;
-  height: 0.875rem;
-}
-</style>

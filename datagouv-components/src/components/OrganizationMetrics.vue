@@ -1,30 +1,15 @@
-<template>
-  <div class="organization-metrics">
-    <span
-      v-for="item in items"
-      :key="item.key"
-      class="organization-metrics__item"
-      :aria-label="`${item.value} ${item.label}`"
-    >
-      <component :is="item.icon" aria-hidden="true" />
-      {{ summarize(item.value) }}
-      <span v-if="showLabels">{{ item.label }}</span>
-    </span>
-  </div>
-</template>
-
 <script setup lang="ts">
+import '../../assets/cards.css'
 import { computed } from 'vue'
-import { RiDatabase2Line, RiLineChartLine, RiStarLine, RiTerminalLine } from '@remixicon/vue'
+import { RiDatabase2Line, RiTerminalLine, RiLineChartLine, RiStarLine } from '@remixicon/vue'
 import { summarize } from '../functions/helpers'
 import { useTranslation } from '../composables/useTranslation'
 
 const props = defineProps<{
-  metrics: { datasets: number; dataservices: number; reuses: number; followers?: number }
+  metrics: { datasets: number, dataservices: number, reuses: number, followers?: number }
   showFollowers?: boolean
   showLabels?: boolean
 }>()
-
 const { t } = useTranslation()
 const items = computed(() => [
   {
@@ -41,25 +26,21 @@ const items = computed(() => [
 ])
 </script>
 
-<style scoped>
-.organization-metrics {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.5rem 0.75rem;
-  color: #555;
-  font-variant-numeric: tabular-nums;
-}
-.organization-metrics__item {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.125rem;
-  font-size: 0.75rem;
-  line-height: 1.125rem;
-}
-.organization-metrics__item svg {
-  width: 0.875rem;
-  height: 0.875rem;
-  flex: none;
-}
-</style>
+<template>
+  <div class="dg-card-metrics dg-organization-counts">
+    <span
+      v-for="item in items"
+      :key="item.key"
+      class="dg-card-metric"
+      :aria-label="`${item.value} ${item.label}`"
+    >
+      <component
+        :is="item.icon"
+        class="dg-ds-icon"
+        data-icon-size="compact"
+        aria-hidden="true"
+        focusable="false"
+      />{{ summarize(item.value) }}<span v-if="showLabels">{{ item.label }}</span>
+    </span>
+  </div>
+</template>

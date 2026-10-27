@@ -1,10 +1,14 @@
 <template>
-  <p v-if="shortDescription" class="object-card-description">
+  <p
+    v-if="shortDescription"
+    class="dg-card-description"
+  >
     {{ shortDescription }}
   </p>
 </template>
 
 <script setup lang="ts">
+import '../../assets/cards.css'
 import { computed } from 'vue'
 import { removeMarkdownSync } from '../functions/markdown'
 
@@ -28,15 +32,15 @@ const shortDescription = computed(() => {
 </script>
 
 <style scoped>
-.object-card-description {
+.dg-card-description {
   display: -webkit-box;
-  margin: 0;
-  overflow: hidden;
-  overflow-wrap: anywhere;
-  color: #555;
-  font-size: 0.875rem;
-  line-height: 1.375rem;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  margin: 0;
+  color: var(--dg-card-text-secondary);
+  font: var(--dg-card-weight-regular) var(--dg-card-text-body)/var(--dg-card-leading-body)
+    var(--dg-card-font-sans);
 }
 </style>

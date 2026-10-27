@@ -1,5 +1,6 @@
 <template>
   <ObjectCard
+    class="dg-content-card dg-catalog-card"
     :article-class="{
       'border-tabular-api': isTabularApi,
       'border-gray-default': !isTabularApi,
@@ -11,11 +12,19 @@
         :organization="dataservice.organization"
         size-class="size-12"
       />
-      <Avatar v-else-if="dataservice.owner" :user="dataservice.owner" :size="48" />
-      <Placeholder v-else type="Dataservice" class="size-12" />
+      <Avatar
+        v-else-if="dataservice.owner"
+        :user="dataservice.owner"
+        :size="48"
+      />
+      <Placeholder
+        v-else
+        type="Dataservice"
+        class="size-12"
+      />
     </template>
 
-    <div class="card-heading-row">
+    <div class="dg-card-heading-row">
       <ObjectCardHeader
         :icon="isTabularApi ? RiSparklingLine : RiTerminalLine"
         :url="dataserviceUrl || dataservice.self_web_url"
@@ -23,57 +32,105 @@
       >
         {{ dataservice.title }}
       </ObjectCardHeader>
-      <ObjectCardBadge v-if="dataservice.private" :icon="RiLockLine">{{
-        t('Brouillon')
-      }}</ObjectCardBadge>
-      <ObjectCardBadge v-else-if="dataservice.archived_at" :icon="RiArchiveLine">{{
-        t('Archivé')
-      }}</ObjectCardBadge>
+
+      <ObjectCardBadge
+        v-if="dataservice.private"
+        :icon="RiLockLine"
+      >
+        {{ t('Brouillon') }}
+      </ObjectCardBadge>
+
+      <ObjectCardBadge
+        v-else-if="dataservice.archived_at"
+        :icon="RiArchiveLine"
+        tone="neutral"
+      >
+        {{ t('Archivé') }}
+      </ObjectCardBadge>
+
       <ObjectCardBadge
         v-else-if="dataservice.access_type === 'restricted'"
-        :icon="RiLockLine"
         tone="warning"
-        >{{ t('Accès restreint') }}</ObjectCardBadge
+        :icon="RiLockLine"
       >
+        {{ t('Accès restreint') }}
+      </ObjectCardBadge>
+
       <ObjectCardBadge
         v-else-if="dataservice.access_type === 'open_with_account'"
-        :icon="RiPassValidLine"
         tone="yellow"
-        >{{ t('Ouvert avec un compte') }}</ObjectCardBadge
+        :icon="RiPassValidLine"
       >
+        {{ t('Ouvert avec un compte') }}
+      </ObjectCardBadge>
     </div>
-    <ObjectCardOwner
-      v-if="dataservice.organization || dataservice.owner"
-      :organization="dataservice.organization"
-      :owner="dataservice.owner"
-      :organization-url="organizationUrl"
-    />
-    <TranslationT tag="div" class="card-date" keypath="Mis à jour {date}">
-      <template #date
-        ><FormattedDate
-          :date="dataservice.metadata_modified_at"
-          format="relative"
-          :options="{ dateStyle: 'medium' }"
-      /></template>
-    </TranslationT>
-    <div class="card-metadata-row" :class="{ 'card-metadata-row--quality': dataservice.quality }">
-      <DataserviceQualityInline v-if="dataservice.quality" :quality="dataservice.quality" />
-      <div class="card-metrics">
-        <p :aria-label="t('{n} vues | {n} vue | {n} vues', dataservice.metrics.views)">
-          <RiEyeLine aria-hidden="true" />{{ summarize(dataservice.metrics.views) }}
+    <div class="dg-card-details">
+      <ObjectCardOwner
+        show-details
+        :organization="dataservice.organization"
+        :owner="dataservice.owner"
+        :organization-url="organizationUrl"
+      />
+      <div class="dg-card-update-row">
+        <TranslationT
+          tag="div"
+          class="dg-card-updated"
+          keypath="Mis à jour {date}"
+        >
+          <template #date>
+            <FormattedDate
+              :date="dataservice.metadata_modified_at"
+              format="relative"
+              :options="{ dateStyle: 'medium' }"
+            />
+          </template>
+        </TranslationT>
+      </div>
+    </div>
+    <div
+      class="dg-card-metadata-row"
+      :class="{ 'dg-card-has-quality': dataservice.quality }"
+    >
+      <DataserviceQualityInline
+        v-if="dataservice.quality"
+        :quality="dataservice.quality"
+      />
+
+      <div class="dg-card-metrics flex flex-wrap items-center gap-3 text-gray-medium">
+        <p
+          class="text-sm mb-0 flex items-center gap-0.5"
+          :aria-label="t('{n} vues | {n} vue | {n} vues', dataservice.metrics.views)"
+        >
+          <RiEyeLine
+            data-icon-size="compact"
+            focusable="false"
+            aria-hidden="true"
+            class="dg-ds-icon"
+          />{{ summarize(dataservice.metrics.views) }}
         </p>
-        <p :aria-label="t('{n} abonnés | {n} abonné | {n} abonnés', dataservice.metrics.followers)">
-          <RiStarLine aria-hidden="true" />{{ summarize(dataservice.metrics.followers) }}
+        <p
+          class="text-sm mb-0 flex items-center gap-0.5"
+          :aria-label="t('{n} abonnés | {n} abonné | {n} abonnés', dataservice.metrics.followers)"
+        >
+          <RiStarLine
+            data-icon-size="compact"
+            focusable="false"
+            aria-hidden="true"
+            class="dg-ds-icon"
+          />{{ summarize(dataservice.metrics.followers) }}
         </p>
       </div>
     </div>
-    <ObjectCardShortDescription v-if="showDescription" :text="dataservice.description" />
-
+    <ObjectCardShortDescription
+      v-if="showDescription"
+      :text="dataservice.description"
+    />
     <slot />
   </ObjectCard>
 </template>
 
 <script setup lang="ts">
+import '../../assets/cards.css'
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import {
@@ -125,53 +182,6 @@ const isTabularApi = computed(() => {
 
 <style scoped>
 .border-tabular-api {
-  border-color: #373c42 !important;
-}
-.card-heading-row {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  flex-wrap: wrap;
-  gap: 0.25rem 0.5rem;
-}
-.card-heading-row > :first-child {
-  flex: 1 1 auto;
-}
-.card-date {
-  color: #555;
-  font-size: 0.875rem;
-  line-height: 1.5rem;
-  font-variant-numeric: tabular-nums;
-}
-.card-metadata-row {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.25rem 0.75rem;
-  color: #555;
-}
-.card-metrics {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.75rem;
-  font-variant-numeric: tabular-nums;
-}
-.card-metadata-row--quality .card-metrics {
-  padding-inline-start: 0.75rem;
-  border-inline-start: 1px solid #e5e5e5;
-}
-.card-metrics p {
-  display: flex;
-  align-items: center;
-  gap: 0.125rem;
-  margin: 0;
-  font-size: 0.75rem;
-  line-height: 1.125rem;
-}
-.card-metrics svg {
-  width: 0.875rem;
-  height: 0.875rem;
-  flex: none;
+  border-color: var(--dg-card-text-secondary) !important;
 }
 </style>

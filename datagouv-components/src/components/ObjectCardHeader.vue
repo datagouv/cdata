@@ -1,8 +1,26 @@
 <template>
-  <component :is="titleTag" class="object-card-title">
-    <AppLink :to="url" class="object-card-title__link" :target="target">
-      <component v-if="icon" :is="icon" aria-hidden="true" class="object-card-title__icon" />
-      <span class="object-card-title__text" :class="$slots.extra ? 'flex-initial' : 'flex-1'">
+  <component
+    :is="titleTag"
+    class="dg-card-title"
+  >
+    <AppLink
+      :to="url"
+      class="dg-card-title-link"
+      :target="target"
+    >
+      <component
+        :is="icon"
+        v-if="icon"
+        data-icon-align="start"
+        data-icon-size="base"
+        focusable="false"
+        aria-hidden="true"
+        class="dg-card-title-icon dg-ds-icon"
+      />
+      <span
+        class="dg-card-title-text"
+        :class="$slots.extra ? 'flex-initial' : 'flex-1'"
+      >
         <slot />
       </span>
       <slot name="extra" />
@@ -12,6 +30,7 @@
 </template>
 
 <script setup lang="ts">
+import '../../assets/cards.css'
 import type { Component } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { TitleTag } from '../types/ui'
@@ -31,48 +50,39 @@ withDefaults(
 </script>
 
 <style scoped>
-.object-card-title {
-  display: flex;
-  width: 100%;
-  min-width: 0;
+.dg-card-title {
   margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
-  line-height: 1.5rem;
+  font: var(--dg-card-weight-semibold) var(--dg-card-text-title)/var(--dg-card-leading-title)
+    var(--dg-card-font-sans);
+  min-width: 0;
 }
-.object-card-title__link {
+.dg-card-title-link {
   display: flex;
   align-items: flex-start;
+  gap: var(--dg-card-space-4);
   width: 100%;
-  min-width: 0;
-  gap: 0.25rem;
-  color: #161616;
+  color: var(--dg-card-text);
   background-image: none;
+  font: inherit;
   text-decoration: none;
 }
-.object-card-title__icon {
-  width: 1rem;
-  height: 1rem;
-  flex: none;
-  margin-top: 0.25rem;
-}
-.object-card-title__text {
-  display: -webkit-box;
+.dg-card-title-text {
+  display: block;
   min-width: 0;
-  overflow: hidden;
   overflow-wrap: anywhere;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
 }
-.object-card-title__link::after {
+.dg-card-title-icon {
+  width: var(--dg-card-icon);
+  height: var(--dg-card-icon);
+  flex-shrink: 0;
+  margin-top: var(--dg-card-space-4);
+}
+.dg-card-title-link:focus-visible {
+  outline: var(--dg-card-focus-width) solid var(--dg-card-focus);
+  outline-offset: var(--dg-card-focus-offset);
+  border-radius: var(--dg-card-radius-technical);
+}
+.dg-card-title-link::after {
   display: none;
-}
-.object-card-title__link:focus-visible {
-  outline: none;
-}
-@media (hover: hover) {
-  .object-card-title__link:hover {
-    color: #000091;
-  }
 }
 </style>
