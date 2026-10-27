@@ -7,9 +7,10 @@
       {{ t('Ce n\'est pas un fichier téléchargeable : suivez le lien pour consulter la ressource.') }}
     </p>
     <BrandedButton
-      :href="resource.url"
+      :href="resource.latest"
       new-tab
       rel="ugc nofollow noopener"
+      @click="trackEvent('Jeux de données', 'Télécharger un fichier', 'Bouton : télécharger un fichier')"
     >
       {{ t('Visiter la ressource') }}
     </BrandedButton>
@@ -20,6 +21,7 @@
 import BrandedButton from '../BrandedButton.vue'
 import type { Resource } from '../../types/resources'
 import { useTranslation } from '../../composables/useTranslation'
+import { trackEvent } from '../../functions/matomo'
 
 defineProps<{
   resource: Resource
