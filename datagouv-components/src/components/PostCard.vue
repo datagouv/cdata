@@ -1,32 +1,17 @@
 <template>
   <ObjectCard media-size="lg">
     <template #media>
-      <img
-        v-if="post.image"
-        :src="post.image"
-        class="w-full h-full object-cover"
-        :alt="post.name"
-      >
-      <Placeholder
-        v-else
-        type="Dataset"
-        class="w-full h-full"
-      />
+      <CardMedia :src="post.image" :alt="post.name" kind="post" />
     </template>
 
-    <ObjectCardHeader
-      :icon="RiArticleLine"
-      :url="postUrl || post.page || '#'"
-    >
+    <ObjectCardHeader :icon="RiArticleLine" :url="postUrl || post.page || '#'">
       {{ post.name }}
     </ObjectCardHeader>
-
-    <ObjectCardShortDescription :text="post.headline || post.content" />
 
     <TranslationT
       v-if="post.published || post.created_at"
       tag="div"
-      class="text-sm text-gray-medium mt-1"
+      class="card-date"
       keypath="Publié {date}"
     >
       <template #date>
@@ -37,6 +22,7 @@
         />
       </template>
     </TranslationT>
+    <ObjectCardShortDescription :text="post.headline || post.content" />
 
     <slot />
   </ObjectCard>
@@ -46,7 +32,7 @@
 import { RiArticleLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Post } from '../types/posts'
-import Placeholder from './Placeholder.vue'
+import CardMedia from './CardMedia.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
@@ -58,3 +44,12 @@ defineProps<{
   postUrl?: RouteLocationRaw
 }>()
 </script>
+
+<style scoped>
+.card-date {
+  color: #555;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+</style>

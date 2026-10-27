@@ -5,119 +5,69 @@
       'border-gray-default': !isTabularApi,
     }"
   >
-    <template #badge>
-      <ObjectCardBadge
-        v-if="dataservice.private"
-        :icon="RiLockLine"
-      >
-        {{ t('Brouillon') }}
-      </ObjectCardBadge>
-      <ObjectCardBadge
-        v-else-if="dataservice.archived_at"
-        :icon="RiArchiveLine"
-      >
-        {{ t('Archivé') }}
-      </ObjectCardBadge>
-      <ObjectCardBadge
-        v-else-if="dataservice.access_type === 'restricted'"
-        :icon="RiLockLine"
-      >
-        {{ t('Accès restreint') }}
-      </ObjectCardBadge>
-      <ObjectCardBadge
-        v-else-if="dataservice.access_type === 'open_with_account'"
-        :icon="RiPassValidLine"
-      >
-        {{ t('Ouvert avec un compte') }}
-      </ObjectCardBadge>
-    </template>
-
     <template #media>
       <OrganizationLogo
         v-if="dataservice.organization"
         :organization="dataservice.organization"
         size-class="size-12"
       />
-      <Avatar
-        v-else-if="dataservice.owner"
-        :user="dataservice.owner"
-        :size="48"
-      />
-      <Placeholder
-        v-else
-        type="Dataservice"
-        class="size-12"
-      />
+      <Avatar v-else-if="dataservice.owner" :user="dataservice.owner" :size="48" />
+      <Placeholder v-else type="Dataservice" class="size-12" />
     </template>
 
-    <ObjectCardHeader
-      :icon="isTabularApi ? RiSparklingLine : RiTerminalLine"
-      :url="dataserviceUrl || dataservice.self_web_url"
-      :title-tag="titleTag"
-    >
-      {{ dataservice.title }}
-    </ObjectCardHeader>
-    <div
-      v-if="dataservice.organization || dataservice.owner"
-      class="text-sm flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
-    >
-      <ObjectCardOwner
-        :organization="dataservice.organization"
-        :owner="dataservice.owner"
-        :organization-url="organizationUrl"
-      />
-      <RiSubtractLine
-        aria-hidden="true"
-        class="size-4 flex-none fill-gray-medium"
-      />
-      <!-- https://github.com/datagouv/cdata/issues/653 -->
-      <TranslationT
-        tag="p"
-        class="text-sm whitespace-nowrap mb-0 text-gray-medium"
-        keypath="Mis à jour {date}"
+    <div class="card-heading-row">
+      <ObjectCardHeader
+        :icon="isTabularApi ? RiSparklingLine : RiTerminalLine"
+        :url="dataserviceUrl || dataservice.self_web_url"
+        :title-tag="titleTag"
       >
-        <template #date>
-          <FormattedDate
-            :date="dataservice.metadata_modified_at"
-            format="relative"
-            :options="{ dateStyle: 'medium' }"
-          />
-        </template>
-      </TranslationT>
-      <RiSubtractLine
-        aria-hidden="true"
-        class="size-4 flex-none fill-gray-medium"
-      />
-      <div class="flex items-center gap-1 text-gray-medium">
-        <p
-          class="text-sm mb-0 flex items-center gap-0.5"
-          :aria-label="t('{n} vues | {n} vue | {n} vues', dataservice.metrics.views)"
-        >
-          <RiEyeLine
-            aria-hidden="true"
-            class="size-3.5"
-          />{{ summarize(dataservice.metrics.views) }}
+        {{ dataservice.title }}
+      </ObjectCardHeader>
+      <ObjectCardBadge v-if="dataservice.private" :icon="RiLockLine">{{
+        t('Brouillon')
+      }}</ObjectCardBadge>
+      <ObjectCardBadge v-else-if="dataservice.archived_at" :icon="RiArchiveLine">{{
+        t('Archivé')
+      }}</ObjectCardBadge>
+      <ObjectCardBadge
+        v-else-if="dataservice.access_type === 'restricted'"
+        :icon="RiLockLine"
+        tone="warning"
+        >{{ t('Accès restreint') }}</ObjectCardBadge
+      >
+      <ObjectCardBadge
+        v-else-if="dataservice.access_type === 'open_with_account'"
+        :icon="RiPassValidLine"
+        tone="yellow"
+        >{{ t('Ouvert avec un compte') }}</ObjectCardBadge
+      >
+    </div>
+    <ObjectCardOwner
+      v-if="dataservice.organization || dataservice.owner"
+      :organization="dataservice.organization"
+      :owner="dataservice.owner"
+      :organization-url="organizationUrl"
+    />
+    <TranslationT tag="div" class="card-date" keypath="Mis à jour {date}">
+      <template #date
+        ><FormattedDate
+          :date="dataservice.metadata_modified_at"
+          format="relative"
+          :options="{ dateStyle: 'medium' }"
+      /></template>
+    </TranslationT>
+    <div class="card-metadata-row" :class="{ 'card-metadata-row--quality': dataservice.quality }">
+      <DataserviceQualityInline v-if="dataservice.quality" :quality="dataservice.quality" />
+      <div class="card-metrics">
+        <p :aria-label="t('{n} vues | {n} vue | {n} vues', dataservice.metrics.views)">
+          <RiEyeLine aria-hidden="true" />{{ summarize(dataservice.metrics.views) }}
         </p>
-        <p
-          class="text-sm mb-0 flex items-center gap-0.5"
-          :aria-label="t('{n} abonnés | {n} abonné | {n} abonnés', dataservice.metrics.followers)"
-        >
-          <RiStarLine
-            aria-hidden="true"
-            class="size-3.5"
-          />{{ summarize(dataservice.metrics.followers) }}
+        <p :aria-label="t('{n} abonnés | {n} abonné | {n} abonnés', dataservice.metrics.followers)">
+          <RiStarLine aria-hidden="true" />{{ summarize(dataservice.metrics.followers) }}
         </p>
       </div>
     </div>
-    <DataserviceQualityInline
-      v-if="dataservice.quality"
-      :quality="dataservice.quality"
-    />
-
-    <ObjectCardShortDescription
-      v-if="showDescription"
-      :text="dataservice.description"
-    />
+    <ObjectCardShortDescription v-if="showDescription" :text="dataservice.description" />
 
     <slot />
   </ObjectCard>
@@ -126,7 +76,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { RiArchiveLine, RiEyeLine, RiLockLine, RiPassValidLine, RiSparklingLine, RiStarLine, RiSubtractLine, RiTerminalLine } from '@remixicon/vue'
+import {
+  RiArchiveLine,
+  RiEyeLine,
+  RiLockLine,
+  RiPassValidLine,
+  RiSparklingLine,
+  RiStarLine,
+  RiTerminalLine,
+} from '@remixicon/vue'
 import { useComponentsConfig } from '../config'
 import { summarize } from '../functions/helpers'
 import type { Dataservice } from '../types/dataservices'
@@ -167,6 +125,53 @@ const isTabularApi = computed(() => {
 
 <style scoped>
 .border-tabular-api {
-  border-color: #373C42 !important;
+  border-color: #373c42 !important;
+}
+.card-heading-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+}
+.card-heading-row > :first-child {
+  flex: 1 1 auto;
+}
+.card-date {
+  color: #555;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+.card-metadata-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  color: #555;
+}
+.card-metrics {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+.card-metadata-row--quality .card-metrics {
+  padding-inline-start: 0.75rem;
+  border-inline-start: 1px solid #e5e5e5;
+}
+.card-metrics p {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  margin: 0;
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+}
+.card-metrics svg {
+  width: 0.875rem;
+  height: 0.875rem;
+  flex: none;
 }
 </style>

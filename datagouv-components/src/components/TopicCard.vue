@@ -1,109 +1,61 @@
 <template>
   <ObjectCard>
-    <template
-      v-if="showLogo"
-      #media
-    >
+    <template v-if="showLogo" #media>
       <OrganizationLogo
         v-if="topic.organization"
         :organization="topic.organization"
         size-class="size-12"
       />
-      <Avatar
-        v-else-if="topic.owner"
-        :user="topic.owner"
-        :size="48"
-      />
-      <Placeholder
-        v-else
-        type="Topic"
-        class="size-12"
-      />
+      <Avatar v-else-if="topic.owner" :user="topic.owner" :size="48" />
+      <Placeholder v-else type="Topic" class="size-12" />
     </template>
 
-    <ObjectCardHeader
-      :icon="RiBookShelfLine"
-      :url="topicUrl || topic.page || '#'"
-    >
+    <ObjectCardHeader :icon="RiBookShelfLine" :url="topicUrl || topic.page || '#'">
       {{ topic.name }}
     </ObjectCardHeader>
 
     <div
       v-if="topic.organization || topic.owner"
-      class="text-sm flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
+      class="text-sm flex flex-wrap gap-y-1 items-center"
     >
       <ObjectCardOwner
         :organization="topic.organization"
         :owner="topic.owner"
         :organization-url="organizationUrl"
       />
-      <RiSubtractLine
-        v-if="(topic.organization || topic.owner) && topic.last_modified"
-        aria-hidden="true"
-        class="hidden md:block size-4 flex-none fill-gray-medium"
-      />
-      <TranslationT
-        v-if="topic.last_modified"
-        tag="div"
-        class="w-full md:w-auto text-gray-medium whitespace-nowrap"
-        keypath="Mis à jour {date}"
-      >
-        <template #date>
-          <FormattedDate
-            :date="topic.last_modified"
-            format="relative"
-            :options="{ dateStyle: 'long' }"
-          />
-        </template>
-      </TranslationT>
     </div>
-
-    <ObjectCardShortDescription :text="topic.description" />
-
-    <div
-      v-if="showStats && (topic.nb_datasets || topic.nb_dataservices || topic.nb_reuses)"
-      class="flex items-center gap-4 mt-2 text-xs text-gray-medium"
+    <TranslationT
+      v-if="topic.last_modified"
+      tag="div"
+      class="card-date"
+      keypath="Mis à jour {date}"
     >
-      <div
-        v-if="topic.nb_datasets"
-        class="flex items-center gap-1"
+      <template #date
+        ><FormattedDate
+          :date="topic.last_modified"
+          format="relative"
+          :options="{ dateStyle: 'medium' }"
+      /></template>
+    </TranslationT>
+    <div v-if="showStats && metrics.length" class="card-metrics">
+      <span
+        v-for="metric in metrics"
+        :key="metric.label"
+        class="card-metric"
+        :aria-label="`${metric.value} ${metric.label}`"
       >
-        <RiDatabase2Line
-          aria-hidden="true"
-          class="size-4"
-        />
-        <span>{{ topic.nb_datasets }}</span>
-      </div>
-
-      <div
-        v-if="topic.nb_dataservices"
-        class="flex items-center gap-1"
-      >
-        <RiTerminalLine
-          aria-hidden="true"
-          class="size-4"
-        />
-        <span>{{ topic.nb_dataservices }}</span>
-      </div>
-
-      <div
-        v-if="topic.nb_reuses"
-        class="flex items-center gap-1"
-      >
-        <RiLineChartLine
-          aria-hidden="true"
-          class="size-4"
-        />
-        <span>{{ topic.nb_reuses }}</span>
-      </div>
+        <component :is="metric.icon" aria-hidden="true" />{{ summarize(metric.value) }}
+      </span>
     </div>
+    <ObjectCardShortDescription :text="topic.description" />
 
     <slot />
   </ObjectCard>
 </template>
 
 <script setup lang="ts">
-import { RiBookShelfLine, RiDatabase2Line, RiLineChartLine, RiSubtractLine, RiTerminalLine } from '@remixicon/vue'
+import { computed } from 'vue'
+import { RiBookShelfLine, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { TopicV2 } from '../types/topics'
 import ObjectCardHeader from './ObjectCardHeader.vue'
@@ -115,6 +67,8 @@ import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
 import FormattedDate from './FormattedDate.vue'
 import TranslationT from './TranslationT.vue'
+import { summarize } from '../functions/helpers'
+import { useTranslation } from '../composables/useTranslation'
 
 type TopicWithStats = TopicV2 & {
   nb_datasets?: number
@@ -122,14 +76,57 @@ type TopicWithStats = TopicV2 & {
   nb_reuses?: number
 }
 
-withDefaults(defineProps<{
-  topic: TopicWithStats
-  topicUrl?: RouteLocationRaw
-  organizationUrl?: RouteLocationRaw | null
-  showLogo?: boolean
-  showStats?: boolean
-}>(), {
-  showLogo: true,
-  showStats: true,
-})
+const props = withDefaults(
+  defineProps<{
+    topic: TopicWithStats
+    topicUrl?: RouteLocationRaw
+    organizationUrl?: RouteLocationRaw | null
+    showLogo?: boolean
+    showStats?: boolean
+  }>(),
+  {
+    showLogo: true,
+    showStats: true,
+  },
+)
+
+const { t } = useTranslation()
+const metrics = computed(() =>
+  [
+    { label: t('Jeux de données'), icon: RiDatabase2Line, value: props.topic.nb_datasets },
+    { label: t('API'), icon: RiTerminalLine, value: props.topic.nb_dataservices },
+    { label: t('Réutilisations'), icon: RiLineChartLine, value: props.topic.nb_reuses },
+  ].filter(
+    (metric): metric is typeof metric & { value: number } =>
+      typeof metric.value === 'number' && Number.isFinite(metric.value),
+  ),
+)
 </script>
+
+<style scoped>
+.card-date {
+  color: #555;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+.card-metrics {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  color: #555;
+  font-variant-numeric: tabular-nums;
+}
+.card-metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.125rem;
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+}
+.card-metric svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+</style>

@@ -1,29 +1,16 @@
 <template>
-  <ObjectCard>
-    <ObjectCardHeader
-      :icon="RiChat3Line"
-      :url="discussionUrl || discussion.self_web_url || '#'"
-    >
+  <ObjectCard class="discussion-card">
+    <ObjectCardHeader :icon="RiChat3Line" :url="discussionUrl || discussion.self_web_url || '#'">
       {{ discussion.title }}
     </ObjectCardHeader>
 
-    <div
-      v-if="discussion.organization || discussion.user"
-      class="text-sm flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
-    >
+    <div v-if="discussion.organization || discussion.user" class="discussion-card__meta">
       <ObjectCardOwner
         :organization="discussion.organization"
         :owner="discussion.user"
         :organization-url="organizationUrl"
       />
-      <RiSubtractLine
-        aria-hidden="true"
-        class="size-4 flex-none fill-gray-medium"
-      />
-      <TranslationT
-        class="text-gray-medium whitespace-nowrap"
-        keypath="Posté {date}"
-      >
+      <TranslationT class="discussion-card__date" keypath="Posté {date}">
         <template #date>
           <FormattedDate
             :date="discussion.created"
@@ -41,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { RiChat3Line, RiSubtractLine } from '@remixicon/vue'
+import { RiChat3Line } from '@remixicon/vue'
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Thread } from '../types/discussions'
@@ -60,3 +47,20 @@ const props = defineProps<{
 
 const firstMessageContent = computed(() => props.discussion.discussion?.[0]?.content)
 </script>
+
+<style scoped>
+.discussion-card :deep(.object-card__body) {
+  gap: 0.75rem;
+}
+.discussion-card__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+}
+.discussion-card__date {
+  color: #555;
+  font-variant-numeric: tabular-nums;
+}
+</style>

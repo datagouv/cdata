@@ -1,44 +1,23 @@
 <template>
   <ObjectCard media-size="lg">
-    <template #badge>
-      <ObjectCardBadge
-        v-if="reuse.private"
-        :icon="RiLockLine"
-      >
-        {{ t('Brouillon') }}
-      </ObjectCardBadge>
-      <ObjectCardBadge
-        v-else-if="reuse.archived"
-        :icon="RiArchiveLine"
-      >
-        {{ t('Archivé') }}
-      </ObjectCardBadge>
-    </template>
-
     <template #media>
-      <img
-        v-if="reuse.image"
-        :src="reuse.image"
-        class="w-full h-full object-cover"
-        :alt="reuse.title"
-      >
-      <Placeholder
-        v-else
-        type="Reuse"
-        class="w-full h-full"
-      />
+      <CardMedia :src="reuse.image" :alt="reuse.title" kind="reuse" />
     </template>
-
-    <ObjectCardHeader
-      :icon="RiLineChartLine"
-      :url="reuseUrl || reuse.page"
-    >
-      {{ reuse.title }}
-    </ObjectCardHeader>
+    <div class="card-heading-row">
+      <ObjectCardHeader :icon="RiLineChartLine" :url="reuseUrl || reuse.page">{{
+        reuse.title
+      }}</ObjectCardHeader>
+      <ObjectCardBadge v-if="reuse.private" :icon="RiLockLine">{{
+        t('Brouillon')
+      }}</ObjectCardBadge>
+      <ObjectCardBadge v-else-if="reuse.archived" :icon="RiArchiveLine">{{
+        t('Archivé')
+      }}</ObjectCardBadge>
+    </div>
 
     <div
       v-if="reuse.organization || reuse.owner"
-      class="text-sm flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
+      class="text-sm flex flex-wrap gap-y-1 items-center"
     >
       <ObjectCardOwner
         :organization="reuse.organization"
@@ -47,10 +26,15 @@
       />
     </div>
 
-    <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium mt-1">
-      <ReuseDetails :reuse />
-    </div>
-
+    <TranslationT tag="div" class="card-date" keypath="Publié {date}">
+      <template #date
+        ><FormattedDate
+          :date="reuse.created_at"
+          format="relative"
+          :options="{ dateStyle: 'medium' }"
+      /></template>
+    </TranslationT>
+    <ReuseDetails :reuse />
     <ObjectCardShortDescription :text="reuse.description" />
 
     <slot />
@@ -63,12 +47,14 @@ import type { RouteLocationRaw } from 'vue-router'
 import type { Reuse, ReuseV2 } from '../types/reuses'
 import { useTranslation } from '../composables/useTranslation'
 import ReuseDetails from './ReuseDetails.vue'
-import Placeholder from './Placeholder.vue'
+import CardMedia from './CardMedia.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
+import FormattedDate from './FormattedDate.vue'
+import TranslationT from './TranslationT.vue'
 
 defineProps<{
   reuse: Reuse | ReuseV2
@@ -79,3 +65,22 @@ defineProps<{
 
 const { t } = useTranslation()
 </script>
+
+<style scoped>
+.card-heading-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+}
+.card-heading-row > :first-child {
+  flex: 1 1 auto;
+}
+.card-date {
+  color: #555;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+</style>

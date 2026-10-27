@@ -1,80 +1,41 @@
 <template>
   <ObjectCard media-size="xl">
-    <template #badge>
-      <ObjectCardBadge
-        v-if="chart.deleted_at"
-        :icon="RiDeleteBinLine"
-      >
-        {{ t('Supprimé') }}
-      </ObjectCardBadge>
-      <ObjectCardBadge
-        v-else-if="chart.private"
-        :icon="RiLockLine"
-      >
-        {{ t('Brouillon') }}
-      </ObjectCardBadge>
-    </template>
-
     <template #media>
-      <img
-        v-if="chart.image"
-        :src="chart.image"
-        class="w-full h-full object-cover"
-        :alt="chart.title"
-      >
-      <Placeholder
-        v-else
-        type="Chart"
-        class="w-full h-full"
-      />
+      <CardMedia :src="chart.image" :alt="chart.title" kind="chart" />
     </template>
-
-    <ObjectCardHeader
-      :icon="chartIcon"
-      :url="chartUrl || chart.page"
-    >
-      {{ chart.title }}
-    </ObjectCardHeader>
+    <div class="card-heading-row">
+      <ObjectCardHeader :icon="chartIcon" :url="chartUrl || chart.page">{{
+        chart.title
+      }}</ObjectCardHeader>
+      <ObjectCardBadge v-if="chart.deleted_at" :icon="RiDeleteBinLine" tone="danger">{{
+        t('Supprimé')
+      }}</ObjectCardBadge>
+      <ObjectCardBadge v-else-if="chart.private" :icon="RiLockLine">{{
+        t('Brouillon')
+      }}</ObjectCardBadge>
+    </div>
 
     <div
       v-if="chart.organization || chart.owner"
-      class="text-sm flex flex-wrap gap-y-1 items-center truncate"
+      class="text-sm flex flex-wrap gap-y-1 items-center"
     >
       <ObjectCardOwner
         :organization="chart.organization"
         :owner="chart.owner"
         :organization-url="organizationUrl"
       />
-      <RiSubtractLine
-        aria-hidden="true"
-        class="size-4 flex-none fill-gray-medium"
-      />
-      <TranslationT
-        tag="p"
-        class="text-sm whitespace-nowrap mb-0 text-gray-medium"
-        keypath="Mis à jour {date}"
-      >
-        <template #date>
-          <FormattedDate
-            :date="chart.last_modified"
-            format="relative"
-            :options="{ dateStyle: 'medium' }"
-          />
-        </template>
-      </TranslationT>
     </div>
-
-    <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium mt-1">
-      <p
-        class="text-sm mb-0 flex items-center gap-0.5"
-        :aria-label="t('{n} vues | {n} vue | {n} vues', chart.metrics.views)"
-      >
-        <RiEyeLine
-          aria-hidden="true"
-          class="size-3.5"
-        />{{ summarize(chart.metrics.views) }}
-      </p>
-    </div>
+    <TranslationT tag="div" class="card-date" keypath="Mis à jour {date}">
+      <template #date
+        ><FormattedDate
+          :date="chart.last_modified"
+          format="relative"
+          :options="{ dateStyle: 'medium' }"
+      /></template>
+    </TranslationT>
+    <p class="card-metric" :aria-label="t('{n} vues | {n} vue | {n} vues', chart.metrics.views)">
+      <RiEyeLine aria-hidden="true" />{{ summarize(chart.metrics.views) }}
+    </p>
 
     <ObjectCardShortDescription :text="chart.description" />
 
@@ -84,12 +45,18 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RiBarChartBoxLine, RiDeleteBinLine, RiEyeLine, RiLineChartLine, RiLockLine, RiSubtractLine } from '@remixicon/vue'
+import {
+  RiBarChartBoxLine,
+  RiDeleteBinLine,
+  RiEyeLine,
+  RiLineChartLine,
+  RiLockLine,
+} from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Chart } from '../types/visualizations'
 import { summarize } from '../functions/helpers'
 import { useTranslation } from '../composables/useTranslation'
-import Placeholder from './Placeholder.vue'
+import CardMedia from './CardMedia.vue'
 import FormattedDate from './FormattedDate.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
@@ -110,3 +77,36 @@ const chartIcon = computed(() => {
   return props.chart.series[0]?.type === 'line' ? RiLineChartLine : RiBarChartBoxLine
 })
 </script>
+
+<style scoped>
+.card-heading-row {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  flex-wrap: wrap;
+  gap: 0.25rem 0.5rem;
+}
+.card-heading-row > :first-child {
+  flex: 1 1 auto;
+}
+.card-date {
+  color: #555;
+  font-size: 0.875rem;
+  line-height: 1.5rem;
+  font-variant-numeric: tabular-nums;
+}
+.card-metric {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  margin: 0;
+  color: #555;
+  font-size: 0.75rem;
+  line-height: 1.125rem;
+  font-variant-numeric: tabular-nums;
+}
+.card-metric svg {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+</style>
