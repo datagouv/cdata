@@ -231,10 +231,7 @@ const tags = computed(() => splitCadaValues(advice.value?.['Mots clés']))
 
 const title = computed(() => t('Avis CADA {id}', { id: adviceId.value }))
 // Leave the site-wide description when the advice has no subject text.
-const description = computed(() => {
-  const source = advice.value ? advice.value.Objet : t('Avis non trouvé')
-  return normalizeSeoDescription(source)
-})
+const description = computed(() => normalizeSeoDescription(advice.value?.Objet))
 
 useSeoMeta({
   title,
