@@ -256,12 +256,12 @@ import HeadingsSidemenu from '~/components/Sidemenu/HeadingsSidemenu.vue'
 import type { PageBloc, SectionBloc, SectionColor } from '~/types/pages'
 import { anchorHeadings, slugify, type Heading } from '~/utils/headings'
 import { isMeAdmin } from '~/utils/auth'
-import { BLOCS_MAIN_COLOR, FOLLOW_LINKS, PAGE_TITLE_ID, UPLOADS_IN_PROGRESS, normalizeBlocs, withoutEmptyBlocs, type BlocsMainColor, type LegacyBloc } from '~/utils/blocs'
+import { BLOCS_MAIN_COLOR, FOLLOW_LINKS, PAGE_TITLE_ID, UPLOADS_IN_PROGRESS, withoutEmptyBlocs, type BlocsMainColor } from '~/utils/blocs'
 import { heroBgColor } from '~/utils/hero'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 const props = withDefaults(defineProps<{
-  blocs: Array<PageBloc | LegacyBloc>
+  blocs: Array<PageBloc>
   edit?: boolean
   editable?: boolean
   striped?: boolean
@@ -298,9 +298,9 @@ provide(FOLLOW_LINKS, props.followLinks)
 const uploads = ref(0)
 provide(UPLOADS_IN_PROGRESS, uploads)
 
-// From the raw array, so that the working copy below can be `structuredClone`d (a
-// reactive proxy cannot be).
-const normalizedBlocs = computed(() => normalizeBlocs(toRaw(props.blocs), !props.forOrganization))
+// The raw array, so that the working copy below can be `structuredClone`d (a reactive proxy
+// cannot be).
+const savedBlocs = computed(() => toRaw(props.blocs))
 
 const emit = defineEmits<{
   cancel: []
@@ -316,11 +316,11 @@ const localBlocs = ref<Array<PageBloc> | null>(null)
 
 watchEffect(() => {
   if (isEditing.value && !localBlocs.value) {
-    localBlocs.value = structuredClone(normalizedBlocs.value)
+    localBlocs.value = structuredClone(savedBlocs.value)
   }
 })
 
-const workingBlocs = computed(() => localBlocs.value ?? normalizedBlocs.value)
+const workingBlocs = computed(() => localBlocs.value ?? savedBlocs.value)
 
 // The title of the page: the first bloc of the page, when it is a title.
 const pageTitleId = computed(() => {
@@ -374,7 +374,7 @@ const sidemenuHeadings = computed<Array<Heading>>(() => workingBlocs.value
 
 // Check if there are unsaved changes
 const hasUnsavedChanges = computed(() => {
-  return localBlocs.value !== null && JSON.stringify(toRaw(localBlocs.value)) !== JSON.stringify(normalizedBlocs.value)
+  return localBlocs.value !== null && JSON.stringify(toRaw(localBlocs.value)) !== JSON.stringify(savedBlocs.value)
 })
 
 // Warn before leaving with unsaved changes.
