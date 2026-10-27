@@ -4,6 +4,7 @@
       v-if="post && postForm"
       v-model="postForm"
       type="update"
+      :post-id="post.id"
       :submit-label="t('Sauvegarder')"
       :loading
       @submit="save"

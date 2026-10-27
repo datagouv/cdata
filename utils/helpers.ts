@@ -147,6 +147,23 @@ export function removeLangPrefix(url: string): string {
   return url.replace(/^\/(fr|en)(?=\/|$)/, '')
 }
 
+/**
+ * Saves a file built in the browser and frees its object URL.
+ *
+ * A `blob:` URL can't be handed to a link component as `href`: `NuxtLink` drops
+ * `blob:` hrefs as a script-capable protocol and renders an anchor that can't be clicked.
+ */
+export function downloadObjectUrl(url: string, filename: string): void {
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
 export function simpleSlug(str: string): string {
   return str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
 }

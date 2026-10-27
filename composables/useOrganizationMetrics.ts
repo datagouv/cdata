@@ -22,11 +22,12 @@ export function useOrganizationMetrics(organization: MaybeRefOrGetter<Organizati
     { lazy: true, server: false, watch: [() => toValue(organization)?.id] },
   )
 
-  const downloadStatsUrl = computed(() => {
-    if (!metrics.value) return null
+  function downloadStats() {
+    if (!metrics.value) return
 
-    return createOrganizationMetricsUrl(metrics.value.datasetsViews, metrics.value.downloads, metrics.value.dataservicesViews, metrics.value.reusesViews)
-  })
+    const url = createOrganizationMetricsUrl(metrics.value.datasetsViews, metrics.value.downloads, metrics.value.dataservicesViews, metrics.value.reusesViews)
+    downloadObjectUrl(url, `${toValue(organization)?.slug ?? 'organization'}-stats.csv`)
+  }
 
-  return { metrics, error, downloadStatsUrl }
+  return { metrics, error, downloadStats }
 }

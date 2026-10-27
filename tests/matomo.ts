@@ -12,9 +12,12 @@ import type { BrowserContext } from '@playwright/test'
 // Note: the matomo-tracking spec requires a production server (pnpm run
 // preview or node .output/server/index.mjs): the dev server never fires the
 // page load event, so page.goto times out.
+/** The empty script served for matomo.js, also by tests/fake-services.ts. */
+export const MATOMO_SCRIPT = {
+  contentType: 'application/javascript',
+  body: '/* matomo.js stubbed by tests/matomo.ts */',
+}
+
 export async function fakeMatomo(context: BrowserContext): Promise<void> {
-  await context.route('**/matomo.js', route => route.fulfill({
-    contentType: 'application/javascript',
-    body: '/* matomo.js stubbed by tests/matomo.ts */',
-  }))
+  await context.route('**/matomo.js', route => route.fulfill(MATOMO_SCRIPT))
 }

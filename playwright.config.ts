@@ -25,8 +25,8 @@ export default defineConfig({
   timeout: 60_000,
   /* Retry on CI to absorb transient failures (flaky externals, network blips); flakes still surface in the report. */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
+  /* Each CI shard has its own backend and runner: use all of its cores. */
+  workers: process.env.CI ? '100%' : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   /* On CI we use the blob reporter so the sharded jobs can be merged into a single HTML report afterwards. */
   reporter: process.env.CI ? [['blob'], ['github']] : 'html',
@@ -99,10 +99,20 @@ export default defineConfig({
     },
   ],
 
-  /* Run your local dev server before starting the tests */
-  webServer: {
-    command: 'pnpm run dev',
-    url: process.env.BASE_URL || 'http://localhost:3000',
-    reuseExistingServer: true,
-  },
+  webServer: [
+    /* Run your local dev server before starting the tests */
+    {
+      command: 'pnpm run dev',
+      url: process.env.BASE_URL || 'http://localhost:3000',
+      reuseExistingServer: true,
+    },
+    // Only when the server under test is configured to reach its third-party services there
+    ...(process.env.FAKE_SERVICES_URL
+      ? [{
+          command: 'node tests/fake-services.ts',
+          url: `${process.env.FAKE_SERVICES_URL}/matomo.js`,
+          reuseExistingServer: true,
+        }]
+      : []),
+  ],
 })

@@ -12,6 +12,7 @@
       :multiple="false"
       :error-text
       :warning-text
+      :required
       data-testid="producer-select"
     >
       <template #option="{ option }">

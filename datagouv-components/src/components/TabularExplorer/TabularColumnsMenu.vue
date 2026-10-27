@@ -10,7 +10,7 @@
         aria-hidden="true"
       />
       <span class="font-bold hidden md:inline">{{ t('Colonnes') }}</span>
-      <span class="font-mono tabular-nums">{{ visibleColumns.size }}/{{ allColumns.length }}</span>
+      <span class="font-mono tabular-nums">{{ visibleColumns.size }} / {{ allColumns.length }}</span>
       <RiArrowDownSLine
         class="size-3 opacity-50"
         aria-hidden="true"

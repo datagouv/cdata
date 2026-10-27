@@ -10,6 +10,7 @@ export type PostDescription = {
   headline: string
   slug?: string
   kind?: 'news' | 'page'
+  parentName?: string
   bodyType?: 'markdown' | 'blocs'
 }
 
@@ -24,6 +25,11 @@ export async function fillPostDescription(page: Page, options: PostDescription) 
   if (options.kind === 'page') {
     await page.locator('label').filter({ hasText: /^Page$/ }).click()
   }
+  if (options.parentName) {
+    await page.getByTestId('searchable-select-page-parente').click()
+    await page.getByPlaceholder('Aucune, la page est à la racine').fill(options.parentName)
+    await page.getByRole('option', { name: new RegExp(options.parentName) }).click()
+  }
   if (options.bodyType === 'blocs') {
     await page.locator('label').filter({ hasText: /^Blocs$/ }).click()
   }
@@ -34,22 +40,31 @@ export async function fillPostDescription(page: Page, options: PostDescription) 
   await fileChooser.setFiles(path.join(__dirname, '../../public/nuxt_images/onboarding/logo-ign.png'))
 }
 
-// Fills both steps of a markdown post, without saving it.
-export async function fillNewPostForm(page: Page, options: PostDescription & { content: string }) {
-  await fillPostDescription(page, options)
+// Fills the second step of a markdown post, from the first one.
+export async function fillPostContent(page: Page, content: string) {
   await page.getByRole('button', { name: 'Suivant' }).click()
   await expect(page.getByTestId('markdown-editor')).toBeVisible({ timeout: 30000 })
   await page.getByTestId('markdown-editor').click()
-  await page.getByTestId('markdown-editor').fill(options.content)
+  await page.getByTestId('markdown-editor').fill(content)
   await page.getByTestId('markdown-editor').press('Tab')
   await page.waitForTimeout(500)
 }
 
-// Creates a markdown post through the admin form and returns its id, read from the
-// admin page the form lands on.
-export async function createMarkdownPost(page: Page, options: PostDescription & { content: string }): Promise<string> {
-  await fillNewPostForm(page, options)
+// Saves the new post and returns its id, read from the admin page the form lands on.
+export async function saveNewPost(page: Page): Promise<string> {
   await page.getByRole('button', { name: 'Sauvegarder' }).click()
   await expect(page).toHaveURL(/\/admin\/posts\/(?!new)[a-z0-9-]+$/)
   return page.url().split('/').pop()!
+}
+
+// Fills both steps of a markdown post, without saving it.
+export async function fillNewPostForm(page: Page, options: PostDescription & { content: string }) {
+  await fillPostDescription(page, options)
+  await fillPostContent(page, options.content)
+}
+
+// Creates a markdown post through the admin form and returns its id.
+export async function createMarkdownPost(page: Page, options: PostDescription & { content: string }): Promise<string> {
+  await fillNewPostForm(page, options)
+  return await saveNewPost(page)
 }
