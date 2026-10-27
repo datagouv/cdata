@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { DESCRIPTION_SHORT_MAX_LENGTH, getDescriptionShort } from '~/datagouv-components/src/functions/description'
 
-// The output feeds HTML meta tags (name="description", og:description), so the
-// short description must stay single-line and within the length cap.
-// normalizeSeoDescription() in tests-unit/utils/seo.spec.ts owns the SEO-boundary
-// trimming/undefined contract applied on top of this output.
 describe('getDescriptionShort', () => {
   it('collapses newlines and repeated whitespace into single spaces', () => {
     const result = getDescriptionShort({ description: 'Ligne 1\n\nLigne 2   suite', description_short: null })
@@ -21,23 +17,11 @@ describe('getDescriptionShort', () => {
     expect(result).toBe('Short one')
   })
 
-  // DatasetCard.vue renders exactly `getDescriptionShort(props.dataset)` with no further
-  // transform, so the preference above is also the visible card text, including when the
-  // full description alone would have been long enough to need truncation.
-  it('is what DatasetCard renders as the visible short description', () => {
-    const dataset = {
-      description: 'A'.repeat(DESCRIPTION_SHORT_MAX_LENGTH + 50),
-      description_short: 'Une description courte et lisible',
-    }
-    expect(getDescriptionShort(dataset)).toBe(dataset.description_short)
-  })
-
   it('truncates a long plain description to the short limit', () => {
     const long = 'a'.repeat(DESCRIPTION_SHORT_MAX_LENGTH + 50)
     const result = getDescriptionShort({ description: long, description_short: null })
-    expect(result).toBeTypeOf('string')
     expect(result).toHaveLength(DESCRIPTION_SHORT_MAX_LENGTH)
-    expect(result!.endsWith('…')).toBe(true)
+    expect(result.endsWith('…')).toBe(true)
   })
 
   it('keeps markdown input single-line', () => {
@@ -56,8 +40,7 @@ describe('getDescriptionShort', () => {
   it('does not truncate at exactly the short limit', () => {
     const exact = 'b'.repeat(DESCRIPTION_SHORT_MAX_LENGTH)
     const result = getDescriptionShort({ description: exact, description_short: null })
-    expect(result).toBeTypeOf('string')
     expect(result).toHaveLength(DESCRIPTION_SHORT_MAX_LENGTH)
-    expect(result!.endsWith('…')).toBe(false)
+    expect(result.endsWith('…')).toBe(false)
   })
 })

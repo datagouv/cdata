@@ -1,7 +1,9 @@
 import { InferSeoMetaPlugin } from '@unhead/vue/plugins'
+import { seoTitleWithFallback } from '~/utils/seo'
 
-// Derive og:title/og:description from each page's title/description instead of
-// repeating them per page.
 export default defineNuxtPlugin(() => {
-  injectHead().use(InferSeoMetaPlugin())
+  const siteTitle = useRuntimeConfig().public.title
+  injectHead().use(InferSeoMetaPlugin({
+    ogTitle: title => seoTitleWithFallback(title, siteTitle),
+  }))
 })

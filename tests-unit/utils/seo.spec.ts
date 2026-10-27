@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { normalizeSeoDescription } from '~/utils/seo'
+import { normalizeSeoDescription, seoTitleWithFallback } from '~/utils/seo'
 
 describe('normalizeSeoDescription', () => {
   it('returns undefined for null', () => {
@@ -28,5 +28,12 @@ describe('normalizeSeoDescription', () => {
 
   it('leaves an already-normalized description untouched', () => {
     expect(normalizeSeoDescription('Texte réel')).toBe('Texte réel')
+  })
+})
+
+describe('seoTitleWithFallback', () => {
+  it('uses the site title only when a page title is missing', () => {
+    expect(seoTitleWithFallback(undefined, 'data.gouv.fr')).toBe('data.gouv.fr')
+    expect(seoTitleWithFallback('Dataset title', 'data.gouv.fr')).toBe('Dataset title')
   })
 })

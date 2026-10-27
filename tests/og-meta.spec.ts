@@ -16,6 +16,14 @@ test.describe('OG meta tags', () => {
     expect(await getMetaContent(page, 'meta[property="og:description"]')).toBeTruthy()
   })
 
+  test('a public page without a title falls back to the site name for og:title', async ({ page }) => {
+    await page.goto('/dashboard')
+    await page.waitForLoadState('domcontentloaded')
+
+    expect(await getMetaContent(page, 'meta[property="og:title"]'))
+      .toBe(await getMetaContent(page, 'meta[property="og:site_name"]'))
+  })
+
   test('dataset page derives og:title and og:description from the dataset', async ({ page }) => {
     await page.goto('/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/')
     await page.waitForLoadState('domcontentloaded')
