@@ -31,11 +31,13 @@
       </BrandedButton>
     </div>
 
-    <!-- Override action for too_large, visible to everyone (e.g. force preview) -->
+    <!-- Override action for too large files, visible to everyone (e.g. force preview) -->
     <div
-      v-if="errorInfo.type === 'too_large' && $slots['too-large-action']"
+      v-if="isTooLarge && $slots['too-large-action']"
       class="mb-4"
     >
+      <!-- Scopeless here on purpose: the `force()` scope is provided by
+         PreviewWrapper, which re-exports this slot. -->
       <slot name="too-large-action" />
     </div>
     <div
@@ -116,6 +118,8 @@ const errorInfo = computed(() => {
       ? getPreviewErrorInfo(props.resource)
       : getPreviewErrorInfoByType('none')
 })
+
+const isTooLarge = computed(() => errorInfo.value.type === 'too_large' || errorInfo.value.type === 'too_large_unsized')
 
 const detailText = computed(() => {
   if (props.detail) return props.detail

@@ -6,7 +6,6 @@
     :load="load"
     :fill="fill"
     :can-edit="canEdit"
-    :force-load="forceLoad"
     @loaded="renderAllPages"
   >
     <!-- While pdfjs downloads/parses the document, show the A4 skeleton instead of a
@@ -42,10 +41,10 @@
       </div>
     </template>
 
-    <template #too-large-action>
+    <template #too-large-action="{ force }">
       <BrandedButton
         color="secondary"
-        @click="forceLoad = true"
+        @click="force"
       >
         {{ t('Forcer la prévisualisation') }}
       </BrandedButton>
@@ -77,8 +76,6 @@ const props = defineProps<{
 const config = useComponentsConfig()
 
 const { t } = useTranslation()
-
-const forceLoad = ref(false)
 
 const containerRef = ref<HTMLElement | null>(null)
 let pdfDoc: PDFDocumentProxy | null = null
