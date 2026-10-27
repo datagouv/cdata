@@ -35,9 +35,17 @@ describe('getPreviewErrorInfo', () => {
     expect(info.userCta).toBe('Signaler un problème avec cet aperçu')
   })
 
-  it('is too_large for the file-size analysis error', () => {
-    const info = previewInfo({ 'analysis:error': 'File too large to download' })
+  it('is too_large for the file-size analysis error of a tabular file', () => {
+    const info = previewInfo({ 'analysis:error': 'File too large to download' }, 'csv')
     expect(info.type).toBe('too_large')
+  })
+
+  it('does not blame size for a non-tabular file', () => {
+    // hydra sets this error on any capped download (zip…), but "too large"
+    // wrongly implies a preview exists and is merely oversized for files the
+    // pipeline cannot re-process.
+    const info = previewInfo({ 'analysis:error': 'File too large to download' }, 'zip')
+    expect(info.type).toBe('unknown')
   })
 
   it('is malformed for a parsing error', () => {
@@ -57,28 +65,13 @@ describe('getPreviewErrorInfo', () => {
 })
 
 describe('getPreviewErrorInfo precedence', () => {
-  it('lets unavailable win over a blocked origin', () => {
-    const info = previewInfo({ 'check:available': false, 'check:cors:allow-origin': 'https://untrusted.example' }, 'pdf')
-    expect(info.type).toBe('unavailable')
-  })
-
   it('lets unavailable win over a file-too-large error', () => {
-    const info = previewInfo({ 'check:available': false, 'analysis:error': 'File too large to download' })
+    const info = previewInfo({ 'check:available': false, 'analysis:error': 'File too large to download' }, 'csv')
     expect(info.type).toBe('unavailable')
-  })
-
-  it('lets cors win over a file-too-large error', () => {
-    const info = previewInfo({ 'check:cors:allow-origin': 'https://untrusted.example', 'analysis:error': 'File too large to download' }, 'pdf')
-    expect(info.type).toBe('cors')
-  })
-
-  it('lets cors win over a parsing error', () => {
-    const info = previewInfo({ 'check:cors:allow-origin': 'https://untrusted.example', 'analysis:parsing:error': 'tabular:broken' }, 'pdf')
-    expect(info.type).toBe('cors')
   })
 
   it('lets too_large win over a parsing error', () => {
-    const info = previewInfo({ 'analysis:error': 'File too large to download', 'analysis:parsing:error': 'tabular:broken' })
+    const info = previewInfo({ 'analysis:error': 'File too large to download', 'analysis:parsing:error': 'tabular:broken' }, 'csv')
     expect(info.type).toBe('too_large')
   })
 
@@ -86,25 +79,47 @@ describe('getPreviewErrorInfo precedence', () => {
     const info = previewInfo({ 'analysis:parsing:error': 'tabular:broken', 'analysis:error': 'Some step exploded' })
     expect(info.type).toBe('malformed')
   })
-})
 
-describe('getPreviewErrorInfo cors/tabular interplay', () => {
-  it('ignores a blocked origin for tabular-pipeline files', () => {
-    const info = previewInfo({ 'check:cors:allow-origin': 'https://untrusted.example' }, 'csv')
-    expect(info.type).toBe('none')
-  })
-
-  it('still reports cors for a non-tabular file', () => {
-    expect(previewInfo({ 'check:cors:allow-origin': 'https://untrusted.example' }, 'pdf').type).toBe('cors')
+  it('leaves a blocked origin to runtime detection (no metadata family)', () => {
+    // A blocked origin is only actionable for the fetch-based previews, which
+    // diagnose it at runtime in PreviewWrapper (`getResourceCorsStatus`).
+    expect(previewInfo({ 'check:cors:allow-origin': 'https://untrusted.example' }, 'pdf').type).toBe('none')
   })
 })
 
-describe('getPreviewErrorInfoByType too_large CTA', () => {
+describe('getPreviewErrorInfoByType', () => {
+  it('interpolates the fileType for a sized too_large file', () => {
+    expect(getPreviewErrorInfoByType('too_large', resource({}, 'csv'), 'CSV').message).toBe('Ce fichier CSV est trop volumineux pour être prévisualisé.')
+  })
+
+  it('describes an unknown size instead of blaming the file', () => {
+    expect(getPreviewErrorInfoByType('too_large_unsized').message).toBe('La taille du fichier est inconnue. Il est possible que le fichier soit trop volumineux pour être prévisualisé.')
+  })
+
   it('offers the preview-request CTA for tabular files only', () => {
     expect(getPreviewErrorInfoByType('too_large', resource({}, 'csv')).userCta).toBe('Cette prévisualisation vous serait utile ?')
-    expect(getPreviewErrorInfoByType('too_large', resource({}, 'pdf')).userCta).toBe('')
-    // Without a resource, we cannot resolve tabular-pipeline status.
     expect(getPreviewErrorInfoByType('too_large').userCta).toBe('')
+  })
+
+  it('has a text and no CTA for a transient load failure', () => {
+    const info = getPreviewErrorInfoByType('load_failed')
+    expect(info.message).toBe('L\'aperçu de ce fichier n\'a pas pu être chargé.')
+    expect(info.userCta).toBe('')
+    expect(info.producerCta).toBe('')
+  })
+
+  it('keeps the report CTAs for a failed map preview', () => {
+    const info = getPreviewErrorInfoByType('map_load')
+    expect(info.message).toBe('L\'aperçu cartographique de ce fichier n\'a pas pu être chargé.')
+    expect(info.userCta).toBe('Signaler un problème avec cet aperçu')
+    expect(info.producerCta).toBe('Signaler un problème')
+  })
+
+  it('has no CTA for a failed map generation', () => {
+    const info = getPreviewErrorInfoByType('map_generation')
+    expect(info.message).toBe('La carte n\'a pas pu être générée automatiquement pour ce fichier.')
+    expect(info.userCta).toBe('')
+    expect(info.producerCta).toBe('')
   })
 })
 
@@ -113,11 +128,14 @@ describe('hasPreviewError', () => {
     expect(withConfig({}, () => hasPreviewError(resource({})))).toBe(false)
   })
 
+  it('is false for a blocked origin (runtime-only diagnosis)', () => {
+    expect(withConfig({ trustedDomains: ['data.gouv.fr'] }, () => hasPreviewError(resource({ 'check:cors:allow-origin': 'https://untrusted.example' }, 'pdf')))).toBe(false)
+  })
+
   it('is true for any diagnosed family', () => {
     for (const [extras, format] of [
       [{ 'check:available': false }, undefined],
-      [{ 'check:cors:allow-origin': 'https://untrusted.example' }, 'pdf'],
-      [{ 'analysis:error': 'File too large to download' }, undefined],
+      [{ 'analysis:error': 'File too large to download' }, 'csv'],
       [{ 'analysis:parsing:error': 'tabular:broken' }, undefined],
       [{ 'analysis:error': 'Some step exploded' }, undefined],
     ] as [Record<string, unknown>, string | undefined][]) {
