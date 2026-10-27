@@ -25,6 +25,7 @@
     >
       <BrandedButton
         color="secondary"
+        :disabled="userCtaClicked"
         @click="handleUserCta"
       >
         {{ errorInfo.userCta }}
@@ -73,7 +74,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
+import { toast } from 'vue-sonner'
 import { useTranslation } from '../../composables/useTranslation'
 import microscopeSrc from '../../../assets/illustrations/microscope.svg?url'
 import BrandedButton from '../BrandedButton.vue'
@@ -129,9 +131,14 @@ const detailText = computed(() => {
     : null
 })
 
+// Today the click only emits Matomo events.
+const userCtaClicked = ref(false)
+
 const handleUserCta = () => {
-  if (!props.resource) return
+  if (!props.resource || userCtaClicked.value) return
+  userCtaClicked.value = true
   trackEvent('Aperçu', `Demande de prévisualisation (${errorInfo.value.type})`, props.resource.id)
+  toast.success(t('Merci, votre demande a bien été notée.'))
 }
 
 const handleProducerCta = () => {
