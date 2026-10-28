@@ -708,6 +708,28 @@ test.describe('Sections', () => {
     await expect(page.getByText('du gras')).toHaveCSS('color', white)
   })
 
+  test('the outline of a hovered bloc is white on a colored section, where blue would not show', async ({ page, request }) => {
+    const post = await createPost(request, {
+      name: `Colored editor ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [
+        { class: 'SectionBloc', id: crypto.randomUUID(), color: 'primary', blocs: [markdown('Sur fond bleu')] },
+        { class: 'SectionBloc', id: crypto.randomUUID(), color: null, blocs: [markdown('Sur fond neutre')] },
+      ],
+    })
+    createdIds.push(post.id)
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    const outline = async (text: string) => {
+      const bloc = page.getByTestId('bloc-MarkdownBloc').filter({ hasText: text })
+      await bloc.hover()
+      return bloc.evaluate(element => getComputedStyle(element).outlineColor)
+    }
+    expect(await outline('Sur fond bleu')).toBe('rgb(255, 255, 255)')
+    expect(await outline('Sur fond neutre')).not.toBe('rgb(255, 255, 255)')
+  })
+
   test('a section is dragged after another', async ({ page, request }) => {
     const post = await createPost(request, {
       name: `Sections ${Date.now()}`,

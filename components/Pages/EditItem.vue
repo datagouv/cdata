@@ -14,7 +14,7 @@
       class="absolute z-30"
       :class="band ? 'top-2 left-2' : container ? 'bottom-full -right-1.5 pb-1.5' : 'bottom-full -left-1.5 pb-1.5'"
     >
-      <div class="flex items-center gap-0.5 rounded-md bg-new-primary text-white text-xs shadow-sm p-0.5">
+      <div class="flex items-center gap-0.5 rounded-md bg-(--edit-accent) text-(--edit-accent-text) text-xs shadow-sm p-0.5">
         <button
           v-if="draggable"
           type="button"
@@ -96,6 +96,13 @@ const floatingStyles = useEditorMenu(menuButton, menuItems, 'bottom-start')
 </script>
 
 <style>
+/* The colour of the editor's controls (outlines, tabs, insertion lines, "add" buttons): the
+   main one of the site, turned white on a coloured section, where it would not show. */
+:root {
+  --edit-accent: var(--color-new-primary);
+  --edit-accent-text: var(--color-white);
+}
+
 /* Only the innermost hovered item, and the innermost focused one, show their outline and
    their tab: the editor stays as quiet as the page, whatever the nesting. The two are told
    apart: a bloc keeping the focus, its input just typed in, must not hide the tab of the
@@ -112,7 +119,7 @@ const floatingStyles = useEditorMenu(menuButton, menuItems, 'bottom-start')
 }
 
 [data-edit-item]:is(:hover:not(:has([data-edit-item]:hover)), :focus-within:not(:has([data-edit-item]:focus-within))) {
-  outline: 2px solid var(--color-new-primary);
+  outline: 2px solid var(--edit-accent);
   outline-offset: 6px;
   border-radius: 2px;
 }

@@ -108,7 +108,7 @@
             @keydown="resizeWithKeyboard($event, index)"
           >
             <div
-              class="w-0.5 h-full bg-new-primary transition-opacity"
+              class="w-0.5 h-full bg-(--edit-accent) transition-opacity"
               :class="resizing === index ? 'opacity-100' : 'opacity-0 group-hover/boundary:opacity-100 group-focus-within/boundary:opacity-100'"
             />
             <span

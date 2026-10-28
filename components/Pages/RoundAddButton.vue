@@ -4,7 +4,7 @@
        z-index is on the button alone: on an ancestor, it would trap its menu with it. -->
   <button
     type="button"
-    class="relative z-20 inline-flex items-center justify-center size-6 rounded-full bg-new-primary text-white shadow-sm opacity-0 group-hover/add:opacity-100 focus-visible:opacity-100 transition-opacity"
+    class="relative z-20 inline-flex items-center justify-center size-6 rounded-full bg-(--edit-accent) text-(--edit-accent-text) shadow-sm opacity-0 group-hover/add:opacity-100 focus-visible:opacity-100 transition-opacity"
     :title="label"
     :aria-label="label"
   >
