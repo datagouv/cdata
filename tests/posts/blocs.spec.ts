@@ -678,10 +678,12 @@ test.describe('Sections', () => {
   test('a bloc dropped beside a column shorter than its row joins the row', async ({ page, request }) => {
     const column = (texts: Array<string>): SectionContentBloc => ({ class: 'ColumnBloc', id: crypto.randomUUID(), width: '1/2', blocs: texts.map(text => markdown(text)) })
     const post = await createSectionPage(request, [
-      column(['Haut A', 'Haut B', 'Haut C', 'Haut D', 'Haut E']),
+      column(['Haut A', 'Haut B', 'Haut C']),
       column(['Court']),
       markdown('Dessous'),
     ])
+    // The whole section in sight: grabbing the handle of `Dessous` would otherwise scroll the
+    // page, and the columns measured before with it
     await page.setViewportSize({ width: 1280, height: 1600 })
     await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
 
@@ -691,6 +693,7 @@ test.describe('Sections', () => {
     // The short column is centered on the tall one
     expect(short.y).toBeGreaterThan(tall.y + 50)
     const dessous = page.getByTestId('bloc-MarkdownBloc').filter({ hasText: 'Dessous' })
+    await expect(dessous).toBeInViewport({ ratio: 1 })
 
     // A vertical line in the gap between the columns, as high as the row
     async function expectLineBetweenColumns(x: number, y: number) {
