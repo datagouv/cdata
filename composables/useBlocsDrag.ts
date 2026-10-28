@@ -6,8 +6,7 @@ export type Dragged = { kind: 'band' | 'accordion-item' } | { kind: 'bloc', bloc
 
 type DropList = {
   // `grid` for the blocs of a section, an accordion item or a column, laid out side by side in
-  // rows;
-  // `vertical` for the others.
+  // rows; `vertical` for the others.
   orientation: 'vertical' | 'grid'
   items: () => unknown[]
   accepts: (dragged: Dragged) => boolean

@@ -647,26 +647,15 @@ test.describe('Sections', () => {
   }
 
   test('a column stacks its title and its text beside a taller bloc, centered on it', async ({ page, request }) => {
-    const post = await createPost(request, {
-      name: `Column ${Date.now()}`,
-      kind: 'page',
-      body_type: 'blocs',
-      blocs: [{
-        class: 'SectionBloc',
+    const post = await createSectionPage(request, [
+      {
+        class: 'ColumnBloc',
         id: crypto.randomUUID(),
-        color: null,
-        blocs: [
-          {
-            class: 'ColumnBloc',
-            id: crypto.randomUUID(),
-            width: '1/2',
-            blocs: [{ class: 'TitleBloc', id: crypto.randomUUID(), width: null, title: 'Titre en colonne', subtitle: null }, markdown('Son texte')],
-          },
-          markdown(Array.from({ length: 30 }, (_, index) => `Ligne ${index}`).join('\n\n'), '1/2'),
-        ],
-      }],
-    })
-    createdIds.push(post.id)
+        width: '1/2',
+        blocs: [{ class: 'TitleBloc', id: crypto.randomUUID(), width: null, title: 'Titre en colonne', subtitle: null }, markdown('Son texte')],
+      },
+      markdown(Array.from({ length: 30 }, (_, index) => `Ligne ${index}`).join('\n\n'), '1/2'),
+    ])
     await page.setViewportSize({ width: 1280, height: 900 })
     await gotoHydrated(page, `/pages/${post.slug}`)
 
@@ -705,6 +694,31 @@ test.describe('Sections', () => {
     await gotoHydrated(page, `/pages/${post.slug}#accordion-${accordionId}-${itemId}`)
 
     await expect(page.getByRole('heading', { level: 4, name: 'Titre en colonne' })).toBeVisible()
+  })
+
+  test('the edges of a column add blocs to it, and the gaps around it to the section', async ({ page, request }) => {
+    const post = await createSectionPage(request, [
+      markdown('Avant'),
+      { class: 'ColumnBloc', id: crypto.randomUUID(), width: '3/4', blocs: [markdown('Dedans A'), markdown('Dedans B')] },
+      markdown('Court', '1/4'),
+      markdown('Après'),
+    ])
+    await page.setViewportSize({ width: 1280, height: 1400 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    const column = page.locator('[data-bloc-class="ColumnBloc"]')
+    const after = page.locator('[data-bloc-class="MarkdownBloc"]').filter({ hasText: 'Après' })
+    const box = (await column.boundingBox())!
+    // Away from the middle, where the button of each inserter is: the line answering the
+    // pointer shows that button
+    const answers = async (y: number, inserter: Locator) => {
+      await page.mouse.move(box.x + 40, y)
+      await expect(inserter.getByRole('button', { name: 'Ajouter un bloc ici' })).toHaveCSS('opacity', '1')
+    }
+    await answers(box.y - 6, column.getByTestId('insert-bloc-in-section'))
+    await answers(box.y + 6, column.getByTestId('prepend-bloc-in-column'))
+    await answers(box.y + box.height - 6, column.getByTestId('add-bloc-in-column'))
+    await answers(box.y + box.height + 6, after.getByTestId('insert-bloc-in-section'))
   })
 
   test('a column is added from the menu at half the row, then filled', async ({ page, request }) => {
@@ -885,7 +899,7 @@ test.describe('Sections', () => {
     expect(section.blocs.map((bloc: { width: string | null }) => bloc.width)).toEqual([null, '1/3'])
   })
 
-  test('a bloc ending a row of a column and the column are each resized from their handle', async ({ page, request }) => {
+  test('a bloc filling a column and the column are each resized from their handle', async ({ page, request }) => {
     const post = await createSectionPage(request, [
       { class: 'ColumnBloc', id: crypto.randomUUID(), width: '1/2', blocs: [markdown('Dedans')] },
       markdown('Dehors', '1/2'),
@@ -899,7 +913,7 @@ test.describe('Sections', () => {
     const innerHandle = inner.getByTestId('bloc-resize')
     const list = (await page.locator('[data-blocs-level="section"]').boundingBox())!
 
-    // The text takes the whole column: both handles share the gap on its right, each one
+    // The text takes the whole column: its handle is right by that of the column, each one
     // grabbed where it is drawn. Dragged to a quarter of the section, the text takes half of
     // the column, which keeps its width.
     const drag = async (handle: typeof innerHandle, to: number) => {
