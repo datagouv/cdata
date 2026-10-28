@@ -72,6 +72,9 @@ export type ImageRows = {
   // The rows each bloc covers: more than one for such an image.
   spans: Array<number>
   beside: Array<BesideImage | null>
+  // The columns such an image leaves to the blocs beside it: what a bloc added among them
+  // takes, not to cut through the image.
+  freeColumns: Array<number | null>
 }
 
 // An image at either end of a row of several blocs also covers the rows after it that fit in
@@ -87,6 +90,7 @@ export function imageRows(blocs: Array<LaidOutBloc>): ImageRows {
 
   const spans = blocs.map(() => 1)
   const beside: Array<BesideImage | null> = blocs.map(() => null)
+  const freeColumns: Array<number | null> = blocs.map(() => null)
   rows.forEach((row, rowIndex) => {
     const images = blocs.slice(row.start, row.end).flatMap((bloc, offset) => bloc.class === 'ImageBloc' ? [row.start + offset] : [])
     const image = images[0]
@@ -100,13 +104,19 @@ export function imageRows(blocs: Array<LaidOutBloc>): ImageRows {
     if (!covered.length) return
     spans[image] += covered.length
     for (let index = row.start; index < row.end; index++) {
-      if (index !== image) beside[index] = 'first-row'
+      if (index !== image) {
+        beside[index] = 'first-row'
+        freeColumns[index] = free
+      }
     }
     for (const next of covered) {
-      for (let index = next.start; index < next.end; index++) beside[index] = 'next-rows'
+      for (let index = next.start; index < next.end; index++) {
+        beside[index] = 'next-rows'
+        freeColumns[index] = free
+      }
     }
   })
-  return { spans, beside }
+  return { spans, beside, freeColumns }
 }
 
 // The space above a row of blocs: none for the first one; after a title, little, as it stays

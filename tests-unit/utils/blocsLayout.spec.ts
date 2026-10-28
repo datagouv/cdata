@@ -64,50 +64,45 @@ describe('rowSpacings', () => {
 describe('imageRows', () => {
   const at = (blocClass: BlocClass, width: BlocWidth | null = null) => ({ class: blocClass, width }) as Parameters<typeof imageRows>[0][number]
 
-  it.each<[name: string, blocs: Parameters<typeof imageRows>[0], spans: Array<number>, beside: ReturnType<typeof imageRows>['beside']]>([
+  type Expected = [spans: Array<number>, beside: ReturnType<typeof imageRows>['beside'], freeColumns: Array<number | null>]
+
+  it.each<[name: string, blocs: Parameters<typeof imageRows>[0], expected: Expected]>([
     [
       'a banner: the image beside its title and the text under it',
       [at('TitleBloc', '3/4'), at('ImageBloc', '1/4'), at('MarkdownBloc', '3/4')],
-      [1, 2, 1],
-      ['first-row', null, 'next-rows'],
+      [[1, 2, 1], ['first-row', null, 'next-rows'], [9, null, 9]],
     ],
     [
       'the image on the left of the rows',
       [at('ImageBloc', '1/3'), at('TitleBloc', '2/3'), at('MarkdownBloc', '1/3'), at('ButtonBloc', '1/3')],
-      [2, 1, 1, 1],
-      [null, 'first-row', 'next-rows', 'next-rows'],
+      [[2, 1, 1, 1], [null, 'first-row', 'next-rows', 'next-rows'], [null, 8, 8, 8]],
     ],
     [
       'down to a row too wide to go beside it',
       [at('TitleBloc', '3/4'), at('ImageBloc', '1/4'), at('MarkdownBloc', '3/4'), at('MarkdownBloc')],
-      [1, 2, 1, 1],
-      ['first-row', null, 'next-rows', null],
+      [[1, 2, 1, 1], ['first-row', null, 'next-rows', null], [9, null, 9, null]],
     ],
     [
       'not when the next row does not fit beside it',
       [at('TitleBloc', '3/4'), at('ImageBloc', '1/4'), at('MarkdownBloc')],
-      [1, 1, 1],
-      [null, null, null],
+      [[1, 1, 1], [null, null, null], [null, null, null]],
     ],
     [
       'not for an image alone on its row',
       [at('ImageBloc', '1/4'), at('MarkdownBloc', '3/4')],
-      [1, 1],
-      [null, null],
+      [[1, 1], [null, null], [null, null]],
     ],
     [
       'not for an image in the middle of its row',
       [at('TitleBloc', '1/4'), at('ImageBloc', '1/2'), at('ButtonBloc', '1/4'), at('MarkdownBloc', '1/4')],
-      [1, 1, 1, 1],
-      [null, null, null, null],
+      [[1, 1, 1, 1], [null, null, null, null], [null, null, null, null]],
     ],
     [
       'not over a row holding another image',
       [at('TitleBloc', '3/4'), at('ImageBloc', '1/4'), at('ImageBloc', '1/2')],
-      [1, 1, 1],
-      [null, null, null],
+      [[1, 1, 1], [null, null, null], [null, null, null]],
     ],
-  ])('%s', (_name, blocs, spans, beside) => {
-    expect(imageRows(blocs)).toEqual({ spans, beside })
+  ])('%s', (_name, blocs, [spans, beside, freeColumns]) => {
+    expect(imageRows(blocs)).toEqual({ spans, beside, freeColumns })
   })
 })

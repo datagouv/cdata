@@ -39,15 +39,15 @@
         :data-bloc-class="bloc.class"
         data-drop-item
       >
-        <!-- In the gap above a row, across the list: a new bloc lands right here, starting
-             the row -->
+        <!-- In the gap above a row, across the list, or across the columns an image covering
+             several rows leaves beside it: a new bloc lands right here, starting the row -->
         <BlocInserter
           v-if="edit && index > 0 && rows.starts.has(index)"
-          class="absolute left-0 bottom-full w-[100cqw] h-(--row-space)"
+          class="absolute left-0 bottom-full w-[calc((100cqw+var(--grid-gap))*var(--inserter-columns)/12-var(--grid-gap))] h-(--row-space)"
           :level
           :label="$t('Ajouter un bloc ici')"
           :data-testid="`insert-bloc-in-${level}`"
-          @new-blocs="blocs.splice(index, 0, ...($event as Array<T>))"
+          @new-blocs="insertAbove($event as Array<T>, index)"
         />
         <EditItem
           :edit
@@ -241,7 +241,27 @@ function placement(index: number) {
     '--row-span': rows.value.spans[index],
     '--row-space': ROW_SPACES[spacing],
     '--stacked-space': ROW_SPACES[stacked],
+    '--inserter-columns': besideImage(index) ?? 12,
   }
+}
+
+// The columns an image covering several rows leaves beside the row starting at `index`, when
+// it stands beside that row: not above it, as for the first of its rows.
+function besideImage(index: number): number | null {
+  return rows.value.beside[index] === 'next-rows' ? rows.value.freeColumns[index] : null
+}
+
+// Blocs inserted above a row start it: beside an image covering several rows, at the width
+// it leaves (an object keeping its own, as narrower), so as not to cut through it.
+function insertAbove(newBlocs: Array<T>, index: number) {
+  const columns = besideImage(index)
+  const width = WIDTHS.find(width => BLOC_SPANS[width] === columns)
+  if (width) {
+    for (const newBloc of newBlocs) {
+      if (!(newBloc.class in OBJECT_WIDTH)) newBloc.width = width === 'whole' ? null : width
+    }
+  }
+  blocs.value.splice(index, 0, ...newBlocs)
 }
 
 // Blocs inserted between two blocs of a row join it: an object at its own width, anything
