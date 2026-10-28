@@ -47,7 +47,8 @@ export function useDropList(list: Ref<HTMLElement | null>, options: DropList) {
 
 // Index the pointer points at in a list, and where to draw it.
 function place(listElement: HTMLElement, list: DropList, source: DragSource, x: number, y: number): DropTarget {
-  const rects = itemElements(listElement).map(item => item.getBoundingClientRect())
+  const items = itemElements(listElement)
+  const rects = items.map(item => item.getBoundingClientRect())
   const listRect = listElement.getBoundingClientRect()
 
   if (list.orientation === 'vertical') {
@@ -65,15 +66,22 @@ function place(listElement: HTMLElement, list: DropList, source: DragSource, x: 
   }
   // Blocs wrap in rows: those of the rows above, then, in the pointer's row, those on its
   // left. On a bloc, its left half; or its upper half when it is alone on its row, the
-  // others being above and below.
+  // others being above and below. An image covering several rows (see `imageRows`) comes
+  // before the blocs beside it after its own row: beside it under that row, the pointer is
+  // past it. The pointer lands after the last bloc it is past.
   const sameRow = (a: DOMRect, b: DOMRect) => a.top === b.top
-  const index = rects.filter((rect) => {
+  const firstRowBottom = Math.max(...items.flatMap((item, index) => item.dataset.besideImage === 'first-row' ? [rects[index]!.bottom] : []))
+  const isPast = (rect: DOMRect, index: number) => {
+    if (items[index]!.dataset.rowSpan && (rect.right < x || rect.left > x) && y >= rect.top && y <= rect.bottom) {
+      return rect.right < x || y > firstRowBottom
+    }
     if (rect.bottom < y) return true
     if (rect.top > y || rect.left > x) return false
     if (rect.right < x) return true
     const alone = rects.every(other => other === rect || !sameRow(other, rect))
     return alone ? rect.top + rect.height / 2 < y : rect.left + rect.width / 2 < x
-  }).length
+  }
+  const index = rects.reduce((last, rect, index) => isPast(rect, index) ? index + 1 : last, 0)
   const before = rects[index - 1]
   const after = rects[index]
   const gap = columnGap(listElement)
@@ -88,9 +96,13 @@ function place(listElement: HTMLElement, list: DropList, source: DragSource, x: 
   if (before && ((after && sameRow(before, after)) || fits())) {
     return { list: listElement, index, line: { left: before.right + gap / 2 - 1, top: before.top, width: 2, height: before.height } }
   }
-  // Otherwise the bloc starts a row: a line across the list, above that row. It stops short
-  // of a bloc it would cross, an image covering several rows beside them.
-  const lineY = !after ? before.bottom + 4 : before ? (before.bottom + after.top) / 2 : after.top - 4
+  // Otherwise the bloc starts a row: a line across the list, above that row, between it and
+  // the blocs above it, an image covering several rows beside them reaching lower. The line
+  // stops short of a bloc it would cross, such an image.
+  const bottomAbove = after && before && before.bottom > after.top
+    ? Math.max(...rects.slice(0, index).filter(rect => rect.bottom <= after.top + 1).map(rect => rect.bottom))
+    : before?.bottom
+  const lineY = !after ? before!.bottom + 4 : before ? (bottomAbove! + after.top) / 2 : after.top - 4
   let left = listRect.left
   let right = listRect.right
   for (const rect of rects) {

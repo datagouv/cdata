@@ -37,6 +37,8 @@
         }"
         :style="placement(index)"
         :data-bloc-class="bloc.class"
+        :data-row-span="rows.spans[index] > 1 ? rows.spans[index] : undefined"
+        :data-beside-image="rows.beside[index] ?? undefined"
         data-drop-item
       >
         <!-- In the gap above a row, across the list, or across the columns an image covering
