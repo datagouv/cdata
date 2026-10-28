@@ -63,19 +63,34 @@ function place(listElement: HTMLElement, list: DropList, source: DragSource, x: 
   if (!rects.length) {
     return { list: listElement, index: 0, line: { left: listRect.left, top: listRect.top + listRect.height / 2 - 1, width: listRect.width, height: 2 } }
   }
-  // Blocs wrap in rows: those of the rows above, then, in the pointer's row, those on its
-  // left. On a bloc, its left half; or its upper half when it is alone on its row, the
-  // others being above and below.
-  const sameRow = (a: DOMRect, b: DOMRect) => a.top === b.top
-  const index = rects.filter((rect) => {
-    if (rect.bottom < y) return true
-    if (rect.top > y || rect.left > x) return false
+  // The rows the blocs wrap in: a bloc starts one when it is not on the right of the previous
+  // one. A row spans from the top of its highest bloc to the bottom of its lowest: a bloc
+  // centered on a taller one (a title, an image, a column) tells nothing of the row by its own.
+  const rows: Array<{ top: number, bottom: number, count: number }> = []
+  const rowOf = rects.map((rect, index) => {
+    let row = rows.at(-1)
+    if (!row || rect.left < rects[index - 1].right) {
+      row = { top: rect.top, bottom: rect.bottom, count: 0 }
+      rows.push(row)
+    }
+    row.top = Math.min(row.top, rect.top)
+    row.bottom = Math.max(row.bottom, rect.bottom)
+    row.count += 1
+    return row
+  })
+  // Those of the rows above, then, in the pointer's row, those on its left. On a bloc, its
+  // left half; or its upper half when it is alone on its row, the others being above and below.
+  const index = rects.filter((rect, i) => {
+    const row = rowOf[i]
+    if (row.bottom < y) return true
+    if (row.top > y || rect.left > x) return false
     if (rect.right < x) return true
-    const alone = rects.every(other => other === rect || !sameRow(other, rect))
-    return alone ? rect.top + rect.height / 2 < y : rect.left + rect.width / 2 < x
+    return row.count === 1 ? rect.top + rect.height / 2 < y : rect.left + rect.width / 2 < x
   }).length
   const before = rects[index - 1]
   const after = rects[index]
+  const beforeRow = rowOf[index - 1]
+  const afterRow = rowOf[index]
   const gap = columnGap(listElement)
   // The dragged bloc keeps its width, its share of a row: after the last bloc of a row, it
   // stays on that row if it fits in what is left.
@@ -85,11 +100,11 @@ function place(listElement: HTMLElement, list: DropList, source: DragSource, x: 
   }
   // Between two blocs of a row, or at the end of a row with room for it: a vertical line,
   // in the middle of the gap.
-  if (before && ((after && sameRow(before, after)) || fits())) {
-    return { list: listElement, index, line: { left: before.right + gap / 2 - 1, top: before.top, width: 2, height: before.height } }
+  if (before && (afterRow === beforeRow || fits())) {
+    return { list: listElement, index, line: { left: before.right + gap / 2 - 1, top: beforeRow.top, width: 2, height: beforeRow.bottom - beforeRow.top } }
   }
   // Otherwise the bloc starts a row: a line across the list, above that row.
-  const lineY = !after ? before.bottom + 4 : before ? (before.bottom + after.top) / 2 : after.top - 4
+  const lineY = !after ? beforeRow.bottom + 4 : before ? (beforeRow.bottom + afterRow.top) / 2 : afterRow.top - 4
   return { list: listElement, index, line: { left: listRect.left, top: lineY - 1, width: listRect.width, height: 2 } }
 }
 

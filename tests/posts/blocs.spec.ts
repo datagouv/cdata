@@ -675,6 +675,45 @@ test.describe('Sections', () => {
     expect(Math.abs((box.y + box.height / 2) - (tall.y + tall.height / 2))).toBeLessThan(2)
   })
 
+  test('a bloc dropped beside a column shorter than its row joins the row', async ({ page, request }) => {
+    const column = (texts: Array<string>): SectionContentBloc => ({ class: 'ColumnBloc', id: crypto.randomUUID(), width: '1/2', blocs: texts.map(text => markdown(text)) })
+    const post = await createSectionPage(request, [
+      column(['Haut A', 'Haut B', 'Haut C', 'Haut D', 'Haut E']),
+      column(['Court']),
+      markdown('Dessous'),
+    ])
+    await page.setViewportSize({ width: 1280, height: 1600 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    const columns = page.getByTestId('bloc-ColumnBloc')
+    const tall = (await columns.filter({ hasText: 'Haut A' }).boundingBox())!
+    const short = (await columns.filter({ hasText: 'Court' }).boundingBox())!
+    // The short column is centered on the tall one
+    expect(short.y).toBeGreaterThan(tall.y + 50)
+    const dessous = page.getByTestId('bloc-MarkdownBloc').filter({ hasText: 'Dessous' })
+
+    // A vertical line in the gap between the columns, as high as the row
+    async function expectLineBetweenColumns(x: number, y: number) {
+      await startEditItemDrag(dessous, x, y)
+      const indicator = (await page.getByTestId('drop-indicator').boundingBox())!
+      expect(indicator.height).toBeGreaterThan(indicator.width)
+      expect(indicator.x).toBeGreaterThan(tall.x + tall.width - 1)
+      expect(indicator.x).toBeLessThan(short.x + 1)
+      expect(indicator.height).toBeGreaterThan(tall.height * 0.9)
+    }
+
+    // In the gap, at mid-height
+    await expectLineBetweenColumns((tall.x + tall.width + short.x) / 2, tall.y + tall.height / 2)
+    await page.keyboard.press('Escape')
+    await page.mouse.up()
+    // On the left part of the room the short column leaves below it in the row
+    await expectLineBetweenColumns(short.x + short.width / 4, tall.y + tall.height - 10)
+    await page.mouse.up()
+
+    const [section] = await saveAndFetchBlocs(page, post.slug)
+    expect(section.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['ColumnBloc', 'MarkdownBloc', 'ColumnBloc'])
+  })
+
   test('the title of a column in an accordion item is drawn as one of the item', async ({ page, request }) => {
     const accordionId = crypto.randomUUID()
     const itemId = crypto.randomUUID()
