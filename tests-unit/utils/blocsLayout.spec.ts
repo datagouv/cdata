@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { acceptsDropped, rowShare, rowSpacings, rowStarts } from '~/utils/blocsLayout'
+import { acceptsDropped, imageRows, rowShare, rowSpacings, rowStarts } from '~/utils/blocsLayout'
 import type { Dragged } from '~/composables/useBlocsDrag'
 import type { BlocWidth } from '~/types/pages'
 import type { BlocClass, RowSpacing } from '~/utils/blocsLayout'
@@ -55,7 +55,59 @@ describe('rowSpacings', () => {
     ['a row of another kind of blocs further apart', [at('DatasetBloc', '1/2'), at('DatasetBloc', '1/2'), at('ReuseBloc', '1/3')], ['none', 'none', 'between-rows']],
     ['full width texts further apart', [at('MarkdownBloc'), at('MarkdownBloc')], ['none', 'between-rows']],
     ['a row after a lone card further apart', [at('DatasetBloc', '1/2'), at('MarkdownBloc'), at('DatasetBloc', '1/2'), at('DatasetBloc', '1/2')], ['none', 'between-rows', 'between-rows', 'between-rows']],
+    ['a text close to the title it follows beside an image', [at('TitleBloc', '3/4'), at('ImageBloc', '1/4'), at('MarkdownBloc', '3/4')], ['none', 'none', 'after-title']],
   ])('%s', (_name, blocs, spacings) => {
     expect(rowSpacings(blocs)).toEqual(spacings)
+  })
+})
+
+describe('imageRows', () => {
+  const at = (blocClass: BlocClass, width: BlocWidth | null = null) => ({ class: blocClass, width }) as Parameters<typeof imageRows>[0][number]
+
+  it.each<[name: string, blocs: Parameters<typeof imageRows>[0], spans: Array<number>, beside: ReturnType<typeof imageRows>['beside']]>([
+    [
+      'a banner: the image beside its title and the text under it',
+      [at('TitleBloc', '3/4'), at('ImageBloc', '1/4'), at('MarkdownBloc', '3/4')],
+      [1, 2, 1],
+      ['first-row', null, 'next-rows'],
+    ],
+    [
+      'the image on the left of the rows',
+      [at('ImageBloc', '1/3'), at('TitleBloc', '2/3'), at('MarkdownBloc', '1/3'), at('ButtonBloc', '1/3')],
+      [2, 1, 1, 1],
+      [null, 'first-row', 'next-rows', 'next-rows'],
+    ],
+    [
+      'down to a row too wide to go beside it',
+      [at('TitleBloc', '3/4'), at('ImageBloc', '1/4'), at('MarkdownBloc', '3/4'), at('MarkdownBloc')],
+      [1, 2, 1, 1],
+      ['first-row', null, 'next-rows', null],
+    ],
+    [
+      'not when the next row does not fit beside it',
+      [at('TitleBloc', '3/4'), at('ImageBloc', '1/4'), at('MarkdownBloc')],
+      [1, 1, 1],
+      [null, null, null],
+    ],
+    [
+      'not for an image alone on its row',
+      [at('ImageBloc', '1/4'), at('MarkdownBloc', '3/4')],
+      [1, 1],
+      [null, null],
+    ],
+    [
+      'not for an image in the middle of its row',
+      [at('TitleBloc', '1/4'), at('ImageBloc', '1/2'), at('ButtonBloc', '1/4'), at('MarkdownBloc', '1/4')],
+      [1, 1, 1, 1],
+      [null, null, null, null],
+    ],
+    [
+      'not over a row holding another image',
+      [at('TitleBloc', '3/4'), at('ImageBloc', '1/4'), at('ImageBloc', '1/2')],
+      [1, 1, 1],
+      [null, null, null],
+    ],
+  ])('%s', (_name, blocs, spans, beside) => {
+    expect(imageRows(blocs)).toEqual({ spans, beside })
   })
 })

@@ -23,12 +23,18 @@
       <!-- One element per bloc, holding the bloc and its controls: the drop item, whose
            position decides where a dragged bloc lands. A title or an image beside a taller bloc
            (a hero and its illustration) is centered on it; the others fill the height of the
-           row, so that the cards of a row are as tall as each other. -->
+           row, so that the cards of a row are as tall as each other. Beside an image covering
+           several rows, which share what it adds to their height, the blocs gather on its
+           middle: those of its first row at their bottom, the next ones at their top. -->
       <div
         v-for="(bloc, index) in blocs"
         :key="bloc.id"
-        class="relative min-w-0 sm:col-span-(--span) max-sm:mt-(--stacked-space) sm:mt-(--row-space)"
-        :class="{ 'self-center': bloc.class === 'TitleBloc' || bloc.class === 'ImageBloc' }"
+        class="relative min-w-0 sm:col-span-(--span) sm:row-span-(--row-span) max-sm:mt-(--stacked-space) sm:mt-(--row-space)"
+        :class="{
+          'self-center': (bloc.class === 'TitleBloc' || bloc.class === 'ImageBloc') && !rows.beside[index],
+          'sm:self-end': rows.beside[index] === 'first-row',
+          'sm:self-start': rows.beside[index] === 'next-rows',
+        }"
         :style="placement(index)"
         :data-bloc-class="bloc.class"
         data-drop-item
@@ -181,7 +187,7 @@ import RoundAddButton from './RoundAddButton.vue'
 import type { BlocWidth, SectionColor, SectionContentBloc } from '~/types/pages'
 import { SECTION_COLOR } from '~/utils/blocs'
 import { BLOC_COMPONENTS, OBJECT_WIDTH } from '~/utils/pages'
-import { BLOCS_LEVEL, BLOC_SPANS, acceptsDropped, renderedShare, rowSpacings, rowStarts, type BlocsLevel, type RowSpacing, type RowWidth } from '~/utils/blocsLayout'
+import { BLOCS_LEVEL, BLOC_SPANS, acceptsDropped, imageRows, renderedShare, rowSpacings, rowStarts, type BlocsLevel, type RowSpacing, type RowWidth } from '~/utils/blocsLayout'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 const props = defineProps<{
@@ -222,6 +228,7 @@ const ROW_SPACES: Record<RowSpacing, string> = { 'none': '0', 'column-gap': 'var
 const rows = computed(() => ({
   starts: new Set(rowStarts(blocs.value.map(bloc => bloc.width))),
   spacing: rowSpacings(blocs.value),
+  ...imageRows(blocs.value),
 }))
 
 // The columns a bloc takes, and the space above it. Stacked below `sm`, the blocs of a row keep
@@ -231,6 +238,7 @@ function placement(index: number) {
   const stacked = index === 0 || rows.value.starts.has(index) ? spacing : 'column-gap'
   return {
     '--span': BLOC_SPANS[blocs.value[index].width ?? 'whole'],
+    '--row-span': rows.value.spans[index],
     '--row-space': ROW_SPACES[spacing],
     '--stacked-space': ROW_SPACES[stacked],
   }

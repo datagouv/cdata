@@ -62,6 +62,53 @@ export function rowStarts(widths: Array<BlocWidth | null>): Array<number> {
   return starts
 }
 
+type LaidOutBloc = Pick<SectionContentBloc, 'class' | 'width'>
+
+// Where a bloc stands beside an image covering several rows: in the first of them, or in the
+// following ones.
+export type BesideImage = 'first-row' | 'next-rows'
+
+export type ImageRows = {
+  // The rows each bloc covers: more than one for such an image.
+  spans: Array<number>
+  beside: Array<BesideImage | null>
+}
+
+// An image at either end of a row of several blocs also covers the rows after it that fit in
+// the columns it leaves: a banner, its title and its text on one side and its illustration on
+// the other. The grid places these rows beside it by itself.
+export function imageRows(blocs: Array<LaidOutBloc>): ImageRows {
+  const starts = rowStarts(blocs.map(bloc => bloc.width))
+  const rows = starts.map((start, index) => ({ start, end: starts[index + 1] ?? blocs.length }))
+  const columns = (row: { start: number, end: number }) => blocs.slice(row.start, row.end)
+    .reduce((sum, bloc) => sum + BLOC_SPANS[bloc.width ?? 'whole'], 0)
+  const hasImage = (row: { start: number, end: number }) => blocs.slice(row.start, row.end)
+    .some(bloc => bloc.class === 'ImageBloc')
+
+  const spans = blocs.map(() => 1)
+  const beside: Array<BesideImage | null> = blocs.map(() => null)
+  rows.forEach((row, rowIndex) => {
+    const images = blocs.slice(row.start, row.end).flatMap((bloc, offset) => bloc.class === 'ImageBloc' ? [row.start + offset] : [])
+    const image = images[0]
+    if (row.end - row.start < 2 || images.length !== 1 || (image !== row.start && image !== row.end - 1)) return
+    const free = 12 - BLOC_SPANS[blocs[image]!.width ?? 'whole']
+    const covered = []
+    for (const next of rows.slice(rowIndex + 1)) {
+      if (hasImage(next) || columns(next) > free) break
+      covered.push(next)
+    }
+    if (!covered.length) return
+    spans[image] += covered.length
+    for (let index = row.start; index < row.end; index++) {
+      if (index !== image) beside[index] = 'first-row'
+    }
+    for (const next of covered) {
+      for (let index = next.start; index < next.end; index++) beside[index] = 'next-rows'
+    }
+  })
+  return { spans, beside }
+}
+
 // The space above a row of blocs: none for the first one; after a title, little, as it stays
 // close to what it introduces; between rows of a same kind of blocs (cards wrapping on
 // several rows), the gap between the blocs of a row; between other rows, more.
@@ -69,11 +116,16 @@ export type RowSpacing = 'none' | 'after-title' | 'column-gap' | 'between-rows'
 
 // The spacing above the row of each bloc, by bloc: the blocs of a row share it, so that they
 // stay aligned.
-export function rowSpacings(blocs: Array<Pick<SectionContentBloc, 'class' | 'width'>>): Array<RowSpacing> {
+export function rowSpacings(blocs: Array<LaidOutBloc>): Array<RowSpacing> {
   const starts = rowStarts(blocs.map(bloc => bloc.width))
+  const { spans } = imageRows(blocs)
   const rows = starts.map((start, index) => blocs.slice(start, starts[index + 1]))
+  // An image covering the rows after its own stands beside them, not above them.
+  const above = starts.map((start, index) => blocs
+    .slice(start, starts[index + 1])
+    .filter((_bloc, offset) => spans[start + offset] === 1))
   return rows.flatMap((row, index) => {
-    const previous = rows[index - 1]
+    const previous = above[index - 1]
     let spacing: RowSpacing = 'between-rows'
     if (!previous) spacing = 'none'
     else if (previous.length === 1 && previous[0].class === 'TitleBloc') spacing = 'after-title'
