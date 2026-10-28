@@ -72,25 +72,21 @@
         :owner="dataservice.owner"
         :organization-url="organizationUrl"
       />
-      <div class="dg-card-update-row">
-        <TranslationT
-          tag="div"
-          class="dg-card-updated"
-          keypath="Mis à jour {date}"
-        >
-          <template #date>
-            <FormattedDate
-              :date="dataservice.metadata_modified_at"
-              format="relative"
-              :options="{ dateStyle: 'medium' }"
-            />
-          </template>
-        </TranslationT>
-      </div>
     </div>
-    <div
-      class="dg-card-metadata-row dg-card-has-quality"
-    >
+    <div class="dg-card-metadata-row dg-card-has-quality dg-card-unified-metadata">
+      <TranslationT
+        tag="div"
+        class="dg-card-updated"
+        keypath="Mis à jour {date}"
+      >
+        <template #date>
+          <FormattedDate
+            :date="dataservice.metadata_modified_at"
+            format="relative"
+            :options="{ dateStyle: 'medium' }"
+          />
+        </template>
+      </TranslationT>
       <DataserviceQualityInline
         :quality="dataservice.quality"
       />

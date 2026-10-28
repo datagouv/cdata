@@ -402,6 +402,7 @@ a.dg-reuse-title[href]::before {
 }
 .dg-dataset-metadata-row > .dg-card-metrics,
 .dg-card-has-quality > .dg-card-metrics,
+.dg-card-unified-metadata > .dg-quality-inline,
 .dg-card-usage {
   border-inline-start: 1px solid var(--dg-card-border);
   padding-inline-start: 12px;
@@ -409,6 +410,13 @@ a.dg-reuse-title[href]::before {
 .dg-card-usage-only {
   border-inline-start: 0;
   padding-inline-start: 0;
+}
+.dg-card-unified-metadata {
+  column-gap: 8px;
+}
+.dg-card-unified-metadata > :is(.dg-quality-inline, .dg-card-metrics) {
+  min-height: 24px;
+  padding-inline-start: 8px;
 }
 .dg-card-usage,
 .dg-card-usage p,
@@ -581,8 +589,9 @@ a.dg-reuse-title[href]::before {
 @media (max-width: 479px) {
   .dg-catalog-card
     :is(
-      .dg-dataset-metadata-row,
-      .dg-card-metadata-row,
+      .dg-dataset-metadata-row:not(.dg-card-unified-metadata),
+      .dg-card-metadata-row:not(.dg-card-unified-metadata),
+      .dg-card-unified-metadata > .dg-quality-inline,
       .dg-organization-counts,
       .dg-card-organization-type,
       .dg-card-metrics

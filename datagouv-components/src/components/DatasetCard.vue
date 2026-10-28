@@ -57,7 +57,7 @@
         :owner="dataset.owner"
         :organization-url="organizationUrl"
       />
-      <div class="dg-dataset-update-row">
+      <div class="dg-dataset-metadata-row dg-card-unified-metadata">
         <TranslationT
           tag="div"
           class="dg-dataset-updated"
@@ -71,8 +71,6 @@
             />
           </template>
         </TranslationT>
-      </div>
-      <div class="dg-dataset-metadata-row">
         <DatasetQualityInline :quality="dataset.quality" />
         <div class="dg-card-metrics flex flex-wrap items-center text-sm text-gray-medium">
           <div class="dg-card-metrics flex flex-wrap items-center gap-3">
