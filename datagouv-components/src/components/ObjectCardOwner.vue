@@ -120,6 +120,8 @@ watch(() => props.organization?.id, () => {
 onBeforeUnmount(() => controller?.abort())
 async function loadOrganization() {
   if (!props.organization || fullOrganization.value || loading.value) return
+  // Embedded full organizations (including gallery examples) need no extra request.
+  if ('metrics' in props.organization && 'description' in props.organization) return
   const request = new AbortController()
   controller = request
   loading.value = true
