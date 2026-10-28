@@ -412,11 +412,25 @@ a.dg-reuse-title[href]::before {
   padding-inline-start: 0;
 }
 .dg-card-unified-metadata {
-  column-gap: 8px;
+  column-gap: 16px;
+  /* Clip separators outside a wrapped line, leaving room for focus outlines. */
+  overflow: clip;
+  overflow-clip-margin: 6px;
 }
 .dg-card-unified-metadata > :is(.dg-quality-inline, .dg-card-metrics) {
+  position: relative;
   min-height: 24px;
-  padding-inline-start: 8px;
+  border-inline-start: 0;
+  padding-inline-start: 0;
+}
+.dg-card-unified-metadata > :is(.dg-quality-inline, .dg-card-metrics)::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: -9px;
+  top: 0;
+  height: 24px;
+  border-inline-start: 1px solid var(--dg-card-border);
+  pointer-events: none;
 }
 .dg-card-usage,
 .dg-card-usage p,
