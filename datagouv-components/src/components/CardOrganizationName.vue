@@ -75,7 +75,7 @@ withDefaults(
 <style scoped>
 .dg-organization-name {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: var(--dg-card-space-4);
   min-width: 0;
   color: inherit;
@@ -91,7 +91,7 @@ withDefaults(
 }
 .dg-organization-name[data-size='sm'] {
   font-size: var(--dg-card-text-body);
-  line-height: var(--dg-card-leading-body);
+  line-height: var(--dg-card-leading-title);
 }
 .dg-organization-name[data-size='xs'],
 small {
@@ -115,6 +115,7 @@ svg {
   display: flex;
   align-items: center;
   flex-shrink: 0;
+  margin-top: 5px;
 }
 .dg-organization-name :deep(.dg-organization-certificate) {
   display: flex;

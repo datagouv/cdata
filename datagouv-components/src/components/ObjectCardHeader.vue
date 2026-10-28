@@ -75,7 +75,8 @@ withDefaults(
   width: var(--dg-card-icon);
   height: var(--dg-card-icon);
   flex-shrink: 0;
-  margin-top: var(--dg-card-space-4);
+  /* Align the icon glyph with Marianne's first line of text. */
+  margin-top: 5px;
 }
 .dg-card-title-link:focus-visible {
   outline: var(--dg-card-focus-width) solid var(--dg-card-focus);

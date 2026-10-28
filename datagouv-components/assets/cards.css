@@ -240,6 +240,9 @@ a.dg-reuse-title[href]::before {
     font: inherit !important;
     white-space: normal !important;
   }
+  .dg-card-title-text > .dg-organization-name {
+    font: inherit !important;
+  }
   .dg-catalog-card .dg-card-owner :is(a, .truncate) {
     color: var(--dg-card-text) !important;
     line-height: 24px !important;
@@ -359,8 +362,7 @@ a.dg-reuse-title[href]::before {
   margin: 0;
 }
 .dg-card-owner .dg-organization-name > svg {
-  position: relative;
-  top: -1px;
+  margin-top: 5px;
 }
 .dg-dataset-update-row,
 .dg-card-update-row {
@@ -429,7 +431,13 @@ a.dg-reuse-title[href]::before {
   gap: 4px;
 }
 .dg-organization-content-card .dg-card-organization-type + .dg-organization-counts {
-  margin-top: 12px;
+  margin-top: 0;
+}
+.dg-organization-content-card .dg-object-card-body {
+  gap: 8px;
+}
+.dg-organization-vertical .dg-object-card-layout {
+  gap: 12px;
 }
 .dg-organization-vertical .dg-object-card-layout {
   flex-direction: column;
@@ -523,6 +531,10 @@ a.dg-reuse-title[href]::before {
 .dg-quality-trigger:hover {
   background: var(--dg-card-surface-subtle);
 }
+.dg-quality-trigger:hover .dg-quality-trigger-label > span {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .dg-quality-trigger:focus-visible {
   outline: 2px solid var(--dg-card-focus);
   outline-offset: 3px;
@@ -579,6 +591,15 @@ a.dg-reuse-title[href]::before {
     min-width: 64px !important;
     height: 6px !important;
     border: 0 !important;
+    border-radius: 4px !important;
+    background: var(--dg-card-border) !important;
+  }
+  .dg-card-quality-score > div {
+    border-radius: 4px !important;
+    background: #777777 !important;
+  }
+  .dg-card-quality-score > .bg-success-dark {
+    background: #18753c !important;
   }
 }
 

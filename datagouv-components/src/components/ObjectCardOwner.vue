@@ -13,6 +13,7 @@
       v-if="showDetails && organizationUrl !== null"
       button-class="dg-details-trigger dg-organization-trigger"
       :button-props="{ title: t('À propos de cette organisation') }"
+      @opened="loadOrganization"
     >
       <OrganizationNameWithCertificate
         :show-certificate="showCertificate"
@@ -22,9 +23,21 @@
       <template #toggletip>
         <section class="dg-organization-details">
           <OrganizationCard
-            :organization="organization"
+            :organization="fullOrganization || organization"
             compact
           />
+          <p
+            v-if="loading"
+            role="status"
+          >
+            {{ t('Chargement…') }}
+          </p>
+          <p
+            v-else-if="loadFailed"
+            role="status"
+          >
+            {{ t('Les détails de cette organisation sont temporairement indisponibles.') }}
+          </p>
           <AppLink
             :to="organizationUrl || organization.page"
             class="dg-organization-details-footer"
@@ -66,14 +79,15 @@
 
 <script setup lang="ts">
 import '../../assets/cards.css'
-import { computed } from 'vue'
+import { computed, ref, watch, onBeforeUnmount } from 'vue'
 import DetailsPopover from './CardDetailsPopover.vue'
 import { useTranslation } from '../composables/useTranslation'
 import type { RouteLocationRaw } from 'vue-router'
 import OrganizationCard from './OrganizationCard.vue'
 import OrganizationLogo from './OrganizationLogo.vue'
 import { getOwnerName } from '../functions/owned'
-import type { OrganizationReference } from '../types/organizations'
+import type { Organization, OrganizationReference } from '../types/organizations'
+import { useComponentsConfig } from '../config'
 import type { UserReference } from '../types/users'
 import AppLink from './AppLink.vue'
 import OrganizationNameWithCertificate from './CardOrganizationName.vue'
@@ -92,6 +106,38 @@ const props = withDefaults(
 )
 
 const { t } = useTranslation()
+const config = useComponentsConfig()
+const fullOrganization = ref<Organization | null>(null)
+const loading = ref(false)
+const loadFailed = ref(false)
+let controller: AbortController | undefined
+watch(() => props.organization?.id, () => {
+  controller?.abort()
+  fullOrganization.value = null
+  loading.value = false
+  loadFailed.value = false
+})
+onBeforeUnmount(() => controller?.abort())
+async function loadOrganization() {
+  if (!props.organization || fullOrganization.value || loading.value) return
+  const request = new AbortController()
+  controller = request
+  loading.value = true
+  loadFailed.value = false
+  try {
+    const result = await config.$fetch<Organization>(`/api/1/organizations/${encodeURIComponent(props.organization.id)}/`, {
+      baseURL: config.apiBase,
+      signal: request.signal,
+    })
+    if (!request.signal.aborted) fullOrganization.value = result
+  }
+  catch {
+    if (!request.signal.aborted) loadFailed.value = true
+  }
+  finally {
+    if (!request.signal.aborted) loading.value = false
+  }
+}
 const ownerName = computed(() => {
   if (!props.owner) return ''
   return getOwnerName({ organization: null, owner: props.owner })

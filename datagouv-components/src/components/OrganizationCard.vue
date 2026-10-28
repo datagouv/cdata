@@ -113,7 +113,7 @@ const type = computed(() => getOrganizationType(props.organization))
 }
 .dg-organization-summary-heading :deep(.dg-organization-name) {
   flex: 1;
-  align-items: center;
+  align-items: flex-start;
   font-weight: var(--dg-card-weight-semibold);
 }
 .dg-organization-summary-heading :deep(.dg-organization-name-label) {

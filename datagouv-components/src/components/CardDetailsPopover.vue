@@ -10,6 +10,7 @@ const props = defineProps<{
   buttonProps?: Record<string, unknown>
   buttonClass?: string
 }>()
+const emit = defineEmits<{ opened: [] }>()
 const accessibleButtonProps = computed(() => {
   const { title, ...rest } = props.buttonProps || {}
   return { ...rest, ...(title && !rest['aria-label'] ? { 'aria-label': title } : {}) }
@@ -24,7 +25,8 @@ const { floatingStyles, update } = useFloating(reference, panel, {
   ],
   whileElementsMounted: autoUpdate,
 })
-async function refresh() {
+async function refresh(open: unknown) {
+  if (open) emit('opened')
   await nextTick()
   update()
 }
