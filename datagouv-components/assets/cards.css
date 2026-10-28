@@ -134,7 +134,7 @@
 .dg-card-heading-row > .object-card-badge {
   flex: none;
 }
-.dg-catalog-card .dg-card-title-text,
+.dg-catalog-card .dg-card-title-link,
 .dg-catalog-card .dg-reuse-title {
   display: -webkit-box;
   -webkit-box-orient: vertical;
@@ -241,6 +241,7 @@ a.dg-reuse-title[href]::before {
     white-space: normal !important;
   }
   .dg-card-title-text > .dg-organization-name {
+    display: inline;
     font: inherit !important;
   }
   .dg-catalog-card .dg-card-owner :is(a, .truncate) {
@@ -327,6 +328,8 @@ a.dg-reuse-title[href]::before {
   align-items: center;
   max-width: 100%;
   padding: 0;
+  min-height: 24px;
+  border-radius: 4px;
   border: 0;
   position: relative;
   z-index: 2;
@@ -362,7 +365,9 @@ a.dg-reuse-title[href]::before {
   margin: 0;
 }
 .dg-card-owner .dg-organization-name > svg {
-  margin-top: 5px;
+  display: inline-block;
+  vertical-align: -2px;
+  margin-inline-end: 4px;
 }
 .dg-dataset-update-row,
 .dg-card-update-row {

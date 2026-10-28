@@ -19,7 +19,6 @@
       />
       <span
         class="dg-card-title-text"
-        :class="$slots.extra ? 'flex-initial' : 'flex-1'"
       >
         <slot />
       </span>
@@ -57,9 +56,10 @@ withDefaults(
   min-width: 0;
 }
 .dg-card-title-link {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--dg-card-space-4);
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
   width: 100%;
   color: var(--dg-card-text);
   background-image: none;
@@ -67,7 +67,7 @@ withDefaults(
   text-decoration: none;
 }
 .dg-card-title-text {
-  display: block;
+  display: inline;
   min-width: 0;
   overflow-wrap: anywhere;
 }
@@ -75,8 +75,9 @@ withDefaults(
   width: var(--dg-card-icon);
   height: var(--dg-card-icon);
   flex-shrink: 0;
-  /* Align the icon glyph with Marianne's first line of text. */
-  margin-top: 5px;
+  display: inline-block;
+  vertical-align: -2px;
+  margin-inline-end: 4px;
 }
 .dg-card-title-link:focus-visible {
   outline: var(--dg-card-focus-width) solid var(--dg-card-focus);
