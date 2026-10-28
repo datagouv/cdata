@@ -81,7 +81,10 @@ function place(listElement: HTMLElement, list: DropList, source: DragSource, x: 
     const alone = rects.every(other => other === rect || !sameRow(other, rect))
     return alone ? rect.top + rect.height / 2 < y : rect.left + rect.width / 2 < x
   }
-  const index = rects.reduce((last, rect, index) => isPast(rect, index) ? index + 1 : last, 0)
+  let index = rects.reduce((last, rect, index) => isPast(rect, index) ? index + 1 : last, 0)
+  // Right before such an image on the right, the pointer beside it: in the column on its left,
+  // that is after the image, before the rows it covers.
+  if (items[index]?.dataset.rowSpan && rects[index]!.left > x) index += 1
   const before = rects[index - 1]
   const after = rects[index]
   const gap = columnGap(listElement)
