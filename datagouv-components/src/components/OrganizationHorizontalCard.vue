@@ -13,19 +13,20 @@
         size-class="size-12"
       />
     </template>
-    <ObjectCardHeader :url="organization.page">
-      <OrganizationNameWithCertificate
-        :show-type="false"
-        :organization
-        size="base"
-        color-class="text-gray-title"
+    <div class="dg-card-heading-row">
+      <ObjectCardHeader :url="organization.page">
+        <OrganizationNameWithCertificate
+          :show-type="false"
+          :organization
+          size="base"
+          color-class="text-gray-title"
+        />
+      </ObjectCardHeader>
+      <OwnerType
+        v-if="type !== 'other'"
+        :type
+        class="dg-card-organization-type"
       />
-    </ObjectCardHeader>
-    <div
-      v-if="type !== 'other'"
-      class="dg-card-organization-type"
-    >
-      <OwnerType :type />
     </div>
     <OrganizationMetrics
       v-if="'metrics' in organization"

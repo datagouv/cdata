@@ -131,7 +131,7 @@
   min-width: 0;
   max-width: 100%;
 }
-.dg-card-heading-row > .object-card-badge {
+.dg-card-heading-row > :is(.object-card-badge, .dg-card-organization-type) {
   flex: none;
 }
 .dg-catalog-card .dg-card-title-link,
@@ -456,9 +456,6 @@ a.dg-reuse-title[href]::before {
 }
 .dg-reuse-metadata .dg-card-usage p {
   gap: 4px;
-}
-.dg-organization-content-card .dg-card-organization-type + .dg-organization-counts {
-  margin-top: 0;
 }
 .dg-organization-content-card .dg-object-card-body {
   gap: 8px;
