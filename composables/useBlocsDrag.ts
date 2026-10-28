@@ -5,7 +5,8 @@ import { columnGap, renderedShare, type BlocClass } from '~/utils/blocsLayout'
 export type Dragged = { kind: 'band' | 'accordion-item' } | { kind: 'bloc', blocClass: BlocClass }
 
 type DropList = {
-  // `grid` for the blocs of a section or an accordion item, laid out side by side in rows;
+  // `grid` for the blocs of a section, an accordion item or a column, laid out side by side in
+  // rows;
   // `vertical` for the others.
   orientation: 'vertical' | 'grid'
   items: () => unknown[]

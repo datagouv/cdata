@@ -14,7 +14,7 @@ import ReuseBlocComponent from '~/components/Pages/ReuseBloc.vue'
 import AccordionBlocEditorComponent from '~/components/Pages/AccordionBlocEditor.vue'
 import ColumnBlocComponent from '~/components/Pages/ColumnBloc.vue'
 
-// Components rendering the blocs nested in a section or an accordion item.
+// Components rendering the blocs nested in a section, an accordion item or a column.
 // Sections are rendered by `EditoBlocs` itself.
 export const BLOC_COMPONENTS: Record<string, Component> = {
   TitleBloc: TitleBlocComponent,

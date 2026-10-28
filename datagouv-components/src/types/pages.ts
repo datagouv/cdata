@@ -4,8 +4,8 @@ import type { Reuse } from './reuses'
 
 export type BlocWidth = '1/4' | '1/3' | '1/2' | '2/3' | '3/4'
 
-// Blocs inside a section or an accordion item sit side by side, wrapping to a new row when
-// the row is full. `null`: the whole row.
+// Blocs inside a section, an accordion item or a column sit side by side, wrapping to a new
+// row when the row is full. `null`: the whole row.
 type Sized = { width: BlocWidth | null }
 
 export type TitleBloc = Sized & {

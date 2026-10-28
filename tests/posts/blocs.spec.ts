@@ -2,7 +2,7 @@ import type { Locator, Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { API_BASE, createDataset, createDatasetWithRemoteResources, createPost, deleteDatasets, deletePosts, dragEditItem, focusedDragHandle, gotoHydrated, startEditItemDrag } from '../helpers'
 import { fillPostDescription } from './helpers'
-import type { BlocWidth, DatasetBloc, MarkdownBloc } from '~/types/pages'
+import type { BlocWidth, DatasetBloc, MarkdownBloc, SectionContentBloc } from '~/types/pages'
 
 async function createPostWithBlocs(page: Page, options: {
   title: string
@@ -255,7 +255,7 @@ test.describe('Sections', () => {
   }
 
   // A page of a single section holding these blocs
-  async function createSectionPage(request: Parameters<typeof createPost>[0], blocs: Array<MarkdownBloc>) {
+  async function createSectionPage(request: Parameters<typeof createPost>[0], blocs: Array<SectionContentBloc>) {
     const post = await createPost(request, {
       name: `Section ${Date.now()}`,
       kind: 'page',
@@ -596,53 +596,55 @@ test.describe('Sections', () => {
     expect(contents(second)).toEqual(['Part', 'Là'])
   })
 
-  test('a bloc moves into an accordion item, but not the explorer', async ({ page, request }) => {
-    const { dataset, resources: [resource] } = await createDatasetWithRemoteResources(request, `Explorer ${Date.now()}`, ['Fichier'])
-    const accordionId = crypto.randomUUID()
-    const itemId = crypto.randomUUID()
-    const post = await createPost(request, {
-      name: `Explorer ${Date.now()}`,
-      kind: 'page',
-      body_type: 'blocs',
-      blocs: [{
-        class: 'SectionBloc',
-        id: crypto.randomUUID(),
-        color: null,
-        blocs: [
-          { class: 'ExploreBloc', id: crypto.randomUUID(), width: null, resource_id: resource.id },
-          markdown('Dehors'),
-          {
-            class: 'AccordionListBloc',
-            id: accordionId,
-            width: null,
-            items: [{ id: itemId, title: 'Item', content: [markdown('Dedans A'), markdown('Dedans B')] }],
-          },
-        ],
-      }],
+  // The containers a bloc moves into, each one holding two texts: the bloc, its content once
+  // fetched, and the hash opening it
+  const accordionId = crypto.randomUUID()
+  const itemId = crypto.randomUUID()
+  const containers = [
+    {
+      name: 'an accordion item',
+      bloc: { class: 'AccordionListBloc', id: accordionId, width: null, items: [{ id: itemId, title: 'Item', content: [markdown('Dedans A'), markdown('Dedans B')] }] },
+      content: (fetched: { items: Array<{ content: Array<{ content: string }> }> }) => fetched.items[0].content,
+      hash: `#accordion-${accordionId}-${itemId}`,
+    },
+    {
+      name: 'a column',
+      bloc: { class: 'ColumnBloc', id: crypto.randomUUID(), width: null, blocs: [markdown('Dedans A'), markdown('Dedans B')] },
+      content: (fetched: { blocs: Array<{ content: string }> }) => fetched.blocs,
+      hash: '',
+    },
+  ] satisfies Array<{ name: string, bloc: SectionContentBloc, content: unknown, hash: string }>
+
+  for (const container of containers) {
+    test(`a bloc moves into ${container.name}, but not the explorer`, async ({ page, request }) => {
+      const { dataset, resources: [resource] } = await createDatasetWithRemoteResources(request, `Explorer ${Date.now()}`, ['Fichier'])
+      const post = await createSectionPage(request, [
+        { class: 'ExploreBloc', id: crypto.randomUUID(), width: null, resource_id: resource.id },
+        markdown('Dehors'),
+        container.bloc,
+      ])
+      try {
+        // Tall enough for the whole section: the texts are editors, high ones
+        await page.setViewportSize({ width: 1280, height: 1600 })
+        await gotoHydrated(page, `/pages/${post.slug}?edit=true${container.hash}`)
+
+        // On the upper half of the second text of the container: right before it
+        const texts = page.getByTestId('bloc-MarkdownBloc')
+        await dragEditItem(texts.filter({ hasText: 'Dehors' }), texts.filter({ hasText: 'Dedans B' }), 0.25)
+        await expect(page.getByTestId(`bloc-${container.bloc.class}`).getByTestId('bloc-MarkdownBloc')).toHaveCount(3)
+        // The same place refuses the explorer, too wide for the container: it lands in the
+        // section holding it instead, after it, on the lower half of which it is
+        await dragEditItem(page.getByTestId('bloc-ExploreBloc'), texts.filter({ hasText: 'Dedans B' }), 0.25)
+
+        const [section] = await saveAndFetchBlocs(page, post.slug)
+        expect(section.blocs.map((bloc: { class: string }) => bloc.class)).toEqual([container.bloc.class, 'ExploreBloc'])
+        expect(contents({ blocs: container.content(section.blocs[0]) })).toEqual(['Dedans A', 'Dehors', 'Dedans B'])
+      }
+      finally {
+        await deleteDatasets(request, [dataset.id])
+      }
     })
-    createdIds.push(post.id)
-    try {
-      // Tall enough for the whole section: the texts are editors, high ones
-      await page.setViewportSize({ width: 1280, height: 1600 })
-      // The hash opens the accordion item
-      await gotoHydrated(page, `/pages/${post.slug}?edit=true#accordion-${accordionId}-${itemId}`)
-
-      // On the upper half of the second text of the item: right before it
-      const texts = page.getByTestId('bloc-MarkdownBloc')
-      await dragEditItem(texts.filter({ hasText: 'Dehors' }), texts.filter({ hasText: 'Dedans B' }), 0.25)
-      await expect(page.getByTestId('bloc-AccordionListBloc').getByTestId('bloc-MarkdownBloc')).toHaveCount(3)
-      // The same place refuses the explorer, too wide for an accordion: it lands in the
-      // section holding the accordion instead, after it, on the lower half of which it is
-      await dragEditItem(page.getByTestId('bloc-ExploreBloc'), texts.filter({ hasText: 'Dedans B' }), 0.25)
-
-      const [section] = await saveAndFetchBlocs(page, post.slug)
-      expect(section.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['AccordionListBloc', 'ExploreBloc'])
-      expect(contents({ blocs: section.blocs[0].items[0].content })).toEqual(['Dedans A', 'Dehors', 'Dedans B'])
-    }
-    finally {
-      await deleteDatasets(request, [dataset.id])
-    }
-  })
+  }
 
   test('a column stacks its title and its text beside a taller bloc, centered on it', async ({ page, request }) => {
     const post = await createPost(request, {
@@ -684,6 +686,27 @@ test.describe('Sections', () => {
     expect(Math.abs((box.y + box.height / 2) - (tall.y + tall.height / 2))).toBeLessThan(2)
   })
 
+  test('the title of a column in an accordion item is drawn as one of the item', async ({ page, request }) => {
+    const accordionId = crypto.randomUUID()
+    const itemId = crypto.randomUUID()
+    const post = await createSectionPage(request, [
+      markdown('Avant'),
+      {
+        class: 'AccordionListBloc',
+        id: accordionId,
+        width: null,
+        items: [{
+          id: itemId,
+          title: 'Item',
+          content: [{ class: 'ColumnBloc', id: crypto.randomUUID(), width: '1/2', blocs: [{ class: 'TitleBloc', id: crypto.randomUUID(), width: null, title: 'Titre en colonne', subtitle: null }] }],
+        }],
+      },
+    ])
+    await gotoHydrated(page, `/pages/${post.slug}#accordion-${accordionId}-${itemId}`)
+
+    await expect(page.getByRole('heading', { level: 4, name: 'Titre en colonne' })).toBeVisible()
+  })
+
   test('a column is added from the menu at half the row, then filled', async ({ page, request }) => {
     const post = await createSectionPage(request, [markdown('Avant')])
     await page.setViewportSize({ width: 1280, height: 900 })
@@ -707,45 +730,6 @@ test.describe('Sections', () => {
     expect(section.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['MarkdownBloc', 'ColumnBloc'])
     expect(section.blocs[1].width).toBe('1/2')
     expect(section.blocs[1].blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['TitleBloc'])
-  })
-
-  test('a bloc moves into a column, but not the explorer', async ({ page, request }) => {
-    const { dataset, resources: [resource] } = await createDatasetWithRemoteResources(request, `Explorer ${Date.now()}`, ['Fichier'])
-    const post = await createPost(request, {
-      name: `Column ${Date.now()}`,
-      kind: 'page',
-      body_type: 'blocs',
-      blocs: [{
-        class: 'SectionBloc',
-        id: crypto.randomUUID(),
-        color: null,
-        blocs: [
-          { class: 'ExploreBloc', id: crypto.randomUUID(), width: null, resource_id: resource.id },
-          markdown('Dehors'),
-          { class: 'ColumnBloc', id: crypto.randomUUID(), width: null, blocs: [markdown('Dedans A'), markdown('Dedans B')] },
-        ],
-      }],
-    })
-    createdIds.push(post.id)
-    try {
-      await page.setViewportSize({ width: 1280, height: 1600 })
-      await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
-
-      // On the upper half of the second text of the column: right before it
-      const texts = page.getByTestId('bloc-MarkdownBloc')
-      await dragEditItem(texts.filter({ hasText: 'Dehors' }), texts.filter({ hasText: 'Dedans B' }), 0.25)
-      await expect(page.getByTestId('bloc-ColumnBloc').getByTestId('bloc-MarkdownBloc')).toHaveCount(3)
-      // The same place refuses the explorer, too wide for a column: it lands in the section
-      // holding the column instead, after it, on the lower half of which it is
-      await dragEditItem(page.getByTestId('bloc-ExploreBloc'), texts.filter({ hasText: 'Dedans B' }), 0.25)
-
-      const [section] = await saveAndFetchBlocs(page, post.slug)
-      expect(section.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['ColumnBloc', 'ExploreBloc'])
-      expect(contents(section.blocs[0])).toEqual(['Dedans A', 'Dehors', 'Dedans B'])
-    }
-    finally {
-      await deleteDatasets(request, [dataset.id])
-    }
   })
 
   test('a bloc dropped on a folded accordion item stays in sight, in the section', async ({ page, request }) => {
@@ -899,6 +883,42 @@ test.describe('Sections', () => {
 
     const [section] = await saveAndFetchBlocs(page, post.slug)
     expect(section.blocs.map((bloc: { width: string | null }) => bloc.width)).toEqual([null, '1/3'])
+  })
+
+  test('a bloc ending a row of a column and the column are each resized from their handle', async ({ page, request }) => {
+    const post = await createSectionPage(request, [
+      { class: 'ColumnBloc', id: crypto.randomUUID(), width: '1/2', blocs: [markdown('Dedans')] },
+      markdown('Dehors', '1/2'),
+    ])
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    const column = page.locator('[data-bloc-class="ColumnBloc"]')
+    const columnHandle = column.getByTestId('bloc-resize').last()
+    const inner = column.locator('[data-bloc-class="MarkdownBloc"]')
+    const innerHandle = inner.getByTestId('bloc-resize')
+    const list = (await page.locator('[data-blocs-level="section"]').boundingBox())!
+
+    // The text takes the whole column: both handles share the gap on its right, each one
+    // grabbed where it is drawn. Dragged to a quarter of the section, the text takes half of
+    // the column, which keeps its width.
+    const drag = async (handle: typeof innerHandle, to: number) => {
+      const box = (await handle.boundingBox())!
+      await page.mouse.move(box.x + box.width / 2, box.y + 8)
+      await page.mouse.down()
+      await page.mouse.move(list.x + list.width * to, box.y + 8, { steps: 10 })
+      await page.mouse.up()
+    }
+    await drag(innerHandle, 0.24)
+    await expect(innerHandle).toHaveAttribute('aria-valuetext', '1/2')
+    await expect(columnHandle).toHaveAttribute('aria-valuetext', '1/2')
+
+    await drag(columnHandle, 0.74)
+    await expect(columnHandle).toHaveAttribute('aria-valuetext', '3/4')
+
+    const [section] = await saveAndFetchBlocs(page, post.slug)
+    expect(section.blocs[0].width).toBe('3/4')
+    expect(section.blocs[0].blocs[0].width).toBe('1/2')
   })
 })
 

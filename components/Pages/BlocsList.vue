@@ -1,7 +1,7 @@
 <template>
   <div class="relative">
-    <!-- Before the first bloc: above the list, in the room the section or the accordion item
-         leaves, as after the last one. -->
+    <!-- Before the first bloc: above the list, in the room the section, the accordion item or
+         the column leaves, as after the last one. -->
     <BlocInserter
       v-if="edit && blocs.length"
       class="absolute inset-x-0 bottom-full"
@@ -89,10 +89,11 @@
 
         <!-- The boundary after the bloc, in the gap on its right: its line resizes the bloc
              (snapping to the allowed widths); between two blocs of a row, its button inserts
-             a bloc there. Blocs are stacked below `sm`, so there is no boundary there. -->
+             a bloc there. Blocs are stacked below `sm`, so there is no boundary there. The
+             boundary lets the pointer through to the one it may cover, see `resizeHalf`. -->
         <div
           v-if="edit"
-          class="hidden sm:block absolute inset-y-0 left-full w-(--grid-gap) group/boundary group/add"
+          class="hidden sm:block absolute inset-y-0 left-full w-(--grid-gap) pointer-events-none group/boundary group/add"
           data-edit-control
         >
           <div
@@ -102,7 +103,8 @@
             :aria-label="$t('Largeur du bloc')"
             :aria-valuetext="widthLabel(bloc.width)"
             :title="$t('Glisser pour redimensionner, double-clic pour la pleine largeur')"
-            class="absolute inset-0 flex justify-center cursor-col-resize touch-none outline-none"
+            class="absolute inset-y-0 flex justify-center pointer-events-auto cursor-col-resize touch-none outline-none"
+            :class="resizeHalf(index)"
             data-testid="bloc-resize"
             @pointerdown="startResize($event, index)"
             @dblclick="bloc.width = null"
@@ -124,22 +126,24 @@
             v-if="index + 1 < blocs.length && !rows.starts.has(index + 1)"
             class="absolute inset-x-0 top-1/2 -mt-3 flex justify-center"
           >
-            <AddBlocDropdown
-              :level
-              @new-blocs="insertBeside($event as Array<T>, index)"
-            >
-              <RoundAddButton
-                :label="$t('Ajouter un bloc ici')"
-                :data-testid="`insert-bloc-beside-in-${level}`"
-              />
-            </AddBlocDropdown>
+            <div class="pointer-events-auto">
+              <AddBlocDropdown
+                :level
+                @new-blocs="insertBeside($event as Array<T>, index)"
+              >
+                <RoundAddButton
+                  :label="$t('Ajouter un bloc ici')"
+                  :data-testid="`insert-bloc-beside-in-${level}`"
+                />
+              </AddBlocDropdown>
+            </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- After the last bloc: below the list, in the room the section or the accordion item
-         leaves. -->
+    <!-- After the last bloc: below the list, in the room the section, the accordion item or the
+         column leaves. -->
     <BlocInserter
       v-if="edit && blocs.length"
       class="absolute inset-x-0 top-full"
@@ -182,7 +186,7 @@ import RoundAddButton from './RoundAddButton.vue'
 import type { BlocWidth, SectionColor, SectionContentBloc } from '~/types/pages'
 import { SECTION_COLOR } from '~/utils/blocs'
 import { BLOC_COMPONENTS, OBJECT_WIDTH } from '~/utils/pages'
-import { BLOCS_LEVEL, BLOC_SPANS, HEADING_LEVEL, acceptsDropped, renderedShare, rowSpacings, rowStarts, type BlocClass, type BlocsLevel, type RowSpacing, type RowWidth } from '~/utils/blocsLayout'
+import { BLOC_SPANS, HEADING_LEVEL, acceptsDropped, renderedShare, rowSpacings, rowStarts, type BlocClass, type BlocsLevel, type RowSpacing, type RowWidth } from '~/utils/blocsLayout'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 const props = defineProps<{
@@ -195,7 +199,6 @@ const props = defineProps<{
 
 const blocs = defineModel<Array<T>>({ required: true })
 
-provide(BLOCS_LEVEL, props.level)
 if (props.level !== 'column') provide(HEADING_LEVEL, props.level)
 if (props.level === 'section') provide(SECTION_COLOR, toRef(() => props.color ?? null))
 
@@ -204,7 +207,7 @@ const CENTERED_BLOCS: Array<BlocClass> = ['TitleBloc', 'ImageBloc', 'ColumnBloc'
 const { t } = useTranslation()
 const labels = useBlocLabels()
 
-// A bloc moves between sections and accordion items, where it is allowed.
+// A bloc moves between sections, accordion items and columns, where it is allowed.
 const listRef = ref<HTMLElement | null>(null)
 useDropList(listRef, {
   orientation: 'grid',
@@ -248,6 +251,16 @@ function insertBeside(newBlocs: Array<T>, index: number) {
     if (!(newBloc.class in OBJECT_WIDTH)) newBloc.width = width
   }
   blocs.value.splice(index + 1, 0, ...newBlocs)
+}
+
+// A bloc filling a row of a column ends where the column does: the two share the gap on its
+// right, the bloc resized from the left half, the column from the right one.
+function resizeHalf(index: number): string {
+  if (blocs.value[index].class === 'ColumnBloc') return 'left-1/2 right-0'
+  if (props.level !== 'column') return 'inset-x-0'
+  const start = Math.max(...[...rows.value.starts].filter(rowStart => rowStart <= index))
+  const used = blocs.value.slice(start, index + 1).reduce((sum, bloc) => sum + BLOC_SPANS[bloc.width ?? 'whole'], 0)
+  return used === 12 ? 'left-0 right-1/2' : 'inset-x-0'
 }
 
 // Share of the row, from the narrowest.
