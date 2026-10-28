@@ -546,6 +546,8 @@ a.dg-reuse-title[href]::before {
 }
 .dg-card-quality-score {
   width: 64px;
+  /* Align with Marianne's visible letterforms within the 24px line box. */
+  transform: translateY(1px);
 }
 
 @container (max-width:480px) {
