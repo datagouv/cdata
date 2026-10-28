@@ -59,7 +59,7 @@ import { getOrganizationType } from '../functions/organizations'
 import type { Organization, OrganizationReference } from '../types/organizations'
 import OrganizationLogo from './OrganizationLogo.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
-import OwnerType from './OwnerType.vue'
+import OwnerType from './CardOwnerType.vue'
 import OrganizationNameWithCertificate from './CardOrganizationName.vue'
 
 const props = defineProps<{

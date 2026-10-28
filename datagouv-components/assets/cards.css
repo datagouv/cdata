@@ -219,6 +219,15 @@ a.dg-reuse-title[href]::before {
 }
 /* Tailwind uses important utilities: base-layer overrides preserve their cascade order. */
 @layer base {
+  .dg-card-metrics p,
+  .dg-card-metric {
+    font-size: var(--dg-card-text-caption) !important;
+    line-height: var(--dg-card-leading-caption) !important;
+  }
+  .dg-organization-name > svg {
+    width: var(--dg-card-icon) !important;
+    height: var(--dg-card-icon) !important;
+  }
   @media (hover: hover) {
     :is(.dg-object-card, .dg-content-card):has(
         :is(a.dg-card-title-link, a.dg-reuse-title)[href]:hover
@@ -237,6 +246,9 @@ a.dg-reuse-title[href]::before {
   }
   .dg-organization-details-footer:is(a, a:hover, a:visited) {
     color: var(--dg-card-text) !important;
+    background-image: none !important;
+    text-decoration: underline !important;
+    text-underline-offset: 3px;
   }
 }
 
@@ -244,6 +256,59 @@ a.dg-reuse-title[href]::before {
 .dg-catalog-card .dg-card-owner {
   max-width: 100%;
   line-height: 24px;
+}
+.dg-card-owner-static {
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  color: var(--dg-card-text);
+  cursor: text;
+}
+.dg-card-owner-type {
+  display: inline-flex;
+  align-items: center;
+  align-self: flex-start;
+  gap: 4px;
+  width: fit-content;
+  max-width: 100%;
+  min-height: 24px;
+  padding: 2px 8px;
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  border-radius: var(--dg-card-radius);
+  background: var(--background-contrast-grey, #eeeeee);
+  color: var(--text-default-grey, #3a3a3a);
+  font: 500 12px/18px var(--dg-card-font-sans);
+}
+.dg-card-owner-type > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dg-card-tooltip,
+.dg-card-tooltip > span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.dg-card-tooltip {
+  position: relative;
+  z-index: 2;
+}
+.dg-card-tooltip-panel {
+  z-index: 900;
+  display: block;
+  width: max-content;
+  max-width: min(22rem, calc(100vw - 32px));
+  padding: 12px;
+  border: 1px solid var(--dg-card-border);
+  border-radius: var(--dg-card-radius);
+  background: var(--dg-card-surface);
+  color: var(--dg-card-text);
+  box-shadow: var(--dg-card-shadow-overlay);
+  white-space: normal;
+  overflow-wrap: anywhere;
+  font: 400 14px/22px var(--dg-card-font-sans);
 }
 .dg-catalog-card .dg-card-owner > :is(a, span) {
   max-width: 100%;

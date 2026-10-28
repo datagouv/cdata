@@ -46,13 +46,12 @@
     </AppLink>
     <span
       v-else
-      class="text-sm flex items-center"
+      class="dg-card-owner-static"
     >
       <OrganizationNameWithCertificate
         :show-certificate="showCertificate"
         :organization
         size="sm"
-        color-class="text-gray-title"
       />
     </span>
   </div>

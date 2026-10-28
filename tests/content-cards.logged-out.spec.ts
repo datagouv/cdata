@@ -4,7 +4,7 @@ import { gotoHydrated } from './helpers'
 const organization = {
   id: 'card-organization', name: 'Organisation des cartes', acronym: null,
   slug: 'card-organization', page: '/organizations/card-organization',
-  logo: null, logo_thumbnail: null, badges: [],
+  logo: null, logo_thumbnail: null, badges: [{ kind: 'public-service' }, { kind: 'certified' }],
 }
 const reuse = {
   id: 'card-reuse', title: 'Une réutilisation de démonstration avec un titre suffisamment long pour vérifier le retour à la ligne',
@@ -54,4 +54,20 @@ test('mobile cards retain identity and date without overflowing the viewport', a
   expect(box).not.toBeNull()
   expect(box!.x).toBeGreaterThanOrEqual(0)
   expect(box!.x + box!.width).toBeLessThanOrEqual(375)
+})
+
+test('certification tooltip is keyboard accessible inside organization details', async ({ page }) => {
+  await page.getByRole('button', { name: 'À propos de cette organisation' }).click()
+  const panel = page.locator('.dg-quality-panel:visible')
+  await expect(panel.getByText('Service public', { exact: true })).toBeVisible()
+  const certificate = panel.locator('.dg-organization-certificate')
+  await certificate.focus()
+  const tooltip = page.getByRole('tooltip')
+  await expect(tooltip).toContainText('certifiée par data.gouv.fr')
+  await expect(certificate).toHaveAttribute('aria-describedby', await tooltip.getAttribute('id') as string)
+  await page.keyboard.press('Escape')
+  await expect(tooltip).not.toBeVisible()
+  await expect(panel).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(panel).not.toBeVisible()
 })

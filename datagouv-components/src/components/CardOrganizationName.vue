@@ -6,7 +6,7 @@ import type { Organization, OrganizationReference } from '../types/organizations
 import { useComponentsConfig } from '../config'
 import { useTranslation } from '../composables/useTranslation'
 import OwnerTypeIcon from './OwnerTypeIcon.vue'
-import Tooltip from './Tooltip.vue'
+import Tooltip from './CardCertificateTooltip.vue'
 
 const config = useComponentsConfig(),
   { t } = useTranslation()
@@ -111,7 +111,7 @@ svg {
 
 <style scoped>
 /* Center the tooltip reference without the baseline space of an inline SVG. */
-.dg-organization-name :deep(> .dg-tooltip) {
+.dg-organization-name :deep(> .dg-card-tooltip) {
   display: flex;
   align-items: center;
   flex-shrink: 0;
