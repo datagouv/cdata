@@ -62,7 +62,7 @@ export function rowStarts(widths: Array<BlocWidth | null>): Array<number> {
   return starts
 }
 
-type LaidOutBloc = Pick<SectionContentBloc, 'class' | 'width'>
+export type LaidOutBloc = Pick<SectionContentBloc, 'class' | 'width'>
 
 // Where a bloc stands beside an image covering several rows: in the first of them, or in the
 // following ones.
@@ -75,6 +75,17 @@ export type ImageRows = {
   // The columns such an image leaves to the blocs beside it: what a bloc added among them
   // takes, not to cut through the image.
   freeColumns: Array<number | null>
+  groups: Array<ImageGroup>
+}
+
+// Such an image and the blocs beside it, which read as a column next to it.
+export type ImageGroup = {
+  image: number
+  // In their order: those of the image's own row, then those of the next rows.
+  beside: Array<number>
+  firstRow: number
+  side: 'left' | 'right'
+  free: number
 }
 
 // An image at either end of a row of several blocs also covers the rows after it that fit in
@@ -91,6 +102,7 @@ export function imageRows(blocs: Array<LaidOutBloc>): ImageRows {
   const spans = blocs.map(() => 1)
   const beside: Array<BesideImage | null> = blocs.map(() => null)
   const freeColumns: Array<number | null> = blocs.map(() => null)
+  const groups: Array<ImageGroup> = []
   rows.forEach((row, rowIndex) => {
     const images = blocs.slice(row.start, row.end).flatMap((bloc, offset) => bloc.class === 'ImageBloc' ? [row.start + offset] : [])
     const image = images[0]
@@ -103,20 +115,89 @@ export function imageRows(blocs: Array<LaidOutBloc>): ImageRows {
     }
     if (!covered.length) return
     spans[image] += covered.length
+    const group: ImageGroup = { image, beside: [], firstRow: row.end - row.start - 1, side: image === row.start ? 'left' : 'right', free }
     for (let index = row.start; index < row.end; index++) {
       if (index !== image) {
         beside[index] = 'first-row'
         freeColumns[index] = free
+        group.beside.push(index)
       }
     }
     for (const next of covered) {
       for (let index = next.start; index < next.end; index++) {
         beside[index] = 'next-rows'
         freeColumns[index] = free
+        group.beside.push(index)
       }
     }
+    groups.push(group)
   })
-  return { spans, beside, freeColumns }
+  return { spans, beside, freeColumns, groups }
+}
+
+// Lays out again the blocs of a group, once reordered: as many as before on the image's own
+// row, the image keeping its side.
+function layOutGroup<T extends LaidOutBloc>(blocs: Array<T>, image: T, beside: Array<T>, group: ImageGroup, start: number, length: number) {
+  const firstRow = Math.max(1, Math.min(group.firstRow, beside.length))
+  const ordered = group.side === 'right'
+    ? [...beside.slice(0, firstRow), image, ...beside.slice(firstRow)]
+    : [image, ...beside]
+  blocs.splice(start, length, ...ordered)
+}
+
+/**
+ * Moves the bloc `from` to the index `to` it has once moved, or inserts `moved` (from another
+ * list) at `to`. Among the blocs beside an image covering several rows, it is reordered with
+ * them, the image keeping its side: it reads as a column next to the image, and moving its
+ * title under its text must not send the image to the other side. A bloc landing there takes
+ * at most the width the image leaves.
+ */
+export function moveBloc<T extends LaidOutBloc>(blocs: Array<T>, from: number, to: number, moved?: T) {
+  const { groups } = imageRows(blocs)
+  const item = moved ?? blocs[from]!
+  const after = (index: number) => (moved || index < from ? index : index - 1)
+  if (!moved) blocs.splice(from, 1)
+
+  const group = groups.find((group) => {
+    if (!moved && group.image === from) return false
+    const indexes = [group.image, ...group.beside].filter(index => moved || index !== from).map(after)
+    return Math.min(...indexes) <= to && to <= Math.max(...indexes) + 1
+  })
+  if (!group) {
+    blocs.splice(to, 0, item)
+    return
+  }
+  const image = after(group.image)
+  const beside = group.beside.filter(index => moved || index !== from).map(after)
+  const start = Math.min(image, ...beside)
+  const column = beside.map(index => blocs[index]!)
+  column.splice(beside.filter(index => index < to).length, 0, item)
+  if (BLOC_SPANS[item.width ?? 'whole'] > group.free) {
+    item.width = (Object.keys(BLOC_SPANS) as Array<RowWidth>).find(width => BLOC_SPANS[width] === group.free) as BlocWidth
+  }
+  layOutGroup(blocs, blocs[image]!, column, group, start, beside.length + 1)
+}
+
+/**
+ * Moves the bloc `index` one step: among the blocs beside an image covering several rows, to
+ * the next one of them, the image keeping its side (see `moveBloc`). Tells whether it moved.
+ */
+export function stepBloc<T extends LaidOutBloc>(blocs: Array<T>, index: number, direction: -1 | 1): boolean {
+  const group = imageRows(blocs).groups.find(group => group.beside.includes(index))
+  const position = group ? group.beside.indexOf(index) + direction : -1
+  if (group && position >= 0 && position < group.beside.length) {
+    const column = group.beside.map(index => blocs[index]!)
+    const [item] = column.splice(position - direction, 1)
+    column.splice(position, 0, item!)
+    const start = Math.min(group.image, ...group.beside)
+    layOutGroup(blocs, blocs[group.image]!, column, group, start, group.beside.length + 1)
+    return true
+  }
+  const newIndex = index + direction
+  if (newIndex < 0 || newIndex >= blocs.length) return false
+  const [item] = blocs.splice(index, 1)
+  blocs.splice(newIndex, 0, item!)
+  return true
 }
 
 // The space above a row of blocs: none for the first one; after a title, little, as it stays

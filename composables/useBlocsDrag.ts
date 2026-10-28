@@ -1,4 +1,4 @@
-import { columnGap, renderedShare, type BlocClass } from '~/utils/blocsLayout'
+import { columnGap, moveBloc, renderedShare, type BlocClass, type LaidOutBloc } from '~/utils/blocsLayout'
 
 // What is being dragged: a band of the page (a section), an accordion item, or a bloc,
 // whose class decides where it can land.
@@ -88,9 +88,17 @@ function place(listElement: HTMLElement, list: DropList, source: DragSource, x: 
   if (before && ((after && sameRow(before, after)) || fits())) {
     return { list: listElement, index, line: { left: before.right + gap / 2 - 1, top: before.top, width: 2, height: before.height } }
   }
-  // Otherwise the bloc starts a row: a line across the list, above that row.
+  // Otherwise the bloc starts a row: a line across the list, above that row. It stops short
+  // of a bloc it would cross, an image covering several rows beside them.
   const lineY = !after ? before.bottom + 4 : before ? (before.bottom + after.top) / 2 : after.top - 4
-  return { list: listElement, index, line: { left: listRect.left, top: lineY - 1, width: listRect.width, height: 2 } }
+  let left = listRect.left
+  let right = listRect.right
+  for (const rect of rects) {
+    if (rect.top >= lineY || rect.bottom <= lineY) continue
+    if (rect.left - listRect.left > listRect.right - rect.right) right = Math.min(right, rect.left - gap / 2)
+    else left = Math.max(left, rect.right + gap / 2)
+  }
+  return { list: listElement, index, line: { left, top: lineY - 1, width: right - left, height: 2 } }
 }
 
 // The innermost list under the pointer that accepts what is dragged. When it does not, the
@@ -128,6 +136,13 @@ function drop({ source, target }: DragState) {
     // Right before or right after itself: it does not move.
     if (index === source.index || index === source.index + 1) return
     if (index > source.index) index -= 1
+  }
+  // The blocs of a section or an accordion item keep an image beside them on its side.
+  if (to.orientation === 'grid') {
+    const blocs = to.items() as Array<LaidOutBloc>
+    if (target.list === source.list) moveBloc(blocs, source.index, index)
+    else moveBloc(blocs, -1, index, from.items().splice(source.index, 1)[0] as LaidOutBloc)
+    return
   }
   const [moved] = from.items().splice(source.index, 1)
   to.items().splice(index, 0, moved)
@@ -209,15 +224,25 @@ export function startBlocsDrag(event: PointerEvent, source: DragStart) {
   window.addEventListener('keydown', onKeydown)
 }
 
-// The keyboard alternative to dragging, from the focused handle: within the item's list.
-export function moveWithKeyboard(items: unknown[], event: KeyboardEvent, index: number) {
-  const direction = { ArrowUp: -1, ArrowLeft: -1, ArrowDown: 1, ArrowRight: 1 }[event.key]
+type Step<T> = (items: Array<T>, index: number, direction: -1 | 1) => boolean
+
+// One step in a list, to the next item.
+function step<T>(items: Array<T>, index: number, direction: -1 | 1): boolean {
+  const newIndex = index + direction
+  if (newIndex < 0 || newIndex >= items.length) return false
+  const [moved] = items.splice(index, 1)
+  items.splice(newIndex, 0, moved!)
+  return true
+}
+
+// The keyboard alternative to dragging, from the focused handle: within the item's list. The
+// blocs of a section or an accordion item move with `stepBloc`, which keeps an image beside
+// them on its side.
+export function moveWithKeyboard<T>(items: Array<T>, event: KeyboardEvent, index: number, move: Step<T> = step) {
+  const direction = ({ ArrowUp: -1, ArrowLeft: -1, ArrowDown: 1, ArrowRight: 1 } as Record<string, -1 | 1>)[event.key]
   if (!direction) return
   event.preventDefault()
-  const newIndex = index + direction
-  if (newIndex < 0 || newIndex >= items.length) return
-  const [moved] = items.splice(index, 1)
-  items.splice(newIndex, 0, moved)
+  if (!move(items, index, direction)) return
   // Moving an item up, Vue moves its element in the page, which drops the focus of its handle:
   // give it back, so that the next press moves it again.
   const handle = event.currentTarget as HTMLElement

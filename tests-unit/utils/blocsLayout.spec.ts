@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { acceptsDropped, imageRows, rowShare, rowSpacings, rowStarts } from '~/utils/blocsLayout'
+import { acceptsDropped, imageRows, moveBloc, rowShare, rowSpacings, rowStarts, stepBloc } from '~/utils/blocsLayout'
 import type { Dragged } from '~/composables/useBlocsDrag'
 import type { BlocWidth } from '~/types/pages'
 import type { BlocClass, RowSpacing } from '~/utils/blocsLayout'
@@ -103,6 +103,83 @@ describe('imageRows', () => {
       [[1, 1, 1], [null, null, null], [null, null, null]],
     ],
   ])('%s', (_name, blocs, [spans, beside, freeColumns]) => {
-    expect(imageRows(blocs)).toEqual({ spans, beside, freeColumns })
+    expect(imageRows(blocs)).toMatchObject({ spans, beside, freeColumns })
+  })
+})
+
+// A banner: its title and its text on the left, its image on the right covering both rows.
+const named = (name: string, blocClass: BlocClass, width: BlocWidth | null = null) => ({ name, class: blocClass, width }) as { name: string } & Parameters<typeof moveBloc>[0][number]
+const banner = () => [named('title', 'TitleBloc', '3/4'), named('image', 'ImageBloc', '1/4'), named('text', 'MarkdownBloc', '3/4')]
+const names = (blocs: Array<{ name: string }>) => blocs.map(bloc => bloc.name)
+
+describe('moveBloc', () => {
+  it('keeps the image on its side when the title goes under the text', () => {
+    const blocs = banner()
+    moveBloc(blocs, 0, 2)
+    expect(names(blocs)).toEqual(['text', 'image', 'title'])
+  })
+
+  it('keeps the image on its side when the text goes above the title', () => {
+    const blocs = banner()
+    moveBloc(blocs, 2, 0)
+    expect(names(blocs)).toEqual(['text', 'image', 'title'])
+  })
+
+  it('keeps an image on the left on its side', () => {
+    const blocs = [named('image', 'ImageBloc', '1/4'), named('title', 'TitleBloc', '3/4'), named('text', 'MarkdownBloc', '3/4')]
+    moveBloc(blocs, 1, 2)
+    expect(names(blocs)).toEqual(['image', 'text', 'title'])
+  })
+
+  it('moves the image itself as any bloc', () => {
+    const blocs = banner()
+    moveBloc(blocs, 1, 0)
+    expect(names(blocs)).toEqual(['image', 'title', 'text'])
+  })
+
+  it('moves a bloc out of the blocs beside the image as any bloc', () => {
+    const blocs = [...banner(), named('after', 'MarkdownBloc')]
+    moveBloc(blocs, 0, 3)
+    expect(names(blocs)).toEqual(['image', 'text', 'after', 'title'])
+  })
+
+  it('narrows a bloc dropped beside the image to the width it leaves', () => {
+    const blocs = banner()
+    const added = named('added', 'MarkdownBloc')
+    moveBloc(blocs, -1, 3, added)
+    expect(names(blocs)).toEqual(['title', 'image', 'text', 'added'])
+    expect(added.width).toBe('3/4')
+  })
+
+  it('moves blocs as they come without an image covering several rows', () => {
+    const blocs = [named('a', 'MarkdownBloc'), named('b', 'MarkdownBloc'), named('c', 'MarkdownBloc')]
+    moveBloc(blocs, 0, 2)
+    expect(names(blocs)).toEqual(['b', 'c', 'a'])
+  })
+})
+
+describe('stepBloc', () => {
+  it('steps the title under the text, the image keeping its side', () => {
+    const blocs = banner()
+    expect(stepBloc(blocs, 0, 1)).toBe(true)
+    expect(names(blocs)).toEqual(['text', 'image', 'title'])
+  })
+
+  it('steps the text above the title, the image keeping its side', () => {
+    const blocs = banner()
+    expect(stepBloc(blocs, 2, -1)).toBe(true)
+    expect(names(blocs)).toEqual(['text', 'image', 'title'])
+  })
+
+  it('steps out of the blocs beside the image past their last one', () => {
+    const blocs = [...banner(), named('after', 'MarkdownBloc')]
+    expect(stepBloc(blocs, 2, 1)).toBe(true)
+    expect(names(blocs)).toEqual(['title', 'image', 'after', 'text'])
+  })
+
+  it('does not step past the ends of the list', () => {
+    const blocs = banner()
+    expect(stepBloc(blocs, 0, -1)).toBe(false)
+    expect(names(blocs)).toEqual(['title', 'image', 'text'])
   })
 })

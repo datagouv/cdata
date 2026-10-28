@@ -57,7 +57,7 @@
           :data-testid="`bloc-${bloc.class}`"
           @delete="blocs.splice(index, 1)"
           @drag-start="startBlocsDrag($event, { list: listRef!, index, kind: 'bloc', blocClass: bloc.class, label: labels[bloc.class] ?? bloc.class })"
-          @keyboard-move="moveWithKeyboard(blocs, $event, index)"
+          @keyboard-move="moveWithKeyboard(blocs, $event, index, stepBloc)"
         >
           <template
             v-if="bloc.width"
@@ -187,7 +187,7 @@ import RoundAddButton from './RoundAddButton.vue'
 import type { BlocWidth, SectionColor, SectionContentBloc } from '~/types/pages'
 import { SECTION_COLOR } from '~/utils/blocs'
 import { BLOC_COMPONENTS, OBJECT_WIDTH } from '~/utils/pages'
-import { BLOCS_LEVEL, BLOC_SPANS, acceptsDropped, imageRows, renderedShare, rowSpacings, rowStarts, type BlocsLevel, type RowSpacing, type RowWidth } from '~/utils/blocsLayout'
+import { BLOCS_LEVEL, BLOC_SPANS, acceptsDropped, columnGap, imageRows, rowShare, rowSpacings, rowStarts, stepBloc, type BlocsLevel, type RowSpacing, type RowWidth } from '~/utils/blocsLayout'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 const props = defineProps<{
@@ -298,9 +298,13 @@ function startResize(event: PointerEvent, index: number) {
 
   handle.setPointerCapture(event.pointerId)
   resizing.value = index
+  // From where the bloc started: widened past what is left of its row, it wraps to the next
+  // one, and measured from its new left edge, it would jump to the whole row.
+  const left = blocElement.getBoundingClientRect().left
 
   const onMove = (moveEvent: PointerEvent) => {
-    setWidth(index, nearestWidth(renderedShare(blocElement, listRef.value!, moveEvent.clientX)))
+    const list = listRef.value!
+    setWidth(index, nearestWidth(rowShare(moveEvent.clientX - left, list.getBoundingClientRect().width, columnGap(list))))
   }
   const onUp = () => {
     resizing.value = null
