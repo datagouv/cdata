@@ -109,7 +109,7 @@ export function getPreviewErrorInfoByType(errorType: PreviewErrorType, resource?
         // Only tabular-pipeline files can be re-processed server-side with a
         // larger quota: asking for it on a client-side preview (PDF…) is noise.
         userCta: resource && isTabularPipelineFormat(resource.format) ? t('Cette prévisualisation vous serait utile ?') : '',
-        producerCta: t('Cette prévisualisation vous serait utile ?'),
+        producerCta: resource && isTabularPipelineFormat(resource.format) ? t('Cette prévisualisation vous serait utile ?') : '',
       }
 
     case 'malformed':
