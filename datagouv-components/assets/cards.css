@@ -232,7 +232,7 @@ a.dg-reuse-title[href]::before {
     :is(.dg-object-card, .dg-content-card):has(
         :is(a.dg-card-title-link, a.dg-reuse-title)[href]:hover
       )
-      :is(.dg-card-title-link, .dg-card-title-link .truncate, .dg-reuse-title) {
+      :is(.dg-card-title-link, .dg-card-title-link .truncate, .dg-card-title-link .dg-organization-name-label, .dg-reuse-title) {
       color: var(--dg-card-brand) !important;
     }
   }
