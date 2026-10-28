@@ -2,7 +2,7 @@ import { computed, type MaybeRefOrGetter, toValue } from 'vue'
 import { useComponentsConfig } from '../config'
 import { isOrganizationCertified } from '../functions/organizations'
 import { getGeneratedFormats, getWfsExportFormats } from '../functions/resourceCapabilities'
-import { detectOgcService, getParsingErrorMessage, getParsingErrorStep, isImagePreviewFormat } from '../functions/resources'
+import { detectOgcService, getParsingErrorMessage, getParsingErrorStep, isImagePreviewFormat, isPmtilesSourceFormat } from '../functions/resources'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import type { Resource, WfsMetadata } from '../types/resources'
 import { useHasTabularData } from './useHasTabularData'
@@ -50,7 +50,11 @@ export function useResourceCapabilities(
 
   // The map is built from a pmtiles export; when that export fails we still want
   // to show the Carte tab, but with the reason it could not be generated.
-  const hasPmtilesError = computed(() => getParsingErrorStep(toValue(resource)) === 'pmtiles_export')
+  const hasPmtilesError = computed(() => {
+    const r = toValue(resource)
+    if (getParsingErrorStep(r) === 'pmtiles_export') return true
+    return r.extras['analysis:error'] === 'File too large to download' && isPmtilesSourceFormat(r.format)
+  })
   const pmtilesError = computed(() => hasPmtilesError.value ? getParsingErrorMessage(toValue(resource)) : null)
 
   const generatedFormats = computed(() => getGeneratedFormats(toValue(resource), config.tabularApiUrl))
@@ -99,14 +103,11 @@ export function useResourceCapabilities(
     // The map is the most visual preview: when it is available, show it first,
     // and keep the data tab only when another preview (table, PDF, JSON…)
     // exists for the same resource.
-    if (hasMap) {
+    if (hasMap || hasPmtilesError.value) {
       options.push(mapTab)
       if (previewKind.value !== 'unavailable') {
         options.push(dataTab)
       }
-    }
-    else if (hasPmtilesError.value) {
-      options.push(dataTab, mapTab)
     }
     else {
       options.push(dataTab)

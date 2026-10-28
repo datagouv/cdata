@@ -220,6 +220,14 @@ export function isTabularPipelineFormat(format: string | undefined | null): bool
     || (normalized.endsWith('.gz') && TABULAR_PIPELINE_FORMATS.includes(normalized.slice(0, -3)))
 }
 
+// GeoJSON is the only source hydra turns into a pmtiles map. Used to detect a
+// pmtiles-export failure beyond the `analysis:parsing:error` step (e.g. a source
+// too large to download). The payload may be wrapped in .zip/.gz.
+export function isPmtilesSourceFormat(format: string | undefined | null): boolean {
+  if (!format) return false
+  return format.toLowerCase().replace(/\.(zip|gz)$/, '') === 'geojson'
+}
+
 // Parsing errors are stored as `<step>:<message>`, where `<step>` names the
 // analysis step that failed (e.g. `pmtiles_export`, `geojson_export`).
 
