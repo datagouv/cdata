@@ -8,6 +8,7 @@
     </template>
     <template #media>
       <OrganizationLogo
+        class="dg-card-organization-logo"
         :organization="organization"
         size-class="size-12"
       />

@@ -8,11 +8,22 @@
         <span>{{ t('Métadonnées') }}</span>
       </span>
       <QualityScore
+        v-if="quality"
         :score="quality.score"
         class="dg-card-quality-score"
       />
+      <span
+        v-else
+        class="dg-quality-unavailable"
+      >{{ t('Non disponible') }}</span>
       <template #toggletip>
-        <DataserviceQualityTooltipContent :quality />
+        <DataserviceQualityTooltipContent
+          v-if="quality"
+          :quality
+        />
+        <p v-else>
+          {{ t('La qualité des métadonnées n’est pas disponible pour cette API.') }}
+        </p>
       </template>
     </Toggletip>
   </div>
@@ -22,12 +33,12 @@
 import '../../assets/cards.css'
 import type { DataserviceQuality } from '../types/dataservices'
 import QualityScore from './QualityScore.vue'
-import DataserviceQualityTooltipContent from './DataserviceQualityTooltipContent.vue'
+import DataserviceQualityTooltipContent from './CardDataserviceQualityTooltipContent.vue'
 import Toggletip from './CardDetailsPopover.vue'
 import { useTranslation } from '../composables/useTranslation'
 
 defineProps<{
-  quality: DataserviceQuality
+  quality?: DataserviceQuality | null
 }>()
 
 const { t } = useTranslation()

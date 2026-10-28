@@ -5,6 +5,7 @@
   >
     <header class="dg-organization-summary-heading">
       <OrganizationLogo
+        class="dg-card-organization-logo"
         :organization="organization"
         size-class="dg-organization-summary-logo"
       />

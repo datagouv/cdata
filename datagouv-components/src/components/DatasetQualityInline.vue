@@ -22,7 +22,7 @@
 import '../../assets/cards.css'
 import type { Quality } from '../types/datasets'
 import QualityScore from './QualityScore.vue'
-import DatasetQualityTooltipContent from './DatasetQualityTooltipContent.vue'
+import DatasetQualityTooltipContent from './CardDatasetQualityTooltipContent.vue'
 import Toggletip from './CardDetailsPopover.vue'
 import { useTranslation } from '../composables/useTranslation'
 

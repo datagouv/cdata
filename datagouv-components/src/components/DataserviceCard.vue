@@ -9,6 +9,7 @@
     <template #media>
       <OrganizationLogo
         v-if="dataservice.organization"
+        class="dg-card-organization-logo"
         :organization="dataservice.organization"
         size-class="size-12"
       />
@@ -88,11 +89,9 @@
       </div>
     </div>
     <div
-      class="dg-card-metadata-row"
-      :class="{ 'dg-card-has-quality': dataservice.quality }"
+      class="dg-card-metadata-row dg-card-has-quality"
     >
       <DataserviceQualityInline
-        v-if="dataservice.quality"
         :quality="dataservice.quality"
       />
 

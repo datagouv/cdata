@@ -3,6 +3,7 @@
     <template #media>
       <OrganizationLogo
         v-if="dataset.organization"
+        class="dg-card-organization-logo"
         :organization="dataset.organization"
         size-class="size-12"
       />

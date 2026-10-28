@@ -5,6 +5,7 @@
   >
     <OrganizationLogo
       v-if="showLogo"
+      class="dg-card-organization-logo"
       :organization="organization"
       size-class="dg-owner-logo"
     />

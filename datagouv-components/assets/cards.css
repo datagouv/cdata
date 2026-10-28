@@ -581,3 +581,54 @@ a.dg-reuse-title[href]::before {
     border: 0 !important;
   }
 }
+
+/* Quality details share the card typography and status icon alignment. */
+.dg-quality-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.dg-quality-details-title {
+  margin: 0;
+  color: var(--dg-card-text);
+  font: 600 14px/22px var(--dg-card-font-sans);
+}
+.dg-quality-criteria {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+}
+.dg-quality-item {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.dg-status-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  margin: 0;
+  color: var(--dg-card-text);
+  font: 400 14px/22px var(--dg-card-font-sans);
+}
+.dg-status-line > span { min-width: 0; overflow-wrap: anywhere; }
+.dg-status-line > svg { margin-top: 3px; }
+.dg-status-line[data-status='success'] > svg { color: var(--text-default-success, #18753c); }
+.dg-status-line[data-status='warning'] > svg { color: var(--text-default-warning, #b34000); }
+.dg-quality-guide { font: 500 14px/22px var(--dg-card-font-sans); }
+@layer base {
+  .dg-quality-guide a {
+    color: var(--dg-card-text) !important;
+    background-image: none !important;
+    text-decoration: underline !important;
+    text-underline-offset: 3px;
+  }
+  .dg-card-organization-logo { padding: 4px !important; }
+}
+.dg-quality-unavailable {
+  color: var(--dg-card-text-secondary);
+  font: 400 12px/18px var(--dg-card-font-sans);
+}
