@@ -25,16 +25,20 @@ export const UPLOADS_IN_PROGRESS: InjectionKey<Ref<number>> = Symbol('uploadsInP
 
 // What only exists for the editor, where content is added to it, and that no reader would
 // see: an accordion without items, links without a link, an image not uploaded yet, then the
-// sections left empty.
+// columns and the sections left empty.
 export function withoutEmptyBlocs(sections: Array<SectionBloc>): Array<SectionBloc> {
   const isEmpty = (bloc: SectionContentBloc) => (bloc.class === 'AccordionListBloc' && !bloc.items.length)
+    || (bloc.class === 'ColumnBloc' && !bloc.blocs.length)
     || (bloc.class === 'LinksListBloc' && !bloc.links.length)
     || (bloc.class === 'ImageBloc' && !bloc.image)
+  const inner = <T extends SectionContentBloc>(bloc: T): T => {
+    if (bloc.class === 'AccordionListBloc') return { ...bloc, items: bloc.items.map(item => ({ ...item, content: shown(item.content) })) }
+    if (bloc.class === 'ColumnBloc') return { ...bloc, blocs: shown(bloc.blocs) }
+    return bloc
+  }
   const shown = <T extends SectionContentBloc>(blocs: Array<T>): Array<T> => blocs
+    .map(inner)
     .filter(bloc => !isEmpty(bloc))
-    .map(bloc => bloc.class === 'AccordionListBloc'
-      ? { ...bloc, items: bloc.items.map(item => ({ ...item, content: shown(item.content) })) }
-      : bloc)
   return sections
     .map(section => ({ ...section, blocs: shown(section.blocs) }))
     .filter(section => section.blocs.length)

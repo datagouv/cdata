@@ -644,6 +644,110 @@ test.describe('Sections', () => {
     }
   })
 
+  test('a column stacks its title and its text beside a taller bloc, centered on it', async ({ page, request }) => {
+    const post = await createPost(request, {
+      name: `Column ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [{
+        class: 'SectionBloc',
+        id: crypto.randomUUID(),
+        color: null,
+        blocs: [
+          {
+            class: 'ColumnBloc',
+            id: crypto.randomUUID(),
+            width: '1/2',
+            blocs: [{ class: 'TitleBloc', id: crypto.randomUUID(), width: null, title: 'Titre en colonne', subtitle: null }, markdown('Son texte')],
+          },
+          markdown(Array.from({ length: 30 }, (_, index) => `Ligne ${index}`).join('\n\n'), '1/2'),
+        ],
+      }],
+    })
+    createdIds.push(post.id)
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}`)
+
+    // The title in a column stays the first title of the page, drawn as that of a section
+    const column = page.getByTestId('bloc-ColumnBloc')
+    await expect(column.getByRole('heading', { level: 1, name: 'Titre en colonne' })).toBeVisible()
+
+    // The title and the text stacked in the column, the column beside the tall text, centered
+    // on it
+    const title = (await column.getByTestId('bloc-TitleBloc').boundingBox())!
+    const text = (await column.getByTestId('bloc-MarkdownBloc').boundingBox())!
+    const box = (await column.boundingBox())!
+    const tall = (await page.getByTestId('bloc-MarkdownBloc').filter({ hasText: 'Ligne 29' }).boundingBox())!
+    expect(text.y).toBeGreaterThan(title.y + title.height - 1)
+    expect(tall.x).toBeGreaterThan(box.x + box.width)
+    expect(tall.height).toBeGreaterThan(box.height * 2)
+    expect(Math.abs((box.y + box.height / 2) - (tall.y + tall.height / 2))).toBeLessThan(2)
+  })
+
+  test('a column is added from the menu at half the row, then filled', async ({ page, request }) => {
+    const post = await createSectionPage(request, [markdown('Avant')])
+    await page.setViewportSize({ width: 1280, height: 900 })
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    await page.getByTestId('page-SectionBloc').hover()
+    await page.getByTestId('add-bloc-in-section').click()
+    await page.getByTestId('add-bloc-ColumnBloc').click()
+    const column = page.getByTestId('bloc-ColumnBloc')
+    // A column only holds the blocs a share of a row fits: neither an accordion nor a column
+    await column.getByTestId('add-bloc-in-column').click()
+    await expect(page.getByRole('menu')).toHaveCount(1)
+    const menu = page.getByRole('menu')
+    await expect(menu.getByTestId('add-bloc-TitleBloc')).toBeVisible()
+    await expect(menu.getByTestId('add-bloc-AccordionListBloc')).toHaveCount(0)
+    await expect(menu.getByTestId('add-bloc-ColumnBloc')).toHaveCount(0)
+    await menu.getByTestId('add-bloc-TitleBloc').click()
+    await expect(column.getByTestId('bloc-TitleBloc')).toHaveCount(1)
+
+    const [section] = await saveAndFetchBlocs(page, post.slug)
+    expect(section.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['MarkdownBloc', 'ColumnBloc'])
+    expect(section.blocs[1].width).toBe('1/2')
+    expect(section.blocs[1].blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['TitleBloc'])
+  })
+
+  test('a bloc moves into a column, but not the explorer', async ({ page, request }) => {
+    const { dataset, resources: [resource] } = await createDatasetWithRemoteResources(request, `Explorer ${Date.now()}`, ['Fichier'])
+    const post = await createPost(request, {
+      name: `Column ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [{
+        class: 'SectionBloc',
+        id: crypto.randomUUID(),
+        color: null,
+        blocs: [
+          { class: 'ExploreBloc', id: crypto.randomUUID(), width: null, resource_id: resource.id },
+          markdown('Dehors'),
+          { class: 'ColumnBloc', id: crypto.randomUUID(), width: null, blocs: [markdown('Dedans A'), markdown('Dedans B')] },
+        ],
+      }],
+    })
+    createdIds.push(post.id)
+    try {
+      await page.setViewportSize({ width: 1280, height: 1600 })
+      await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+      // On the upper half of the second text of the column: right before it
+      const texts = page.getByTestId('bloc-MarkdownBloc')
+      await dragEditItem(texts.filter({ hasText: 'Dehors' }), texts.filter({ hasText: 'Dedans B' }), 0.25)
+      await expect(page.getByTestId('bloc-ColumnBloc').getByTestId('bloc-MarkdownBloc')).toHaveCount(3)
+      // The same place refuses the explorer, too wide for a column: it lands in the section
+      // holding the column instead, after it, on the lower half of which it is
+      await dragEditItem(page.getByTestId('bloc-ExploreBloc'), texts.filter({ hasText: 'Dedans B' }), 0.25)
+
+      const [section] = await saveAndFetchBlocs(page, post.slug)
+      expect(section.blocs.map((bloc: { class: string }) => bloc.class)).toEqual(['ColumnBloc', 'ExploreBloc'])
+      expect(contents(section.blocs[0])).toEqual(['Dedans A', 'Dehors', 'Dedans B'])
+    }
+    finally {
+      await deleteDatasets(request, [dataset.id])
+    }
+  })
+
   test('a bloc dropped on a folded accordion item stays in sight, in the section', async ({ page, request }) => {
     const post = await createPost(request, {
       name: `Folded ${Date.now()}`,

@@ -86,7 +86,18 @@ export type ObjectBloc = DatasetBloc | DataserviceBloc | ReuseBloc
 
 export type LeafBloc = TitleBloc | MarkdownBloc | LinksListBloc | ButtonBloc | ImageBloc | CardBloc | ExploreBloc | ObjectBloc
 
-export type AccordionContentBloc = Exclude<LeafBloc, ExploreBloc>
+// The explorer is too wide for a column, a share of a row, or for an accordion.
+export type ColumnContentBloc = Exclude<LeafBloc, ExploreBloc>
+
+// Blocs stacked in a share of a row, beside the others: a title and its text beside an
+// illustration.
+export type ColumnBloc = Sized & {
+  class: 'ColumnBloc'
+  id: string
+  blocs: Array<ColumnContentBloc>
+}
+
+export type AccordionContentBloc = ColumnContentBloc | ColumnBloc
 
 export type AccordionItemBloc = {
   id: string
@@ -100,7 +111,7 @@ export type AccordionListBloc = Sized & {
   items: Array<AccordionItemBloc>
 }
 
-export type SectionContentBloc = AccordionListBloc | LeafBloc
+export type SectionContentBloc = AccordionListBloc | ColumnBloc | LeafBloc
 
 export type SectionColor = 'primary' | 'green' | 'purple'
 

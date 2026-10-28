@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { withoutEmptyBlocs } from '~/utils/blocs'
-import type { AccordionListBloc, ImageBloc, LinksListBloc, MarkdownBloc, SectionBloc } from '~/types/pages'
+import type { AccordionListBloc, ColumnBloc, ImageBloc, LinksListBloc, MarkdownBloc, SectionBloc } from '~/types/pages'
 
 describe('withoutEmptyBlocs', () => {
   const text: MarkdownBloc = { class: 'MarkdownBloc', id: 'text', width: null, content: 'Texte' }
@@ -23,6 +23,18 @@ describe('withoutEmptyBlocs', () => {
 
     expect(withoutEmptyBlocs([{ class: 'SectionBloc', id: 'section', color: null, blocs: [accordion] }])).toEqual([
       { class: 'SectionBloc', id: 'section', color: null, blocs: [{ ...accordion, items: [{ id: 'item', title: 'Item', content: [] }] }] },
+    ])
+  })
+
+  it('drops the empty blocs of a column, then the column left empty, down to an accordion item', () => {
+    const column = (id: string, blocs: ColumnBloc['blocs']): ColumnBloc => ({ class: 'ColumnBloc', id, width: '3/4', blocs })
+    const accordion: AccordionListBloc = { class: 'AccordionListBloc', id: 'accordion', width: null, items: [{ id: 'item', title: 'Item', content: [column('in-item', [noImage])] }] }
+    const sections: Array<SectionBloc> = [
+      { class: 'SectionBloc', id: 'section', color: null, blocs: [column('kept', [noLinks, text]), column('emptied', [noImage]), column('empty', []), accordion] },
+    ]
+
+    expect(withoutEmptyBlocs(sections)).toEqual([
+      { class: 'SectionBloc', id: 'section', color: null, blocs: [column('kept', [text]), { ...accordion, items: [{ id: 'item', title: 'Item', content: [] }] }] },
     ])
   })
 })

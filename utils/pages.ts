@@ -1,7 +1,7 @@
 import type { Component } from 'vue'
-import { RiCursorLine, RiDatabase2Line, RiHeading, RiImageLine, RiLayoutGridLine, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine } from '@remixicon/vue'
+import { RiCursorLine, RiDatabase2Line, RiHeading, RiImageLine, RiLayoutColumnLine, RiLayoutGridLine, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine } from '@remixicon/vue'
 import { v4 as uuidv4 } from 'uuid'
-import type { AccordionListBloc, BlocWidth, ButtonBloc, CardBloc, ImageBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionContentBloc, TitleBloc } from '~/types/pages'
+import type { AccordionListBloc, BlocWidth, ButtonBloc, CardBloc, ColumnBloc, ImageBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionContentBloc, TitleBloc } from '~/types/pages'
 import TitleBlocComponent from '~/components/Pages/TitleBloc.vue'
 import MarkdownBlocComponent from '~/components/Pages/MarkdownBloc.vue'
 import LinksListBlocComponent from '~/components/Pages/LinksListBloc.vue'
@@ -12,6 +12,7 @@ import DatasetBlocComponent from '~/components/Pages/DatasetBloc.vue'
 import DataserviceBlocComponent from '~/components/Pages/DataserviceBloc.vue'
 import ReuseBlocComponent from '~/components/Pages/ReuseBloc.vue'
 import AccordionBlocEditorComponent from '~/components/Pages/AccordionBlocEditor.vue'
+import ColumnBlocComponent from '~/components/Pages/ColumnBloc.vue'
 
 // Components rendering the blocs nested in a section or an accordion item.
 // Sections are rendered by `EditoBlocs` itself.
@@ -26,6 +27,7 @@ export const BLOC_COMPONENTS: Record<string, Component> = {
   DataserviceBloc: DataserviceBlocComponent,
   ReuseBloc: ReuseBlocComponent,
   AccordionListBloc: AccordionBlocEditorComponent,
+  ColumnBloc: ColumnBlocComponent,
 }
 
 // Width of an object bloc once picked: reuses fit three per row, the others two.
@@ -45,6 +47,7 @@ export function useBlocLabels(): Record<string, string> {
     CardBloc: t('Carte'),
     AccordionListBloc: t('Accordéon'),
     AccordionItem: t('Élément'),
+    ColumnBloc: t('Colonne'),
     TitleBloc: t('Titre'),
     MarkdownBloc: t('Texte'),
     LinksListBloc: t('Liens'),
@@ -121,6 +124,15 @@ export function useBlocChoices() {
       name: t('Accordéon'),
       description: t('Liste dépliable de contenus (FAQ, etc.)'),
       create: (): AccordionListBloc => ({ class: 'AccordionListBloc', id: uuidv4(), width: null, items: [] }),
+    },
+    ColumnBloc: {
+      key: 'ColumnBloc',
+      icon: RiLayoutColumnLine,
+      name: t('Colonne'),
+      description: t('Empiler des blocs à côté des autres, un titre et son texte à côté d\'une image par exemple'),
+      // Half of the row, to leave room beside it; without blocs until some are added to it,
+      // see `withoutEmptyBlocs`.
+      create: (): ColumnBloc => ({ class: 'ColumnBloc', id: uuidv4(), width: '1/2', blocs: [] }),
     },
     DatasetBloc: {
       key: 'DatasetBloc',

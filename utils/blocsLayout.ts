@@ -4,19 +4,27 @@ import type { Dragged } from '~/composables/useBlocsDrag'
 
 export type BlocClass = PageBloc['class'] | SectionContentBloc['class']
 
-// Where blocs live, under the sections of a page: a section or an accordion item. Each level
-// only accepts some blocs (see `AddBlocDropdown`).
-export type BlocsLevel = 'section' | 'accordion'
+// Where blocs live, under the sections of a page: a section, an accordion item, or a column
+// in one of them. Each level only accepts some blocs (see `AddBlocDropdown`).
+export type BlocsLevel = 'section' | 'accordion' | 'column'
 
 // Provided by each list of blocs to the blocs it holds.
 export const BLOCS_LEVEL: InjectionKey<BlocsLevel> = Symbol('blocs-level')
 
+// What the titles of a list are drawn as: those of a section, or those of an accordion
+// item. A column does not change it: its blocs are those of the section or the item holding
+// it.
+export type HeadingLevel = Exclude<BlocsLevel, 'column'>
+export const HEADING_LEVEL: InjectionKey<HeadingLevel> = Symbol('heading-level')
+
 // Mirrors the layout udata enforces (`check_blocs_layout`).
 const LEAF_BLOCS: Array<BlocClass> = ['TitleBloc', 'MarkdownBloc', 'LinksListBloc', 'ButtonBloc', 'ImageBloc', 'CardBloc', 'ExploreBloc', 'DatasetBloc', 'DataserviceBloc', 'ReuseBloc']
+// The explorer is too wide for a column, a share of a row, or for an accordion.
+const COLUMN_BLOCS = LEAF_BLOCS.filter(name => name !== 'ExploreBloc')
 export const ACCEPTED_BLOCS: Record<BlocsLevel, Array<BlocClass>> = {
-  section: [...LEAF_BLOCS, 'AccordionListBloc'],
-  // The explorer is too wide for an accordion.
-  accordion: LEAF_BLOCS.filter(name => name !== 'ExploreBloc'),
+  section: [...LEAF_BLOCS, 'AccordionListBloc', 'ColumnBloc'],
+  accordion: [...COLUMN_BLOCS, 'ColumnBloc'],
+  column: COLUMN_BLOCS,
 }
 
 // Whether a dragged bloc can be dropped in a section or an accordion item.
