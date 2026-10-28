@@ -89,7 +89,7 @@ import BlocUrlInput from './BlocUrlInput.vue'
 import EditableText from './EditableText.vue'
 import type { CardBloc } from '~/types/pages'
 import { FOLLOW_LINKS } from '~/utils/blocs'
-import { BLOCS_LEVEL, type BlocsLevel } from '~/utils/blocsLayout'
+import { HEADING_LEVEL, type HeadingLevel } from '~/utils/blocsLayout'
 
 defineProps<{
   edit: boolean
@@ -98,8 +98,8 @@ defineProps<{
 const bloc = defineModel<CardBloc>({ required: true })
 
 // Under the title of the section (`h2`), or of the content of an accordion item (`h4`).
-const TAGS: Record<BlocsLevel, string> = { section: 'h3', accordion: 'h5' }
-const tag = TAGS[inject(BLOCS_LEVEL, 'section')]
+const TAGS: Record<HeadingLevel, string> = { section: 'h3', accordion: 'h5' }
+const tag = TAGS[inject(HEADING_LEVEL, 'section')]
 
 // Link chosen by whoever wrote the bloc, see `FOLLOW_LINKS`.
 const followLinks = inject(FOLLOW_LINKS, false)

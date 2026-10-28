@@ -253,7 +253,7 @@ import BlocsDragLayer from './BlocsDragLayer.vue'
 import BlocsList from './BlocsList.vue'
 import EditItem from './EditItem.vue'
 import HeadingsSidemenu from '~/components/Sidemenu/HeadingsSidemenu.vue'
-import type { PageBloc, SectionBloc, SectionColor } from '~/types/pages'
+import type { PageBloc, SectionBloc, SectionColor, SectionContentBloc } from '~/types/pages'
 import { anchorHeadings, slugify, type Heading } from '~/utils/headings'
 import { isMeAdmin } from '~/utils/auth'
 import { BLOCS_MAIN_COLOR, FOLLOW_LINKS, PAGE_TITLE_ID, UPLOADS_IN_PROGRESS, withoutEmptyBlocs, type BlocsMainColor } from '~/utils/blocs'
@@ -322,9 +322,13 @@ watchEffect(() => {
 
 const workingBlocs = computed(() => localBlocs.value ?? savedBlocs.value)
 
+// The blocs of a section in reading order, those of its columns in their place: a column only
+// lays them out.
+const readBlocs = (blocs: Array<SectionContentBloc>) => blocs.flatMap(bloc => bloc.class === 'ColumnBloc' ? bloc.blocs : [bloc])
+
 // The title of the page: the first bloc of the page, when it is a title.
 const pageTitleId = computed(() => {
-  const first = workingBlocs.value[0]?.blocs[0]
+  const first = readBlocs(workingBlocs.value[0]?.blocs ?? [])[0]
   return props.untitled && first?.class === 'TitleBloc' ? first.id : null
 })
 provide(PAGE_TITLE_ID, pageTitleId)
@@ -364,7 +368,7 @@ const leadingColoredSections = computed(() => {
 // of the page is not one of its parts, and the content of the accordions is folded.
 const sidemenuHeadings = computed<Array<Heading>>(() => workingBlocs.value
   .slice(leadingColoredSections.value.length)
-  .flatMap(section => section.blocs)
+  .flatMap(section => readBlocs(section.blocs))
   .flatMap((bloc) => {
     if (bloc.class === 'TitleBloc') return bloc.id === pageTitleId.value ? [] : [{ id: slugify(bloc.title), label: bloc.title, level: 2 }]
     if (bloc.class === 'MarkdownBloc') return anchorHeadings(formatMarkdown(bloc.content, { minDepth: 2, noHeadings: false })).headings

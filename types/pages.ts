@@ -19,5 +19,7 @@ export type {
   ButtonBloc,
   ImageBloc,
   CardBloc,
+  ColumnBloc,
+  ColumnContentBloc,
   SectionColor,
 } from '@datagouv/components-next'

@@ -50,7 +50,7 @@
 import EditableText from './EditableText.vue'
 import type { TitleBloc } from '~/types/pages'
 import { PAGE_TITLE_ID, SECTION_COLOR } from '~/utils/blocs'
-import { BLOCS_LEVEL, type BlocsLevel } from '~/utils/blocsLayout'
+import { HEADING_LEVEL, type HeadingLevel } from '~/utils/blocsLayout'
 import { slugify } from '~/utils/headings'
 
 defineProps<{
@@ -60,11 +60,11 @@ defineProps<{
 const bloc = defineModel<TitleBloc>({ required: true })
 
 // The title of a section, or of the content of an accordion item, whose own title is an `h3`.
-const HEADINGS: Record<BlocsLevel, { tag: string, class: string }> = {
+const HEADINGS: Record<HeadingLevel, { tag: string, class: string }> = {
   section: { tag: 'h2', class: 'text-3xl font-extrabold' },
   accordion: { tag: 'h4', class: 'text-lg font-bold' },
 }
-const level = inject(BLOCS_LEVEL, 'section')
+const level = inject(HEADING_LEVEL, 'section')
 const heading = HEADINGS[level]
 
 // The first title of a page without a title of its own is that of the page.
