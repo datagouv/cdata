@@ -105,7 +105,10 @@ function place(listElement: HTMLElement, list: DropList, source: DragSource, x: 
   const bottomAbove = after && before && before.bottom > after.top
     ? Math.max(...rects.slice(0, index).filter(rect => rect.bottom <= after.top + 1).map(rect => rect.bottom))
     : before?.bottom
-  const lineY = !after ? before!.bottom + 4 : before ? (bottomAbove! + after.top) / 2 : after.top - 4
+  // Before the first bloc or after the last one, as far from it as in the middle of the
+  // narrowest gap between two rows, after a title (see `rowSpacings`).
+  const END_SPACE = 12
+  const lineY = !after ? before!.bottom + END_SPACE : before ? (bottomAbove! + after.top) / 2 : after.top - END_SPACE
   let left = listRect.left
   let right = listRect.right
   for (const rect of rects) {
