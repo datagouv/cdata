@@ -121,13 +121,13 @@
 }
 .dg-card-heading-row {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
+  flex-wrap: nowrap;
+  align-items: flex-start;
   gap: 4px 8px;
   min-width: 0;
 }
 .dg-card-heading-row > :is(.dg-card-title, .dg-card-heading) {
-  flex: 1 1 auto;
+  flex: 1 1 0%;
   min-width: 0;
   max-width: 100%;
 }
