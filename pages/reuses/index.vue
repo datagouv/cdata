@@ -43,6 +43,7 @@
       v-if="siteBlocs.length > 0 || isEditing"
       :blocs="siteBlocs"
       editable
+      follow-links
       main-color="green-illustration"
       :on-save="saveBlocs"
     />

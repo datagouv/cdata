@@ -8,39 +8,45 @@ async function getMetaContent(page: Page, selector: string) {
 }
 
 test.describe('OG meta tags', () => {
-  test('homepage has a title and description-derived OG tags', async ({ page }) => {
-    await page.goto('/')
-    await page.waitForLoadState('domcontentloaded')
+  // Crawlers only read the server HTML: without JS these fail if the meta tags
+  // only appear after hydration.
+  test.describe('server-rendered meta', () => {
+    test.use({ javaScriptEnabled: false })
 
-    expect(await getMetaContent(page, 'meta[property="og:title"]')).toBeTruthy()
-    expect(await getMetaContent(page, 'meta[property="og:description"]')).toBeTruthy()
-  })
+    test('homepage has a title and description-derived OG tags', async ({ page }) => {
+      await page.goto('/')
+      await page.waitForLoadState('domcontentloaded')
 
-  test('a public page without a title falls back to the site name for og:title', async ({ page }) => {
-    await page.goto('/dashboard')
-    await page.waitForLoadState('domcontentloaded')
+      expect(await getMetaContent(page, 'meta[property="og:title"]')).toBeTruthy()
+      expect(await getMetaContent(page, 'meta[property="og:description"]')).toBeTruthy()
+    })
 
-    expect(await getMetaContent(page, 'meta[property="og:title"]'))
-      .toBe(await getMetaContent(page, 'meta[property="og:site_name"]'))
-  })
+    test('a public page without a title falls back to the site name for og:title', async ({ page }) => {
+      await page.goto('/dashboard')
+      await page.waitForLoadState('domcontentloaded')
 
-  test('dataset page derives og:title and og:description from the dataset', async ({ page }) => {
-    await page.goto('/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/')
-    await page.waitForLoadState('domcontentloaded')
+      expect(await getMetaContent(page, 'meta[property="og:title"]'))
+        .toBe(await getMetaContent(page, 'meta[property="og:site_name"]'))
+    })
 
-    const ogTitle = await getMetaContent(page, 'meta[property="og:title"]')
-    const ogDescription = await getMetaContent(page, 'meta[property="og:description"]')
-    const description = await getMetaContent(page, 'meta[name="description"]')
-    expect(ogTitle).toContain('Base Sirene')
-    expect(ogDescription).toBeTruthy()
-    expect(ogDescription).toBe(description)
-  })
+    test('dataset page derives og:title and og:description from the dataset', async ({ page }) => {
+      await page.goto('/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/')
+      await page.waitForLoadState('domcontentloaded')
 
-  test('CADA advice page derives og:title from the advice title', async ({ page }) => {
-    await page.goto('/explore/cada/20237028')
-    await page.waitForLoadState('domcontentloaded')
+      const ogTitle = await getMetaContent(page, 'meta[property="og:title"]')
+      const ogDescription = await getMetaContent(page, 'meta[property="og:description"]')
+      const description = await getMetaContent(page, 'meta[name="description"]')
+      expect(ogTitle).toContain('Base Sirene')
+      expect(ogDescription).toBeTruthy()
+      expect(ogDescription).toBe(description)
+    })
 
-    expect(await getMetaContent(page, 'meta[property="og:title"]')).toContain('Avis CADA 20237028')
+    test('CADA advice page derives og:title from the advice title', async ({ page }) => {
+      await page.goto('/explore/cada/20237028')
+      await page.waitForLoadState('domcontentloaded')
+
+      expect(await getMetaContent(page, 'meta[property="og:title"]')).toContain('Avis CADA 20237028')
+    })
   })
 
   test('a CADA advice with no Objet falls back to the site-wide description', async ({ page }) => {

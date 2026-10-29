@@ -1,0 +1,91 @@
+<template>
+  <div class="container mb-7">
+    <Breadcrumb>
+      <BreadcrumbItem
+        to="/"
+      >
+        Accueil
+      </BreadcrumbItem>
+      <BreadcrumbItem v-if="data?.data">
+        {{ data.data.title }}
+      </BreadcrumbItem>
+    </Breadcrumb>
+    <LoadingBlock
+      v-slot="{ data }"
+      :status
+      :data="data"
+    >
+      <div :class="markdownClasses">
+        <MarkdownViewer
+          v-if="data.extension === 'md'"
+          :content="data.content"
+          :min-heading="1"
+          size="md"
+          follow-links
+        />
+        <ComponentDefinedInSetup
+          v-else
+        />
+      </div>
+    </LoadingBlock>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { LoadingBlock, markdownClasses, MarkdownViewer } from '@datagouv/components-next'
+import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+
+const props = defineProps<{
+  slug: string
+}>()
+
+const siteConfig = useSiteConfig()
+
+// An empty slug (/pages) is not a valid page. Skip the fetch entirely: its URL
+// `/nuxt-api/pages/` has a trailing slash that gets 308-redirected, which ofetch
+// follows without raising an error.
+const { data, status, error } = await useFetch<{
+  data: {
+    title: string
+    description?: string
+  }
+  extension: string
+  content: string
+}>(() => `/nuxt-api/pages/${props.slug}`, { immediate: Boolean(props.slug) })
+
+// A request cancelled by leaving the page before it loaded has no data and no
+// error: it is not a missing page, and its 404 would cover the page the reader
+// went back to.
+if (!props.slug || error.value || (status.value === 'success' && !data.value)) {
+  // Use `showError`, not `throw createError`: throwing here rejects the async
+  // setup, and during an in-app (SPA) navigation Vue then renders this page once
+  // with an empty setup context, logging "Invalid vnode type: undefined" for each
+  // child component. `showError` sets the error state without rejecting setup.
+  showError({ statusCode: 404, statusMessage: 'Page Not Found' })
+}
+
+const title = computed(() => data.value?.data.title)
+const description = computed(() => normalizeSeoDescription(data.value?.data.description))
+
+useSeoMeta({
+  title,
+  description,
+})
+
+useHead({
+  script: [
+    {
+      'data-udata': siteConfig.url,
+      'src': '/oembed.js',
+      'tagPosition': 'bodyClose',
+    },
+  ],
+})
+
+const compTemplate = computed(() => data.value?.content)
+
+const ComponentDefinedInSetup = computed(() => h({
+  template: compTemplate.value,
+}) as Component)
+</script>

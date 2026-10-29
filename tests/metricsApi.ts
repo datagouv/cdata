@@ -24,7 +24,7 @@ const MONTHS_COUNT = 12
 const METRICS = ['visit', 'download_resource', 'visit_dataset', 'visit_dataservice', 'visit_reuse']
 
 /** `YYYY-MM` of the month `monthsAgo` months before the current one. */
-function metricMonth(monthsAgo: number): string {
+export function metricMonth(monthsAgo: number): string {
   const now = new Date()
   const month = new Date(now.getFullYear(), now.getMonth() - monthsAgo, 1)
   return `${month.getFullYear()}-${String(month.getMonth() + 1).padStart(2, '0')}`
@@ -51,33 +51,38 @@ const totalRow = () => Object.fromEntries(METRICS.map((metric, index) => [
 // need the header the real API sends.
 export const CORS_HEADERS = { 'Access-Control-Allow-Origin': '*' }
 
+export type FakeResponse = { contentType: string, body: string }
+
+const json = (value: unknown): FakeResponse => ({ contentType: 'application/json', body: JSON.stringify(value) })
+
+/** What the fake answers to a request of the metrics API, also served by tests/fake-services.ts. */
+export function metricsApiResponse(url: URL): FakeResponse {
+  // The `/csv/` endpoints are only ever used as download hrefs, never fetched.
+  if (url.pathname.endsWith('/csv/')) {
+    return { contentType: 'text/csv', body: '' }
+  }
+
+  if (url.pathname.includes('_total/')) {
+    return json({ data: [totalRow()], links: { next: null } })
+  }
+
+  // Echo the filtered entity back on each row: the organization CSV export
+  // reads `dataset_id` from the rows it receives.
+  const filters = Object.fromEntries(
+    [...url.searchParams]
+      .filter(([key]) => key.endsWith('_id__exact'))
+      .map(([key, value]) => [key.replace('__exact', ''), value]),
+  )
+
+  const rows = monthlyRows().map(row => ({ ...row, ...filters }))
+  if (url.searchParams.get('metric_month__sort') === 'asc') rows.reverse()
+
+  const pageSize = Number(url.searchParams.get('page_size')) || MONTHS_COUNT
+  return json({ data: rows.slice(0, pageSize), links: { next: null } })
+}
+
 export async function fakeMetricsApi(context: BrowserContext): Promise<void> {
   await context.route(`${METRICS_API}/**`, async (route) => {
-    const url = new URL(route.request().url())
-
-    // The `/csv/` endpoints are only ever used as download hrefs, never fetched.
-    if (url.pathname.endsWith('/csv/')) {
-      await route.fulfill({ contentType: 'text/csv', body: '', headers: CORS_HEADERS })
-      return
-    }
-
-    if (url.pathname.includes('_total/')) {
-      await route.fulfill({ json: { data: [totalRow()], links: { next: null } }, headers: CORS_HEADERS })
-      return
-    }
-
-    // Echo the filtered entity back on each row: the organization CSV export
-    // reads `dataset_id` from the rows it receives.
-    const filters = Object.fromEntries(
-      [...url.searchParams]
-        .filter(([key]) => key.endsWith('_id__exact'))
-        .map(([key, value]) => [key.replace('__exact', ''), value]),
-    )
-
-    const rows = monthlyRows().map(row => ({ ...row, ...filters }))
-    if (url.searchParams.get('metric_month__sort') === 'asc') rows.reverse()
-
-    const pageSize = Number(url.searchParams.get('page_size')) || MONTHS_COUNT
-    await route.fulfill({ json: { data: rows.slice(0, pageSize), links: { next: null } }, headers: CORS_HEADERS })
+    await route.fulfill({ ...metricsApiResponse(new URL(route.request().url())), headers: CORS_HEADERS })
   })
 }

@@ -1,6 +1,6 @@
 import type { APIRequestContext } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, createDiscussion, deleteDatasets } from '../helpers'
+import { API_BASE, createDataset, createDiscussion, deleteDatasets, gotoHydrated } from '../helpers'
 
 const createdDatasets: Array<string> = []
 const createdDataservices: Array<string> = []
@@ -54,8 +54,7 @@ for (const config of SUBJECT_CONFIGS) {
       const subject = await config.create(request, uniqueId)
       await createDiscussion(request, { class: config.type, id: subject.id }, `Discussion à clôturer ${uniqueId}`)
 
-      await page.goto(`/${config.publicBase}/${subject.id}/discussions`)
-      await page.waitForLoadState('networkidle')
+      await gotoHydrated(page, `/${config.publicBase}/${subject.id}/discussions`)
 
       await page.getByText(`Discussion à clôturer ${uniqueId}`, { exact: true }).click()
       await page.getByRole('button', { name: 'Répondre' }).first().click()
@@ -80,8 +79,7 @@ for (const config of SUBJECT_CONFIGS) {
       const subject = await config.create(request, uniqueId)
       await createDiscussion(request, { class: config.type, id: subject.id }, `Discussion à éditer ${uniqueId}`)
 
-      await page.goto(`/${config.publicBase}/${subject.id}/discussions`)
-      await page.waitForLoadState('networkidle')
+      await gotoHydrated(page, `/${config.publicBase}/${subject.id}/discussions`)
 
       await page.getByText(`Discussion à éditer ${uniqueId}`, { exact: true }).click()
       await page.getByRole('button', { name: 'Modifier' }).first().click()
@@ -101,8 +99,7 @@ for (const config of SUBJECT_CONFIGS) {
       const discussion = await createDiscussion(request, { class: config.type, id: subject.id }, `Discussion deep-link ${uniqueId}`)
       await createDiscussion(request, { class: config.type, id: subject.id }, `Autre discussion ${uniqueId}`)
 
-      await page.goto(`/${config.publicBase}/${subject.id}/discussions?discussion_id=${discussion.id}`)
-      await page.waitForLoadState('networkidle')
+      await gotoHydrated(page, `/${config.publicBase}/${subject.id}/discussions?discussion_id=${discussion.id}`)
 
       await expect(page.getByText(config.deepLinkBanner)).toBeVisible()
       await expect(page.getByText(`Discussion deep-link ${uniqueId}`, { exact: true })).toBeVisible()
@@ -119,8 +116,7 @@ for (const config of SUBJECT_CONFIGS) {
       await createDiscussion(request, { class: config.type, id: subject.id }, `Sujet alpha ${uniqueId}`)
       await createDiscussion(request, { class: config.type, id: subject.id }, `Sujet beta ${uniqueId}`)
 
-      await page.goto(`/${config.publicBase}/${subject.id}/discussions`)
-      await page.waitForLoadState('networkidle')
+      await gotoHydrated(page, `/${config.publicBase}/${subject.id}/discussions`)
 
       // The global header search has the same placeholder: target the searchbox
       await page.getByRole('searchbox', { name: 'Recherche' }).fill(`Sujet alpha ${uniqueId}`)
@@ -134,8 +130,7 @@ for (const config of SUBJECT_CONFIGS) {
       const subject = await config.create(request, uniqueId)
       const discussion = await createDiscussion(request, { class: config.type, id: subject.id }, `Discussion listée ${uniqueId}`)
 
-      await page.goto(`/${config.adminBase}/${subject.id}/discussions`)
-      await page.waitForLoadState('networkidle')
+      await gotoHydrated(page, `/${config.adminBase}/${subject.id}/discussions`)
 
       // Exact match: the eye button's label contains the title too
       const titleLink = page.getByRole('link', { name: `Discussion listée ${uniqueId}`, exact: true })
@@ -155,8 +150,7 @@ for (const config of SUBJECT_CONFIGS) {
         data: { comment: 'Réponse visible seulement dans la modale' },
       })
 
-      await page.goto(`/${config.adminBase}/${subject.id}/discussions`)
-      await page.waitForLoadState('networkidle')
+      await gotoHydrated(page, `/${config.adminBase}/${subject.id}/discussions`)
 
       // The table only shows the last comment: the first one lives behind the modal
       await expect(page.getByText('Premier message de la discussion.')).not.toBeVisible()
@@ -184,8 +178,7 @@ for (const config of SUBJECT_CONFIGS) {
         },
       })
 
-      await page.goto(`/${config.adminBase}/${subject.id}/discussions`)
-      await page.waitForLoadState('networkidle')
+      await gotoHydrated(page, `/${config.adminBase}/${subject.id}/discussions`)
 
       await expect(page.getByText(`Discussion ouverte ${uniqueId}`, { exact: true })).toBeVisible()
       await expect(page.getByText(`Discussion fermée ${uniqueId}`, { exact: true })).toBeVisible()

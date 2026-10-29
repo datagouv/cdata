@@ -12,6 +12,12 @@ env:
   CONTAINER_REGISTRY_NAMESPACE: ${{ vars.CONTAINER_REGISTRY_NAMESPACE }}
   CONTAINER_NAME: ${{ vars.CONTAINER_NAME }}
   UDATA_WORKING_DIR: udata
+  MONGODB_TOOLS: mongodb-database-tools-ubuntu2404-x86_64-100.13.0
+  # Serves the metrics API, matomo.js and the Tabular API to the E2E tests, see tests/fake-services.ts
+  FAKE_SERVICES_URL: http://localhost:3100
+  # Set to record the Tabular API fixtures from the real API instead of replaying them: each
+  # E2E shard then uploads what it recorded
+  FAKE_SERVICES_RECORD: ''
 
 permissions:
   id-token: write # Required for OIDC for npm publication
@@ -108,10 +114,116 @@ jobs:
         run: pnpm run lint
 
   # ============================================
+  # JOB 2b: Pick the udata ref the E2E tests run against
+  # ============================================
+  # A PR depending on an unmerged udata PR links it in its description: the first linked udata PR
+  # still open is used, `main` otherwise (no link, only merged PRs, push on main). The description
+  # is fetched rather than read from the event payload, which a re-run would replay unchanged.
+  udata_ref:
+    runs-on: ubuntu-latest
+    outputs:
+      ref: ${{ steps.resolve.outputs.ref }}
+    steps:
+      - name: Resolve udata ref
+        id: resolve
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: |
+          ref=main
+          if [ -n "$PR_NUMBER" ]; then
+            body=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json body -q .body)
+            for pr in $(printf '%s' "$body" | grep -oP 'opendatateam/udata/pull/\K\d+' | uniq); do
+              if [ "$(gh pr view "$pr" --repo opendatateam/udata --json state -q .state)" = "OPEN" ]; then
+                ref="refs/pull/$pr/head"
+                break
+              fi
+            done
+          fi
+          echo "Using udata $ref"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+
+  # ============================================
+  # JOB 2c: udata database the E2E tests start from (runs in parallel with build)
+  # ============================================
+  # Loading the zones and the fixtures takes minutes: done once here, each E2E shard restores
+  # the dump in seconds instead.
+  udata_fixtures:
+    needs: udata_ref
+    # The init downloads the zones and the fixtures without a timeout: a stalled download
+    # must fail the run rather than hold the E2E shards waiting for hours
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+    env:
+      E2E_MONGODB_HOST: mongodb://localhost:27017/udata
+      E2E_REDIS_URL: redis://localhost:6379
+      E2E_CACHE_TYPE: flask_caching.backends.SimpleCache
+
+    services:
+      mongodb:
+        image: mongo:6.0.4
+        ports:
+          - 27017:27017
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout cdata
+        uses: actions/checkout@v6
+
+      - name: Checkout udata
+        uses: actions/checkout@v6
+        with:
+          repository: opendatateam/udata
+          path: ${{ env.UDATA_WORKING_DIR }}
+          ref: ${{ needs.udata_ref.outputs.ref }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.11"
+          working-directory: ${{ env.UDATA_WORKING_DIR }}
+
+      - name: Install Python dependencies for udata
+        working-directory: ${{ env.UDATA_WORKING_DIR }}
+        run: uv sync --frozen
+
+      - name: Configure udata
+        run: cp .github/e2e/udata.cfg ${{ env.UDATA_WORKING_DIR }}/udata.cfg
+
+      - name: Initialize udata
+        working-directory: ${{ env.UDATA_WORKING_DIR }}
+        run: |
+          uv run udata init
+
+          uv run udata licenses
+          uv run udata spatial load
+          uv run udata import-fixtures
+
+          uv run udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
+          uv run udata user create --first-name "Normal" --last-name "User" --email "normal@example.com" --password "@1337Password42"
+          uv run udata user create --first-name "2FA" --last-name "User" --email "2fa@example.com" --password "@1337Password42"
+
+      # mongodump comes with the service image: nothing to install. TESTING makes udata
+      # suffix its database name with `-test`.
+      - name: Dump udata database
+        run: docker exec ${{ job.services.mongodb.id }} mongodump --db udata-test --archive --gzip > udata.archive
+
+      - name: Upload udata database
+        uses: actions/upload-artifact@v7
+        with:
+          name: udata-database
+          path: udata.archive
+          retention-days: 1
+          if-no-files-found: error
+
+  # ============================================
   # JOB 3: E2E Tests (runs in parallel with quality)
   # ============================================
   e2e:
-    needs: build
+    needs: [build, udata_ref, udata_fixtures]
     timeout-minutes: 30
     runs-on: ubuntu-latest
     strategy:
@@ -119,7 +231,7 @@ jobs:
       matrix:
         browser: [chromium, firefox]
         # Each (browser, shard) pair runs in its own container with its own MongoDB/Redis/udata,
-        # so Playwright can keep workers=1 (shared backend state) while shards run in parallel.
+        # and Playwright runs one worker per core of that runner against it.
         # Keep the shard count in sync with the `--shard=.../N` value in the "Run E2E tests" step.
         shard: [1, 2, 3, 4]
         include:
@@ -128,7 +240,7 @@ jobs:
           - browser: firefox
             projects: "--project=setup --project=setup-normal-user --project=firefox"
     container:
-      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --user 1001
 
     services:
@@ -156,7 +268,7 @@ jobs:
         with:
           repository: opendatateam/udata
           path: ${{ env.UDATA_WORKING_DIR }}
-          ref: main
+          ref: ${{ needs.udata_ref.outputs.ref }}
 
       - name: Set up uv
         uses: astral-sh/setup-uv@v6
@@ -179,76 +291,47 @@ jobs:
 
       - name: Install Python dependencies for udata
         working-directory: ${{ env.UDATA_WORKING_DIR }}
-        run: |
-          uv sync --frozen
+        run: uv sync --frozen
 
       - name: Configure udata
+        run: cp .github/e2e/udata.cfg ${{ env.UDATA_WORKING_DIR }}/udata.cfg
+
+      - name: Download udata database
+        uses: actions/download-artifact@v8
+        with:
+          name: udata-database
+
+      - name: Cache MongoDB database tools
+        id: mongodb-tools
+        uses: actions/cache@v6
+        with:
+          path: mongodb-tools
+          key: ${{ env.MONGODB_TOOLS }}
+
+      - name: Install MongoDB database tools
+        if: steps.mongodb-tools.outputs.cache-hit != 'true'
+        run: |
+          mkdir mongodb-tools
+          curl -fsSL "https://fastdl.mongodb.org/tools/db/$MONGODB_TOOLS.tgz" | tar -xz --strip-components=1 -C mongodb-tools
+
+      - name: Restore udata database
+        run: mongodb-tools/bin/mongorestore --uri mongodb://mongodb:27017 --archive=udata.archive --gzip
+
+      - name: Start udata server
         working-directory: ${{ env.UDATA_WORKING_DIR }}
         run: |
-          cat << EOF > udata.cfg
-          from udata.settings import Defaults
-
-          DEBUG = True
-          TESTING = True
-          SECRET_KEY = 'test-secret-key-for-ci'
-          API_TOKEN_SECRET = 'test-api-token-secret-for-ci'
-          SEND_MAIL = False
-          SERVER_NAME = 'localhost:7000'
-          CDATA_BASE_URL="http://localhost:3000"
-
-          CACHE_TYPE = 'flask_caching.backends.NullCache'
-          DEFAULT_LANGUAGE = 'fr'
-
-          SCHEMA_CATALOG_URL='https://schema.data.gouv.fr/schemas/schemas.json'
-
-          URLS_ALLOW_PRIVATE = True
-          URLS_ALLOW_LOCAL = True
-          URLS_ALLOWED_TLDS = Defaults.URLS_ALLOWED_TLDS | set(['local'])
-          URLS_RESOLVE_HOSTNAME = False
-
-          PLUGINS = []
-          # Once https://github.com/etalab/flask-storage/pull/30 is merged, revert to
-          # FS_ROOT = 'fs' and quote the heredoc delimiter again (cat << 'EOF').
-          FS_ROOT = '$PWD/fs'
-
-          HARVESTER_BACKENDS = ['dcat', 'csw*']
-
-          SESSION_COOKIE_SECURE = False
-
-          SECURITY_EMAIL_VALIDATOR_ARGS = {
-              "check_deliverability": False
-          }
-          SECURITY_TWO_FACTOR = True
-
-          MONGODB_HOST = 'mongodb://mongodb:27017/udata'
-          CELERY_BROKER_URL = 'redis://redis:6379'
-          CELERY_RESULT_BACKEND = 'redis://redis:6379'
-          # No worker runs here: tasks run within the request that triggers them, so that
-          # what they do (the notifications of a discussion, of a badge) can be tested.
-          CELERY_TASK_ALWAYS_EAGER = True
-          EOF
-
-      - name: Initialize udata
-        working-directory: ${{ env.UDATA_WORKING_DIR }}
-        run: |
-          # Create fs directory
           mkdir -p fs
-
-          # Initialize udata
-          uv run udata init
-
-          uv run udata licenses
-          uv run udata spatial load
-          uv run udata import-fixtures
-
-          uv run udata user create --first-name "Admin" --last-name "User" --email "admin@example.com" --password "@1337Password42" --admin
-          uv run udata user create --first-name "Normal" --last-name "User" --email "normal@example.com" --password "@1337Password42"
-          uv run udata user create --first-name "2FA" --last-name "User" --email "2fa@example.com" --password "@1337Password42"
 
           uv run inv i18nc
 
-          # No reloader: storage writes in fs/ would restart the server mid-test.
-          uv run inv serve --port=7000 > udata.log 2>&1 &
+          # uWSGI as in production, with one process per core: the Playwright workers hit udata
+          # concurrently, and the single-process development server would serialize them.
+          # lazy-apps loads the app after the fork, so that no PyMongo client is shared across
+          # processes. die-on-term makes SIGTERM stop uWSGI, which reloads on it otherwise.
+          # http-keepalive stands for the nginx of production: the HTTP router closes every
+          # connection otherwise, and the Playwright API client hangs up on the sockets it reuses.
+          uv run --with pyuwsgi uwsgi --master --http localhost:7000 --http-keepalive \
+            --module udata.wsgi:app --processes "$(nproc)" --lazy-apps --die-on-term > udata.log 2>&1 &
 
           # Wait for udata to be ready
           timeout 90 bash -c 'until curl -f http://localhost:7000/api/1/site/; do sleep 2; done'
@@ -258,15 +341,19 @@ jobs:
         env:
           NUXT_PUBLIC_API_BASE: http://localhost:7000
           NUXT_PUBLIC_HOMEPAGE_HERO_IMAGES: "hero_15.png"
-          # Lets the matomo plugin load (tests stub matomo.js at the context
-          # level, the tracking spec asserts what the app sends). CI pre-starts
-          # this server and Playwright reuses it (reuseExistingServer), so the
-          # webServer.env in playwright.config.ts does not apply here.
-          NUXT_PUBLIC_MATOMO_HOST: http://localhost:3000
+          # Lets the matomo plugin load (tests/fake-services.ts serves an empty matomo.js,
+          # the tracking spec asserts what the app sends). CI pre-starts this server and
+          # Playwright reuses it (reuseExistingServer), so the webServer.env in
+          # playwright.config.ts does not apply here.
+          NUXT_PUBLIC_MATOMO_HOST: ${{ env.FAKE_SERVICES_URL }}
+          # Under a path of its own: the metrics outage tests intercept everything below it,
+          # and must not take matomo.js down with it
+          NUXT_PUBLIC_METRICS_API: ${{ env.FAKE_SERVICES_URL }}/metrics
           NUXT_SITE_URL: http://localhost:3000
           NUXT_PUBLIC_CHARTS_API_BASE: http://localhost:7000
           NUXT_PUBLIC_CADA_RESOURCE_ID: 3a6d6fe3-8548-43ed-ad09-72052771447c
           NUXT_PUBLIC_GEOPF_ENABLED: "true"
+          NUXT_PUBLIC_TABULAR_API_URL: ${{ env.FAKE_SERVICES_URL }}/tabular
           NUXT_PUBLIC_TABULAR_API_PREVIEW_RESOURCES_ID: 982d9dd0-365a-4c4b-8a83-75dec40c36bb
           NUXT_PUBLIC_TABULAR_API_PREVIEW_STATS_ID: 33cf9a65-3f77-4d88-acd1-bca420d83e60
           NUXT_PUBLIC_EXPLORER_FEEDBACK_URL: https://example.com/feedback
@@ -282,6 +369,7 @@ jobs:
         env:
           BASE_URL: http://localhost:3000
           NUXT_PUBLIC_API_BASE: http://localhost:7000
+          NUXT_PUBLIC_METRICS_API: ${{ env.FAKE_SERVICES_URL }}/metrics
           UDATA_WORKING_DIR: ${{ env.UDATA_WORKING_DIR }}
           CI: true
           # Unique blob name per (browser, shard): the default is report-<shard>.zip, which would
@@ -295,7 +383,7 @@ jobs:
         working-directory: ${{ env.UDATA_WORKING_DIR }}
         run: |
           # Kill udata server to release the lock so that post setup-uv can prune the cache
-          pkill -f "manage.py serve" || true
+          pkill -f uwsgi || true
 
       - name: Show server logs
         if: always()
@@ -305,6 +393,14 @@ jobs:
           echo ""
           echo "=== CDATA SERVER LOGS ==="
           cat cdata.log || echo "No cdata logs found"
+
+      - name: Upload recorded Tabular API fixtures
+        uses: actions/upload-artifact@v7
+        if: always() && env.FAKE_SERVICES_RECORD
+        with:
+          name: tabular-fixtures-${{ matrix.browser }}-${{ matrix.shard }}
+          path: tests/fixtures/tabular
+          retention-days: 1
 
       - name: Upload screenshots
         uses: actions/upload-artifact@v7
@@ -421,16 +517,13 @@ jobs:
   publish-datagouv-components:
     needs: [quality_and_test, e2e]
     runs-on: ubuntu-latest
-    # The version is read from the `dev` dist-tag then incremented, so two overlapping runs would
-    # compute the same number and the second would get a 403. `queue: max` serializes them FIFO
-    # (up to 100 pending) instead of cancelling the pending one like the default `queue: single`.
-    concurrency:
-      group: publish-datagouv-components
-      queue: max
     if: github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch'
     steps:
       - name: Checkout repository
         uses: actions/checkout@v6
+        with:
+          # The full history is needed to count the commits in the dev version
+          fetch-depth: 0
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
@@ -449,11 +542,15 @@ jobs:
       - name: Publish datagouv-components
         working-directory: ./datagouv-components
         run: |
-          LATEST=$(npm view @datagouv/components-next@dev version 2>/dev/null \
-            || npm view @datagouv/components-next version 2>/dev/null \
-            || echo "0.0.0")
-          echo "Using base version $LATEST"
-          pnpm version "$LATEST" --no-git-tag-version --allow-same-version
-          # Then, we increment the preprelease version number
-          pnpm version prerelease --preid=dev --no-git-tag-version
+          # The version is derived from git rather than read from the `dev` dist-tag: npm takes
+          # a while to expose a freshly published version, so a run starting right after another
+          # one would compute the same number and get a 409.
+          # The commit count orders the versions, the `g` prefix keeps an all-digit hash from
+          # being parsed as a number (a leading zero would make the version invalid).
+          # Bumped by hand rather than with `pnpm version patch`: each `pnpm version` runs the
+          # `preversion` build, and the final one below is enough.
+          BASE=$(node -p "const [major, minor, patch] = require('./package.json').version.split('.'); [major, minor, +patch + 1].join('.')")
+          VERSION="$BASE-dev.$(git rev-list --count HEAD).g$(git rev-parse --short HEAD)"
+          echo "Publishing $VERSION"
+          pnpm version "$VERSION" --no-git-tag-version
           pnpm run publish-dev --no-git-checks

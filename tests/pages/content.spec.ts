@@ -1,4 +1,5 @@
 import { test, expect } from '../base'
+import { createPost, deletePosts } from '../helpers'
 
 // Pages are stored in the datagouvfr-pages GitHub repository, either as a
 // Markdown or as an HTML file, and the server route has to find out which one
@@ -15,6 +16,44 @@ test.describe('Pages content', () => {
       expect(response?.status()).toBe(200)
       await expect(page.getByLabel('Vous êtes ici :')).toContainText(title)
       await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible()
+    })
+  })
+
+  test.describe('with a news sharing the slug of a page', () => {
+    const createdIds: Array<string> = []
+
+    test.afterEach(async ({ request }) => {
+      await deletePosts(request, createdIds)
+    })
+
+    test('the page path still renders the page, not the news', async ({ page, request }) => {
+      const news = await createPost(request, { name: 'Actualité CGU', kind: 'news', slug: 'cgu', content: 'Contenu' })
+      createdIds.push(news.id)
+
+      const response = await page.goto('/pages/legal/cgu')
+      expect(response?.status()).toBe(200)
+      await expect(page).toHaveURL(/\/pages\/legal\/cgu$/)
+      await expect(page.getByRole('heading', { level: 1, name: 'Modalités d’utilisation' })).toBeVisible()
+    })
+  })
+
+  test.describe('when the posts API fails', () => {
+    // The 500 below is the point of the test: the browser logs it.
+    test.use({ allowedConsoleMessages: ['the server responded with a status of 500'] })
+
+    test('an API failure on the edito page shows an error, not the 404 of the GitHub fallback', async ({ page }) => {
+      await page.goto('/pages/legal/licences')
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+
+      // Intercepted in the browser only, hence the in-app navigation: the server
+      // rendering would call the API directly.
+      // A regex, not a glob: the API calls carry a `?lang=` query the glob would not match
+      await page.route(/\/api\/1\/posts\/cgu\/(\?|$)/, route => route.fulfill({ status: 500 }))
+      await page.locator('footer').getByRole('link', { name: 'Modalités d\'utilisation' }).click()
+      await page.waitForURL('**/pages/legal/cgu')
+
+      await expect(page.getByText('Une erreur est survenue lors du chargement.')).toBeVisible()
+      await expect(page.getByRole('heading', { name: '404' })).toHaveCount(0)
     })
   })
 

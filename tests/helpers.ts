@@ -1,17 +1,20 @@
-import type { APIRequestContext, Browser, Page } from '@playwright/test'
+import type { APIRequestContext, Browser, Locator, Page } from '@playwright/test'
 import { expect, test } from '@playwright/test'
 import type { MemberRole } from '@datagouv/components-next'
 import type { DiscussionSubject } from '../types/discussions'
 import type { NotificationRuleKey, NotificationSetting } from '../types/notifications'
+import type { PageBloc } from '../types/pages'
+import type { Post } from '../types/posts'
 
 export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
 export type ApiDataset = { id: string, title: string, slug: string }
 export type ApiResource = { id: string, title: string, latest: string, url: string }
 export type ApiHarvestSource = { id: string, name: string, backend: string, schedule: string | null, config: Record<string, unknown> }
-export type ApiOrganization = { id: string, name: string }
+export type ApiOrganization = { id: string, name: string, slug: string }
 export type ApiContactPoint = { id: string, name: string, email: string | null, contact_form: string | null, role: string }
 export type ApiReuse = { id: string, title: string, slug: string }
+export type ApiPost = { id: string, name: string, slug: string }
 
 export async function createHarvestSource(request: APIRequestContext, name: string, backend: string, config: Record<string, unknown> = {}): Promise<ApiHarvestSource> {
   const response = await request.post(`${API_BASE}/api/1/harvest/sources/`, {
@@ -81,9 +84,52 @@ export async function createDatasetWithRemoteResources(request: APIRequestContex
 
 // Typing into a server-rendered field before Vue hydrates it is lost: hydration resets each
 // input to its `v-model`. Use it before filling a form right after landing on a page.
+// The network going idle does not prove hydration ended on a busy CPU: Nuxt tells it, the
+// way @nuxt/test-utils waits for it.
 export async function gotoHydrated(page: Page, url: string): Promise<void> {
   await page.goto(url)
   await page.waitForLoadState('networkidle')
+  await page.waitForFunction(() => window.useNuxtApp?.().isHydrating === false)
+}
+
+// The tab of an item of the blocs editor (`EditItem`) only reacts once the item is hovered
+// or focused: focusing one of its buttons is what a keyboard user does.
+function editTab(item: Locator): Locator {
+  return item.locator(':scope > [data-edit-tab]')
+}
+
+export async function deleteEditItem(item: Locator): Promise<void> {
+  const actions = editTab(item).getByRole('button', { name: /^Actions sur/ })
+  await actions.focus()
+  await actions.press('Enter')
+  await item.page().getByRole('menuitem', { name: 'Supprimer' }).click()
+}
+
+// The drag handle of an item, focused so that the mouse can grab it
+export async function focusedDragHandle(item: Locator): Promise<Locator> {
+  const handle = editTab(item).locator('[data-drag-handle]')
+  await handle.focus()
+  return handle
+}
+
+// Grabs an item of the blocs editor by its handle and brings it to a point of the page, step
+// by step as a user would (the editor follows the pointer, not the native drag and drop),
+// without dropping it: the drop indicator can be read there.
+export async function startEditItemDrag(item: Locator, x: number, y: number): Promise<void> {
+  const page = item.page()
+  const handle = await focusedDragHandle(item)
+  const from = (await handle.boundingBox())!
+  await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(x, y, { steps: 20 })
+}
+
+// Drags an item of the blocs editor by its handle and drops it on another element, at
+// `heightFraction` of its height (its middle by default).
+export async function dragEditItem(item: Locator, target: Locator, heightFraction = 0.5): Promise<void> {
+  const to = (await target.boundingBox())!
+  await startEditItemDrag(item, to.x + to.width / 2, to.y + to.height * heightFraction)
+  await item.page().mouse.up()
 }
 
 // matomo.js is injected after the load event, and webfonts are only fetched once used,
@@ -94,6 +140,11 @@ export async function gotoSettled(page: Page, url: string): Promise<void> {
   await page.goto(url)
   await matomoLoaded
   await page.evaluate(() => document.fonts.ready)
+  // Visible links are prefetched once the page is idle, which comes right after: Nuxt loads
+  // the layout and middleware of the target route without catching the rejection, so an
+  // aborted prefetch surfaces on Firefox as an uncaught "error loading dynamically imported
+  // module" (e.g. the header links to /admin when logged in).
+  await page.waitForLoadState('networkidle')
 }
 
 // The banner is the only way into the new explorer, and it only lives on the resources
@@ -126,6 +177,31 @@ export async function createReuse(request: APIRequestContext, title: string, url
     throw new Error(`Failed to create reuse "${title}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
   }
   return await response.json()
+}
+
+export async function createPost(request: APIRequestContext, data: {
+  name: string
+  kind: Post['kind']
+  slug?: string
+  headline?: string
+  content?: string
+  body_type?: Post['body_type']
+  blocs?: Array<PageBloc>
+  parent?: string
+  sidemenu?: boolean
+}): Promise<ApiPost> {
+  const response = await request.post(`${API_BASE}/api/1/posts/`, { data })
+  if (!response.ok()) {
+    throw new Error(`Failed to create post "${data.name}": ${response.status()} ${(await response.text()).slice(0, 300)}`)
+  }
+  return await response.json()
+}
+
+// Deleted from the last created: the API refuses to delete a page that still has sub-pages.
+export async function deletePosts(request: APIRequestContext, ids: Array<string>): Promise<void> {
+  for (const id of ids.splice(0).reverse()) {
+    await request.delete(`${API_BASE}/api/1/posts/${id}/`)
+  }
 }
 
 export async function createDiscussion(request: APIRequestContext, subject: DiscussionSubject, title: string): Promise<{ id: string }> {

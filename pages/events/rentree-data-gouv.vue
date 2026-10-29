@@ -26,6 +26,7 @@
           size="md"
           :content="section.section_content"
           :min-heading="3"
+          follow-links
         />
         <div class="brandcards-list">
           <div class="grid md:grid-cols-6 gap-12">
@@ -63,6 +64,7 @@
               size="md"
               :content="item.answer"
               :min-heading="3"
+              follow-links
             />
             <div
               v-if="item.ctaLabel && item.ctaUrl"

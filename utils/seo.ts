@@ -3,7 +3,3 @@ export function normalizeSeoDescription(description: string | null | undefined):
   const normalized = description?.replace(/\s+/g, ' ').trim()
   return normalized || undefined
 }
-
-export function seoTitleWithFallback(title: string | undefined, fallback: string): string {
-  return title || fallback
-}
