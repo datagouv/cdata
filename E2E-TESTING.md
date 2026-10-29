@@ -59,6 +59,15 @@ NUXT_PUBLIC_TABULAR_API_PREVIEW_STATS_ID="33cf9a65-3f77-4d88-acd1-bca420d83e60" 
 pnpm run test:e2e
 ```
 
+### Fake services
+
+Playwright démarre toujours un serveur de services factices (`tests/fake-services.ts`,
+matomo, métriques, assistant et SQL Tabular mockés pour le configurateur de graphiques).
+Par défaut il écoute sur `http://localhost:3100` ; la variable `FAKE_SERVICES_URL` permet
+de changer d'URL, mais elle doit rester une URL locale (c'est Playwright lui-même qui
+interroge l'URL, pour vérifier que le serveur tourne et déduire son port). Si un serveur
+tourne déjà à cette URL, Playwright le réutilise (`reuseExistingServer`).
+
 ## Scripts disponibles
 
 - `pnpm run test:e2e` : Lance les tests E2E en mode headless

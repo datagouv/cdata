@@ -80,8 +80,8 @@ export type SetupAndSaveChartOptions = {
   title?: string
   description?: string
   /**
-   * The reduced model stores no chart type: the preview infers it from the
-   * SQL result shape. 'line' swaps the mocked SQL result for a date x-axis.
+   * Chart type to select in the form (defaults to the form's default, 'line').
+   * 'line' also swaps the mocked SQL result for a date x-axis.
    */
   type?: 'line' | 'histogram'
 }
@@ -100,6 +100,7 @@ export async function setupAndSaveChart(page: Page, options: SetupAndSaveChartOp
   await page.getByLabel('Titre').fill(title)
   await page.getByLabel('Description').fill(description)
   await page.getByLabel('Requête SQL').fill('SELECT nom_region, nb_logements FROM logements ORDER BY nb_logements DESC')
+  await page.getByLabel('Type de graphique').selectOption(options.type ?? 'line')
 
   // The chart preview must be rendered before saving, otherwise the capture is empty
   // and no image upload happens.
@@ -124,10 +125,6 @@ export async function setupAndSaveChart(page: Page, options: SetupAndSaveChartOp
 export type CreateChartOptions = {
   title: string
   description?: string
-  /**
-   * The reduced model stores no chart type; the preview infers it from the SQL
-   * result. Kept for call-site compatibility, it only shapes the fixture query.
-   */
   type?: 'line' | 'histogram'
   private?: boolean
   withImage?: boolean
@@ -146,6 +143,7 @@ export async function createChart(request: APIRequestContext, options: CreateCha
       query: options.type === 'line'
         ? 'SELECT jour, nb_logements FROM logements ORDER BY jour'
         : 'SELECT nom_region, nb_logements FROM logements ORDER BY nb_logements DESC',
+      chart_type: options.type ?? 'histogram',
       resource_id: RESOURCE_ID,
       y_axis: { min: null, max: null, label: null, unit: null, unit_position: 'suffix' },
       extras: {},

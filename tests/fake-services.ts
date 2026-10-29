@@ -12,7 +12,9 @@ import { MATOMO_SCRIPT } from './matomo.ts'
 import { CORS_HEADERS, metricsApiResponse } from './metricsApi.ts'
 import { REAL_TABULAR_API, REAL_TABULAR_API_TIMEOUT, readTabularFixture, tabularRequestKey, writeTabularFixture, type TabularFixture } from './tabularFixtures.ts'
 
-const origin = process.env.FAKE_SERVICES_URL || 'http://localhost:3100'
+// Started by Playwright with FAKE_SERVICES_PORT matching FAKE_SERVICES_URL (see
+// playwright.config.ts): FAKE_SERVICES_URL must stay a local URL.
+const origin = process.env.FAKE_SERVICES_URL || `http://localhost:${process.env.FAKE_SERVICES_PORT || 3100}`
 const TABULAR_PREFIX = '/tabular'
 
 async function recordTabularResponse(request: string): Promise<TabularFixture> {
