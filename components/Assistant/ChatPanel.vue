@@ -45,7 +45,7 @@
       role="alert"
       class="text-sm text-red-600 m-0"
     >
-      {{ errorMessage }}
+      {{ $t(errorMessage) }}
     </p>
 
     <div
@@ -79,16 +79,18 @@
       </button>
     </div>
 
-    <form
+    <!-- A div, not a form: this panel lives inside the chart configurator's root
+    form and nested forms are invalid HTML. Enter submits via handleEnter. -->
+    <div
       class="mt-auto overflow-hidden rounded-md border bg-white transition-[border-color,box-shadow] focus-within:border-new-primary focus-within:shadow-[0_0_0_1px_var(--color-new-primary)]"
-      @submit.prevent="submit"
     >
       <div class="flex h-28 flex-col px-2 py-2">
         <textarea
           id="assistant-input"
+          ref="textareaRef"
           v-model="input"
           rows="3"
-          maxlength="4000"
+          :maxlength="MAX_INPUT_LENGTH"
           class="min-h-0 w-full flex-1 resize-none border-0 bg-transparent text-sm outline-none placeholder:text-new-gray-medium"
           :aria-label="$t('Votre demande')"
           :disabled="waiting || busy"
@@ -97,10 +99,10 @@
         />
         <footer class="flex items-center justify-end gap-2">
           <span
-            v-if="input.length >= 3600"
+            v-if="input.length >= COUNTER_THRESHOLD"
             class="mr-auto text-[11px] tabular-nums"
-            :class="input.length >= 4000 ? 'text-new-error' : 'text-new-gray-medium'"
-          >{{ input.length.toLocaleString('fr-FR') }} / {{ (4000).toLocaleString('fr-FR') }}</span>
+            :class="input.length >= MAX_INPUT_LENGTH ? 'text-new-error' : 'text-new-gray-medium'"
+          >{{ input.length.toLocaleString('fr-FR') }} / {{ MAX_INPUT_LENGTH.toLocaleString('fr-FR') }}</span>
           <button
             v-if="busy"
             type="button"
@@ -115,10 +117,11 @@
           </button>
           <button
             v-else
-            type="submit"
+            type="button"
             :aria-label="$t('Envoyer')"
             class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-new-primary text-white hover:bg-new-primary-hover disabled:cursor-not-allowed disabled:bg-new-gray-medium-clic"
             :disabled="waiting || !input.trim()"
+            @click="submit"
           >
             <RiArrowUpLine
               class="size-4"
@@ -127,13 +130,13 @@
           </button>
         </footer>
       </div>
-    </form>
+    </div>
   </section>
 </template>
 
 <script setup lang="ts">
 import { RiArrowUpLine, RiCheckLine, RiFileCopyLine, RiStopMiniLine } from '@remixicon/vue'
-import { computed, ref, toRef } from 'vue'
+import { computed, nextTick, ref, toRef, watch } from 'vue'
 import ToolTrace from './ToolTrace.vue'
 import { useAssistantChat } from './useAssistantChat'
 import { buildChatDisplayItems, extractLastSqlBlock, mapAssistantError } from '~/utils/assistant'
@@ -148,8 +151,12 @@ const emit = defineEmits<{
 
 const { error, messages, sendMessage, status, stop } = useAssistantChat(toRef(props, 'resourceId'))
 
+const MAX_INPUT_LENGTH = 4000
+const COUNTER_THRESHOLD = 3600
+
 const input = ref('')
 const copied = ref(false)
+const textareaRef = ref<HTMLTextAreaElement | null>(null)
 
 const waiting = computed(() => !props.resourceId)
 // 'error' is not busy: a failed request leaves the status on 'error' until the
@@ -173,9 +180,26 @@ function submit() {
   const now = Date.now()
   if (!text || waiting.value || busy.value || now - lastSubmittedAt < SEND_COOLDOWN_MS) return
   lastSubmittedAt = now
+  lastSentText = text
   sendMessage({ text })
   input.value = ''
 }
+
+// Text of the in-flight request, restored in the composer if it fails so a
+// network error never loses the user's message.
+let lastSentText: string | null = null
+
+// The composer stays disabled for the whole request, so give the focus back
+// once the status settles (error included, to make retrying immediate).
+watch(status, async (value) => {
+  if (value !== 'ready' && value !== 'error') return
+  if (value === 'error' && lastSentText !== null) {
+    input.value = lastSentText
+    lastSentText = null
+  }
+  await nextTick()
+  textareaRef.value?.focus()
+})
 
 function handleEnter(event: KeyboardEvent) {
   if (event.shiftKey || event.isComposing) return
