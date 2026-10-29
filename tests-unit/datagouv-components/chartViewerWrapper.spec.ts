@@ -3,7 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ChartViewerWrapper from '~/datagouv-components/src/components/Chart/ChartViewerWrapper.vue'
-import { ensureRowLimit, executeSqlQuery } from '~/datagouv-components/src/functions/tabularApi'
+import { executeSqlQuery } from '~/datagouv-components/src/functions/tabularApi'
 import type { SqlQueryResult } from '~/datagouv-components/src/functions/tabularApi'
 import { inferChartConfig } from '~/datagouv-components/src/functions/charts'
 import { configKey } from '~/datagouv-components/src/config'
@@ -147,7 +147,7 @@ describe('ChartViewerWrapper', () => {
     expect(executeSqlQueryMock).toHaveBeenCalledWith(
       TABULAR_API_URL,
       RESOURCE_ID,
-      ensureRowLimit(query),
+      query,
     )
 
     const stub = wrapper.findComponent(ChartViewerStub)
@@ -325,13 +325,14 @@ describe('ChartViewerWrapper', () => {
     expect(wrapper.text()).toContain('Aucune donnée')
   })
 
-  it('renders a French error message without throwing when the API fails', async () => {
-    executeSqlQueryMock.mockRejectedValue(new Error('L\'exécution de la requête a échoué : HTTP 500'))
+  it('renders a generic error message without the raw failure detail when the API fails', async () => {
+    executeSqlQueryMock.mockRejectedValue(new Error('L\'exécution de la requête a échoué : HTTP 500 https://tabular.example.com/api/resources/847057e0-4c03-4099-85aa-9796fb6003bf/sql'))
 
     const wrapper = mountWrapper(chartFixture('SELECT date, votes FROM votes'))
     await waitForFetch()
 
     expect(wrapper.find('.chart-viewer-stub').exists()).toBe(false)
-    expect(wrapper.text()).toContain('L\'exécution de la requête a échoué')
+    expect(wrapper.text()).toContain('Une erreur est survenue lors du chargement des données du graphique.')
+    expect(wrapper.text()).not.toContain('847057e0-4c03-4099-85aa-9796fb6003bf')
   })
 })

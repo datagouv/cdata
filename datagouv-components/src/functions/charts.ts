@@ -8,12 +8,9 @@ export type InferredChartConfig = {
   seriesColumns: Array<string>
 }
 
-// Above this length an X value is a text (sentence/paragraph), not a category label.
-
 /**
- * Infer a render config from a SQL query result: first column is the X axis,
- * following numeric columns are series. The chart is a bar chart when every X
- * value is a short non-date string, a line chart otherwise.
+ * Infer a render config from a SQL query result: the first column is the X
+ * axis and the following fully numeric columns are the series columns.
  */
 export function inferChartConfig(result: SqlQueryResult): InferredChartConfig {
   const xColumn = result.columns[0] ?? ''

@@ -1,26 +1,29 @@
 <template>
-  <LoadingBlock
-    :status="status"
-    :data="chartData"
-  >
-    <template #default="{ data }">
-      <ChartViewer
-        ref="chartViewerRef"
-        :chart="data.config"
-        :series="{ data: data.rows, columns: data.columns }"
-      />
-    </template>
-    <template #error>
-      <div class="text-center py-8 text-gray-500">
-        {{ errorMessage }}
-      </div>
-    </template>
-  </LoadingBlock>
-  <div
-    v-if="status === 'success' && !chartData"
-    class="text-center py-8 text-gray-500"
-  >
-    {{ noDataMessage }}
+  <!-- Single root so attributes fall through to the wrapper -->
+  <div>
+    <LoadingBlock
+      :status="status"
+      :data="chartData"
+    >
+      <template #default="{ data }">
+        <ChartViewer
+          ref="chartViewerRef"
+          :chart="data.config"
+          :series="{ data: data.rows, columns: data.columns }"
+        />
+      </template>
+      <template #error>
+        <div class="text-center py-8 text-gray-500">
+          {{ t('Une erreur est survenue lors du chargement des données du graphique.') }}
+        </div>
+      </template>
+    </LoadingBlock>
+    <div
+      v-if="status === 'success' && !chartData"
+      class="text-center py-8 text-gray-500"
+    >
+      {{ noDataMessage }}
+    </div>
   </div>
 </template>
 
@@ -29,7 +32,7 @@ import { computed, ref } from 'vue'
 import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
 import { useComponentsConfig } from '../../config'
-import { ensureRowLimit, executeSqlQuery, type SqlQueryResult } from '../../functions/tabularApi'
+import { executeSqlQuery, type SqlQueryResult } from '../../functions/tabularApi'
 import type { Chart, ChartViewerConfig, ColumnsDefinition } from '../../types/visualizations'
 import type { ColumnType } from '../TabularExplorer/types'
 import { inferChartConfig } from '../../functions/charts'
@@ -55,10 +58,6 @@ const config = useComponentsConfig()
 const status = ref<'idle' | 'pending' | 'success' | 'error'>('idle')
 const queryResult = ref<SqlQueryResult | null>(null)
 const error = ref<Error | null>(null)
-
-const errorMessage = computed(() => {
-  return error.value?.message ?? t('Une erreur est survenue lors du chargement des données du graphique.')
-})
 
 // Date.parse accepts bare years and numeric identifiers, so require a date prefix.
 const ISO_DATE_PREFIX = /^\d{4}-\d{2}-\d{2}(?:[T ]|$)/
@@ -93,12 +92,17 @@ type ChartViewerData = {
 
 // Why the result cannot be plotted, to surface a meaningful message instead
 // of a bare "no data": rows may exist but carry no numeric column for Y.
+const inferredConfig = computed(() => {
+  const result = queryResult.value
+  if (!result || result.rows.length === 0) return null
+  return inferChartConfig(result)
+})
+
 const noDataReason = computed<'empty' | 'no-numeric-series' | null>(() => {
   if (status.value !== 'success') return null
-  const result = queryResult.value
-  if (!result || result.rows.length === 0) return 'empty'
-  const { xColumn, seriesColumns } = inferChartConfig(result)
-  if (!xColumn || seriesColumns.length === 0) return 'no-numeric-series'
+  const inferred = inferredConfig.value
+  if (!inferred) return 'empty'
+  if (!inferred.xColumn || inferred.seriesColumns.length === 0) return 'no-numeric-series'
   return null
 })
 
@@ -112,7 +116,9 @@ const chartData = computed<ChartViewerData | null>(() => {
   const result = queryResult.value
   if (!result || result.rows.length === 0) return null
 
-  const { xColumn, seriesColumns } = inferChartConfig(result)
+  const inferred = inferredConfig.value
+  if (!inferred) return null
+  const { xColumn, seriesColumns } = inferred
   if (!xColumn || seriesColumns.length === 0) return null
 
   // The rendered kind always comes from the chart's chart_type field; inference
@@ -172,7 +178,7 @@ async function runQuery() {
   error.value = null
 
   try {
-    const result = await executeSqlQuery(tabularApiUrl, resourceId, ensureRowLimit(query))
+    const result = await executeSqlQuery(tabularApiUrl, resourceId, query)
     if (sequence !== requestSequence) return
     queryResult.value = result
     status.value = 'success'

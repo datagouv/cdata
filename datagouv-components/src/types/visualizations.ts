@@ -76,13 +76,10 @@ export type ChartViewerXAxis = {
   type: 'discrete' | 'continuous'
 }
 
-export type ChartPalette = 'default' | 'neutral' | 'categorical' | 'sequentialAscending' | 'sequentialDescending' | 'divergentAscending' | 'divergentDescending'
-
 export type ChartViewerConfig = {
   x_axis: ChartViewerXAxis
   y_axis: YAxis
   series: Array<ChartViewerSeries>
-  palette?: ChartPalette
 }
 
 export type ChartForm = Omit<ChartForApi, 'owner' | 'organization'> & {

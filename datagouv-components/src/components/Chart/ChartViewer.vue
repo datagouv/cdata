@@ -14,7 +14,7 @@ import { init, type ECharts as EChartsType } from 'echarts'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { summarize } from '../../functions/helpers'
 import { useFormatDate } from '../../functions/dates'
-import type { ChartViewerConfig, ChartViewerXAxis, ColumnDefinition, ColumnsDefinition, YAxis, ChartPalette } from '../../types/visualizations'
+import type { ChartViewerConfig, ChartViewerXAxis, ColumnDefinition, ColumnsDefinition, YAxis } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
 
 use([CanvasRenderer, LineChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent])
@@ -32,16 +32,10 @@ const { formatDate } = useFormatDate()
 const chartContainer = ref<HTMLElement | null>(null)
 let echartsInstance: EChartsType | null = null
 
-// DSFR Chart palette definitions
-const palettes: Record<ChartPalette, string[]> = {
-  default: ['#5C68E5'],
-  neutral: ['#B1B1B1', '#5C68E5'],
-  categorical: ['#5C68E5', '#82B5F2', '#29598F', '#31A7AE', '#81EEF5', '#B478F1', '#CFB1F5', '#CECECE'],
-  sequentialAscending: ['#DBDAFF', '#5C68E5'],
-  sequentialDescending: ['#5C68E5', '#DBDAFF'],
-  divergentAscending: ['#298641', '#EFB900', '#E91719'],
-  divergentDescending: ['#E91719', '#EFB900', '#298641'],
-}
+// DSFR chart colors, cycled by ECharts (one color per Y series). Keep the
+// first color at #000091: charts saved before this palette existed rendered
+// in this blue.
+const CHART_COLORS = ['#000091', '#82B5F2', '#29598F', '#31A7AE', '#81EEF5', '#B478F1', '#CFB1F5', '#CECECE']
 
 function capture(): string | null {
   return echartsInstance?.getDataURL() ?? null
@@ -233,17 +227,12 @@ const echartsOption = computed(() => {
 
   const xAxisType = mapXAxisType(props.chart.x_axis)
 
-  // Get the appropriate palette based on chart configuration
-  const paletteType = props.chart.palette || 'categorical'
-  const paletteColors = palettes[paletteType] || palettes.categorical
-
   return {
     dataset: [...seriesData.data],
     textStyle: {
       fontFamily: 'Marianne, arial, sans-serif',
     },
-    // One color per Y series, cycled by ECharts (DSFR Chart palette)
-    color: paletteColors,
+    color: CHART_COLORS,
     tooltip: {
       trigger: 'axis' as const,
       formatter: (params: Array<{ value: Record<string, unknown>, axisValueLabel: string, seriesName: string }>) => {
