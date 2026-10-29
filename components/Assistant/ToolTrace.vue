@@ -6,6 +6,7 @@
     <button
       type="button"
       :aria-expanded="expanded"
+      :aria-controls="panelId"
       class="flex w-full items-center gap-2 px-2.5 py-2 text-left hover:bg-gray-100"
       :aria-label="$t(trace.label)"
       @click="expanded = !expanded"
@@ -34,7 +35,12 @@
         aria-hidden="true"
       />
     </button>
-    <div class="tool-trace-panel">
+    <!-- inert keeps the visually collapsed panel out of the accessibility tree -->
+    <div
+      :id="panelId"
+      class="tool-trace-panel"
+      :inert="!expanded || undefined"
+    >
       <div class="tool-trace-panel-inner min-h-0">
         <div class="border-t border-new-gray-light px-2.5 pb-2.5 pt-2">
           <p
@@ -72,7 +78,7 @@
 
 <script setup lang="ts">
 import { RiArrowDownLine, RiErrorWarningLine, RiWrenchLine } from '@remixicon/vue'
-import { ref } from 'vue'
+import { ref, useId } from 'vue'
 import type { ToolTrace } from '~/utils/assistant'
 
 defineProps<{
@@ -80,6 +86,7 @@ defineProps<{
 }>()
 
 const expanded = ref(false)
+const panelId = useId()
 </script>
 
 <style scoped>

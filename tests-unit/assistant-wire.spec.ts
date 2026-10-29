@@ -2,13 +2,13 @@
 // Pins the real wire contract of useAssistantChat without stubbing it: @ai-sdk/vue's
 // useChat is mocked to capture its init, and the transport built by the composable is
 // exercised directly (api URL, credentials, prepared request body).
-import { ref } from 'vue'
+import { nextTick, ref } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useChat } from '@ai-sdk/vue'
 import { useAssistantChat } from '~/components/Assistant/useAssistantChat'
 
 vi.mock('@ai-sdk/vue', () => ({
-  useChat: vi.fn(() => ({ messages: ref([]) })),
+  useChat: vi.fn(() => ({ messages: ref([]), stop: vi.fn(), clearError: vi.fn() })),
 }))
 
 const MESSAGES = [{ id: '1', role: 'user', parts: [{ type: 'text', text: 'Bonjour' }] }]
@@ -60,6 +60,19 @@ describe('useAssistantChat wire contract', () => {
     expect(capturedTransport().api).toBe('https://assistant.example/api/1/assistant/chat/')
   })
 
+  it('clears the message history when the selected resource changes', async () => {
+    const resourceId = ref<string | null>('resource-1')
+    const chat = useAssistantChat(resourceId)
+
+    chat.messages.value = [...MESSAGES] as typeof chat.messages.value
+    resourceId.value = 'resource-2'
+    await nextTick()
+
+    expect(chat.messages.value).toEqual([])
+    expect(chat.stop).toHaveBeenCalled()
+    expect(chat.clearError).toHaveBeenCalled()
+  })
+
   it('sends resource_id only when a resource is selected', async () => {
     const resourceId = ref<string | null>('f47ac10b-58cc-4372-a567-0e02b2c3d479')
     useAssistantChat(resourceId)
@@ -73,5 +86,6 @@ describe('useAssistantChat wire contract', () => {
     resourceId.value = null
     const withoutResource = await transport.prepareSendMessagesRequest({ messages: MESSAGES, id: 'chat-1', trigger: 'submit-message' as const, messageId: undefined })
     expect(withoutResource.body).toEqual({ id: 'chat-1', trigger: 'submit-message', messageId: undefined, messages: MESSAGES })
+    expect(withoutResource.body).not.toHaveProperty('resource_id')
   })
 })

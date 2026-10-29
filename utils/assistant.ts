@@ -9,20 +9,23 @@ export function extractLastSqlBlock(text: string): string | null {
 }
 
 /**
- * Build the assistant chat request body. The optional `resource_id` context
- * is only sent when a resource is selected.
+ * Build the assistant chat request body, including the protocol fields required
+ * by udata's VercelAIAdapter (SubmitMessage discriminated union). The optional
+ * `resource_id` context is only sent when a resource is selected.
  */
-export function buildChatBody(messages: unknown[], resourceId: string | null): { messages: unknown[], resource_id?: string } {
+export function buildChatBody(messages: unknown[], resourceId: string | null, protocol?: { id: string, trigger: string, messageId?: string }): { messages: unknown[], id?: string, trigger?: string, messageId?: string, resource_id?: string } {
   return {
+    ...protocol,
     messages,
     ...(resourceId ? { resource_id: resourceId } : {}),
   }
 }
 
 /**
- * Map an error surfaced by useChat to a French user-facing message.
- * HTTP failures carry a `statusCode` (APICallError from the transport);
- * anything else is treated as a network/unknown failure.
+ * Map an error surfaced by useChat to a French user-facing message, used as an
+ * i18n key by the component ($t returns the key). HTTP failures carry a
+ * `statusCode` (APICallError from the transport); anything else is treated as
+ * a network/unknown failure.
  */
 export function mapAssistantError(error: unknown): string {
   const statusCode = (error as { statusCode?: unknown } | null)?.statusCode
@@ -50,7 +53,11 @@ export type ChatDisplayItem
   = | { kind: 'text', text: string }
     | { kind: 'trace', trace: ToolTrace }
 
-// French labels, used as i18n keys by the component ($t returns the key).
+// Fixed French copy of the assistant UI, used as i18n keys by the components
+// ($t returns the key when no catalog entry exists): ToolTrace renders
+// $t(trace.label), $t(trace.summary) and $t(detail.label), ChatPanel renders
+// $t(mapAssistantError(error)). The literals stay here so an extraction tool
+// can find them; dynamic values (SQL, column names) are never translated.
 const TOOL_LABELS: Record<string, { label: string, summary: string }> = {
   'tool-get_dataset_metadata': { label: 'Lecture des métadonnées', summary: 'Je consulte la fiche du jeu de données' },
   'tool-inspect_schema': { label: 'Inspection du schéma', summary: 'Je vérifie les colonnes et les types disponibles' },
@@ -59,6 +66,8 @@ const TOOL_LABELS: Record<string, { label: string, summary: string }> = {
 }
 
 const FALLBACK_TOOL_LABEL = { label: 'Opération', summary: 'Je poursuis l’analyse' }
+// The tool part failed without an errorText from the SDK.
+const TOOL_ERROR_FALLBACK = 'Échec de l’opération'
 const DETAIL_TRUNCATE_AT = 200
 const FLATTENED_DETAIL_LIMIT = 8
 
@@ -132,7 +141,7 @@ function buildToolTrace(type: string, part: Record<string, unknown>): ToolTrace 
   const state = typeof part.state === 'string' ? part.state : ''
   const error = state === 'output-error'
   const errorText = error
-    ? (typeof part.errorText === 'string' && part.errorText ? part.errorText : 'Échec de l’opération')
+    ? (typeof part.errorText === 'string' && part.errorText ? part.errorText : TOOL_ERROR_FALLBACK)
     : null
   const input = isRecord(part.input) ? part.input : undefined
 

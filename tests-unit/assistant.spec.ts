@@ -1,8 +1,11 @@
 // @vitest-environment happy-dom
 import { flushPromises, mount } from '@vue/test-utils'
+import { defineComponent, h, nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ChatPanel from '~/components/Assistant/ChatPanel.vue'
+import ToolTrace from '~/components/Assistant/ToolTrace.vue'
 import { buildChatBody, extractLastSqlBlock, mapAssistantError } from '~/utils/assistant'
+import type { ToolTrace as ToolTraceModel } from '~/utils/assistant'
 
 const sendMessageMock = vi.hoisted(() => vi.fn())
 const stopMock = vi.hoisted(() => vi.fn())
@@ -36,6 +39,7 @@ function assistantTextMessage(text: string) {
 function mountPanel(resourceId: string | null) {
   return mount(ChatPanel, {
     props: { resourceId },
+    attachTo: document.body,
     global: {
       mocks: { $t: (key: string) => key },
     },
@@ -74,6 +78,52 @@ describe('buildChatBody', () => {
     const body = buildChatBody(messages, null)
     expect(body).toEqual({ messages })
     expect(body).not.toHaveProperty('resource_id')
+  })
+
+  it('adds the id/trigger/messageId protocol fields when provided', () => {
+    expect(buildChatBody(messages, null, { id: 'chat-1', trigger: 'submit-message', messageId: undefined }))
+      .toEqual({ id: 'chat-1', trigger: 'submit-message', messageId: undefined, messages })
+  })
+})
+
+describe('ToolTrace', () => {
+  const trace: ToolTraceModel = {
+    type: 'tool-execute_sql',
+    state: 'output-available',
+    label: 'Exécution de la requête SQL',
+    summary: 'Je calcule la réponse à partir des données',
+    error: false,
+    errorText: null,
+    code: 'SELECT 1',
+    details: [{ label: 'Lignes', value: '12' }],
+    count: 1,
+  }
+
+  function mountTrace() {
+    return mount(ToolTrace, {
+      props: { trace },
+      global: { mocks: { $t: (key: string) => key } },
+    })
+  }
+
+  it('links the toggle button to the panel with aria-controls', () => {
+    const wrapper = mountTrace()
+    const panel = wrapper.find('.tool-trace-panel')
+    const button = wrapper.find('button')
+
+    expect(button.attributes('aria-expanded')).toBe('false')
+    expect(button.attributes('aria-controls')).toBe(panel.attributes('id'))
+  })
+
+  it('keeps the collapsed panel inert and removes inert when expanded', async () => {
+    const wrapper = mountTrace()
+    const panel = wrapper.find('.tool-trace-panel')
+
+    expect(panel.attributes('inert')).toBeDefined()
+
+    await wrapper.find('button').trigger('click')
+    expect(wrapper.find('button').attributes('aria-expanded')).toBe('true')
+    expect(wrapper.find('.tool-trace-panel').attributes('inert')).toBeUndefined()
   })
 })
 
@@ -128,10 +178,27 @@ describe('ChatPanel', () => {
     const wrapper = mountPanel('resource-1')
 
     await wrapper.find('textarea#assistant-input').setValue('Montre-moi un graphique')
-    await wrapper.find('form').trigger('submit.prevent')
+    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
 
     expect(sendMessageMock).toHaveBeenCalledWith({ text: 'Montre-moi un graphique' })
     expect((wrapper.find('textarea#assistant-input').element as HTMLTextAreaElement).value).toBe('')
+  })
+
+  it('renders no nested form inside an enclosing form (e.g. the chart-save form)', async () => {
+    const onParentSubmit = vi.fn()
+    const wrapper = mount(defineComponent({
+      setup: () => () => h('form', { onSubmit: onParentSubmit }, [h(ChatPanel, { resourceId: 'resource-1' })]),
+    }), {
+      global: { mocks: { $t: (key: string) => key } },
+    })
+
+    expect(wrapper.findAll('form')).toHaveLength(1)
+
+    await wrapper.find('textarea#assistant-input').setValue('Bonjour')
+    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
+
+    expect(sendMessageMock).toHaveBeenCalledWith({ text: 'Bonjour' })
+    expect(onParentSubmit).not.toHaveBeenCalled()
   })
 
   it('sends on Enter but inserts a newline on Shift+Enter', async () => {
@@ -155,7 +222,7 @@ describe('ChatPanel', () => {
 
   it('disables the send button when the input is empty or while waiting', async () => {
     const wrapper = mountPanel('resource-1')
-    const send = () => wrapper.find('button[type="submit"]')
+    const send = () => wrapper.find('button[aria-label="Envoyer"]')
 
     expect(send().attributes('disabled')).toBeDefined()
 
@@ -164,7 +231,7 @@ describe('ChatPanel', () => {
 
     await wrapper.unmount()
     const waitingWrapper = mountPanel(null)
-    expect(waitingWrapper.find('button[type="submit"]').attributes('disabled')).toBeDefined()
+    expect(waitingWrapper.find('button[aria-label="Envoyer"]').attributes('disabled')).toBeDefined()
   })
 
   it('shows the character counter beyond 3600 characters, in red at the max', async () => {
@@ -189,7 +256,7 @@ describe('ChatPanel', () => {
 
     const button = wrapper.findAll('button').find(b => b.text() === 'Arrêter')
     expect(button).toBeDefined()
-    expect(wrapper.find('button[type="submit"]').exists()).toBe(false)
+    expect(wrapper.find('button[aria-label="Envoyer"]').exists()).toBe(false)
 
     await button!.trigger('click')
     expect(stopMock).toHaveBeenCalled()
@@ -201,9 +268,9 @@ describe('ChatPanel', () => {
     const textarea = wrapper.find('textarea#assistant-input')
 
     await textarea.setValue('premier')
-    await wrapper.find('form').trigger('submit.prevent')
+    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
     await textarea.setValue('second')
-    await wrapper.find('form').trigger('submit.prevent')
+    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
 
     expect(sendMessageMock).toHaveBeenCalledTimes(1)
     expect(sendMessageMock).toHaveBeenCalledWith({ text: 'premier' })
@@ -348,6 +415,50 @@ describe('ChatPanel', () => {
     expect(alert.text()).toContain('Quota journalier dépassé')
   })
 
+  it('restores the sent text in the composer when the request fails', async () => {
+    const wrapper = mountPanel('resource-1')
+    const textarea = wrapper.find('textarea#assistant-input')
+
+    await textarea.setValue('Message perdu ?')
+    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
+    expect((textarea.element as HTMLTextAreaElement).value).toBe('')
+
+    chatState.status.value = 'error'
+    chatState.error.value = new Error('fetch failed')
+    await nextTick()
+
+    expect((textarea.element as HTMLTextAreaElement).value).toBe('Message perdu ?')
+  })
+
+  it('keeps the composer cleared when the request succeeds', async () => {
+    const wrapper = mountPanel('resource-1')
+    const textarea = wrapper.find('textarea#assistant-input')
+
+    await textarea.setValue('Message envoyé')
+    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
+    chatState.status.value = 'ready'
+    await nextTick()
+
+    expect((textarea.element as HTMLTextAreaElement).value).toBe('')
+  })
+
+  it('refocuses the textarea once the request finishes', async () => {
+    const wrapper = mountPanel('resource-1')
+    const textarea = wrapper.find('textarea#assistant-input')
+
+    // Simulate the request lifecycle: submitted while sending, ready when done.
+    await textarea.setValue('ok')
+    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
+    chatState.status.value = 'submitted'
+    await nextTick()
+    chatState.status.value = 'ready'
+    // The watcher awaits a nextTick before focusing: flush twice.
+    await flushPromises()
+    await nextTick()
+
+    expect(document.activeElement).toBe(textarea.element)
+  })
+
   it('keeps the composer usable after an error status', async () => {
     // useChat leaves the status on 'error' after a failed request until the next
     // one starts: the composer must not stay disabled.
@@ -359,7 +470,7 @@ describe('ChatPanel', () => {
     expect(textarea.attributes('disabled')).toBeUndefined()
 
     await textarea.setValue('On réessaie ?')
-    await wrapper.find('form').trigger('submit.prevent')
+    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
 
     expect(sendMessageMock).toHaveBeenCalledWith({ text: 'On réessaie ?' })
   })
