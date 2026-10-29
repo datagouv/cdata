@@ -316,14 +316,15 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, ColumnType, ColumnDefinition, Owned } from '@datagouv/components-next'
-import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, SearchableSelect, SegmentedControl, useTranslation } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, ColumnType, Owned } from '@datagouv/components-next'
+import { buildTypeConfig, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, SearchableSelect, SegmentedControl, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
 import { RiText } from '@remixicon/vue'
 import { isMeAdmin } from '~/utils/auth'
 import ProducerSelect from '../ProducerSelect.vue'
 import ChatPanel from '../Assistant/ChatPanel.vue'
+import { useResourceColumns } from './useResourceColumns'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import type { DatasetSuggest } from '~/types/types'
@@ -358,8 +359,7 @@ const props = defineProps<{
   initialChart?: Chart
 }>()
 
-const resourceColumns = ref<Array<ColumnDefinition>>([])
-const resourceColumnsId = ref('')
+const { resourceColumns, loadColumnsForResource } = useResourceColumns(getProfile)
 const producer = ref<Owned | null>(null)
 const dataset = ref<DatasetSuggest | null>(null)
 const savedResources = reactive<Record<string, Resource>>({})
@@ -414,21 +414,6 @@ async function loadMissingResourcesForChart(resourceIds: Array<string>) {
       }
     }),
   )
-}
-
-async function loadColumnsForResource(resourceId: string) {
-  if (resourceColumnsId.value === resourceId) return
-  resourceColumnsId.value = resourceId
-  try {
-    const profile = await getProfile(resourceId)
-    if (resourceColumnsId.value !== resourceId) return
-    resourceColumns.value = buildColumnsFromProfile(profile)
-  }
-  catch (error) {
-    if (resourceColumnsId.value !== resourceId) return
-    console.error(`Failed to load columns for resource ${resourceId}:`, error)
-    resourceColumns.value = []
-  }
 }
 
 async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
