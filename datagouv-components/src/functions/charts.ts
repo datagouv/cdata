@@ -1,22 +1,45 @@
-import type { Chart, ChartForm, ChartForApi, GenericFilter, ColumnDefinition } from '../types/visualizations'
+import type { Chart, ChartForm, ChartForApi, ColumnDefinition } from '../types/visualizations'
 import type { ColumnType, TabularProfile } from '../components/TabularExplorer/types'
+import type { SqlQueryResult } from './tabularApi'
 import { resolveColumnType } from './tabular'
 
-export function toChartForm(chart: Chart) {
-  const seriesFilter: GenericFilter | null = chart.series[0]?.filters ?? null
+export type InferredChartConfig = {
+  xColumn: string
+  seriesColumns: Array<string>
+}
 
+/**
+ * Infer a render config from a SQL query result: the first column is the X
+ * axis and the following fully numeric columns are the series columns.
+ */
+export function inferChartConfig(result: SqlQueryResult): InferredChartConfig {
+  const xColumn = result.columns[0] ?? ''
+  const seriesColumns = result.columns.filter((column, index) => {
+    return index > 0 && isNumericColumn(result.rows, index)
+  })
+  return { xColumn, seriesColumns }
+}
+
+function isNumericColumn(rows: SqlQueryResult['rows'], index: number): boolean {
+  let sawValue = false
+  for (const row of rows) {
+    const value = row[index]
+    if (value === null || value === undefined) continue
+    if (typeof value !== 'number' || Number.isNaN(value)) return false
+    sawValue = true
+  }
+  return sawValue
+}
+
+export function toChartForm(chart: Chart): ChartForm {
   return {
     title: chart.title,
     description: chart.description,
     private: chart.private,
     owned: chart.organization ? { organization: chart.organization.id, owner: null } : { owner: chart.owner.id, organization: null },
-    x_axis: {
-      column_x: chart.x_axis.column_x,
-      type: chart.x_axis.type,
-      sort_combined: chart.x_axis.sort_x_by && chart.x_axis.sort_x_direction
-        ? `${chart.x_axis.sort_x_by}-${chart.x_axis.sort_x_direction}`
-        : '',
-    },
+    query: chart.query,
+    resource_id: chart.resource_id,
+    chart_type: chart.chart_type ?? 'line',
     y_axis: {
       label: chart.y_axis.label || '',
       min: chart.y_axis.min,
@@ -24,47 +47,26 @@ export function toChartForm(chart: Chart) {
       unit: chart.y_axis.unit || '',
       unit_position: chart.y_axis.unit_position || 'suffix',
     },
-    series: chart.series.map(serie => ({
-      ...serie,
-      aggregate_y: serie.aggregate_y || '',
-    })),
     extras: chart.extras,
-    chart_type: chart.series[0] ? chart.series[0].type : null,
-    filter: seriesFilter ?? null,
-  } satisfies ChartForm
+  }
 }
 
 export function toChartApi(chartForm: ChartForm): ChartForApi {
-  const xAxis = {
-    column_x: chartForm.x_axis.column_x,
-    type: chartForm.x_axis.type,
-    sort_x_by: chartForm.x_axis.sort_combined
-      ? (chartForm.x_axis.sort_combined.split('-')[0] as 'axis_x' | 'axis_y')
-      : null,
-    sort_x_direction: chartForm.x_axis.sort_combined
-      ? (chartForm.x_axis.sort_combined.split('-')[1] as 'asc' | 'desc')
-      : null,
-  }
-
   return {
     ...chartForm.owned,
     title: chartForm.title,
     description: chartForm.description,
     private: chartForm.private,
-    x_axis: xAxis,
+    query: chartForm.query,
+    resource_id: chartForm.resource_id,
+    chart_type: chartForm.chart_type ?? 'line',
     y_axis: {
-      label: chartForm.y_axis.label ?? null,
+      label: chartForm.y_axis.label || null,
       min: chartForm.y_axis.min ?? null,
       max: chartForm.y_axis.max ?? null,
-      unit: chartForm.y_axis.unit ?? null,
-      unit_position: chartForm.y_axis.unit_position ?? null,
+      unit: chartForm.y_axis.unit || null,
+      unit_position: chartForm.y_axis.unit_position || null,
     },
-    series: chartForm.series.map((serie, index) => ({
-      ...serie,
-      type: index === 0 && chartForm.chart_type ? chartForm.chart_type : serie.type,
-      aggregate_y: serie.aggregate_y || null,
-      filters: serie.filters || (index === 0 && chartForm.filter ? chartForm.filter : null),
-    })),
     extras: chartForm.extras,
   }
 }

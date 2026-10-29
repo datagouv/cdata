@@ -13,6 +13,14 @@ if (existsSync(envPath)) {
   process.loadEnvFile(envPath)
 }
 
+// The fake-services server (assistant chat, matomo, metrics, tabular SQL mocks
+// for the chart configurator E2E tests) must be reachable by Playwright itself:
+// FAKE_SERVICES_URL must point at a local URL, either the webServer started
+// below (default http://localhost:3100) or an already-running local server.
+const fakeServicesUrl = process.env.FAKE_SERVICES_URL || 'http://localhost:3100'
+const fakeServicesPort = Number(new URL(fakeServicesUrl).port || 3100)
+const assistantApiBase = process.env.NUXT_PUBLIC_ASSISTANT_API_BASE || fakeServicesUrl
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
@@ -105,14 +113,15 @@ export default defineConfig({
       command: 'pnpm run dev',
       url: process.env.BASE_URL || 'http://localhost:3000',
       reuseExistingServer: true,
+      env: { NUXT_PUBLIC_ASSISTANT_API_BASE: assistantApiBase },
     },
-    // Only when the server under test is configured to reach its third-party services there
-    ...(process.env.FAKE_SERVICES_URL
-      ? [{
-          command: 'node tests/fake-services.ts',
-          url: `${process.env.FAKE_SERVICES_URL}/matomo.js`,
-          reuseExistingServer: true,
-        }]
-      : []),
+    // Also serves the assistant endpoint used by the chart configurator E2E tests.
+    // Starts even when FAKE_SERVICES_URL is set: it must stay a local URL (see
+    // above) so deriving the port from it keeps a single server per run.
+    {
+      command: `FAKE_SERVICES_PORT=${fakeServicesPort} node tests/fake-services.ts`,
+      url: `${fakeServicesUrl}/matomo.js`,
+      reuseExistingServer: true,
+    },
   ],
 })

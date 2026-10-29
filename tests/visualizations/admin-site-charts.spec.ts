@@ -21,6 +21,7 @@ test.describe('with charts', () => {
     histogramChart = await setupAndSaveChart(page, {
       title: `Admin histogramme E2E ${uniqueSuffix}`,
       description: 'Histogramme public pour la liste admin.',
+      type: 'histogram',
     })
     createdIds.push(histogramChart.id)
 
@@ -74,6 +75,17 @@ test.describe('with charts', () => {
     for (const chart of [histogramChart, lineChart, privateChart, deletedChart]) {
       await expect(page.getByRole('link', { name: chart.title })).toHaveAttribute('href', `/admin/beta/charts/${chart.id}`)
     }
+  })
+
+  test('line and histogram cards render different header icons', async ({ page }) => {
+    const iconOf = async (chart: typeof lineChart) => {
+      const icon = page.locator('article').filter({ hasText: chart.title }).getByRole('link', { name: chart.title }).locator('svg.remixicon')
+      await expect(icon).toBeVisible()
+      return icon.innerHTML()
+    }
+    const lineIcon = await iconOf(lineChart)
+    const histogramIcon = await iconOf(histogramChart)
+    expect(lineIcon).not.toBe(histogramIcon)
   })
 
   test('private chart card displays a draft badge', async ({ page }) => {

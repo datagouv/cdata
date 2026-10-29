@@ -34,7 +34,7 @@
       </template>
     </SearchableSelect>
   </div>
-  <div v-if="!hasOrganizations">
+  <div v-if="!hasOrganizations && !hideNoOrganizationNotice">
     <br>
     <PaddedContainer
       class="flex flex-col items-center"
@@ -69,11 +69,13 @@ const props = withDefaults(defineProps<{
   required?: boolean
   organizationsOnly?: boolean
   organizationPermissionNeed?: 'delete' | 'edit' | 'harvest' | 'members' | 'private' | null
+  hideNoOrganizationNotice?: boolean
 }>(), {
   all: false,
   required: false,
   organizationsOnly: false,
   organizationPermissionNeed: null,
+  hideNoOrganizationNotice: false,
 })
 const model = defineModel<Owned | null>({ required: true })
 

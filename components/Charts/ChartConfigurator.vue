@@ -79,414 +79,255 @@
         </div>
       </div>
 
-      <div class="col-span-5 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
-        <fieldset class="min-w-0">
-          <ProducerSelect
-            v-model="producer"
-            :label="$t('Avec qui souhaitez-vous publier ?')"
-            :required="true"
-            all
-          />
-        </fieldset>
-        <fieldset
-          v-if="producer"
-          class="min-w-0"
+      <div
+        class="col-span-5 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light"
+        :class="activePanel === 'assistant' ? 'lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] flex flex-col' : ''"
+      >
+        <SegmentedControl
+          v-model="activePanel"
+          grow
+          :options="panelOptions"
+        />
+
+        <div
+          :class="{ hidden: activePanel !== 'form' }"
+          data-testid="form-panel"
         >
-          <p class="mb-2 font-bold">
-            {{ $t('Source de données') }}
-          </p>
-          <SearchableSelect
-            v-model="dataset"
-            :label="$t('Jeu de données')"
-            :placeholder="$t('Recherchez un jeu de données...')"
-            :display-value="(option: DatasetSuggest) => option.title"
-            :get-option-id="(option: DatasetSuggest) => option.id"
-            :multiple="false"
-            :suggest="suggestDataset"
-            class="mb-4"
-          />
-          <div v-if="dataset">
-            <label
-              for="resource-select"
-              class="fr-label"
-            >{{ $t('Choix de la ressource') }}</label>
-            <select
-              id="resource-select"
-              v-model="selectedResource"
-              class="w-full fr-select"
+          <div class="space-y-6">
+            <fieldset class="min-w-0">
+              <ProducerSelect
+                v-model="producer"
+                :label="$t('Avec qui souhaitez-vous publier ?')"
+                :required="true"
+                hide-no-organization-notice
+                all
+              />
+            </fieldset>
+            <fieldset
+              v-if="producer"
+              class="min-w-0"
             >
-              <option
-                value=""
-                disabled
-              >
-                {{ $t('Sélectionnez une ressource') }}
-              </option>
-              <option
-                v-for="resource in resources"
-                :key="resource.id"
-                :value="resource.id"
-              >
-                {{ resource.title }}
-              </option>
-            </select>
-          </div>
-        </fieldset>
-        <template v-if="selectedResource">
-          <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-            <p class="font-bold mb-2">
-              {{ $t('Filtres') }}
-            </p>
-            <div class="space-y-3">
-              <template
-                v-for="(group, groupIndex) in filterGroups.groups"
-                :key="groupIndex"
-              >
-                <p
-                  v-if="groupIndex > 0"
-                  class="text-xs text-gray-600"
-                >
-                  {{ filterGroups.rootCombinator === 'and' ? $t('et') : $t('ou') }}
-                </p>
-                <ChartFilterGroup
-                  :group="group"
-                  :combinator="innerCombinator"
-                  :can-remove-group="filterGroups.groups.length > 1"
-                  :bordered="totalRules > 1"
-                  :column-options="columnDetails"
-                  :condition-options="conditionOptions"
-                  @update:combinator="setInnerCombinator"
-                  @remove:filter="(i) => removeFilter(groupIndex, i)"
-                  @add-condition="addCondition(groupIndex)"
-                  @remove-group="removeGroup(groupIndex)"
-                />
-              </template>
-            </div>
-            <div class="flex flex-wrap gap-2">
-              <BrandedButton
-                v-if="totalRules === 0"
-                size="sm"
-                color="tertiary"
-                :icon="RiAddLine"
-                @click="addGroup"
-              >
-                {{ $t('Ajouter une règle') }}
-              </BrandedButton>
-              <BrandedButton
-                v-if="totalRules > 1"
-                size="sm"
-                color="tertiary"
-                :icon="RiAddLine"
-                @click="addGroup"
-              >
-                {{ $t('Ajouter un groupe') }}
-              </BrandedButton>
-            </div>
-          </fieldset>
-
-          <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-            <label
-              for="chart-type"
-              class="fr-label font-bold"
-            >
-              {{ $t('Type de graphique') }}
-            </label>
-            <div>
-              <Listbox
-                id="chart-type"
-                v-model="chartTypeProxy"
-                class="w-full"
-                :options="chartTypeOptions"
-                :display-value="(opt) => opt?.label || ''"
-                :get-option-id="(opt) => opt?.value"
-              >
-                <template #button>
-                  <div class="w-full flex items-center gap-2">
-                    <component
-                      :is="chartTypeProxy?.icon"
-                      class="size-4"
-                    />
-                    <span>{{ chartTypeProxy?.label }}</span>
-                  </div>
-                </template>
-                <template #option="{ option }">
-                  <component
-                    :is="option.icon"
-                    class="size-4"
-                  />
-                  {{ option.label }}
-                </template>
-              </Listbox>
-            </div>
-          </fieldset>
-          <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-            <p class="font-bold mb-2">
-              {{ $t('Axe X') }}
-            </p>
-            <div>
+              <p class="mb-2 font-bold">
+                {{ $t('Source de données') }}
+              </p>
               <SearchableSelect
-                id="x-axis-column"
-                v-model="xAxisColumnProxy"
-                :label="$t('Choisir quoi afficher')"
-                :placeholder="$t('Rechercher une colonne à afficher...')"
-                :options="xAxisColumnOptions"
-                :display-value="(opt: XAxisColumnOption) => opt.name"
-                :get-option-id="(opt: XAxisColumnOption) => opt.name"
-                :group-by="(opt: XAxisColumnOption) => typeConfig[opt.type]?.label || opt.type"
+                v-model="dataset"
+                :label="$t('Jeu de données')"
+                :placeholder="$t('Recherchez un jeu de données...')"
+                :display-value="(option: DatasetSuggest) => option.title"
+                :get-option-id="(option: DatasetSuggest) => option.id"
                 :multiple="false"
-                class="w-full"
-              >
-                <template #option="{ option }">
-                  <component
-                    :is="getColumnTypeIcon(option.type)"
-                    class="inline w-4 h-4 mr-2"
-                  />
-                  {{ option.name }}
-                </template>
-              </SearchableSelect>
-            </div>
-            <div>
-              <label
-                for="x-axis-type"
-                class="fr-label"
-              >{{ $t('Type') }}</label>
-              <select
-                id="x-axis-type"
-                v-model="form.x_axis.type"
-                class="w-full fr-select"
-              >
-                <option value="discrete">
-                  {{ $t('Discret (catégories)') }}
-                </option>
-                <option value="continuous">
-                  {{ $t('Continu (valeurs)') }}
-                </option>
-              </select>
-            </div>
-            <div class="min-w-0">
-              <label
-                for="x-axis-sort-combined"
-                class="fr-label"
-              >{{ $t('Trier par') }}</label>
-              <Listbox
-                id="x-axis-sort-combined"
-                v-model="sortProxy"
-                class="w-full"
-                :options="sortOptions"
-                :display-value="(opt) => formatColumnLabel(opt) || $t('Sélectionnez une option')"
-                :get-option-id="(opt) => opt.value"
-              >
-                <template #button>
-                  <div class="w-full flex items-center justify-between gap-2 min-w-0">
-                    <div
-                      class="truncate"
-                      :class="{ 'text-new-disabled-text': !sortProxy }"
-                    >
-                      {{ formatColumnLabel(sortProxy) || $t('Sélectionnez une option') }}
-                    </div>
-                    <RiArrowDownSLine class="flex-none size-4 justify-self-end" />
-                  </div>
-                </template>
-                <template #option="{ option }">
-                  <div class="w-full flex items-center justify-between gap-2">
-                    <span class="truncate">{{ formatColumnLabel(option) }}</span>
-                    <component
-                      :is="option.icon"
-                      v-if="option.icon"
-                      class="size-4 text-new-gray-medium"
-                    />
-                  </div>
-                </template>
-              </Listbox>
-            </div>
-          </fieldset>
-
-          <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-            <p class="font-bold mb-2">
-              {{ $t('Axe Y') }}
-            </p>
-            <div
-              v-for="(serie, index) in form.series"
-              :key="index"
-              class="space-y-4"
-            >
-              <div>
-                <SearchableSelect
-                  :id="`column-y-${index}`"
-                  :model-value="getSerieColumnYValue(serie)"
-                  :label="$t('Colonne Y')"
-                  :placeholder="$t('Rechercher une colonne Y...')"
-                  :options="yAxisColumnOptions"
-                  :display-value="(opt: YAxisColumnOption) => isCountOption(opt) ? t('Compter') : opt.name"
-                  :get-option-id="(opt: YAxisColumnOption) => opt.name"
-                  :group-by="(opt: YAxisColumnOption) => isCountOption(opt) ? '' : typeConfig[opt.type]?.label || opt.type"
-                  :multiple="false"
-                  class="w-full"
-                  @update:model-value="(val) => handleSerieColumnYChange(index, val)"
-                >
-                  <template #option="{ option }">
-                    <component
-                      :is="getColumnTypeIcon(option.type)"
-                      class="inline w-4 h-4 mr-2"
-                    />
-                    {{ isCountOption(option) ? $t('Compter') : option.name }}
-                  </template>
-                </SearchableSelect>
-              </div>
-
-              <div v-if="isNumberColumnOption(getSerieColumnYValue(serie))">
+                :suggest="suggestDataset"
+                class="mb-4"
+              />
+              <div v-if="dataset">
                 <label
-                  :for="`aggregate-y-${index}`"
+                  for="resource-select"
                   class="fr-label"
-                >{{ $t('Agrégation')
-                }}</label>
+                >{{ $t('Choix de la ressource') }}</label>
                 <select
-                  :id="`aggregate-y-${index}`"
-                  v-model="serie.aggregate_y"
+                  id="resource-select"
+                  v-model="selectedResource"
                   class="w-full fr-select"
                 >
-                  <option :value="null">
-                    {{ $t('Non') }}
+                  <option
+                    value=""
+                    disabled
+                  >
+                    {{ $t('Sélectionnez une ressource') }}
                   </option>
-                  <option value="sum">
-                    {{ $t('Somme') }}
-                  </option>
-                  <option value="avg">
-                    {{ $t('Moyenne') }}
-                  </option>
-                  <option value="min">
-                    {{ $t('Minimum') }}
-                  </option>
-                  <option value="max">
-                    {{ $t('Maximum') }}
+                  <option
+                    v-for="resource in resources"
+                    :key="resource.id"
+                    :value="resource.id"
+                  >
+                    {{ resource.title }}
                   </option>
                 </select>
               </div>
-            </div>
-            <AccordionGroup>
-              <Accordion :title="$t('Styles')">
-                <div class="space-y-4">
-                  <div>
-                    <label
-                      for="y-axis-label"
-                      class="fr-label"
-                    >{{ $t('Label') }}</label>
-                    <input
-                      id="y-axis-label"
-                      v-model="form.y_axis.label"
-                      type="text"
-                      class="w-full fr-input"
-                    >
-                  </div>
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <label
-                        for="y-axis-min"
-                        class="fr-label"
-                      >{{ $t('Min') }}</label>
-                      <input
-                        id="y-axis-min"
-                        v-model.number="form.y_axis.min"
-                        type="number"
-                        class="w-full fr-input"
-                      >
+            </fieldset>
+            <template v-if="selectedResource">
+              <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
+                <label
+                  for="chart-query"
+                  class="fr-label font-bold"
+                >
+                  {{ $t('Requête SQL') }}
+                </label>
+                <textarea
+                  id="chart-query"
+                  v-model="form.query"
+                  aria-label="Requête SQL"
+                  rows="6"
+                  class="w-full fr-input font-mono text-sm"
+                  :placeholder="$t('SELECT ...')"
+                />
+              </fieldset>
+
+              <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
+                <p class="font-bold mb-2">
+                  {{ $t('Schéma de la ressource') }}
+                </p>
+                <ul class="space-y-1 m-0 p-0 list-none">
+                  <li
+                    v-for="column in resourceColumns"
+                    :key="column.name"
+                    class="flex items-center gap-2 text-sm"
+                  >
+                    <component
+                      :is="getColumnTypeIcon(column.type)"
+                      class="size-4 text-new-gray-medium shrink-0"
+                    />
+                    <span class="font-mono">{{ column.name }}</span>
+                    <span class="text-new-gray-medium">{{ typeConfig[column.type]?.label || column.type }}</span>
+                  </li>
+                </ul>
+              </fieldset>
+
+              <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
+                <p class="font-bold mb-2">
+                  {{ $t('Axe Y') }}
+                </p>
+                <AccordionGroup>
+                  <Accordion :title="$t('Styles')">
+                    <div class="space-y-4">
+                      <div>
+                        <label
+                          for="chart-type"
+                          class="fr-label"
+                        >{{ $t('Type de graphique') }}</label>
+                        <select
+                          id="chart-type"
+                          v-model="form.chart_type"
+                          class="w-full fr-select"
+                        >
+                          <option value="line">
+                            {{ $t('Ligne') }}
+                          </option>
+                          <option value="histogram">
+                            {{ $t('Histogramme') }}
+                          </option>
+                        </select>
+                      </div>
+                      <div>
+                        <label
+                          for="y-axis-label"
+                          class="fr-label"
+                        >{{ $t('Label') }}</label>
+                        <input
+                          id="y-axis-label"
+                          v-model="form.y_axis.label"
+                          type="text"
+                          class="w-full fr-input"
+                        >
+                      </div>
+                      <div class="grid grid-cols-2 gap-4">
+                        <div>
+                          <label
+                            for="y-axis-min"
+                            class="fr-label"
+                          >{{ $t('Min') }}</label>
+                          <input
+                            id="y-axis-min"
+                            v-model.number="form.y_axis.min"
+                            type="number"
+                            class="w-full fr-input"
+                          >
+                        </div>
+                        <div>
+                          <label
+                            for="y-axis-max"
+                            class="fr-label"
+                          >{{ $t('Max') }}</label>
+                          <input
+                            id="y-axis-max"
+                            v-model.number="form.y_axis.max"
+                            type="number"
+                            class="w-full fr-input"
+                          >
+                        </div>
+                      </div>
+                      <div class="grid grid-cols-2 gap-4">
+                        <div>
+                          <label
+                            for="y-axis-unit"
+                            class="fr-label"
+                          >{{ $t('Unité') }}</label>
+                          <input
+                            id="y-axis-unit"
+                            v-model="form.y_axis.unit"
+                            type="text"
+                            class="w-full fr-input"
+                            :placeholder="$t('ex: €, %, kg')"
+                          >
+                        </div>
+                        <div>
+                          <label
+                            for="y-axis-unit-position"
+                            class="fr-label"
+                          >{{ $t('Position unité')
+                          }}</label>
+                          <select
+                            id="y-axis-unit-position"
+                            v-model="form.y_axis.unit_position"
+                            class="w-full fr-select"
+                          >
+                            <option value="suffix">
+                              {{ $t('Suffixe') }}
+                            </option>
+                            <option value="prefix">
+                              {{ $t('Préfixe') }}
+                            </option>
+                          </select>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <label
-                        for="y-axis-max"
-                        class="fr-label"
-                      >{{ $t('Max') }}</label>
-                      <input
-                        id="y-axis-max"
-                        v-model.number="form.y_axis.max"
-                        type="number"
-                        class="w-full fr-input"
-                      >
-                    </div>
-                  </div>
-                  <div class="grid grid-cols-2 gap-4">
-                    <div>
-                      <label
-                        for="y-axis-unit"
-                        class="fr-label"
-                      >{{ $t('Unité') }}</label>
-                      <input
-                        id="y-axis-unit"
-                        v-model="form.y_axis.unit"
-                        type="text"
-                        class="w-full fr-input"
-                        :placeholder="$t('ex: €, %, kg')"
-                      >
-                    </div>
-                    <div>
-                      <label
-                        for="y-axis-unit-position"
-                        class="fr-label"
-                      >{{ $t('Position unité')
-                      }}</label>
-                      <select
-                        id="y-axis-unit-position"
-                        v-model="form.y_axis.unit_position"
-                        class="w-full fr-select"
-                      >
-                        <option value="suffix">
-                          {{ $t('Suffixe') }}
-                        </option>
-                        <option value="prefix">
-                          {{ $t('Préfixe') }}
-                        </option>
-                      </select>
-                    </div>
-                  </div>
-                </div>
-              </Accordion>
-            </AccordionGroup>
-          </fieldset>
+                  </Accordion>
+                </AccordionGroup>
+              </fieldset>
+            </template>
+          </div>
 
           <div
-            v-if="isAdmin"
-            class="min-w-0 space-y-4"
+            v-if="selectedResource && isAdmin"
+            class="shrink-0"
           >
             <BrandedButton type="submit">
               {{ $t('Sauvegarder le graphique') }}
             </BrandedButton>
           </div>
-        </template>
+        </div>
+
+        <div
+          :class="{ hidden: activePanel !== 'assistant' }"
+          class="flex-1 min-h-0 flex flex-col"
+          data-testid="assistant-panel"
+        >
+          <ClientOnly>
+            <ChatPanel
+              :resource-id="selectedResource || null"
+              @use-query="onUseQuery"
+            />
+          </ClientOnly>
+        </div>
       </div>
     </div>
   </form>
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
-import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, SearchableSelect, Listbox, useTranslation } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, ColumnType, Owned } from '@datagouv/components-next'
+import { buildTypeConfig, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, SearchableSelect, SegmentedControl, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
-import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartLine, RiCalculatorLine, RiLineChartLine, RiText } from '@remixicon/vue'
+import { RiText } from '@remixicon/vue'
 import { isMeAdmin } from '~/utils/auth'
-import { keepValidSortCombined } from '~/utils/charts'
-import { fromFilterGroups, toFilterGroups } from '~/utils/chartFilters'
-import type { FilterColumnOption, FilterGroupCombinator, FilterGroupsState } from '~/utils/chartFilters'
-import ChartFilterGroup from './ChartFilterGroup.vue'
 import ProducerSelect from '../ProducerSelect.vue'
+import ChatPanel from '../Assistant/ChatPanel.vue'
+import { useResourceColumns } from './useResourceColumns'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import type { DatasetSuggest } from '~/types/types'
-
-type XAxisColumnOption = ColumnDefinition & {
-  resourceId: string
-}
-
-type SortOption = {
-  value: CombinedSort
-  column: string
-  direction: 'asc' | 'desc' | ''
-  label: string
-  icon: Component | null
-}
-
-const COUNT_OPTION = { name: '__count__', type: 'count' } as const
-type CountColumnOption = typeof COUNT_OPTION
-type YAxisColumnOption = ColumnDefinition | CountColumnOption
 
 const { $api, $fileApi } = useNuxtApp()
 const runtimeConfig = useRuntimeConfig()
@@ -518,11 +359,16 @@ const props = defineProps<{
   initialChart?: Chart
 }>()
 
-const columns = ref<ColumnsDefinition>({})
+const { resourceColumns, loadColumnsForResource } = useResourceColumns(getProfile)
 const producer = ref<Owned | null>(null)
 const dataset = ref<DatasetSuggest | null>(null)
 const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref<string>('')
+const activePanel = ref<string>('form')
+const panelOptions = computed(() => [
+  { value: 'form', label: t('Formulaire') },
+  { value: 'assistant', label: t('Assistant') },
+])
 const chartViewerWrapperRef = ref<InstanceType<typeof ChartViewerWrapper> | null>(null)
 
 watch(producer, (newProducer) => {
@@ -535,14 +381,7 @@ watch(producer, (newProducer) => {
 }, { immediate: true })
 const savedChart = ref<Chart | null>(null)
 
-const chartForViewer = ref(toChartApi(form.value))
-
-const chartTypeOptions = [
-  { value: 'line', label: t('Ligne'), icon: RiLineChartLine },
-  { value: 'histogram', label: t('Histogramme'), icon: RiBarChartLine },
-]
-
-const conditionOptions = ['exact', 'differs', 'is_null', 'is_not_null', 'greater', 'less', 'strictly_greater', 'strictly_less'] satisfies Array<FilterCondition>
+const chartForViewer = computed(() => toChartApi(form.value))
 
 const resources = computed(() => Object.values(savedResources))
 
@@ -552,195 +391,12 @@ const sourceText = computed<string>(() => {
   return `${dataset.value.title}${orgName ? ` - ${orgName}` : ''} - datagouv.fr`
 })
 
-const chartTypeProxy = computed<{ value: string, label: string, icon: Component } | null>({
-  get: () => chartTypeOptions.find(o => o.value === form.value.chart_type) ?? null,
-  set: (val: { value: string, label: string, icon: Component } | null) => {
-    if (val) {
-      form.value.chart_type = val.value as DataSeriesType
-    }
-  },
-})
-
-const xAxisColumnProxy = computed<XAxisColumnOption | null>({
-  get: () => {
-    const colName = form.value.x_axis.column_x
-    if (!colName) return null
-    return xAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
-  },
-  set: (val: XAxisColumnOption | null) => {
-    form.value.x_axis.column_x = val?.name ?? ''
-    form.value.x_axis.type = getDefaultXAxisType(val?.type)
-    if (val?.type === 'date') {
-      form.value.x_axis.sort_combined = 'axis_x-asc'
-      form.value.chart_type = 'line'
-    }
-  },
-})
-
-const xAxisColumnOptions = computed<Array<XAxisColumnOption>>(() =>
-  Object.entries(columns.value).flatMap(([resourceId, cols]) =>
-    cols.map(col => ({ name: col.name, type: col.type, resourceId })),
-  ),
-)
-
-const yAxisColumnOptions = computed<Array<YAxisColumnOption>>(() => {
-  if (selectedResource.value && columns.value[selectedResource.value]) {
-    return [
-      COUNT_OPTION,
-      ...columns.value[selectedResource.value].map(col => ({ name: col.name, type: col.type })),
-    ]
-  }
-  return [COUNT_OPTION]
-})
-
-function isCountOption(option: YAxisColumnOption | null | undefined): option is CountColumnOption {
-  return option?.name === COUNT_OPTION.name
-}
-
-function isNumberColumnOption(option: YAxisColumnOption | null | undefined): boolean {
-  return option?.type === 'number'
-}
-
-const sortOptions = computed<SortOption[]>(() => {
-  const xAxisColumn = form.value.x_axis.column_x
-  const yAxisColumn = form.value.series[0]?.column_y
-  const sameColumnAsX = xAxisColumn && yAxisColumn === xAxisColumn
-  const options: SortOption[] = [
-    { value: '', column: '', direction: '', label: t('Aucun'), icon: null },
-    { value: 'axis_x-asc', column: xAxisColumn || t('Axe X'), direction: 'asc', label: t('Ascendant'), icon: RiArrowUpLine },
-    { value: 'axis_x-desc', column: xAxisColumn || t('Axe X'), direction: 'desc', label: t('Descendant'), icon: RiArrowDownLine },
-  ]
-  if (!sameColumnAsX) {
-    options.push(
-      { value: 'axis_y-asc', column: yAxisColumn || t('Axe Y'), direction: 'asc', label: t('Ascendant'), icon: RiArrowUpLine },
-      { value: 'axis_y-desc', column: yAxisColumn || t('Axe Y'), direction: 'desc', label: t('Descendant'), icon: RiArrowDownLine },
-    )
-  }
-  return options
-})
-
-const sortProxy = computed<SortOption | null>({
-  get: () => sortOptions.value.find(o => o.value === form.value.x_axis.sort_combined) ?? null,
-  set: (val: SortOption | null) => {
-    if (val) {
-      form.value.x_axis.sort_combined = val.value
-    }
-  },
-})
-
-const columnDetails = computed<Array<FilterColumnOption>>(() => {
-  const options: Array<FilterColumnOption> = [{ key: '', value: t('Colonne'), disabled: true }]
-  const resourceColumns = columns.value[selectedResource.value ?? '']
-
-  if (resourceColumns) {
-    options.push(...resourceColumns.map(c => ({ key: c.name, value: c.name, disabled: false })))
-  }
-
-  return options
-})
-
-const filterGroups = computed<FilterGroupsState>(() => toFilterGroups(form.value.filter))
-
-/** Conditions inside a group are combined with the opposite of the root combinator. */
-const innerCombinator = computed<FilterGroupCombinator>(() =>
-  filterGroups.value.rootCombinator === 'and' ? 'or' : 'and',
-)
-
-const totalRules = computed(() =>
-  filterGroups.value.groups.reduce((count, group) => count + group.length, 0),
-)
-
-/** All group combinator selects share one value: flip the root to its opposite. */
-function setInnerCombinator(combinator: FilterGroupCombinator) {
-  applyFilterGroups({
-    ...filterGroups.value,
-    rootCombinator: combinator === 'and' ? 'or' : 'and',
-  })
-}
-
-function applyFilterGroups(state: FilterGroupsState) {
-  form.value.filter = fromFilterGroups(state)
-}
-
-function newEmptyFilter(): Filter {
-  return { _cls: 'Filter', column: '', condition: 'exact', value: '' }
-}
-
-function getColumnTypeIcon(colType: ColumnType | 'count'): Component {
-  if (colType === 'count') {
-    return RiCalculatorLine
-  }
+function getColumnTypeIcon(colType: ColumnType): Component {
   return typeConfig[colType]?.icon ?? RiText
 }
 
-function formatColumnLabel(opt: { column: string, label: string } | null): string {
-  if (!opt) return ''
-  return `${opt.column}${opt.column ? ' - ' : ''}${opt.label}`
-}
-
-function getSerieColumnYValue(serie: DataSeriesForm): YAxisColumnOption | null {
-  if (serie.aggregate_y === 'count' && serie.column_y === form.value.x_axis.column_x) {
-    return COUNT_OPTION
-  }
-  const colName = serie.column_y
-  if (!colName) return null
-  return yAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
-}
-
-function getDefaultXAxisType(columnType: ColumnType | undefined): XAxisType {
-  if (columnType === 'number' || columnType === 'date') {
-    return 'continuous'
-  }
-  return 'discrete'
-}
-
-function handleSerieColumnYChange(index: number, option: YAxisColumnOption | null | undefined) {
-  const serie = form.value.series[index]
-  if (!serie) return
-
-  if (isCountOption(option)) {
-    serie.column_y = form.value.x_axis.column_x
-    serie.aggregate_y = 'count'
-  }
-  else {
-    serie.column_y = option?.name ?? ''
-    if (serie.aggregate_y === 'count' || option?.type !== 'number') {
-      serie.aggregate_y = null
-    }
-  }
-}
-
-function ensureSeriesHasColumnX(resourceId: string) {
-  if (!form.value.x_axis.column_x) {
-    const resourceColumns = columns.value[resourceId]
-    if (resourceColumns?.length) {
-      const nonIdColumns = resourceColumns.filter(c => c.name !== '__id')
-      if (nonIdColumns.length > 0) {
-        const column = nonIdColumns[0]
-        form.value.x_axis.column_x = column.name
-        form.value.x_axis.type = getDefaultXAxisType(column.type)
-      }
-    }
-  }
-}
-
-function ensureSeriesHasColumnY(resourceId: string) {
-  if (form.value.series[0]?.column_y === '') {
-    const xColumn = form.value.x_axis.column_x
-    if (xColumn) {
-      form.value.series[0].column_y = xColumn
-      form.value.series[0].aggregate_y = 'count'
-    }
-    else {
-      const resourceColumns = columns.value[resourceId]
-      if (resourceColumns?.length) {
-        const nonIdColumns = resourceColumns.filter(c => c.name !== '__id')
-        if (nonIdColumns.length > 0) {
-          form.value.series[0].column_y = nonIdColumns[0].name
-        }
-      }
-    }
-  }
+function onUseQuery(query: string) {
+  form.value.query = query
 }
 
 async function loadMissingResourcesForChart(resourceIds: Array<string>) {
@@ -755,24 +411,6 @@ async function loadMissingResourcesForChart(resourceIds: Array<string>) {
       }
       catch (error) {
         console.error(`Failed to fetch resource ${id}:`, error)
-      }
-    }),
-  )
-}
-
-async function loadColumnsForResources(resourceIds: Array<string>) {
-  const idsToLoad = resourceIds.filter(id => !columns.value[id] || columns.value[id].length === 0)
-  if (idsToLoad.length === 0) return
-
-  await Promise.all(
-    idsToLoad.map(async (id) => {
-      try {
-        const profile = await getProfile(id)
-        columns.value[id] = buildColumnsFromProfile(profile)
-      }
-      catch (error) {
-        console.error(`Failed to load columns for resource ${id}:`, error)
-        columns.value[id] = []
       }
     }),
   )
@@ -793,15 +431,10 @@ async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
 async function initializeFromChart(data: Chart) {
   savedChart.value = data
 
-  const chartResources = new Set<string>()
-  for (const serie of data.series) {
-    if (serie.resource_id) {
-      chartResources.add(serie.resource_id)
-    }
+  if (data.resource_id) {
+    await loadMissingResourcesForChart([data.resource_id])
+    await loadColumnsForResource(data.resource_id)
   }
-
-  await loadMissingResourcesForChart(Array.from(chartResources))
-  await loadColumnsForResources(Array.from(chartResources))
 
   if (data.organization) {
     producer.value = { organization: data.organization, owner: null }
@@ -810,9 +443,9 @@ async function initializeFromChart(data: Chart) {
     producer.value = { organization: null, owner: data.owner }
   }
 
-  if (!dataset.value && data.series.length > 0 && data.series[0]?.resource_id) {
+  if (!dataset.value && data.resource_id) {
     try {
-      const resourceData = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${data.series[0].resource_id}/`)
+      const resourceData = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${data.resource_id}/`)
       if (resourceData.dataset_id) {
         const fetchedDataset = await $chartsApi<DatasetSuggest>(`/api/2/datasets/${resourceData.dataset_id}/`)
         dataset.value = fetchedDataset
@@ -823,10 +456,10 @@ async function initializeFromChart(data: Chart) {
     }
   }
 
-  if (data.series.length > 0 && data.series[0]?.resource_id) {
+  if (data.resource_id) {
     await nextTick()
 
-    selectedResource.value = data.series[0].resource_id
+    selectedResource.value = data.resource_id
   }
 }
 
@@ -861,50 +494,6 @@ async function saveChart() {
   toast.success(update ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
 }
 
-function addGroup() {
-  applyFilterGroups({ ...filterGroups.value, groups: [...filterGroups.value.groups, [newEmptyFilter()]] })
-}
-
-function removeGroup(groupIndex: number) {
-  applyFilterGroups({ ...filterGroups.value, groups: filterGroups.value.groups.filter((_, i) => i !== groupIndex) })
-}
-
-function addCondition(groupIndex: number) {
-  const groups = filterGroups.value.groups.map((g, i) => (i === groupIndex ? [...g, newEmptyFilter()] : g))
-  applyFilterGroups({ ...filterGroups.value, groups })
-}
-
-function removeFilter(groupIndex: number, filterIndex: number) {
-  const groups = filterGroups.value.groups.map((g, i) =>
-    (i === groupIndex ? g.filter((_, j) => j !== filterIndex) : g))
-  applyFilterGroups({ ...filterGroups.value, groups })
-}
-
-watch(
-  () => ({
-    series: form.value.series,
-    x_axis: form.value.x_axis,
-    y_axis: form.value.y_axis,
-    filter: form.value.filter,
-    extras: form.value.extras,
-    chart_type: form.value.chart_type,
-  }),
-  () => {
-    chartForViewer.value = toChartApi(form.value)
-  },
-  { deep: true, immediate: true },
-)
-
-watch(
-  () => form.value.x_axis.column_x,
-  (newXColumn) => {
-    const serie = form.value.series[0]
-    if (serie && serie.aggregate_y === 'count') {
-      serie.column_y = newXColumn
-    }
-  },
-)
-
 watch(dataset, async (newDataset) => {
   selectedResource.value = ''
   if (!newDataset) {
@@ -922,58 +511,14 @@ watch(dataset, async (newDataset) => {
 }, { immediate: true })
 
 watch(selectedResource, async (r) => {
+  form.value.resource_id = r
   if (r) {
-    if (form.value.series.length === 0) {
-      form.value.series.push({
-        type: 'histogram',
-        column_y: '',
-        aggregate_y: null,
-        resource_id: r,
-        filters: null,
-        column_x_name_override: null,
-      })
-    }
-    else {
-      form.value.series[0].resource_id = r
-    }
     if (!savedResources[r]) {
       await loadMissingResourcesForChart([r])
     }
-    if (!columns.value[r] || columns.value[r].length === 0) {
-      await loadColumnsForResources([r])
-    }
-    const resourceColumns = columns.value[r]
-    if (resourceColumns && resourceColumns.length > 0) {
-      const currentXColumn = form.value.x_axis.column_x
-      const currentYColumn = form.value.series[0]?.column_y
-      const columnNames = resourceColumns.map(c => c.name)
-
-      if (currentXColumn && !columnNames.includes(currentXColumn)) {
-        form.value.x_axis.column_x = ''
-      }
-      if (currentYColumn && !columnNames.includes(currentYColumn)) {
-        form.value.series[0].column_y = ''
-      }
-    }
-    else {
-      form.value.x_axis.column_x = ''
-      form.value.series[0].column_y = ''
-    }
-    ensureSeriesHasColumnX(r)
-    ensureSeriesHasColumnY(r)
+    await loadColumnsForResource(r)
   }
 })
-
-watch(
-  sortOptions,
-  (newOptions) => {
-    form.value.x_axis.sort_combined = keepValidSortCombined(
-      form.value.x_axis.sort_combined,
-      newOptions.map(option => option.value),
-    )
-  },
-  { immediate: true },
-)
 
 if (props.initialChart) {
   await initializeFromChart(props.initialChart)
