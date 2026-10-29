@@ -121,7 +121,6 @@ export default defineConfig({
     {
       command: `FAKE_SERVICES_PORT=${fakeServicesPort} node tests/fake-services.ts`,
       url: `${fakeServicesUrl}/matomo.js`,
-      port: fakeServicesPort,
       reuseExistingServer: true,
     },
   ],
