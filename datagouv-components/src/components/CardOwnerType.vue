@@ -9,7 +9,10 @@ const name = computed(() => findOrganizationType(props.type).label)
 </script>
 
 <template>
-  <span class="dg-card-owner-type">
+  <span
+    class="dg-card-owner-type"
+    :data-type="type"
+  >
     <OwnerTypeIcon :type="type" />
     <span>{{ name }}</span>
   </span>

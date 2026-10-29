@@ -284,6 +284,10 @@ a.dg-reuse-title[href]::before {
   color: var(--text-default-grey, #3a3a3a);
   font: 500 12px/18px var(--dg-card-font-sans);
 }
+.dg-card-owner-type:is([data-type='public-service'], [data-type='local-authority']) {
+  background: var(--background-contrast-blue-france, #ececfe);
+  color: var(--text-action-high-blue-france, #000091);
+}
 .dg-card-owner-type > span {
   min-width: 0;
   overflow-wrap: anywhere;
