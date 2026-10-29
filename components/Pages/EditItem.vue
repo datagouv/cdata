@@ -18,7 +18,7 @@
         <button
           v-if="draggable"
           type="button"
-          class="inline-flex items-center justify-center size-6 rounded opacity-80 hover:opacity-100 hover:bg-white/10 cursor-grab active:cursor-grabbing touch-none"
+          class="inline-flex items-center justify-center size-6 rounded opacity-80 hover:opacity-100 hover:!bg-current/10 cursor-grab active:cursor-grabbing touch-none"
           data-drag-handle
           :title="$t('Glisser pour déplacer (ou flèches du clavier)')"
           :aria-label="$t('Déplacer')"
@@ -34,7 +34,7 @@
         >
           <MenuButton
             ref="menuButton"
-            class="inline-flex items-center justify-center size-6 rounded opacity-80 hover:opacity-100 hover:bg-white/10"
+            class="inline-flex items-center justify-center size-6 rounded opacity-80 hover:opacity-100 hover:!bg-current/10"
             :aria-label="$t('Actions sur {label}', { label })"
           >
             <RiMore2Fill class="size-4" />
@@ -97,10 +97,17 @@ const floatingStyles = useEditorMenu(menuButton, menuItems, 'bottom-start')
 
 <style>
 /* The colour of the editor's controls (outlines, tabs, insertion lines, "add" buttons): the
-   main one of the site, turned white on a coloured section, where it would not show. */
-:root {
+   main one of the site, turned white on a coloured section, where it would not show, and back
+   to the main one on a white card inside it (an accordion). */
+:root,
+[data-edit-accent="primary"] {
   --edit-accent: var(--color-new-primary);
   --edit-accent-text: var(--color-white);
+}
+
+[data-edit-accent="white"] {
+  --edit-accent: var(--color-white);
+  --edit-accent-text: var(--color-new-primary);
 }
 
 /* Only the innermost hovered item, and the innermost focused one, show their outline and

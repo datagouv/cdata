@@ -89,7 +89,8 @@
         draggable
         band
         class="group/section"
-        :class="[sectionPadding(index), bloc.color ? [heroBgColor(bloc.color), '[--edit-accent:var(--color-white)] [--edit-accent-text:var(--color-new-primary)]'] : striped && neutralBackground(index)]"
+        :class="[sectionPadding(index), bloc.color ? heroBgColor(bloc.color) : striped && neutralBackground(index)]"
+        :data-edit-accent="bloc.color ? 'white' : undefined"
         :data-testid="`page-${bloc.class}`"
         data-drop-item
         @delete="workingBlocs.splice(index, 1)"

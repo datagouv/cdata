@@ -157,9 +157,12 @@
         :level
         @new-blocs="blocs.push(...($event as Array<T>))"
       >
+        <!-- Without the grey background the DSFR gives a hovered button, as the subtitle one
+             of `TitleBloc` -->
         <button
           type="button"
-          class="flex items-center gap-1 text-sm whitespace-nowrap text-gray-400 hover:text-gray-600"
+          class="flex items-center gap-1 text-sm whitespace-nowrap hover:!bg-transparent"
+          :class="color ? 'text-white/70 hover:text-white' : 'text-gray-400 hover:text-gray-600'"
           :data-testid="`add-bloc-in-${level}`"
         >
           <RiAddLine class="size-4" />
