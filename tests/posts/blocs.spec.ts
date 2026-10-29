@@ -749,10 +749,7 @@ test.describe('Sections', () => {
       name: `Colored buttons ${Date.now()}`,
       kind: 'page',
       body_type: 'blocs',
-      blocs: [
-        { class: 'SectionBloc', id: crypto.randomUUID(), color: 'primary', blocs: [markdown('Texte')] },
-        { class: 'SectionBloc', id: crypto.randomUUID(), color: 'primary', blocs: [] },
-      ],
+      blocs: [{ class: 'SectionBloc', id: crypto.randomUUID(), color: 'primary', blocs: [markdown('Texte')] }],
     })
     createdIds.push(post.id)
     await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
@@ -761,15 +758,21 @@ test.describe('Sections', () => {
       await button.hover()
       return button.evaluate(element => getComputedStyle(element).backgroundColor)
     }
-    // The "add" button of an empty section stays on the color of the section
-    expect(await hoveredBackground(page.getByRole('button', { name: 'Ajouter un bloc', exact: true }))).toBe('rgba(0, 0, 0, 0)')
     // The round "add" button stays white, as the other controls of a colored section
     await page.getByTestId('prepend-bloc-in-section').hover()
     expect(await hoveredBackground(page.getByTestId('prepend-bloc-in-section').getByRole('button'))).toBe('rgb(255, 255, 255)')
     // The buttons of a tab are only tinted with the color of their icon
-    const section = page.getByTestId('page-SectionBloc').first()
+    const section = page.getByTestId('page-SectionBloc')
     await section.hover({ position: { x: 20, y: 20 } })
-    expect(await hoveredBackground(section.getByRole('button', { name: 'Déplacer' }).first())).toMatch(/\/ 0\.1\)$/)
+    expect(await hoveredBackground(section.locator(':scope > [data-edit-tab]').getByRole('button', { name: 'Déplacer' }))).toMatch(/\/ 0\.1\)$/)
+
+    // The API refuses an empty section: it only exists in the editor, once its last bloc is
+    // deleted. Its "add" button stays on the color of the section.
+    const text = page.getByTestId('bloc-MarkdownBloc')
+    await text.hover()
+    await text.getByRole('button', { name: 'Actions sur Texte' }).click()
+    await page.getByRole('menuitem', { name: 'Supprimer' }).click()
+    expect(await hoveredBackground(page.getByRole('button', { name: 'Ajouter un bloc', exact: true }))).toBe('rgba(0, 0, 0, 0)')
   })
 
   test('a section is dragged after another', async ({ page, request }) => {
