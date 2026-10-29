@@ -21,6 +21,7 @@ test.describe('with charts', () => {
     histogramChart = await setupAndSaveChart(page, {
       title: `Admin histogramme E2E ${uniqueSuffix}`,
       description: 'Histogramme public pour la liste admin.',
+      type: 'histogram',
     })
     createdIds.push(histogramChart.id)
 
