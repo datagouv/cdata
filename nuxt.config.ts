@@ -265,9 +265,9 @@ export default defineNuxtConfig({
     },
   },
 
-  // Claude Code keeps its worktrees there, whole checkouts with their `node_modules`: watching
-  // them runs the dev server out of memory.
-  ignore: ['.claude'],
+  // Git worktrees live there (`.claude` for Claude Code), whole checkouts with their
+  // `node_modules`: watching them runs the dev server out of memory.
+  ignore: ['.claude', '.worktrees'],
 
   routeRules: {
     '/nuxt-api/oembed': { cors: true },
