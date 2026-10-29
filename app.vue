@@ -33,6 +33,9 @@ useHeadSafe({
 })
 
 useSeoMeta({
+  // Default so pages without their own title never render an empty <title>.
+  // Pages setting their own title override this entry.
+  title: runtimeConfig.public.title,
   description: normalizeSeoDescription(runtimeConfig.public.description),
   ogType: 'website',
   ogUrl: () => `${siteConfig.url}${route.path}`,

@@ -47,6 +47,22 @@ test.describe('OG meta tags', () => {
 
       expect(await getMetaContent(page, 'meta[property="og:title"]')).toContain('Avis CADA 20237028')
     })
+
+    test('a page with a bare title renders it as-is in <title>', async ({ page }) => {
+      // Pages own their full <title> (some add the site suffix themselves, e.g.
+      // datasets use "Titre | data.gouv.fr"); there is no global titleTemplate.
+      await page.goto('/explore/cada/20237028')
+      await page.waitForLoadState('domcontentloaded')
+
+      expect(await page.title()).toBe('Avis CADA 20237028')
+    })
+
+    test('a page without a title falls back to the site name as <title>', async ({ page }) => {
+      await page.goto('/dashboard')
+      await page.waitForLoadState('domcontentloaded')
+
+      expect(await page.title()).toBe(await getMetaContent(page, 'meta[property="og:site_name"]'))
+    })
   })
 
   test('a CADA advice with no Objet falls back to the site-wide description', async ({ page }) => {
