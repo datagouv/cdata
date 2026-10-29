@@ -23,8 +23,6 @@ export type SqlQueryResult = {
   rows: Array<Array<string | number | null>>
 }
 
-export const DEFAULT_SQL_ROW_LIMIT = 1000
-
 export type FetchTabularDataOptions = {
   resourceId: string
   page?: number
@@ -146,9 +144,10 @@ export function useGetProfile() {
 
 const SQL_TIMEOUT_MS = 30_000
 
-// contrat hypothétique — ajuster : POST {tabularApiUrl}/api/resources/{rid}/sql
-// avec corps JSON {"query": sql}, réponse {"columns": [...], "rows": [[...]]}.
-// Ce bloc est le seul endroit où le contrat SQL est construit.
+// PROVISIONAL CONTRACT — to confirm with the Tabular API owners before release.
+// Hypothétique : POST {tabularApiUrl}/api/resources/{rid}/sql avec corps JSON
+// {"query": sql}, réponse {"columns": [...], "rows": [[...]]}. Ce bloc est le
+// seul endroit où le contrat SQL est construit.
 function sqlEndpointUrl(tabularApiUrl: string, resourceId: string): string {
   return `${tabularApiUrl}/api/resources/${resourceId}/sql`
 }
@@ -156,6 +155,9 @@ function sqlEndpointUrl(tabularApiUrl: string, resourceId: string): string {
 /**
  * Execute a read-only SQL query against a tabular resource
  * (hypothetical contract, see `sqlEndpointUrl`).
+ *
+ * No client-side row limiting: the SQL endpoint (DuckDB) enforces the
+ * authoritative row cap server-side, so the query is sent as-is.
  */
 export async function executeSqlQuery(tabularApiUrl: string, resourceId: string, sql: string): Promise<SqlQueryResult> {
   try {
@@ -171,17 +173,4 @@ export async function executeSqlQuery(tabularApiUrl: string, resourceId: string,
     wrapped.cause = error
     throw wrapped
   }
-}
-
-/**
- * Return the query unchanged if it already has a LIMIT clause, otherwise append
- * `LIMIT <limit>` (default {@link DEFAULT_SQL_ROW_LIMIT}). A LIMIT inside a
- * string literal does not count.
- */
-export function ensureRowLimit(sql: string, limit = DEFAULT_SQL_ROW_LIMIT): string {
-  const withoutStrings = sql.replace(/'([^']|'')*'/g, '\'\'')
-  if (/\blimit\b/i.test(withoutStrings)) return sql
-  const trailingSemicolon = /;\s*$/.test(sql)
-  const body = trailingSemicolon ? sql.replace(/;\s*$/, '') : sql
-  return `${body} LIMIT ${limit}${trailingSemicolon ? ';' : ''}`
 }

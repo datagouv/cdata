@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { buildFilterQuery, ensureRowLimit, executeSqlQuery } from '~/datagouv-components/src/functions/tabularApi'
+import { buildFilterQuery, executeSqlQuery } from '~/datagouv-components/src/functions/tabularApi'
 import type { AndFilters, Filter, OrFilters } from '~/datagouv-components/src/types/visualizations'
 
 function f(column: string, condition: Filter['condition'], value: string | null = 'x'): Filter {
@@ -67,35 +67,6 @@ describe('buildFilterQuery', () => {
       ],
     }
     expect(buildFilterQuery(filters)).toBe('a__exact=1')
-  })
-})
-
-describe('ensureRowLimit', () => {
-  it('appends a default LIMIT 1000 when the query has none', () => {
-    expect(ensureRowLimit('SELECT * FROM table')).toBe('SELECT * FROM table LIMIT 1000')
-  })
-
-  it('appends the given limit when the query has none', () => {
-    expect(ensureRowLimit('SELECT * FROM table', 50)).toBe('SELECT * FROM table LIMIT 50')
-  })
-
-  it('does not append a LIMIT when one is already present', () => {
-    const query = 'SELECT * FROM table LIMIT 10'
-    expect(ensureRowLimit(query)).toBe(query)
-  })
-
-  it('detects an existing lowercase limit', () => {
-    const query = 'select * from table limit 50'
-    expect(ensureRowLimit(query)).toBe(query)
-  })
-
-  it('inserts the LIMIT before a trailing semicolon', () => {
-    expect(ensureRowLimit('SELECT * FROM table;')).toBe('SELECT * FROM table LIMIT 1000;')
-  })
-
-  it('appends a LIMIT when "limit" only appears inside a string literal', () => {
-    expect(ensureRowLimit(`SELECT * FROM table WHERE note = 'pas de limit ici'`))
-      .toBe(`SELECT * FROM table WHERE note = 'pas de limit ici' LIMIT 1000`)
   })
 })
 
