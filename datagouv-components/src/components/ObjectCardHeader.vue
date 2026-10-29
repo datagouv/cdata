@@ -1,21 +1,24 @@
 <template>
   <component
     :is="titleTag"
-    class="w-full text-base font-bold flex"
+    class="dg-card-title"
   >
     <AppLink
       :to="url"
-      class="text-gray-title text-base bg-none flex items-center w-full truncate gap-1"
+      class="dg-card-title-link"
       :target="target"
     >
       <component
         :is="icon"
+        v-if="icon"
+        data-icon-align="start"
+        data-icon-size="base"
+        focusable="false"
         aria-hidden="true"
-        class="size-4 flex-none"
+        class="dg-card-title-icon dg-ds-icon"
       />
       <span
-        class="block truncate"
-        :class="$slots.extra ? 'flex-initial' : 'flex-1'"
+        class="dg-card-title-text"
       >
         <slot />
       </span>
@@ -26,17 +29,62 @@
 </template>
 
 <script setup lang="ts">
+import '../../assets/cards.css'
 import type { Component } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { TitleTag } from '../types/ui'
 import AppLink from './AppLink.vue'
 
-withDefaults(defineProps<{
-  icon: Component
-  url: RouteLocationRaw
-  target?: string
-  titleTag?: TitleTag
-}>(), {
-  titleTag: 'h3',
-})
+withDefaults(
+  defineProps<{
+    icon?: Component
+    url: RouteLocationRaw
+    target?: string
+    titleTag?: TitleTag
+  }>(),
+  {
+    titleTag: 'h3',
+  },
+)
 </script>
+
+<style scoped>
+.dg-card-title {
+  margin: 0;
+  font: var(--dg-card-weight-semibold) var(--dg-card-text-title)/var(--dg-card-leading-title)
+    var(--dg-card-font-sans);
+  min-width: 0;
+}
+.dg-card-title-link {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  width: 100%;
+  color: var(--dg-card-text);
+  background-image: none;
+  font: inherit;
+  text-decoration: none;
+}
+.dg-card-title-text {
+  display: inline;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.dg-card-title-icon {
+  width: var(--dg-card-icon);
+  height: var(--dg-card-icon);
+  flex-shrink: 0;
+  display: inline-block;
+  vertical-align: -2px;
+  margin-inline-end: 4px;
+}
+.dg-card-title-link:focus-visible {
+  outline: var(--dg-card-focus-width) solid var(--dg-card-focus);
+  outline-offset: var(--dg-card-focus-offset);
+  border-radius: var(--dg-card-radius-technical);
+}
+.dg-card-title-link::after {
+  display: none;
+}
+</style>

@@ -1,22 +1,28 @@
 <template>
   <article
-    class="p-4 border bg-white border-gray-default relative hover:bg-gray-some fr-enlarge-link"
+    class="dg-object-card fr-enlarge-link"
     :class="articleClass"
   >
-    <slot name="badge" />
-    <div class="flex flex-wrap md:flex-nowrap gap-4 items-start">
+    <slot name="cover" />
+    <div
+      v-if="$slots.badge"
+      class="dg-object-card-badges"
+    >
+      <slot name="badge" />
+    </div>
+    <div class="dg-object-card-layout">
       <div
         v-if="$slots.media"
-        class="flex-none"
+        class="dg-object-card-media"
       >
         <div
-          class="flex justify-center items-center border border-gray-lower bg-[#fff] rounded-md overflow-hidden"
+          class="dg-object-card-media-frame"
           :class="mediaContainerClass"
         >
           <slot name="media" />
         </div>
       </div>
-      <div class="flex-1 overflow-hidden space-y-1">
+      <div class="dg-object-card-body">
         <slot />
       </div>
     </div>
@@ -24,22 +30,26 @@
 </template>
 
 <script setup lang="ts">
+import '../../assets/cards.css'
 import { computed } from 'vue'
 
-const props = withDefaults(defineProps<{
-  articleClass?: string | string[] | Record<string, boolean>
-  mediaSize?: 'sm' | 'lg' | 'xl'
-}>(), {
-  mediaSize: 'sm',
-})
+const props = withDefaults(
+  defineProps<{
+    articleClass?: string | string[] | Record<string, boolean>
+    mediaSize?: 'sm' | 'lg' | 'xl'
+  }>(),
+  {
+    mediaSize: 'sm',
+  },
+)
 
 const mediaContainerClass = computed(() => {
   if (props.mediaSize === 'xl') {
-    return 'w-[250px] h-[190px]'
+    return 'dg-object-card-media-xl'
   }
   if (props.mediaSize === 'lg') {
-    return 'w-[225px] h-[120px]'
+    return 'dg-object-card-media-lg'
   }
-  return 'p-2'
+  return 'dg-object-card-media-sm'
 })
 </script>

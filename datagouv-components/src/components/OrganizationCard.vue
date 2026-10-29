@@ -1,90 +1,133 @@
 <template>
-  <div class="border border-gray-default bg-white relative fr-enlarge-link">
-    <div class="h-[4.5rem] pt-4 px-4 bg-blue-lighter" />
-    <div class="px-4 pb-4 pt-5 mt-2">
-      <div class="inline-flex border border-gray-default p-1.5 absolute top-4 left-4 bg-white">
-        <img
-          :src="organization.logo_thumbnail"
-          width="64"
-          height="64"
-          alt=""
-          loading="lazy"
-        >
-      </div>
-      <div class="mb-0.5 font-bold">
-        <AppLink
-          :to="organization.page"
-          class="overflow-hidden"
-        >
-          <OrganizationNameWithCertificate
-            :show-type="false"
-            :organization
-          />
-        </AppLink>
-      </div>
-      <div class="mb-2 flex flex-wrap gap-1 items-center">
-        <template v-if="type !== 'other'">
-          <OwnerType
-            class="mb-0 text-sm"
-            :type
-          />
-          <RiSubtractLine
-            aria-hidden="true"
-            class="size-4 fill-gray-medium"
-          />
-        </template>
-        <div>
-          <div
-            v-if="'metrics' in organization"
-            class="text-gray-medium flex items-center text-sm gap-0.5"
-            :aria-label="t('{datasets} jeux de données, {dataservices} API et {reuses} réutilisations', {
-              datasets: organization.metrics.datasets,
-              dataservices: organization.metrics.dataservices,
-              reuses: organization.metrics.reuses,
-            })"
-          >
-            <RiDatabase2Line
-              aria-hidden="true"
-              class="size-4 -mt-1"
-            /> {{ organization.metrics.datasets }}
-            <RiTerminalLine
-              aria-hidden="true"
-              class="size-4 -mt-1 ml-1"
-            /> {{ organization.metrics.dataservices }}
-            <RiLineChartLine
-              aria-hidden="true"
-              class="size-4 -mt-1 ml-1"
-            /> {{ organization.metrics.reuses }}
-          </div>
-        </div>
-      </div>
-      <div class="mt-1 mb-0">
-        <TextClamp
-          v-if="'description' in organization"
-          :text="removeMarkdownSync(organization.description)"
-          :max-lines="3"
-        />
-      </div>
+  <section
+    v-if="compact"
+    class="dg-organization-summary"
+  >
+    <header class="dg-organization-summary-heading">
+      <OrganizationLogo
+        class="dg-card-organization-logo"
+        :organization="organization"
+        size-class="dg-organization-summary-logo"
+      />
+      <OrganizationNameWithCertificate
+        :show-type="false"
+        :organization="organization"
+        as="h3"
+      />
+    </header>
+    <div v-if="type !== 'other'">
+      <OwnerType :type="type" />
     </div>
-  </div>
+    <OrganizationMetrics
+      v-if="'metrics' in organization && organization.metrics"
+      :metrics="organization.metrics"
+      show-labels
+    />
+    <ObjectCardShortDescription
+      v-if="'description' in organization && organization.description"
+      :text="organization.description"
+    />
+  </section>
+  <OrganizationHorizontalCard
+    v-else
+    :organization
+    class="dg-organization-vertical dg-organization-with-banner"
+  >
+    <template #cover>
+      <div
+        class="dg-organization-card-banner"
+        :style="bannerStyle"
+        aria-hidden="true"
+      >
+        <img
+          v-if="bannerImage && !bannerFailed"
+          :src="bannerImage"
+          alt=""
+          :style="{ objectPosition: `center ${bannerPosition}%` }"
+          @error="bannerFailed = true"
+        >
+      </div>
+    </template>
+  </OrganizationHorizontalCard>
 </template>
 
 <script setup lang="ts">
-import { RiLineChartLine, RiDatabase2Line, RiTerminalLine, RiSubtractLine } from '@remixicon/vue'
-import { computed } from 'vue'
-import { removeMarkdownSync } from '../functions/markdown'
+import '../../assets/cards.css'
+import OrganizationHorizontalCard from './OrganizationHorizontalCard.vue'
+import OrganizationMetrics from './OrganizationMetrics.vue'
+import { computed, ref, watch } from 'vue'
 import { getOrganizationType } from '../functions/organizations'
 import type { Organization, OrganizationReference } from '../types/organizations'
-import OwnerType from './OwnerType.vue'
-import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
-import AppLink from './AppLink.vue'
-import { useTranslation } from '../composables/useTranslation'
+import OrganizationLogo from './OrganizationLogo.vue'
+import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
+import OwnerType from './CardOwnerType.vue'
+import OrganizationNameWithCertificate from './CardOrganizationName.vue'
 
 const props = defineProps<{
+  compact?: boolean
   organization: Organization | OrganizationReference
 }>()
 
-const { t } = useTranslation()
-
+const bannerFailed = ref(false)
+const bannerImage = computed(() =>
+  'banner_image' in props.organization ? props.organization.banner_image : null,
+)
+const bannerPosition = computed(() =>
+  'banner_image_position' in props.organization
+    ? (props.organization.banner_image_position ?? 50)
+    : 50,
+)
+const bannerStyle = computed(() =>
+  'banner_color' in props.organization && props.organization.banner_color
+    ? { backgroundColor: props.organization.banner_color }
+    : undefined,
+)
+watch(bannerImage, () => {
+  bannerFailed.value = false
+})
 const type = computed(() => getOrganizationType(props.organization))
 </script>
+
+<style scoped>
+.dg-organization-summary {
+  display: flex;
+  flex-direction: column;
+  gap: var(--dg-card-space-12);
+  min-width: 0;
+  color: var(--dg-card-text);
+  font: var(--dg-card-weight-regular) var(--dg-card-text-body)/var(--dg-card-leading-body)
+    var(--dg-card-font-sans);
+}
+.dg-organization-summary-heading {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--dg-card-space-12);
+}
+.dg-organization-summary-logo {
+  width: var(--dg-card-space-48);
+  height: var(--dg-card-space-48);
+  flex: none;
+  border: 1px solid var(--dg-card-border);
+  border-radius: var(--dg-card-radius);
+  overflow: hidden;
+}
+.dg-organization-summary-heading :deep(.dg-organization-name) {
+  flex: 1;
+  align-items: flex-start;
+  font-weight: var(--dg-card-weight-semibold);
+}
+.dg-organization-summary-heading :deep(.dg-organization-name-label) {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  overflow-wrap: anywhere;
+}
+.dg-organization-summary :deep(.dg-card-metric) {
+  gap: var(--dg-card-space-4);
+}
+.dg-organization-summary :deep(.dg-organization-counts) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--dg-card-space-8) var(--dg-card-space-16);
+}
+</style>

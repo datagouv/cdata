@@ -1,16 +1,13 @@
 <template>
-  <ObjectCard media-size="lg">
+  <ObjectCard
+    class="dg-content-card dg-catalog-card"
+    media-size="lg"
+  >
     <template #media>
-      <img
-        v-if="post.image"
+      <CardMedia
         :src="post.image"
-        class="w-full h-full object-cover"
         :alt="post.name"
-      >
-      <Placeholder
-        v-else
-        type="Dataset"
-        class="w-full h-full"
+        kind="post"
       />
     </template>
 
@@ -21,12 +18,10 @@
       {{ post.name }}
     </ObjectCardHeader>
 
-    <ObjectCardShortDescription :text="post.headline || post.content" />
-
     <TranslationT
       v-if="post.published || post.created_at"
       tag="div"
-      class="text-sm text-gray-medium mt-1"
+      class="dg-card-updated"
       keypath="Publié {date}"
     >
       <template #date>
@@ -38,15 +33,17 @@
       </template>
     </TranslationT>
 
+    <ObjectCardShortDescription :text="post.headline || post.content" />
     <slot />
   </ObjectCard>
 </template>
 
 <script setup lang="ts">
+import '../../assets/cards.css'
 import { RiArticleLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Post } from '../types/posts'
-import Placeholder from './Placeholder.vue'
+import CardMedia from './CardMedia.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardHeader from './ObjectCardHeader.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'

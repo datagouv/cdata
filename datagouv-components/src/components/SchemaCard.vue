@@ -1,7 +1,7 @@
 <template>
   <div
     :id
-    class="p-4 relative border bg-white hover:bg-gray-some"
+    class="dg-content-card dg-schema-card relative border bg-white"
     :class="{
       'border-gray-default': !selected && !active,
       'border-datagouv': selected && !active,
@@ -11,27 +11,31 @@
     :tabindex="selectable ? -1 : undefined"
     :aria-selected="selectable && selected"
   >
-    <h3 class="text-base font-bold mb-0 flex items-center gap-1">
-      <RiNodeTree class="size-4" />
+    <h3 class="dg-card-heading flex items-start gap-2 pr-8">
+      <RiNodeTree
+        data-icon-size="base"
+        focusable="false"
+        aria-hidden="true"
+        class="shrink-0 mt-1 dg-ds-icon"
+      />
       {{ schema.title }}
     </h3>
-    <p
-      v-for="label in schema.labels"
-      :key="label"
-      class="flex items-center gap-1 text-sm mb-0"
-    >
-      <span class="flex items-center gap-1 text-gray-medium">
-        <RiInformationLine class="size-3" /> {{ t('Label :') }}
-      </span>
-      <span>{{ label }}</span>
-    </p>
-    <p class="flex items-center gap-1 text-sm mb-0">
-      <span class="flex items-center gap-1 text-gray-medium">
-        <RiInformationLine class="size-3" /> {{ t('Standard :') }}
-      </span>
-      <span>{{ schema.schema_type }}</span>
-    </p>
-    <p class="text-sm mt-4 mb-0">
+    <div class="dg-schema-tags">
+      <Tag
+        v-for="label in schema.labels"
+        :key="label"
+        type="secondary"
+      >
+        {{ t('Label :') }} {{ label }}
+      </Tag>
+      <Tag
+        v-if="schema.schema_type"
+        type="secondary"
+      >
+        {{ t('Standard :') }} {{ schema.schema_type }}
+      </Tag>
+    </div>
+    <p class="text-sm mt-2 mb-0 text-gray-medium">
       {{ schema.description }}
     </p>
     <p
@@ -64,13 +68,18 @@
     </p>
     <RiCheckLine
       v-if="selected"
-      class="size-6 fill-datagouv absolute top-4 right-4"
+      data-icon-size="major"
+      focusable="false"
+      aria-hidden="true"
+      class="dg-schema-selected-icon absolute top-4 right-4 dg-ds-icon"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { RiCheckLine, RiInformationLine, RiNodeTree } from '@remixicon/vue'
+import '../../assets/cards.css'
+import Tag from './Tag.vue'
+import { RiCheckLine, RiNodeTree } from '@remixicon/vue'
 import AppLink from './AppLink.vue'
 import { useTranslation } from '../composables/useTranslation'
 import { useGetSchemaDocumentation } from '../functions/schemas'
