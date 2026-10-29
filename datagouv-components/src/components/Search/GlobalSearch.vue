@@ -145,6 +145,13 @@
                 :loading="facetsLoading"
                 :style="{ order: getOrder('type') }"
               />
+              <OrganizationFacetFilter
+                v-if="isEnabled('organization_facet')"
+                v-model="organizationId"
+                :facets="getFacets('organization_id_with_name')"
+                :loading="searchResultsStatus === 'pending'"
+                :style="{ order: getOrder('organization_facet') }"
+              />
               <slot
                 name="filters"
                 :is-enabled="isEnabled"
@@ -403,6 +410,7 @@ import LastUpdateRangeFilter from './Filter/LastUpdateRangeFilter.vue'
 import ProducerTypeFilter from './Filter/ProducerTypeFilter.vue'
 import DatasetBadgeFilter from './Filter/DatasetBadgeFilter.vue'
 import ReuseTypeFilter from './Filter/ReuseTypeFilter.vue'
+import OrganizationFacetFilter from './Filter/OrganizationFacetFilter.vue'
 
 const props = withDefaults(defineProps<{
   config?: GlobalSearchConfig
@@ -537,6 +545,7 @@ const pageSize = 20
 // All filter values as a record
 const allFilters: Record<string, Ref<unknown>> = {
   organization: organizationId,
+  organization_facet: organizationId,
   organization_badge: organizationType,
   tag,
   format,
