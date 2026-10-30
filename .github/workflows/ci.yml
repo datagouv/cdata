@@ -351,7 +351,6 @@ jobs:
           # and must not take matomo.js down with it
           NUXT_PUBLIC_METRICS_API: ${{ env.FAKE_SERVICES_URL }}/metrics
           NUXT_SITE_URL: http://localhost:3000
-          NUXT_PUBLIC_CHARTS_API_BASE: http://localhost:7000
           NUXT_PUBLIC_CADA_RESOURCE_ID: 3a6d6fe3-8548-43ed-ad09-72052771447c
           NUXT_PUBLIC_GEOPF_ENABLED: "true"
           NUXT_PUBLIC_TABULAR_API_URL: ${{ env.FAKE_SERVICES_URL }}/tabular

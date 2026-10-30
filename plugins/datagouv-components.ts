@@ -20,7 +20,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     baseUrl: siteConfig.url,
     trustedDomains: runtimeConfig.public.trustedDomains,
     apiBase: runtimeConfig.public.apiBase,
-    chartsApiBase: runtimeConfig.public.chartsApiBase,
     devApiKey: runtimeConfig.public.devApiKey,
     datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
     maxJsonPreviewCharSize: runtimeConfig.public.maxJsonPreviewCharSize,

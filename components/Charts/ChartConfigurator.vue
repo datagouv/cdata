@@ -330,19 +330,10 @@ import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
 import type { DatasetSuggest } from '~/types/types'
 
 const { $api, $fileApi } = useNuxtApp()
-const runtimeConfig = useRuntimeConfig()
 const { t } = useTranslation()
 const hasTabularData = useHasTabularData()
 const getProfile = useGetProfile()
 const isAdmin = isMeAdmin()
-
-const $chartsApi = $fetch.create({
-  baseURL: runtimeConfig.public.chartsApiBase as string,
-  onRequest({ options }) {
-    options.headers.set('Content-Type', 'application/json')
-    options.headers.set('Accept', 'application/json')
-  },
-})
 
 const typeConfig = buildTypeConfig(t)
 const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/components-next/chart').then(m => m.ChartViewerWrapper))
@@ -406,7 +397,7 @@ async function loadMissingResourcesForChart(resourceIds: Array<string>) {
   await Promise.all(
     idsToLoad.map(async (id) => {
       try {
-        const resource = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${id}/`)
+        const resource = await $api<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${id}/`)
         savedResources[id] = resource.resource
       }
       catch (error) {
@@ -423,7 +414,7 @@ async function suggestDataset(q: string): Promise<Array<DatasetSuggest>> {
     query.organization = producer.value.organization.id
   }
 
-  return await $chartsApi<Array<DatasetSuggest>>('/api/1/datasets/suggest/', {
+  return await $api<Array<DatasetSuggest>>('/api/1/datasets/suggest/', {
     query,
   })
 }
@@ -445,9 +436,9 @@ async function initializeFromChart(data: Chart) {
 
   if (!dataset.value && data.resource_id) {
     try {
-      const resourceData = await $chartsApi<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${data.resource_id}/`)
+      const resourceData = await $api<{ resource: Resource, dataset_id: string }>(`/api/2/datasets/resources/${data.resource_id}/`)
       if (resourceData.dataset_id) {
-        const fetchedDataset = await $chartsApi<DatasetSuggest>(`/api/2/datasets/${resourceData.dataset_id}/`)
+        const fetchedDataset = await $api<DatasetSuggest>(`/api/2/datasets/${resourceData.dataset_id}/`)
         dataset.value = fetchedDataset
       }
     }
@@ -500,7 +491,7 @@ watch(dataset, async (newDataset) => {
     return
   }
   try {
-    const fetchedResources = await $chartsApi<PaginatedArray<Resource>>(`/api/2/datasets/${newDataset.id}/resources/`)
+    const fetchedResources = await $api<PaginatedArray<Resource>>(`/api/2/datasets/${newDataset.id}/resources/`)
     for (const r of fetchedResources.data.filter(resource => hasTabularData(resource))) {
       savedResources[r.id] = r
     }
