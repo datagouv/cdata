@@ -11,7 +11,7 @@
       :aria-label="$t('Raisonnement')"
       @click="expanded = !expanded"
     >
-      <RiMindMap
+      <RiBrainLine
         class="size-3.5 shrink-0 text-new-gray-medium"
         aria-hidden="true"
       />
@@ -40,7 +40,7 @@
 </template>
 
 <script setup lang="ts">
-import { RiArrowDownLine, RiMindMap } from '@remixicon/vue'
+import { RiArrowDownLine, RiBrainLine } from '@remixicon/vue'
 import { ref, useId } from 'vue'
 
 defineProps<{
