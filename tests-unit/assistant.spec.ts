@@ -337,6 +337,44 @@ describe('ChatPanel', () => {
     expect(markdown.html()).toContain('<code>code</code>')
   })
 
+  it('right-aligns user messages in a gray bubble and marks both roles with data-message-role', () => {
+    chatState.messages.value = [
+      { id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Montre un graphique' }] },
+      assistantTextMessage('Voici le résultat.'),
+    ]
+    const wrapper = mountPanel('resource-1')
+
+    const articles = wrapper.findAll('article')
+    expect(articles).toHaveLength(2)
+
+    const userArticle = articles[0]
+    expect(userArticle.attributes('data-message-role')).toBe('user')
+    expect(userArticle.classes()).toContain('ml-auto')
+    expect(userArticle.classes()).toContain('items-end')
+    const bubble = userArticle.find('div.whitespace-pre-wrap')
+    expect(bubble.exists()).toBe(true)
+    expect(bubble.classes()).toContain('rounded-md')
+    expect(bubble.classes()).toContain('bg-gray-lower')
+    expect(bubble.text()).toBe('Montre un graphique')
+
+    const assistantArticle = articles[1]
+    expect(assistantArticle.attributes('data-message-role')).toBe('assistant')
+    expect(assistantArticle.classes()).not.toContain('ml-auto')
+    expect(assistantArticle.find('div.whitespace-pre-wrap').exists()).toBe(false)
+    expect(assistantArticle.find('.prose').exists()).toBe(true)
+  })
+
+  it('renders user text as plain text, preserving newlines and ignoring markdown syntax', () => {
+    chatState.messages.value = [
+      { id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Ligne 1\n**pas de gras**' }] },
+    ]
+    const wrapper = mountPanel('resource-1')
+
+    const bubble = wrapper.find('article[data-message-role="user"] div.whitespace-pre-wrap')
+    expect(bubble.text()).toBe('Ligne 1\n**pas de gras**')
+    expect(bubble.find('strong').exists()).toBe(false)
+  })
+
   it('updates markdown as streaming text chunks arrive', async () => {
     chatState.messages.value = [assistantTextMessage('Partie **une**')]
     const wrapper = mountPanel('resource-1')

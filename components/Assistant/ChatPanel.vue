@@ -19,9 +19,20 @@
       <article
         v-for="message in messages"
         :key="message.id"
+        :data-message-role="message.role"
+        :class="message.role === 'user'
+          ? 'ml-auto flex max-w-[88%] flex-col items-end'
+          : undefined"
       >
+        <div
+          v-if="message.role === 'user'"
+          class="whitespace-pre-wrap rounded-md bg-gray-lower px-3 py-2 text-sm"
+        >
+          {{ userMessageText(message.parts) }}
+        </div>
         <template
           v-for="(item, index) in buildChatDisplayItems(message.parts)"
+          v-else
           :key="index"
         >
           <ToolTrace
@@ -167,6 +178,12 @@ const waiting = computed(() => !props.resourceId)
 // next one starts, and the composer must stay usable so the user can retry.
 const busy = computed(() => status.value === 'submitted' || status.value === 'streaming')
 const errorMessage = computed(() => (error.value ? mapAssistantError(error.value) : null))
+
+// User input is plain text, not markdown: render it as-is, joined like
+// lastAssistantText joins the assistant's text parts.
+function userMessageText(parts: Array<{ type: string, text?: unknown }>): string {
+  return parts.map(part => (part.type === 'text' && typeof part.text === 'string' ? part.text : '')).filter(Boolean).join('\n')
+}
 
 const lastAssistantText = computed(() => {
   const last = [...messages.value].reverse().find(message => message.role === 'assistant')
