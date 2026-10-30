@@ -9,9 +9,12 @@
         class="border-b border-new-gray-light py-4 px-6"
         aria-label="Source de données"
       >
-        <h2 class="font-bold text-lg mb-4">
+        <h2 class="mb-1 text-xs font-bold">
           {{ $t('Source de données') }}
         </h2>
+        <p class="m-0 text-[10px] text-new-gray-medium">
+          {{ $t('Contexte commun à la prévisualisation et à l’assistant') }}
+        </p>
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center">
           <div class="grid flex-1 gap-4 lg:grid-cols-3">
             <fieldset class="min-w-0">
