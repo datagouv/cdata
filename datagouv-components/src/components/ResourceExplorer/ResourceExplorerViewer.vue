@@ -44,14 +44,15 @@
                 :dataset="dataset"
               />
               <MapContainer
-                v-if="ogcWms"
+                v-else-if="ogcWms"
                 :resource="resource"
               />
-              <PreviewUnavailable v-if="!hasPmtiles && !ogcWms && hasPmtilesError">
-                {{ t("La carte n'a pas pu être générée automatiquement pour ce fichier.") }}
-                <br>
-                <span class="text-gray-medium text-xs">{{ pmtilesError }}</span>
-              </PreviewUnavailable>
+              <PreviewError
+                v-else-if="hasPmtilesError"
+                :resource="resource"
+                error-type="map_generation"
+                :detail="pmtilesError ?? undefined"
+              />
             </div>
             <div
               v-if="tab.key === 'data'"
@@ -91,6 +92,7 @@
                 v-else-if="previewKind === 'pdf'"
                 :resource="resource"
                 :fill="fullscreen"
+                :can-edit="canEdit"
               />
 
               <!-- Text previews stay padded inside the tab panel -->
@@ -98,17 +100,24 @@
                 v-else
                 class="p-4"
               >
-                <JsonPreview
-                  v-if="previewKind === 'json'"
+                <UrlPreview
+                  v-if="previewKind === 'url'"
                   :resource="resource"
+                />
+                <JsonPreview
+                  v-else-if="previewKind === 'json'"
+                  :resource="resource"
+                  :can-edit="canEdit"
                 />
                 <XmlPreview
                   v-else-if="previewKind === 'xml'"
                   :resource="resource"
+                  :can-edit="canEdit"
                 />
                 <ImagePreview
                   v-else-if="previewKind === 'image'"
                   :resource="resource"
+                  :can-edit="canEdit"
                 />
                 <DatafairPreview
                   v-else-if="previewKind === 'datafair'"
@@ -119,20 +128,11 @@
                   v-else-if="previewKind === 'openapi'"
                   :url="resource.extras['apidocUrl'] as string"
                 />
-                <PreviewUnavailable v-else>
-                  <!-- "File too large to download" is the only analysis:error value from hydra for now -->
-                  <template v-if="resource.extras['analysis:error'] === 'File too large to download'">
-                    {{ t("Ce fichier est trop volumineux pour être analysé et prévisualisé. Téléchargez-le avec le bouton Télécharger.") }}
-                  </template>
-                  <template v-else-if="resource.extras['analysis:parsing:error']">
-                    {{ t("L'analyse de ce fichier a rencontré une erreur, l'aperçu n'est pas disponible. Téléchargez-le avec le bouton Télécharger.") }}
-                    <br>
-                    <span class="text-gray-medium text-xs">{{ resource.extras['analysis:parsing:error'] }}</span>
-                  </template>
-                  <template v-else>
-                    {{ t("Ce fichier ne peut pas être prévisualisé. Téléchargez-le avec le bouton Télécharger.") }}
-                  </template>
-                </PreviewUnavailable>
+                <PreviewError
+                  v-else
+                  :resource="resource"
+                  :show-producer-cta="canEdit"
+                />
               </div>
             </div>
             <div v-if="tab.key === 'description'">
@@ -175,7 +175,8 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
+import PreviewError from '../ResourceAccordion/PreviewError.vue'
+import UrlPreview from '../ResourceAccordion/UrlPreview.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
 import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
 import TabGroup from '../Tabs/TabGroup.vue'
@@ -238,6 +239,7 @@ const props = withDefaults(defineProps<{
   // bottom, and hide the inline download/visit/copy actions — they're shown in the
   // dataset context bar above. Inline mode (dataset page) shows them in the header.
   fullscreen?: boolean
+  canEdit?: boolean
 }>(), {
   fullscreen: false,
 })

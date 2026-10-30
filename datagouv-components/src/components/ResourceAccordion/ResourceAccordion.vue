@@ -218,29 +218,44 @@
                 :dataset="dataset"
               />
               <MapContainer
-                v-if="ogcWms"
+                v-else-if="ogcWms"
                 :resource="resource"
+              />
+              <PreviewError
+                v-else-if="hasPmtilesError"
+                :resource="resource"
+                error-type="map_generation"
+                :detail="pmtilesError ?? undefined"
               />
             </div>
             <div v-if="tab.key === 'data'">
-              <!-- Show JSON viewer for JSON files -->
-              <JsonPreview
-                v-if="resource.format && resource.format.toLowerCase() === 'json'"
+              <!-- A link resource points to an external page: offer the visit
+                   instead of a data preview or an error message. -->
+              <UrlPreview
+                v-if="isResourceUrl"
                 :resource="resource"
+              />
+              <JsonPreview
+                v-else-if="resource.format && resource.format.toLowerCase() === 'json'"
+                :resource="resource"
+                :can-edit="canEdit"
               />
               <!-- Show PDF viewer for PDF files -->
               <PdfPreview
                 v-else-if="resource.format && resource.format.toLowerCase() === 'pdf'"
                 :resource="resource"
+                :can-edit="canEdit"
               />
               <!-- Show XML viewer for XML files -->
               <XmlPreview
                 v-else-if="resource.format && resource.format.toLowerCase() === 'xml'"
                 :resource="resource"
+                :can-edit="canEdit"
               />
               <ImagePreview
                 v-else-if="isImagePreviewFormat(resource.format)"
                 :resource="resource"
+                :can-edit="canEdit"
               />
               <!-- Show Datafair embedded preview (koumoul) -->
               <DatafairPreview
@@ -255,8 +270,14 @@
               />
               <!-- Show regular preview for other file types -->
               <Preview
+                v-else-if="previewKind === 'tabular'"
+                :resource="resource"
+                :show-producer-cta="canEdit"
+              />
+              <PreviewError
                 v-else
                 :resource="resource"
+                :show-producer-cta="canEdit"
               />
             </div>
             <div
@@ -328,10 +349,12 @@ import { trackEvent } from '../../functions/matomo'
 import CopyButton from '../CopyButton.vue'
 import { useComponentsConfig } from '../../config'
 import { getOwnerName } from '../../functions/owned'
-import { getResourceFormatIcon, getResourceTitleId, detectOgcService, getResourceFilesize, isGeopfSynced, isImagePreviewFormat, resolveResourceExternalUrl } from '../../functions/resources'
+import { getResourceFormatIcon, getResourceTitleId, getResourceFilesize, isGeopfSynced, isImagePreviewFormat, resolveResourceExternalUrl } from '../../functions/resources'
+import PreviewError from './PreviewError.vue'
+import UrlPreview from './UrlPreview.vue'
 import BrandedButton from '../BrandedButton.vue'
 import { useTranslation } from '../../composables/useTranslation'
-import { useHasTabularData } from '../../composables/useHasTabularData'
+import { useResourceCapabilities } from '../../composables/useResourceCapabilities'
 import Metadata from './Metadata.vue'
 import SchemaBadge from './SchemaBadge.vue'
 import ResourceIcon from './ResourceIcon.vue'
@@ -339,10 +362,7 @@ import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
 import Downloads from './Downloads.vue'
 import Preview from './Preview.vue'
-import { isOrganizationCertified } from '../../functions/organizations'
 import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
-
-const URL_FORMATS = ['url', 'doi', 'www:link', ' www:link-1.0-http--link', 'www:link-1.0-http--partners', 'www:link-1.0-http--related', 'www:link-1.0-http--samples']
 
 const props = withDefaults(defineProps<{
   dataset: Dataset | DatasetV2
@@ -369,43 +389,39 @@ const ImagePreview = defineAsyncComponent(() => import('./ImagePreview.client.vu
 const DatafairPreview = defineAsyncComponent(() => import('./Datafair.client.vue'))
 
 const { t } = useTranslation()
-const checkTabularData = useHasTabularData()
 
-const hasPreview = computed(() => {
-  // For JSON, PDF, XML, and image files, show preview.
-  // We cannot check for CORS issues here because we cannot use an async component here.
-  // If there is a CORS issue when fetching the file for preview, it will be managed and displayed as an error banner by the preview component.
-  const format = props.resource.format?.toLowerCase()
-  return format === 'json' || format === 'pdf' || format === 'xml' || isImagePreviewFormat(format)
-})
+// Same source of truth as the fullscreen explorer, so the two views cannot
+// drift apart on capabilities (pmtiles, OGC, previews…). Only the accordion-
+// specific `downloads` tab is added below, on top of the shared list.
+const {
+  previewKind,
+  hasTabularData,
+  hasPmtiles,
+  hasPmtilesError,
+  pmtilesError,
+  hasDatafairPreview,
+  hasOpenAPIPreview,
+  ogcService,
+  ogcWms,
+  isResourceUrl,
+  tabsOptions: sharedTabsOptions,
+} = useResourceCapabilities(() => props.resource, () => props.dataset)
 
-const hasTabularData = computed(() => checkTabularData(props.resource))
-
-const hasPmtiles = computed(() => {
-  return props.resource.extras['analysis:parsing:pmtiles_url'] || props.resource.format === 'pmtiles'
+// The fullscreen explorer has a dedicated downloads surface; here the accordion
+// keeps its own tab, placed just before the (optional) API tab.
+const tabsOptions = computed(() => {
+  const options = [...sharedTabsOptions.value]
+  const apiIndex = options.findIndex(tab => tab.key === 'api')
+  const index = apiIndex === -1 ? options.length : apiIndex
+  options.splice(index, 0, { key: 'downloads', label: t('Téléchargements') })
+  return options
 })
 
 const editDisabledReason = computed(() => {
   return isGeopfSynced(props.resource) ? t('Vous ne pouvez pas modifier cette ressource car elle est synchronisée avec cartes.gouv.fr') : null
 })
 
-const hasDatafairPreview = computed(() => {
-  // Checks if there are the corresponding extras for a datafair preview.
-  // Limited only to datasets published by certified organizations since it will load an iframe.
-  return isOrganizationCertified(props.dataset.organization) && props.resource.extras['datafairEmbed']
-})
-
-const hasOpenAPIPreview = computed(() => {
-  // Checks if there are the corresponding extras for a datafair preview.
-  // Limited only to datasets published by certified organizations since it will load an iframe.
-  return isOrganizationCertified(props.dataset.organization) && props.resource.extras['apidocUrl']
-})
-
 const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('Fichier'))
-
-const ogcService = computed(() => detectOgcService(props.resource))
-
-const ogcWms = computed(() => ogcService.value === 'wms')
 
 const open = ref(props.expandedOnMount)
 const toggle = () => {
@@ -419,34 +435,6 @@ const toggle = () => {
   }
 }
 
-const tabsOptions = computed(() => {
-  const options = []
-
-  if (hasPmtiles.value || ogcWms.value) {
-    options.push({ key: 'map', label: t('Carte') })
-  }
-
-  if (hasTabularData.value || hasPreview.value || hasDatafairPreview.value || hasOpenAPIPreview.value) {
-    options.push({ key: 'data', label: t('Aperçu') })
-  }
-
-  if (props.resource.description) {
-    options.push({ key: 'description', label: t('Description') })
-  }
-
-  if (hasTabularData.value) {
-    options.push({ key: 'data-structure', label: t('Structure des données') })
-  }
-
-  options.push({ key: 'metadata', label: t('Métadonnées') })
-  options.push({ key: 'downloads', label: t('Téléchargements') })
-
-  if (hasTabularData.value) {
-    options.push({ key: 'api', label: t('API') })
-  }
-
-  return options
-})
 const switchTab = (index: number) => {
   const option = tabsOptions.value[index]
   if (!option) {
@@ -480,8 +468,6 @@ const externalUrl = computed(() => resolveResourceExternalUrl(props.dataset, pro
 const resourceContentId = 'resource-' + props.resource.id
 const resourceHeaderId = 'resource-' + props.resource.id + '-header'
 const resourceTitleId = getResourceTitleId(props.resource)
-
-const isResourceUrl = computed(() => URL_FORMATS.includes(props.resource.format))
 </script>
 
 <style scoped>

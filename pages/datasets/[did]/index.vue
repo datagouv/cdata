@@ -26,6 +26,7 @@
     <ResourceExplorer
       v-if="newExplorerEnabled"
       :dataset
+      :can-edit="dataset.permissions.edit_resources"
       :explore-to="exploreTo"
       no-results-image="/illustrations/dataset.svg"
       @select="feedbackResource = $event"

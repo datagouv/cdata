@@ -52,6 +52,7 @@ export type PluginConfig = {
   useRoute?: () => RouteLocationNormalizedLoaded
   searchDebounce?: number
   forumUrl?: string
+  supportUrl?: string
 }
 
 export const configKey = Symbol() as InjectionKey<PluginConfig>

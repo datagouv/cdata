@@ -207,6 +207,27 @@ export function isImagePreviewFormat(format: string | undefined | null): boolean
   return IMAGE_PREVIEW_FORMATS.includes(format.toLowerCase() as typeof IMAGE_PREVIEW_FORMATS[number])
 }
 
+// Formats turned into an interactive table server-side. Source of truth is
+// hydra's `data_formats/`: csv_like (Csv handling *.gz, Xls, Xlsx) and parquet
+// both convert to a PostgreSQL table; hydra does not expose this list via its
+// API yet (get it there before drifting).
+const TABULAR_PIPELINE_FORMATS = ['csv', 'csv.gz', 'xls', 'xlsx', 'parquet']
+
+export function isTabularPipelineFormat(format: string | undefined | null): boolean {
+  if (!format) return false
+  const normalized = format.toLowerCase()
+  return TABULAR_PIPELINE_FORMATS.includes(normalized)
+    || (normalized.endsWith('.gz') && TABULAR_PIPELINE_FORMATS.includes(normalized.slice(0, -3)))
+}
+
+// GeoJSON is the only source hydra turns into a pmtiles map. Used to detect a
+// pmtiles-export failure beyond the `analysis:parsing:error` step (e.g. a source
+// too large to download). The payload may be wrapped in .zip/.gz.
+export function isPmtilesSourceFormat(format: string | undefined | null): boolean {
+  if (!format) return false
+  return format.toLowerCase().replace(/\.(zip|gz)$/, '') === 'geojson'
+}
+
 // Parsing errors are stored as `<step>:<message>`, where `<step>` names the
 // analysis step that failed (e.g. `pmtiles_export`, `geojson_export`).
 
@@ -274,7 +295,7 @@ export const getResourceCorsStatus = (resource: Resource): CorsStatus => {
   const allowedMethods = rawMethods
     ? rawMethods.split(',').map(m => m.trim().toUpperCase())
     : []
-  const supportsGet = allowedMethods.length === 0 || allowedMethods.includes('GET')
+  const supportsGet = allowedMethods.length === 0 || allowedMethods.some(m => m === '*' || m === 'GET')
 
   return isOriginAllowed && supportsGet ? 'allowed' : 'blocked'
 }

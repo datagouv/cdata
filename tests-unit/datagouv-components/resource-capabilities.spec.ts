@@ -1,5 +1,10 @@
-import { expect, test } from 'vitest'
+import { createApp } from 'vue'
+import { describe, expect, test } from 'vitest'
+import { configKey, type ResolvedPluginConfig } from '~/datagouv-components/src/config'
 import { getGeneratedFormats, getWfsExportFormats } from '~/datagouv-components/src/functions/resourceCapabilities'
+import { useResourceCapabilities } from '~/datagouv-components/src/composables/useResourceCapabilities'
+import type { Dataset } from '~/datagouv-components/src/types/datasets'
+import type { Resource } from '~/datagouv-components/src/types/resources'
 
 const TABULAR_API_URL = 'https://tabular-api.data.gouv.fr'
 
@@ -183,4 +188,127 @@ test('WFS format download URLs generation with null default_crs', async () => {
       format: 'json',
     },
   ])
+})
+
+// `useResourceCapabilities` relies on `useComponentsConfig` (Vue inject): run it
+// inside an app context providing the plugin config, like the other
+// datagouv-components specs.
+function withConfig<T>(config: Partial<ResolvedPluginConfig>, callback: () => T): T {
+  const app = createApp({})
+  app.provide(configKey, config as ResolvedPluginConfig)
+  return app.runWithContext(callback)
+}
+
+// No certified badge so datafair/openapi previews never kick in: the tab set is
+// then driven only by format/extras, which is what these tests exercise.
+const dataset = { organization: { badges: [] } } as unknown as Dataset
+
+function resource(extras: Record<string, unknown>, format?: string, filetype = 'file'): Resource {
+  return { id: 'res-1', format, filetype, url: '', extras } as unknown as Resource
+}
+
+function tabs(extras: Record<string, unknown>, format?: string, filetype?: string): Array<{ key: string, label: string }> {
+  return withConfig({ tabularApiUrl: TABULAR_API_URL }, () => {
+    const { tabsOptions } = useResourceCapabilities(
+      () => resource(extras, format, filetype),
+      () => dataset,
+    )
+    return tabsOptions.value
+  })
+}
+
+describe('useResourceCapabilities tabsOptions', () => {
+  test('labels the data tab Données and lists Structure des données before Description for a tabular file', () => {
+    const result = tabs(
+      { 'analysis:parsing:parsing_table': 'abc' },
+      'csv',
+      'file',
+    )
+    expect(result).toEqual([
+      { key: 'data', label: 'Données' },
+      { key: 'data-structure', label: 'Structure des données' },
+      { key: 'metadata', label: 'Métadonnées' },
+      { key: 'api', label: 'API' },
+    ])
+  })
+
+  test('shows Description where one exists, between Structure des données and Métadonnées', () => {
+    const result = withConfig({ tabularApiUrl: TABULAR_API_URL }, () => {
+      const r = resource({ 'analysis:parsing:parsing_table': 'abc' }, 'csv')
+      r.description = 'Un jeu de données'
+      const { tabsOptions } = useResourceCapabilities(() => r, () => dataset)
+      return tabsOptions.value
+    })
+    expect(result.map(tab => tab.key)).toEqual(['data', 'data-structure', 'description', 'metadata', 'api'])
+  })
+
+  test('shows only the Carte tab for a pmtiles-export parsing failure with no other preview', () => {
+    // `analysis:parsing:error` names the pmtiles_export step.
+    const result = tabs({ 'analysis:parsing:error': 'pmtiles_export:GeoJSON to PMTiles conversion failed with exit code 110' }, 'geojson')
+    expect(result).toEqual([
+      { key: 'map', label: 'Carte' },
+      { key: 'metadata', label: 'Métadonnées' },
+    ])
+  })
+
+  test('shows only the Carte tab for a pmtiles source the analysis could not download', () => {
+    // The failure is stored in `analysis:error` instead of `analysis:parsing:error`.
+    const result = tabs({ 'analysis:error': 'File too large to download' }, 'geojson')
+    expect(result).toEqual([
+      { key: 'map', label: 'Carte' },
+      { key: 'metadata', label: 'Métadonnées' },
+    ])
+  })
+
+  test('keeps the Aperçu tab for a tabular-pipeline format even when nothing is parsed yet', () => {
+    // A tabular-capable format (parquet) with no parsing table and no error: the
+    // table just has not been analysed, so the Aperçu tab stays as the landing tab.
+    const result = tabs({}, 'parquet')
+    expect(result).toEqual([
+      { key: 'data', label: 'Aperçu' },
+      { key: 'metadata', label: 'Métadonnées' },
+    ])
+  })
+
+  test('drops the Aperçu tab for a non-tabular format with no preview and no diagnosed error', () => {
+    const result = tabs({}, 'kml')
+    expect(result).toEqual([{ key: 'metadata', label: 'Métadonnées' }])
+  })
+
+  test('keeps the Aperçu tab for a link resource, which is meant to be visited', () => {
+    const result = tabs({}, 'url')
+    expect(result).toEqual([
+      { key: 'data', label: 'Aperçu' },
+      { key: 'metadata', label: 'Métadonnées' },
+    ])
+  })
+
+  test('keeps the data tab when a diagnosable error explains the missing preview', () => {
+    const result = tabs({ 'check:available': false }, 'csv')
+    expect(result.map(tab => tab.key)).toEqual(['data', 'metadata'])
+  })
+
+  test('shows the Carte tab first, then Données, when a map exists alongside a table', () => {
+    const result = tabs(
+      { 'analysis:parsing:pmtiles_url': 'https://data.gouv.fr/map.pmtiles', 'analysis:parsing:parsing_table': 'abc' },
+      'csv',
+    )
+    expect(result.map(tab => tab.key)).toEqual(['map', 'data', 'data-structure', 'metadata', 'api'])
+  })
+
+  test('shows only the Carte tab for a working pmtiles file with no other preview', () => {
+    const result = tabs({}, 'pmtiles')
+    expect(result).toEqual([
+      { key: 'map', label: 'Carte' },
+      { key: 'metadata', label: 'Métadonnées' },
+    ])
+  })
+
+  test('shows the data tab first when only the pmtiles export failed on a CSV with a working table', () => {
+    const result = tabs(
+      { 'analysis:parsing:parsing_table': 'abc', 'analysis:parsing:error': 'pmtiles_export:GeoJSON to PMTiles conversion failed with exit code 110' },
+      'csv',
+    )
+    expect(result.map(tab => tab.key)).toEqual(['data', 'map', 'data-structure', 'metadata', 'api'])
+  })
 })
