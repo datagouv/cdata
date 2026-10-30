@@ -46,7 +46,6 @@ export type ToolTrace = {
   errorText: string | null
   code: string | null
   details: ToolTraceDetail[]
-  count: number
 }
 
 export type ChatDisplayItem
@@ -155,16 +154,15 @@ function buildToolTrace(type: string, part: Record<string, unknown>): ToolTrace 
     errorText,
     code: type === 'tool-execute_sql' && typeof input?.sql === 'string' ? input.sql : null,
     details: buildToolDetails(type, part.input, part.output),
-    count: 1,
   }
 }
 
 /**
  * Turn a message's parts into display items: text parts pass through,
  * consecutive reasoning parts (AI SDK type 'reasoning') are grouped into one
- * thinking item, and tool parts of the same type and state are grouped into a
- * single tool trace whose count is the total of that type+state in the
- * message — not just the consecutive run, per the validated prototype design.
+ * thinking item, and each tool part becomes its own trace — the AI SDK emits
+ * one part per tool call (keyed by toolCallId) and mutates its state in place,
+ * so no merging is ever needed.
  */
 export function buildChatDisplayItems(parts: unknown[]): ChatDisplayItem[] {
   const items: ChatDisplayItem[] = []
@@ -188,15 +186,6 @@ export function buildChatDisplayItems(parts: unknown[]): ChatDisplayItem[] {
     }
     if (!part.type.startsWith('tool-')) continue
 
-    const state = typeof part.state === 'string' ? part.state : ''
-    // Merge into the existing trace of the same type+state, wherever it is in
-    // the list: alternating tools (SQL → schema → SQL) stay a single card
-    // whose count is the total for that type+state in the message.
-    const existing = [...items].reverse().find(item => item.kind === 'trace' && item.trace.type === part.type && item.trace.state === state)
-    if (existing?.kind === 'trace') {
-      existing.trace.count += 1
-      continue
-    }
     items.push({ kind: 'trace', trace: buildToolTrace(part.type, part) })
   }
 

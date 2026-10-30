@@ -87,7 +87,7 @@ describe('buildChatBody', () => {
 })
 
 describe('buildChatDisplayItems', () => {
-  it('merges alternating tool calls of the same type and state into one trace with the total count', () => {
+  it('keeps alternating tool calls as separate per-call traces in arrival order', () => {
     const items = buildChatDisplayItems([
       { type: 'tool-execute_sql', state: 'output-available', input: { sql: 'SELECT 1' }, output: { rowCount: 1 } },
       { type: 'tool-inspect_schema', state: 'output-available', input: {}, output: { columns: ['year'], rowCount: 1 } },
@@ -95,10 +95,9 @@ describe('buildChatDisplayItems', () => {
     ])
 
     const traces = items.filter(item => item.kind === 'trace').map(item => (item.kind === 'trace' ? item.trace : null))
-    expect(traces).toHaveLength(2)
-    const sqlTraces = traces.filter(t => t?.type === 'tool-execute_sql')
-    expect(sqlTraces).toHaveLength(1)
-    expect(sqlTraces[0]?.count).toBe(2)
+    expect(traces.map(trace => trace?.type)).toEqual(['tool-execute_sql', 'tool-inspect_schema', 'tool-execute_sql'])
+    expect(traces[0]?.code).toBe('SELECT 1')
+    expect(traces[2]?.code).toBe('SELECT 2')
   })
 })
 
@@ -112,7 +111,6 @@ describe('ToolTrace', () => {
     errorText: null,
     code: 'SELECT 1',
     details: [{ label: 'Lignes', value: '12' }],
-    count: 1,
   }
 
   function mountTrace() {
@@ -459,7 +457,7 @@ describe('ChatPanel', () => {
     expect(text).toContain('Je précise ce qui est ambigu')
   })
 
-  it('groups consecutive calls to the same tool and state into a single card', () => {
+  it('renders consecutive calls to the same tool as separate cards, one per call', () => {
     chatState.messages.value = [{
       id: 'a1',
       role: 'assistant',
@@ -472,11 +470,12 @@ describe('ChatPanel', () => {
     const wrapper = mountPanel('resource-1')
 
     const traces = wrapper.findAll('.tool-trace')
-    expect(traces).toHaveLength(1)
-    expect(traces[0].text()).toContain('×2')
+    expect(traces).toHaveLength(2)
+    expect(traces[0].find('pre').text()).toContain('SELECT 1')
+    expect(traces[1].find('pre').text()).toContain('SELECT 2')
   })
 
-  it('merges alternating calls to the same tool into one card with the total count', () => {
+  it('renders alternating tools as separate per-call cards in arrival order', () => {
     chatState.messages.value = [{
       id: 'a1',
       role: 'assistant',
@@ -489,10 +488,12 @@ describe('ChatPanel', () => {
     const wrapper = mountPanel('resource-1')
 
     const traces = wrapper.findAll('.tool-trace')
-    expect(traces).toHaveLength(2)
-    const sqlTraces = traces.filter(t => t.text().includes('Exécution de la requête SQL'))
-    expect(sqlTraces).toHaveLength(1)
-    expect(sqlTraces[0].text()).toContain('×2')
+    expect(traces).toHaveLength(3)
+    expect(traces[0].text()).toContain('Exécution de la requête SQL')
+    expect(traces[1].text()).toContain('Inspection du schéma')
+    expect(traces[2].text()).toContain('Exécution de la requête SQL')
+    expect(traces[0].find('pre').text()).toContain('SELECT 1')
+    expect(traces[2].find('pre').text()).toContain('SELECT 2')
   })
 
   it('keeps separate cards per state even when the tool alternates', () => {
@@ -509,9 +510,9 @@ describe('ChatPanel', () => {
 
     const traces = wrapper.findAll('.tool-trace')
     expect(traces).toHaveLength(3)
-    // count is 1 per card: ToolTrace renders the ×N badge only above 1.
-    expect(traces[0].text()).not.toContain('×')
-    expect(traces[2].text()).not.toContain('×')
+    expect(traces[0].text()).toContain('boom')
+    expect(traces[1].text()).toContain('Inspection du schéma')
+    expect(traces[2].find('pre').text()).toContain('SELECT 2')
   })
 
   it('keeps consecutive calls in separate cards when their states differ', () => {

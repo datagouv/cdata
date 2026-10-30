@@ -17,7 +17,7 @@
       />
       <span class="min-w-0 flex-1">
         <strong class="block truncate text-[11px] font-semibold leading-4 text-new-gray-dark">
-          {{ $t(trace.label) }}<span v-if="trace.count > 1">&nbsp;×{{ trace.count }}</span>
+          {{ $t(trace.label) }}
         </strong>
         <span
           class="block truncate text-[11px] leading-4"
