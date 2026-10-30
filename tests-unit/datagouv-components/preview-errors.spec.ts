@@ -1,7 +1,7 @@
 import { createApp } from 'vue'
 import { describe, expect, it } from 'vitest'
 import { configKey, type ResolvedPluginConfig } from '~/datagouv-components/src/config'
-import { getPreviewErrorInfo, getPreviewErrorInfoByType, hasPreviewError } from '~/datagouv-components/src/functions/previewErrors'
+import { getPreviewErrorInfo, getPreviewErrorInfoByType, getTransientErrorType, hasPreviewError } from '~/datagouv-components/src/functions/previewErrors'
 import type { Resource } from '~/datagouv-components/src/types/resources'
 
 // `getResourceCorsStatus` relies on `useComponentsConfig` (Vue inject): run the
@@ -141,5 +141,25 @@ describe('hasPreviewError', () => {
     ] as [Record<string, unknown>, string | undefined][]) {
       expect(withConfig({ trustedDomains: ['data.gouv.fr'] }, () => hasPreviewError(resource(extras, format)))).toBe(true)
     }
+  })
+})
+
+describe('getTransientErrorType', () => {
+  it('reports a transient load failure when the metadata gives no diagnosis', () => {
+    expect(withConfig({}, () => getTransientErrorType(resource({})))).toBe('load_failed')
+  })
+
+  it('is undefined when the metadata already diagnoses an unavailable file', () => {
+    expect(withConfig({}, () => getTransientErrorType(resource({ 'check:available': false })))).toBeUndefined()
+  })
+
+  it('is undefined when the metadata diagnoses a file too large', () => {
+    expect(withConfig({}, () => getTransientErrorType(resource({ 'analysis:error': 'File too large to download' }, 'csv')))).toBeUndefined()
+  })
+
+  it('reports a transient failure for a non-tabular parsing error', () => {
+    // A `pmtiles_export` step is not a tabular parsing error, so the metadata
+    // gives no preview diagnosis and the failure is treated as transient.
+    expect(withConfig({}, () => getTransientErrorType(resource({ 'analysis:parsing:error': 'pmtiles_export:timeout' }, 'geojson')))).toBe('load_failed')
   })
 })

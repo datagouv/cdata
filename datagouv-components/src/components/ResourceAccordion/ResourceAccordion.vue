@@ -352,7 +352,6 @@ import { getOwnerName } from '../../functions/owned'
 import { getResourceFormatIcon, getResourceTitleId, getResourceFilesize, isGeopfSynced, isImagePreviewFormat, resolveResourceExternalUrl } from '../../functions/resources'
 import PreviewError from './PreviewError.vue'
 import UrlPreview from './UrlPreview.vue'
-import { hasPreviewError } from '../../functions/previewErrors'
 import BrandedButton from '../BrandedButton.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useResourceCapabilities } from '../../composables/useResourceCapabilities'
@@ -392,7 +391,8 @@ const DatafairPreview = defineAsyncComponent(() => import('./Datafair.client.vue
 const { t } = useTranslation()
 
 // Same source of truth as the fullscreen explorer, so the two views cannot
-// drift apart on capabilities (pmtiles, OGC, previews…).
+// drift apart on capabilities (pmtiles, OGC, previews…). Only the accordion-
+// specific `downloads` tab is added below, on top of the shared list.
 const {
   previewKind,
   hasTabularData,
@@ -404,7 +404,18 @@ const {
   ogcService,
   ogcWms,
   isResourceUrl,
+  tabsOptions: sharedTabsOptions,
 } = useResourceCapabilities(() => props.resource, () => props.dataset)
+
+// The fullscreen explorer has a dedicated downloads surface; here the accordion
+// keeps its own tab, placed just before the (optional) API tab.
+const tabsOptions = computed(() => {
+  const options = [...sharedTabsOptions.value]
+  const apiIndex = options.findIndex(tab => tab.key === 'api')
+  const index = apiIndex === -1 ? options.length : apiIndex
+  options.splice(index, 0, { key: 'downloads', label: t('Téléchargements') })
+  return options
+})
 
 const editDisabledReason = computed(() => {
   return isGeopfSynced(props.resource) ? t('Vous ne pouvez pas modifier cette ressource car elle est synchronisée avec cartes.gouv.fr') : null
@@ -424,44 +435,6 @@ const toggle = () => {
   }
 }
 
-const tabsOptions = computed(() => {
-  const options = []
-
-  const dataTab = { key: 'data', label: t('Aperçu') }
-  const mapTab = { key: 'map', label: t('Carte') }
-  const hasMap = hasPmtiles.value || ogcWms.value
-  // The map is the preview for pmtiles/WMS resources: the Aperçu tab stays a
-  // duplicate otherwise.
-  if (hasMap) {
-    options.push(mapTab)
-    if (previewKind.value !== 'unavailable') {
-      options.push(dataTab)
-    }
-  }
-  else if (hasPmtilesError.value) {
-    options.push(dataTab, mapTab)
-  }
-  else if (previewKind.value !== 'unavailable' || hasPreviewError(props.resource)) {
-    options.push(dataTab)
-  }
-
-  if (props.resource.description) {
-    options.push({ key: 'description', label: t('Description') })
-  }
-
-  if (hasTabularData.value) {
-    options.push({ key: 'data-structure', label: t('Structure des données') })
-  }
-
-  options.push({ key: 'metadata', label: t('Métadonnées') })
-  options.push({ key: 'downloads', label: t('Téléchargements') })
-
-  if (hasTabularData.value) {
-    options.push({ key: 'api', label: t('API') })
-  }
-
-  return options
-})
 const switchTab = (index: number) => {
   const option = tabsOptions.value[index]
   if (!option) {
