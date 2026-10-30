@@ -313,6 +313,39 @@ describe('ChatPanel', () => {
     vi.unstubAllGlobals()
   })
 
+  it('renders assistant text as markdown', () => {
+    chatState.messages.value = [assistantTextMessage('Voici **le** résultat avec un `code`.')]
+    const wrapper = mountPanel('resource-1')
+
+    const markdown = wrapper.find('.prose')
+    expect(markdown.exists()).toBe(true)
+    expect(markdown.html()).toContain('<strong>le</strong>')
+    expect(markdown.html()).toContain('<code>code</code>')
+  })
+
+  it('updates markdown as streaming text chunks arrive', async () => {
+    chatState.messages.value = [assistantTextMessage('Partie **une**')]
+    const wrapper = mountPanel('resource-1')
+
+    expect(wrapper.find('.prose').html()).toContain('<strong>une</strong>')
+
+    chatState.messages.value = [assistantTextMessage('Partie **une** et deux')]
+    await nextTick()
+    expect(wrapper.find('.prose').html()).toContain('et deux')
+  })
+
+  it('renders a partial markdown block mid-stream without crashing', async () => {
+    chatState.messages.value = [assistantTextMessage('Voici la requête :\n\n```sql\nSELECT year, COUNT(*)')]
+    const wrapper = mountPanel('resource-1')
+
+    expect(wrapper.find('.prose').exists()).toBe(true)
+    expect(wrapper.text()).toContain('SELECT year, COUNT(*)')
+
+    chatState.messages.value = [assistantTextMessage('Voici la requête :\n\n```sql\nSELECT year, COUNT(*) FROM data\n```')]
+    await nextTick()
+    expect(wrapper.find('.prose').exists()).toBe(true)
+  })
+
   it('renders execute_sql traces with the SQL, not raw JSON', () => {
     chatState.messages.value = [{
       id: 'a1',

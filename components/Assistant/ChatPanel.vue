@@ -29,13 +29,10 @@
             :trace="item.trace"
             class="mb-2"
           />
-          <p
-            v-else
-            class="whitespace-pre-wrap m-0"
-            :class="message.role === 'user' ? 'font-medium' : ''"
-          >
-            {{ item.text }}
-          </p>
+          <MarkdownViewer
+            v-else-if="item.kind === 'text'"
+            :content="item.text"
+          />
         </template>
       </article>
     </div>
@@ -140,6 +137,7 @@ import { computed, nextTick, ref, toRef, watch } from 'vue'
 import ToolTrace from './ToolTrace.vue'
 import { useAssistantChat } from './useAssistantChat'
 import { buildChatDisplayItems, extractLastSqlBlock, mapAssistantError } from '~/utils/assistant'
+import MarkdownViewer from '~/datagouv-components/src/components/MarkdownViewer.vue'
 
 const props = defineProps<{
   resourceId: string | null
