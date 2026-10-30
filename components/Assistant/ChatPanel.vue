@@ -29,6 +29,11 @@
             :trace="item.trace"
             class="mb-2"
           />
+          <ThinkingBlock
+            v-else-if="item.kind === 'thinking'"
+            :text="item.text"
+            class="mb-2"
+          />
           <MarkdownViewer
             v-else-if="item.kind === 'text'"
             :content="item.text"
@@ -135,6 +140,7 @@
 import { RiArrowUpLine, RiCheckLine, RiFileCopyLine, RiStopMiniLine } from '@remixicon/vue'
 import { computed, nextTick, ref, toRef, watch } from 'vue'
 import ToolTrace from './ToolTrace.vue'
+import ThinkingBlock from './ThinkingBlock.vue'
 import { useAssistantChat } from './useAssistantChat'
 import { buildChatDisplayItems, extractLastSqlBlock, mapAssistantError } from '~/utils/assistant'
 import MarkdownViewer from '~/datagouv-components/src/components/MarkdownViewer.vue'

@@ -51,6 +51,7 @@ export type ToolTrace = {
 
 export type ChatDisplayItem
   = | { kind: 'text', text: string }
+    | { kind: 'thinking', text: string }
     | { kind: 'trace', trace: ToolTrace }
 
 // Fixed French copy of the assistant UI, used as i18n keys by the components
@@ -159,9 +160,11 @@ function buildToolTrace(type: string, part: Record<string, unknown>): ToolTrace 
 }
 
 /**
- * Turn a message's parts into display items: text parts pass through and
- * consecutive tool parts of the same type and state are grouped into a single
- * tool trace (with a counter), per the validated prototype design.
+ * Turn a message's parts into display items: text parts pass through,
+ * consecutive reasoning parts (AI SDK type 'reasoning') are grouped into one
+ * thinking item, and consecutive tool parts of the same type and state are
+ * grouped into a single tool trace (with a counter), per the validated
+ * prototype design.
  */
 export function buildChatDisplayItems(parts: unknown[]): ChatDisplayItem[] {
   const items: ChatDisplayItem[] = []
@@ -171,6 +174,16 @@ export function buildChatDisplayItems(parts: unknown[]): ChatDisplayItem[] {
 
     if (part.type === 'text') {
       if (typeof part.text === 'string' && part.text) items.push({ kind: 'text', text: part.text })
+      continue
+    }
+    if (part.type === 'reasoning') {
+      if (typeof part.text !== 'string' || !part.text) continue
+      const last = items[items.length - 1]
+      if (last?.kind === 'thinking') {
+        last.text += part.text
+        continue
+      }
+      items.push({ kind: 'thinking', text: part.text })
       continue
     }
     if (!part.type.startsWith('tool-')) continue

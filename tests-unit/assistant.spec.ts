@@ -346,6 +346,58 @@ describe('ChatPanel', () => {
     expect(wrapper.find('.prose').exists()).toBe(true)
   })
 
+  it('groups consecutive reasoning parts into a single collapsed block', () => {
+    chatState.messages.value = [{
+      id: 'a1',
+      role: 'assistant',
+      parts: [
+        { type: 'reasoning', text: 'Je réfléchis ', state: 'streaming' },
+        { type: 'reasoning', text: 'à la requête.', state: 'done' },
+        { type: 'text', text: 'Voici le résultat.' },
+      ],
+    }]
+    const wrapper = mountPanel('resource-1')
+
+    const blocks = wrapper.findAll('.thinking-block')
+    expect(blocks).toHaveLength(1)
+    expect(blocks[0].text()).toContain('Je réfléchis à la requête.')
+    expect(blocks[0].find('button').attributes('aria-expanded')).toBe('false')
+    expect(blocks[0].find('.thinking-block-panel').attributes('inert')).toBeDefined()
+  })
+
+  it('expands the reasoning block on click', async () => {
+    chatState.messages.value = [{
+      id: 'a1',
+      role: 'assistant',
+      parts: [{ type: 'reasoning', text: 'Réflexion', state: 'done' }],
+    }]
+    const wrapper = mountPanel('resource-1')
+
+    const block = wrapper.find('.thinking-block')
+    await block.find('button').trigger('click')
+
+    expect(block.find('button').attributes('aria-expanded')).toBe('true')
+    expect(block.find('.thinking-block-panel').attributes('inert')).toBeUndefined()
+  })
+
+  it('separates reasoning blocks interrupted by other parts', () => {
+    chatState.messages.value = [{
+      id: 'a1',
+      role: 'assistant',
+      parts: [
+        { type: 'reasoning', text: 'D’abord.', state: 'done' },
+        { type: 'tool-execute_sql', state: 'output-available', input: { sql: 'SELECT 1' }, output: { rowCount: 1 } },
+        { type: 'reasoning', text: 'Ensuite.', state: 'done' },
+      ],
+    }]
+    const wrapper = mountPanel('resource-1')
+
+    const blocks = wrapper.findAll('.thinking-block')
+    expect(blocks).toHaveLength(2)
+    expect(blocks[0].text()).toContain('D’abord.')
+    expect(blocks[1].text()).toContain('Ensuite.')
+  })
+
   it('renders execute_sql traces with the SQL, not raw JSON', () => {
     chatState.messages.value = [{
       id: 'a1',
