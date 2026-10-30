@@ -4,6 +4,80 @@
     class="block"
     @submit.prevent="saveChart"
   >
+    <section
+      class="mb-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light"
+      aria-label="Source de données"
+    >
+      <h2 class="font-bold text-lg mb-4">
+        {{ $t('Source de données') }}
+      </h2>
+      <div class="grid gap-4 lg:grid-cols-3">
+        <fieldset class="min-w-0">
+          <ProducerSelect
+            v-model="producer"
+            :label="$t('Avec qui souhaitez-vous publier ?')"
+            :required="true"
+            hide-no-organization-notice
+            all
+          />
+        </fieldset>
+        <fieldset
+          v-if="producer"
+          class="min-w-0"
+        >
+          <SearchableSelect
+            v-model="dataset"
+            :label="$t('Jeu de données')"
+            :placeholder="$t('Recherchez un jeu de données...')"
+            :display-value="(option: DatasetSuggest) => option.title"
+            :get-option-id="(option: DatasetSuggest) => option.id"
+            :multiple="false"
+            :suggest="suggestDataset"
+          />
+        </fieldset>
+        <fieldset
+          v-if="dataset"
+          class="min-w-0"
+        >
+          <label
+            for="resource-select"
+            class="fr-label"
+          >{{ $t('Choix de la ressource') }}</label>
+          <select
+            id="resource-select"
+            v-model="selectedResource"
+            class="w-full fr-select"
+          >
+            <option
+              value=""
+              disabled
+            >
+              {{ $t('Sélectionnez une ressource') }}
+            </option>
+            <option
+              v-for="resource in resources"
+              :key="resource.id"
+              :value="resource.id"
+            >
+              {{ resource.title }}
+            </option>
+          </select>
+        </fieldset>
+      </div>
+      <p class="mb-0 mt-4 flex items-center gap-2 text-sm text-new-gray-medium">
+        <template v-if="sourceLoading">
+          <RiLoader4Line class="size-4 animate-spin" />
+          {{ $t('Chargement…') }}
+        </template>
+        <template v-else-if="selectedResource">
+          {{ $t('{count} colonnes disponibles', { count: resourceColumns.length }) }}
+        </template>
+        <template v-else>
+          {{ $t('Source à sélectionner') }}
+        </template>
+      </p>
+    </section>
+
     <div class="grid lg:grid-cols-12 gap-4 lg:gap-8">
       <div class="col-span-7 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
         <template v-if="selectedResource">
@@ -94,58 +168,6 @@
           data-testid="form-panel"
         >
           <div class="space-y-6">
-            <fieldset class="min-w-0">
-              <ProducerSelect
-                v-model="producer"
-                :label="$t('Avec qui souhaitez-vous publier ?')"
-                :required="true"
-                hide-no-organization-notice
-                all
-              />
-            </fieldset>
-            <fieldset
-              v-if="producer"
-              class="min-w-0"
-            >
-              <p class="mb-2 font-bold">
-                {{ $t('Source de données') }}
-              </p>
-              <SearchableSelect
-                v-model="dataset"
-                :label="$t('Jeu de données')"
-                :placeholder="$t('Recherchez un jeu de données...')"
-                :display-value="(option: DatasetSuggest) => option.title"
-                :get-option-id="(option: DatasetSuggest) => option.id"
-                :multiple="false"
-                :suggest="suggestDataset"
-                class="mb-4"
-              />
-              <div v-if="dataset">
-                <label
-                  for="resource-select"
-                  class="fr-label"
-                >{{ $t('Choix de la ressource') }}</label>
-                <select
-                  id="resource-select"
-                  v-model="selectedResource"
-                  class="w-full fr-select"
-                >
-                  <option
-                    value=""
-                    disabled
-                  >
-                    {{ $t('Sélectionnez une ressource') }}
-                  </option>
-                  <option
-                    v-for="resource in resources"
-                    :key="resource.id"
-                    :value="resource.id"
-                  >
-                    {{ resource.title }}
-                  </option>
-                </select>
-              </div>
-            </fieldset>
             <template v-if="selectedResource">
               <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
                 <label
@@ -320,7 +342,7 @@ import type { Resource, PaginatedArray, ChartForm, Chart, ColumnType, Owned } fr
 import { buildTypeConfig, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, SearchableSelect, SegmentedControl, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
-import { RiText } from '@remixicon/vue'
+import { RiLoader4Line, RiText } from '@remixicon/vue'
 import { isMeAdmin } from '~/utils/auth'
 import ProducerSelect from '../ProducerSelect.vue'
 import ChatPanel from '../Assistant/ChatPanel.vue'
@@ -361,6 +383,7 @@ const panelOptions = computed(() => [
   { value: 'assistant', label: t('Assistant') },
 ])
 const chartViewerWrapperRef = ref<InstanceType<typeof ChartViewerWrapper> | null>(null)
+const sourceLoading = ref(false)
 
 watch(producer, (newProducer) => {
   if (newProducer?.organization?.id) {
@@ -490,6 +513,7 @@ watch(dataset, async (newDataset) => {
   if (!newDataset) {
     return
   }
+  sourceLoading.value = true
   try {
     const fetchedResources = await $api<PaginatedArray<Resource>>(`/api/2/datasets/${newDataset.id}/resources/`)
     for (const r of fetchedResources.data.filter(resource => hasTabularData(resource))) {
@@ -499,6 +523,9 @@ watch(dataset, async (newDataset) => {
   catch (error) {
     console.error('Failed to fetch resources:', error)
   }
+  finally {
+    sourceLoading.value = false
+  }
 }, { immediate: true })
 
 watch(selectedResource, async (r) => {
@@ -507,7 +534,13 @@ watch(selectedResource, async (r) => {
     if (!savedResources[r]) {
       await loadMissingResourcesForChart([r])
     }
-    await loadColumnsForResource(r)
+    sourceLoading.value = true
+    try {
+      await loadColumnsForResource(r)
+    }
+    finally {
+      sourceLoading.value = false
+    }
   }
 })
 
