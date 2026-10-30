@@ -14,7 +14,9 @@
 
     <div
       v-if="messages.length"
+      ref="messagesContainerRef"
       class="flex-1 min-h-0 overflow-y-auto space-y-4"
+      @scroll="onMessagesScroll"
     >
       <article
         v-for="message in messages"
@@ -153,7 +155,7 @@ import { computed, nextTick, ref, toRef, watch } from 'vue'
 import ToolTrace from './ToolTrace.vue'
 import ThinkingBlock from './ThinkingBlock.vue'
 import { useAssistantChat } from './useAssistantChat'
-import { buildChatDisplayItems, extractLastSqlBlock, mapAssistantError } from '~/utils/assistant'
+import { buildChatDisplayItems, extractLastSqlBlock, isNearChatBottom, mapAssistantError } from '~/utils/assistant'
 import MarkdownViewer from '~/datagouv-components/src/components/MarkdownViewer.vue'
 
 const props = defineProps<{
@@ -172,6 +174,31 @@ const COUNTER_THRESHOLD = 3600
 const input = ref('')
 const copied = ref(false)
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
+const messagesContainerRef = ref<HTMLElement | null>(null)
+// Latched on each scroll event: the user keeps the auto-scroll only while
+// they stay near the bottom, so reading history is never interrupted.
+const nearBottom = ref(true)
+
+function onMessagesScroll() {
+  const el = messagesContainerRef.value
+  if (el) nearBottom.value = isNearChatBottom(el)
+}
+
+async function scrollMessagesToBottom() {
+  await nextTick()
+  const el = messagesContainerRef.value
+  if (el) el.scrollTop = el.scrollHeight
+}
+
+// New messages and streaming growth (which mutates parts in place) both reach
+// this deep watch; scroll only when the user is already near the bottom.
+watch(messages, () => {
+  if (nearBottom.value) scrollMessagesToBottom()
+}, { deep: true })
+
+// First paint of the conversation also scrolls (messages go from none to some).
+nearBottom.value = true
+scrollMessagesToBottom()
 
 const waiting = computed(() => !props.resourceId)
 // 'error' is not busy: a failed request leaves the status on 'error' until the

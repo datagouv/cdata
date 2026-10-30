@@ -1,4 +1,12 @@
 /**
+ * Auto-scroll guard for the chat panel: happy-dom cannot model scroll
+ * geometry, so the predicate is pure and tested on plain numbers.
+ */
+export function isNearChatBottom(element: { scrollTop: number, clientHeight: number, scrollHeight: number }, threshold = 80): boolean {
+  return element.scrollHeight - element.scrollTop - element.clientHeight <= threshold
+}
+
+/**
  * Extract the content of the last fenced ```sql block of a text, or null.
  * The fence language is matched case-insensitively.
  */

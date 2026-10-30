@@ -4,7 +4,7 @@ import { defineComponent, h, nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ChatPanel from '~/components/Assistant/ChatPanel.vue'
 import ToolTrace from '~/components/Assistant/ToolTrace.vue'
-import { buildChatBody, buildChatDisplayItems, extractLastSqlBlock, mapAssistantError } from '~/utils/assistant'
+import { buildChatBody, buildChatDisplayItems, extractLastSqlBlock, isNearChatBottom, mapAssistantError } from '~/utils/assistant'
 import type { ToolTrace as ToolTraceModel } from '~/utils/assistant'
 
 const sendMessageMock = vi.hoisted(() => vi.fn())
@@ -188,6 +188,26 @@ describe('ToolTrace', () => {
     await wrapper.find('button').trigger('click')
 
     expect(wrapper.findAll('pre')).toHaveLength(1)
+  })
+})
+
+describe('isNearChatBottom', () => {
+  function scrolledTo(scrollTop: number, scrollHeight = 1000, clientHeight = 200) {
+    return { scrollTop, scrollHeight, clientHeight }
+  }
+
+  it('returns true when the user is within the 80px threshold of the bottom', () => {
+    expect(isNearChatBottom(scrolledTo(720))).toBe(true)
+    expect(isNearChatBottom(scrolledTo(800))).toBe(true)
+  })
+
+  it('returns false when the user is reading history far from the bottom', () => {
+    expect(isNearChatBottom(scrolledTo(0))).toBe(false)
+    expect(isNearChatBottom(scrolledTo(700))).toBe(false)
+  })
+
+  it('accepts a custom threshold', () => {
+    expect(isNearChatBottom(scrolledTo(700), 100)).toBe(true)
   })
 })
 
