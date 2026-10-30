@@ -95,7 +95,7 @@
     <div class="grid lg:grid-cols-12 gap-4 lg:gap-8">
       <div class="col-span-7 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
         <template v-if="selectedResource">
-          <div>
+          <div class="rounded-lg border border-new-gray-light p-4">
             <h3 class="font-medium text-lg text-new-gray-dark mb-0">
               {{ form.title || $t('Sans titre') }}
             </h3>
@@ -126,7 +126,7 @@
           </div>
           <div
             v-else
-            class="relative"
+            class="relative overflow-hidden rounded-lg border border-new-gray-light"
           >
             <ClientOnly>
               <ChartViewerWrapper
@@ -150,7 +150,7 @@
           </div>
           <div
             v-if="sourceText"
-            class="text-sm text-new-gray-medium"
+            class="rounded-lg border border-new-gray-light px-4 py-2 text-sm text-new-gray-medium"
           >
             {{ $t('Source') }}: {{ sourceText }}
           </div>
