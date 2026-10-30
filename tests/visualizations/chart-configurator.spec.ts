@@ -194,6 +194,8 @@ test.describe('saving with an empty query', () => {
     await page.getByLabel('Titre').fill('Graphique sans requête')
     await page.getByLabel('Description').fill('Soumission invalide')
 
+    // Resource selection auto-fills a default query: clear it to test the empty state
+    await page.getByLabel('Requête SQL').fill('')
     expect(await page.getByLabel('Requête SQL').inputValue()).toBe('')
 
     const { response } = await saveChart(page)
@@ -244,7 +246,7 @@ test('chat message is sent with the selected resource and the reply is streamed'
   await page.getByRole('button', { name: 'Assistant', exact: true }).click()
   await expect(page.getByTestId('assistant-panel')).toBeVisible()
   await expect(page.getByTestId('form-panel')).toBeHidden()
-  await expect(page.locator('#resource-select')).toBeHidden()
+  await expect(page.locator('#resource-select')).toBeVisible()
   await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeHidden()
   const request = await sendAssistantMessage(page, 'Logements par région en histogramme')
 
@@ -338,7 +340,7 @@ test('uses the SQL textarea without declarative x-axis or filter controls', asyn
 
   const query = page.getByLabel('Requête SQL')
   await expect(query).toBeVisible()
-  expect(await query.inputValue()).toBe('')
+  expect(await query.inputValue()).toMatch(/^SELECT /)
   await expect(page.locator('#x-axis-column')).toHaveCount(0)
   await expect(page.getByText('Filtres', { exact: true })).toHaveCount(0)
   await expect(page.locator('#resource-select')).toBeVisible()
