@@ -64,15 +64,29 @@
           </select>
         </fieldset>
       </div>
-      <p class="mb-0 mt-4 flex items-center gap-2 text-sm text-new-gray-medium">
+      <p
+        class="mb-0 mt-4 flex items-center gap-2 text-sm"
+        :class="sourceLoading ? '' : selectedResource ? 'text-new-success' : 'text-new-gray-medium'"
+      >
         <template v-if="sourceLoading">
-          <RiLoader4Line class="size-4 animate-spin" />
+          <RiLoader4Line
+            class="size-4 animate-spin"
+            aria-hidden="true"
+          />
           {{ $t('Chargement…') }}
         </template>
         <template v-else-if="selectedResource">
+          <RiCheckboxCircleLine
+            class="size-4"
+            aria-hidden="true"
+          />
           {{ $t('{count} colonnes disponibles', { count: resourceColumns.length }) }}
         </template>
         <template v-else>
+          <RiInformationLine
+            class="size-4"
+            aria-hidden="true"
+          />
           {{ $t('Source à sélectionner') }}
         </template>
       </p>
@@ -92,7 +106,28 @@
               {{ form.description }}
             </p>
           </div>
-          <div class="relative">
+          <div
+            v-if="!form.query"
+            class="flex flex-col items-center justify-center h-full py-24"
+            data-testid="no-chart-blank-state"
+          >
+            <span class="grid size-14 place-items-center rounded-full bg-gray-lower text-new-gray-medium-clic">
+              <RiBarChartBoxLine
+                class="size-7"
+                aria-hidden="true"
+              />
+            </span>
+            <p class="text-new-gray-dark font-medium mb-0 mt-4">
+              {{ $t('Aucun graphique créé') }}
+            </p>
+            <p class="text-new-gray-medium text-sm mt-1.5 text-center">
+              {{ $t('Utilisez l\'assistant ou l\'édition manuelle pour créer votre première visualisation.') }}
+            </p>
+          </div>
+          <div
+            v-else
+            class="relative"
+          >
             <ClientOnly>
               <ChartViewerWrapper
                 ref="chartViewerWrapperRef"
@@ -105,7 +140,10 @@
               data-testid="preview-loading-overlay"
             >
               <div class="text-center text-sm text-new-gray-medium">
-                <RiLoader4Line class="mx-auto mb-2 block size-8 animate-spin" />
+                <RiLoader4Line
+                  class="mx-auto mb-2 block size-8 animate-spin"
+                  aria-hidden="true"
+                />
                 {{ $t('Mise à jour de la prévisualisation') }}
               </div>
             </div>
@@ -121,17 +159,18 @@
           v-else
           class="flex flex-col items-center justify-center h-full py-24"
         >
-          <img
-            src="/illustrations/chart.svg"
-            class="size-32 shrink-0"
-            alt=""
-          >
+          <span class="grid size-14 place-items-center rounded-full bg-gray-lower text-new-gray-medium-clic">
+            <RiBarChartBoxLine
+              class="size-7"
+              aria-hidden="true"
+            />
+          </span>
 
-          <p class="text-new-gray-dark font-medium mb-0">
+          <p class="text-new-gray-dark font-medium mb-0 mt-4">
             {{ $t('Aucune source sélectionnée') }}
           </p>
           <p class="text-new-gray-medium text-sm mt-1.5 text-center">
-            {{ $t('Choisissez un jeu de données depuis le panneau de configuration pour commencer à visualiser.') }}
+            {{ $t('Choisissez un jeu de données et une ressource dans le bandeau source pour commencer.') }}
           </p>
         </div>
       </div>
@@ -357,7 +396,7 @@ import { buildTypeConfig, useGetProfile, useHasTabularData, toast, BrandedButton
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, nextTick, reactive, ref, watch } from 'vue'
 import { watchDebounced } from '@vueuse/core'
-import { RiLoader4Line, RiText } from '@remixicon/vue'
+import { RiBarChartBoxLine, RiCheckboxCircleLine, RiInformationLine, RiLoader4Line, RiText } from '@remixicon/vue'
 import { isMeAdmin } from '~/utils/auth'
 import ProducerSelect from '../ProducerSelect.vue'
 import ChatPanel from '../Assistant/ChatPanel.vue'
