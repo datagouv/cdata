@@ -294,4 +294,12 @@ describe('useResourceCapabilities tabsOptions', () => {
       { key: 'metadata', label: 'Métadonnées' },
     ])
   })
+
+  test('shows the data tab first when only the pmtiles export failed on a CSV with a working table', () => {
+    const result = tabs(
+      { 'analysis:parsing:parsing_table': 'abc', 'analysis:parsing:error': 'pmtiles_export:GeoJSON to PMTiles conversion failed with exit code 110' },
+      'csv',
+    )
+    expect(result.map(tab => tab.key)).toEqual(['data', 'map', 'data-structure', 'metadata', 'api'])
+  })
 })

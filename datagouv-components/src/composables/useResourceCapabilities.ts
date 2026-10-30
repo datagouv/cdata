@@ -104,11 +104,17 @@ export function useResourceCapabilities(
     // The map is the most visual preview: when it is available, show it first,
     // and keep the data tab only when another preview (table, PDF, JSON…)
     // exists for the same resource.
-    if (hasMap || hasPmtilesError.value) {
+    if (hasMap) {
       options.push(mapTab)
       if (previewKind.value !== 'unavailable') {
         options.push(dataTab)
       }
+    }
+    else if (hasPmtilesError.value) {
+      if (previewKind.value !== 'unavailable') {
+        options.push(dataTab)
+      }
+      options.push(mapTab)
     }
     // Without a map, keep the data tab only when it shows something valuable:
     // a real preview, or a diagnosable error explaining why it cannot render.
