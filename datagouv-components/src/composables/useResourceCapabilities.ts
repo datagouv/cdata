@@ -3,7 +3,7 @@ import { useComponentsConfig } from '../config'
 import { isOrganizationCertified } from '../functions/organizations'
 import { getGeneratedFormats, getWfsExportFormats } from '../functions/resourceCapabilities'
 import { hasPreviewError } from '../functions/previewErrors'
-import { detectOgcService, getParsingErrorMessage, getParsingErrorStep, isImagePreviewFormat, isPmtilesSourceFormat } from '../functions/resources'
+import { detectOgcService, getParsingErrorMessage, getParsingErrorStep, isImagePreviewFormat, isPmtilesSourceFormat, isTabularPipelineFormat } from '../functions/resources'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import type { Resource, WfsMetadata } from '../types/resources'
 import { useHasTabularData } from './useHasTabularData'
@@ -116,11 +116,10 @@ export function useResourceCapabilities(
       }
       options.push(mapTab)
     }
-    // Without a map, keep the data tab only when it shows something valuable:
-    // a real preview, or a diagnosable error explaining why it cannot render.
-    // When neither exists the tab would only reproduce the generic "cannot be
-    // previewed" panel, so it is dropped.
-    else if (previewKind.value !== 'unavailable' || hasPreviewError(r)) {
+    // Without a map, keep the data tab when it can show something: a real preview,
+    // a diagnosable error explaining why it cannot render, or a tabular-pipeline
+    // format whose table the robot has not parsed yet.
+    else if (previewKind.value !== 'unavailable' || hasPreviewError(r) || isTabularPipelineFormat(r.format)) {
       options.push(dataTab)
     }
 

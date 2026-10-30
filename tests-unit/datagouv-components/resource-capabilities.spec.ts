@@ -260,9 +260,18 @@ describe('useResourceCapabilities tabsOptions', () => {
     ])
   })
 
-  test('drops the Aperçu tab when nothing is previewable and no error is diagnosed', () => {
-    // A format with no parsing table and no recorded error.
+  test('keeps the Aperçu tab for a tabular-pipeline format even when nothing is parsed yet', () => {
+    // A tabular-capable format (parquet) with no parsing table and no error: the
+    // table just has not been analysed, so the Aperçu tab stays as the landing tab.
     const result = tabs({}, 'parquet')
+    expect(result).toEqual([
+      { key: 'data', label: 'Aperçu' },
+      { key: 'metadata', label: 'Métadonnées' },
+    ])
+  })
+
+  test('drops the Aperçu tab for a non-tabular format with no preview and no diagnosed error', () => {
+    const result = tabs({}, 'kml')
     expect(result).toEqual([{ key: 'metadata', label: 'Métadonnées' }])
   })
 
