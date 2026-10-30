@@ -82,31 +82,6 @@
       <div class="col-span-7 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
         <template v-if="selectedResource">
           <div>
-            <label
-              for="chart-title"
-              class="font-bold fr-label"
-            >{{ $t('Titre') }}</label>
-            <input
-              id="chart-title"
-              v-model="form.title"
-              type="text"
-              class="w-full fr-input"
-            >
-          </div>
-
-          <div>
-            <label
-              for="chart-description"
-              class="font-bold fr-label"
-            >{{ $t('Description') }}</label>
-            <textarea
-              id="chart-description"
-              v-model="form.description"
-              class="w-full fr-input"
-              rows="2"
-            />
-          </div>
-          <div>
             <div class="mt-8 pt-4 border-t border-new-gray-light">
               <h3 class="font-medium text-lg text-new-gray-dark mb-0">
                 {{ form.title || $t('Sans titre') }}
@@ -169,6 +144,37 @@
         >
           <div class="space-y-6">
             <template v-if="selectedResource">
+              <fieldset class="min-w-0 space-y-4">
+                <p class="font-bold mb-2">
+                  {{ $t('Contenu') }}
+                </p>
+                <div>
+                  <label
+                    for="chart-title"
+                    class="font-bold fr-label"
+                  >{{ $t('Titre') }}</label>
+                  <input
+                    id="chart-title"
+                    v-model="form.title"
+                    type="text"
+                    class="w-full fr-input"
+                  >
+                </div>
+
+                <div>
+                  <label
+                    for="chart-description"
+                    class="font-bold fr-label"
+                  >{{ $t('Description') }}</label>
+                  <textarea
+                    id="chart-description"
+                    v-model="form.description"
+                    class="w-full fr-input"
+                    rows="2"
+                  />
+                </div>
+              </fieldset>
+
               <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
                 <label
                   for="chart-query"
