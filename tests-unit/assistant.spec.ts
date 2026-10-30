@@ -4,7 +4,7 @@ import { defineComponent, h, nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ChatPanel from '~/components/Assistant/ChatPanel.vue'
 import ToolTrace from '~/components/Assistant/ToolTrace.vue'
-import { buildChatBody, extractLastSqlBlock, mapAssistantError } from '~/utils/assistant'
+import { buildChatBody, buildChatDisplayItems, extractLastSqlBlock, mapAssistantError } from '~/utils/assistant'
 import type { ToolTrace as ToolTraceModel } from '~/utils/assistant'
 
 const sendMessageMock = vi.hoisted(() => vi.fn())
@@ -83,6 +83,22 @@ describe('buildChatBody', () => {
   it('adds the id/trigger/messageId protocol fields when provided', () => {
     expect(buildChatBody(messages, null, { id: 'chat-1', trigger: 'submit-message', messageId: undefined }))
       .toEqual({ id: 'chat-1', trigger: 'submit-message', messageId: undefined, messages })
+  })
+})
+
+describe('buildChatDisplayItems', () => {
+  it('merges alternating tool calls of the same type and state into one trace with the total count', () => {
+    const items = buildChatDisplayItems([
+      { type: 'tool-execute_sql', state: 'output-available', input: { sql: 'SELECT 1' }, output: { rowCount: 1 } },
+      { type: 'tool-inspect_schema', state: 'output-available', input: {}, output: { columns: ['year'], rowCount: 1 } },
+      { type: 'tool-execute_sql', state: 'output-available', input: { sql: 'SELECT 2' }, output: { rowCount: 2 } },
+    ])
+
+    const traces = items.filter(item => item.kind === 'trace').map(item => (item.kind === 'trace' ? item.trace : null))
+    expect(traces).toHaveLength(2)
+    const sqlTraces = traces.filter(t => t?.type === 'tool-execute_sql')
+    expect(sqlTraces).toHaveLength(1)
+    expect(sqlTraces[0]?.count).toBe(2)
   })
 })
 
@@ -458,6 +474,44 @@ describe('ChatPanel', () => {
     const traces = wrapper.findAll('.tool-trace')
     expect(traces).toHaveLength(1)
     expect(traces[0].text()).toContain('×2')
+  })
+
+  it('merges alternating calls to the same tool into one card with the total count', () => {
+    chatState.messages.value = [{
+      id: 'a1',
+      role: 'assistant',
+      parts: [
+        { type: 'tool-execute_sql', state: 'output-available', input: { sql: 'SELECT 1' }, output: { rowCount: 1 } },
+        { type: 'tool-inspect_schema', state: 'output-available', input: {}, output: { columns: ['year'], rowCount: 1 } },
+        { type: 'tool-execute_sql', state: 'output-available', input: { sql: 'SELECT 2' }, output: { rowCount: 2 } },
+      ],
+    }]
+    const wrapper = mountPanel('resource-1')
+
+    const traces = wrapper.findAll('.tool-trace')
+    expect(traces).toHaveLength(2)
+    const sqlTraces = traces.filter(t => t.text().includes('Exécution de la requête SQL'))
+    expect(sqlTraces).toHaveLength(1)
+    expect(sqlTraces[0].text()).toContain('×2')
+  })
+
+  it('keeps separate cards per state even when the tool alternates', () => {
+    chatState.messages.value = [{
+      id: 'a1',
+      role: 'assistant',
+      parts: [
+        { type: 'tool-execute_sql', state: 'output-error', input: { sql: 'SELECT 1' }, errorText: 'boom' },
+        { type: 'tool-inspect_schema', state: 'output-available', input: {}, output: { columns: ['year'], rowCount: 1 } },
+        { type: 'tool-execute_sql', state: 'output-available', input: { sql: 'SELECT 2' }, output: { rowCount: 2 } },
+      ],
+    }]
+    const wrapper = mountPanel('resource-1')
+
+    const traces = wrapper.findAll('.tool-trace')
+    expect(traces).toHaveLength(3)
+    // count is 1 per card: ToolTrace renders the ×N badge only above 1.
+    expect(traces[0].text()).not.toContain('×')
+    expect(traces[2].text()).not.toContain('×')
   })
 
   it('keeps consecutive calls in separate cards when their states differ', () => {
