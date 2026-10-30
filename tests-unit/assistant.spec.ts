@@ -99,6 +99,36 @@ describe('buildChatDisplayItems', () => {
     expect(traces[0]?.code).toBe('SELECT 1')
     expect(traces[2]?.code).toBe('SELECT 2')
   })
+
+  it('carries a string tool output on the trace', () => {
+    const [item] = buildChatDisplayItems([
+      { type: 'tool-execute_sql', state: 'output-available', input: { sql: 'SELECT 1' }, output: 'col1 | col2\nval1 | val2' },
+    ])
+
+    expect(item).toMatchObject({ kind: 'trace', trace: { output: 'col1 | col2\nval1 | val2' } })
+  })
+
+  it('truncates a string tool output longer than the display cap', () => {
+    const output = `${'x'.repeat(2001)}`
+    const [item] = buildChatDisplayItems([
+      { type: 'tool-execute_sql', state: 'output-available', input: {}, output },
+    ])
+
+    const trace = item?.kind === 'trace' ? item.trace : null
+    // 2000 chars kept + the ellipsis marker.
+    expect(trace?.output).toHaveLength(2001)
+    expect(trace?.output?.endsWith('…')).toBe(true)
+  })
+
+  it('leaves output null for object tool outputs', () => {
+    const [item] = buildChatDisplayItems([
+      { type: 'tool-execute_sql', state: 'output-available', input: {}, output: { rowCount: 3 } },
+    ])
+
+    const trace = item?.kind === 'trace' ? item.trace : null
+    expect(trace?.output).toBeNull()
+    expect(trace?.details).toEqual([{ label: 'Lignes', value: '3' }])
+  })
 })
 
 describe('ToolTrace', () => {
@@ -110,6 +140,7 @@ describe('ToolTrace', () => {
     error: false,
     errorText: null,
     code: 'SELECT 1',
+    output: null,
     details: [{ label: 'Lignes', value: '12' }],
   }
 
@@ -138,6 +169,25 @@ describe('ToolTrace', () => {
     await wrapper.find('button').trigger('click')
     expect(wrapper.find('button').attributes('aria-expanded')).toBe('true')
     expect(wrapper.find('.tool-trace-panel').attributes('inert')).toBeUndefined()
+  })
+
+  it('renders the string output in a pre block below the sql code when expanded', async () => {
+    const wrapper = mount(ToolTrace, {
+      props: { trace: { ...trace, output: 'col1 | col2\nval1 | val2' } },
+      global: { mocks: { $t: (key: string) => key } },
+    })
+    await wrapper.find('button').trigger('click')
+
+    const blocks = wrapper.findAll('pre')
+    expect(blocks).toHaveLength(2)
+    expect(blocks[1]!.text()).toBe('col1 | col2\nval1 | val2')
+  })
+
+  it('renders no output block when the trace output is null', async () => {
+    const wrapper = mountTrace()
+    await wrapper.find('button').trigger('click')
+
+    expect(wrapper.findAll('pre')).toHaveLength(1)
   })
 })
 

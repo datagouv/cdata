@@ -70,6 +70,10 @@
             v-if="trace.code"
             class="m-0 mt-2 overflow-x-auto rounded bg-gray-50 p-2 font-mono text-[11px]"
           >{{ trace.code }}</pre>
+          <pre
+            v-if="trace.output"
+            class="m-0 mt-2 overflow-x-auto rounded bg-gray-50 p-2 font-mono text-[11px]"
+          >{{ trace.output }}</pre>
         </div>
       </div>
     </div>

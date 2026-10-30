@@ -45,6 +45,7 @@ export type ToolTrace = {
   error: boolean
   errorText: string | null
   code: string | null
+  output: string | null
   details: ToolTraceDetail[]
 }
 
@@ -70,13 +71,20 @@ const FALLBACK_TOOL_LABEL = { label: 'Opération', summary: 'Je poursuis l’ana
 const TOOL_ERROR_FALLBACK = 'Échec de l’opération'
 const DETAIL_TRUNCATE_AT = 200
 const FLATTENED_DETAIL_LIMIT = 8
+// udata returns tool outputs as plain text tables; keep the trace readable
+// without letting a huge result string bloat the DOM.
+const OUTPUT_TRUNCATE_AT = 2000
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
 
+function truncateAt(value: string, limit: number): string {
+  return value.length > limit ? `${value.slice(0, limit)}…` : value
+}
+
 function truncateValue(value: string): string {
-  return value.length > DETAIL_TRUNCATE_AT ? `${value.slice(0, DETAIL_TRUNCATE_AT)}…` : value
+  return truncateAt(value, DETAIL_TRUNCATE_AT)
 }
 
 function formatDetailValue(value: unknown): string {
@@ -153,6 +161,9 @@ function buildToolTrace(type: string, part: Record<string, unknown>): ToolTrace 
     error,
     errorText,
     code: type === 'tool-execute_sql' && typeof input?.sql === 'string' ? input.sql : null,
+    // String outputs (the real udata shape) pass through; object outputs stay
+    // in `details` only. Kept alongside `code` for the same trace panel.
+    output: typeof part.output === 'string' && part.output ? truncateAt(part.output, OUTPUT_TRUNCATE_AT) : null,
     details: buildToolDetails(type, part.input, part.output),
   }
 }
