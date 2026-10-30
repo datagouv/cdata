@@ -36,9 +36,9 @@ const DATA: Record<string, Array<Record<string, unknown>>> = {
   ],
 }
 
-function chartConfig(series: Array<{ column_y: string, type: 'line' | 'histogram' }>): ChartViewerConfig {
+function chartConfig(series: Array<{ column_y: string, type: 'line' | 'histogram' }>, xAxisType: 'discrete' | 'continuous' = 'discrete'): ChartViewerConfig {
   return {
-    x_axis: { column_x: 'year', sort_x_by: null, sort_x_direction: null, type: 'discrete' },
+    x_axis: { column_x: 'year', sort_x_by: null, sort_x_direction: null, type: xAxisType },
     y_axis: { label: null, min: null, max: null, unit: null, unit_position: null },
     series: series.map(s => ({
       ...s,
@@ -102,5 +102,43 @@ describe('ChartViewer', () => {
     const option = await mountAndCaptureOption([{ column_y: 'nb', type: 'line' }])
 
     expect(option.tooltip.formatter([])).toBe('')
+  })
+
+  it('auto-skips overlapping labels on a category x axis', async () => {
+    const option = await mountAndCaptureOption([{ column_y: 'nb', type: 'histogram' }])
+
+    expect(option.xAxis.type).toBe('category')
+    expect(option.xAxis.axisLabel).toMatchObject({ interval: 'auto', hideOverlap: true })
+  })
+
+  it('keeps the date formatter and hides overlaps on a time x axis', async () => {
+    const data: Record<string, Array<Record<string, unknown>>> = {
+      [RESOURCE_ID]: [
+        { year: '2020-01-01', nb: 3 },
+        { year: '2021-01-01', nb: 5 },
+      ],
+    }
+    const columns: ColumnsDefinition = {
+      [RESOURCE_ID]: [
+        { name: 'year', type: 'date' },
+        { name: 'nb', type: 'number' },
+      ],
+    }
+    const wrapper = mount(ChartViewer, {
+      props: { chart: chartConfig([{ column_y: 'nb', type: 'line' }], 'continuous'), series: { data, columns } },
+    })
+    await flushPromises()
+    const option = setOptionMock.mock.calls.at(-1)![0]
+    wrapper.unmount()
+
+    expect(option.xAxis.type).toBe('time')
+    expect(option.xAxis.axisLabel.hideOverlap).toBe(true)
+    expect(typeof option.xAxis.axisLabel.formatter).toBe('function')
+  })
+
+  it('hides overlapping labels on the value y axis', async () => {
+    const option = await mountAndCaptureOption([{ column_y: 'nb', type: 'line' }])
+
+    expect(option.yAxis.axisLabel.hideOverlap).toBe(true)
   })
 })

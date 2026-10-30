@@ -265,9 +265,13 @@ const echartsOption = computed(() => {
       name: props.chart.x_axis.column_x,
       min: xAxisType !== 'category' ? xAxisColumn.value?.min ?? xAxisBounds.value.min ?? undefined : undefined,
       max: xAxisType !== 'category' ? xAxisColumn.value?.max ?? xAxisBounds.value.max ?? undefined : undefined,
-      axisLabel: xAxisType === 'time'
-        ? { formatter: buildXAxisFormatter(xAxisColumn.value) }
-        : undefined,
+      // 'auto' + hideOverlap: ECharts skips category labels that don't fit
+      // instead of overlapping them; merged with the time-axis formatter.
+      axisLabel: {
+        interval: xAxisType === 'category' ? 'auto' as const : undefined,
+        hideOverlap: true,
+        ...(xAxisType === 'time' ? { formatter: buildXAxisFormatter(xAxisColumn.value) } : {}),
+      },
     },
     yAxis: {
       type: 'value' as const,
@@ -275,6 +279,7 @@ const echartsOption = computed(() => {
       min: props.chart.y_axis.min ?? undefined,
       max: props.chart.y_axis.max ?? undefined,
       axisLabel: {
+        hideOverlap: true,
         formatter: buildYAxisFormatter(props.chart.y_axis),
       },
     },
