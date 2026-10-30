@@ -92,13 +92,23 @@
               {{ form.description }}
             </p>
           </div>
-          <div>
+          <div class="relative">
             <ClientOnly>
               <ChartViewerWrapper
                 ref="chartViewerWrapperRef"
                 :chart="chartForViewer"
               />
             </ClientOnly>
+            <div
+              v-if="previewLoading"
+              class="absolute inset-0 z-10 grid place-items-center bg-white/80"
+              data-testid="preview-loading-overlay"
+            >
+              <div class="text-center text-sm text-new-gray-medium">
+                <RiLoader4Line class="mx-auto mb-2 block size-8 animate-spin" />
+                {{ $t('Mise à jour de la prévisualisation') }}
+              </div>
+            </div>
           </div>
           <div
             v-if="sourceText"
@@ -343,9 +353,10 @@
 
 <script setup lang="ts">
 import type { Resource, PaginatedArray, ChartForm, Chart, ColumnType, Owned } from '@datagouv/components-next'
-import { buildTypeConfig, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, SearchableSelect, SegmentedControl, useTranslation } from '@datagouv/components-next'
+import { buildTypeConfig, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, SearchableSelect, SegmentedControl, useTranslation, useComponentsConfig } from '@datagouv/components-next'
 import type { Component } from 'vue'
-import { computed, defineAsyncComponent, reactive, ref, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, reactive, ref, watch } from 'vue'
+import { watchDebounced } from '@vueuse/core'
 import { RiLoader4Line, RiText } from '@remixicon/vue'
 import { isMeAdmin } from '~/utils/auth'
 import ProducerSelect from '../ProducerSelect.vue'
@@ -388,6 +399,8 @@ const panelOptions = computed(() => [
 ])
 const chartViewerWrapperRef = ref<InstanceType<typeof ChartViewerWrapper> | null>(null)
 const sourceLoading = ref(false)
+const previewLoading = ref(false)
+const componentsConfig = useComponentsConfig()
 
 watch(producer, (newProducer) => {
   if (newProducer?.organization?.id) {
@@ -547,6 +560,21 @@ watch(selectedResource, async (r) => {
     }
   }
 })
+
+// ChartViewerWrapper keeps its fetch status internal (only `capture` is exposed),
+// so the overlay mirrors the wrapper's own trigger: same watched inputs, same
+// debounce. It clears two animation frames after the fetch starts, once Vue has
+// flushed the wrapper's post-fetch re-render for the common case.
+watchDebounced(
+  () => [form.value.query, selectedResource.value],
+  async () => {
+    previewLoading.value = true
+    await nextTick()
+    await new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve())))
+    previewLoading.value = false
+  },
+  { debounce: componentsConfig.searchDebounce ?? 300 },
+)
 
 if (props.initialChart) {
   await initializeFromChart(props.initialChart)
