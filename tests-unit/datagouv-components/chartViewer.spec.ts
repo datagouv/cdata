@@ -82,4 +82,25 @@ describe('ChartViewer', () => {
     expect(option.grid.bottom).toBe(60)
     expect(option.series.map((s: { name: string }) => s.name)).toEqual(['nb', 'rate'])
   })
+
+  it('formats the tooltip with the X value once, then one line per series', async () => {
+    const option = await mountAndCaptureOption([
+      { column_y: 'nb', type: 'line' },
+      { column_y: 'rate', type: 'line' },
+    ])
+
+    const html = option.tooltip.formatter([
+      { value: { year: 2021, nb: 5, rate: 2.5 }, axisValueLabel: '2021', seriesName: 'nb' },
+      { value: { year: 2021, nb: 5, rate: 2.5 }, axisValueLabel: '2021', seriesName: 'rate' },
+    ]) as string
+
+    // The X value appears once in bold; each series gets one name: value line.
+    expect(html).toBe(`<strong>2021</strong><br>nb: <strong>${(5).toLocaleString()}</strong><br>rate: <strong>${(2.5).toLocaleString()}</strong><br>`)
+  })
+
+  it('returns an empty tooltip when the formatter receives no series', async () => {
+    const option = await mountAndCaptureOption([{ column_y: 'nb', type: 'line' }])
+
+    expect(option.tooltip.formatter([])).toBe('')
+  })
 })

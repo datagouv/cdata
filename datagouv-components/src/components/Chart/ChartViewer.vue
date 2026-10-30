@@ -236,13 +236,14 @@ const echartsOption = computed(() => {
     tooltip: {
       trigger: 'axis' as const,
       formatter: (params: Array<{ value: Record<string, unknown>, axisValueLabel: string, seriesName: string }>) => {
-        let tooltip = ''
         const valueFormatter = new Intl.NumberFormat(locale)
         const xAxisFormatter = buildXAxisFormatter(xAxisColumn.value, { dateStyle: 'medium' })
+        const first = params[0]
+        if (!first) return ''
+        const axisLabel = xAxisFormatter ? xAxisFormatter(first.axisValueLabel) : first.axisValueLabel
+        let tooltip = `<strong>${format.encodeHTML(String(axisLabel))}</strong><br>`
         for (const param of params) {
-          const seriesName = param.seriesName
-          const axisLabel = xAxisFormatter ? xAxisFormatter(param.axisValueLabel) : param.axisValueLabel
-          tooltip += `${format.encodeHTML(String(axisLabel))}: <strong>${valueFormatter.format(Number(param.value[seriesName]))}</strong><br>`
+          tooltip += `${format.encodeHTML(param.seriesName)}: <strong>${valueFormatter.format(Number(param.value[param.seriesName]))}</strong><br>`
         }
         return tooltip
       },
