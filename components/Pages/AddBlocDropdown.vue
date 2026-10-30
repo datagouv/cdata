@@ -97,8 +97,8 @@ const floatingStyles = useEditorMenu(menu, items, 'bottom')
 const groups = computed(() => {
   const accepted = ACCEPTED_BLOCS[props.level]
   const all: Array<{ name: string, choices: Array<BlocChoice> }> = [
-    { name: t('Mise en page'), choices: [choices.AccordionListBloc] },
-    { name: t('Contenus'), choices: [choices.TitleBloc, choices.MarkdownBloc, choices.LinksListBloc, choices.ButtonBloc] },
+    { name: t('Mise en page'), choices: [choices.AccordionListBloc, choices.ColumnBloc] },
+    { name: t('Contenus'), choices: [choices.TitleBloc, choices.MarkdownBloc, choices.LinksListBloc, choices.ButtonBloc, choices.ImageBloc, choices.CardBloc] },
     { name: t('Contenus à la une'), choices: [choices.DatasetBloc, choices.DataserviceBloc, choices.ReuseBloc] },
   ]
   return all

@@ -4,8 +4,8 @@ import type { Reuse } from './reuses'
 
 export type BlocWidth = '1/4' | '1/3' | '1/2' | '2/3' | '3/4'
 
-// Blocs inside a section or an accordion item sit side by side, wrapping to a new row when
-// the row is full. `null`: the whole row.
+// Blocs inside a section, an accordion item or a column sit side by side, wrapping to a new
+// row when the row is full. `null`: the whole row.
 type Sized = { width: BlocWidth | null }
 
 export type TitleBloc = Sized & {
@@ -40,6 +40,24 @@ export type ButtonBloc = Sized & {
   url: string
 }
 
+export type ImageBloc = Sized & {
+  class: 'ImageBloc'
+  id: string
+  image: string
+  // `null`: a decorative image, which screen readers skip.
+  alt: string | null
+}
+
+// A link to a page, shown as a card: the summary pages list their subpages with them.
+export type CardBloc = Sized & {
+  class: 'CardBloc'
+  id: string
+  title: string
+  url: string
+  description: string | null
+  image: string | null
+}
+
 export type ExploreBloc = Sized & {
   class: 'ExploreBloc'
   id: string
@@ -66,9 +84,20 @@ export type ReuseBloc = Sized & {
 
 export type ObjectBloc = DatasetBloc | DataserviceBloc | ReuseBloc
 
-export type LeafBloc = TitleBloc | MarkdownBloc | LinksListBloc | ButtonBloc | ExploreBloc | ObjectBloc
+export type LeafBloc = TitleBloc | MarkdownBloc | LinksListBloc | ButtonBloc | ImageBloc | CardBloc | ExploreBloc | ObjectBloc
 
-export type AccordionContentBloc = Exclude<LeafBloc, ExploreBloc>
+// The explorer is too wide for a column, a share of a row, or for an accordion.
+export type ColumnContentBloc = Exclude<LeafBloc, ExploreBloc>
+
+// Blocs stacked in a share of a row, beside the others: a title and its text beside an
+// illustration.
+export type ColumnBloc = Sized & {
+  class: 'ColumnBloc'
+  id: string
+  blocs: Array<ColumnContentBloc>
+}
+
+export type AccordionContentBloc = ColumnContentBloc | ColumnBloc
 
 export type AccordionItemBloc = {
   id: string
@@ -82,7 +111,7 @@ export type AccordionListBloc = Sized & {
   items: Array<AccordionItemBloc>
 }
 
-export type SectionContentBloc = AccordionListBloc | LeafBloc
+export type SectionContentBloc = AccordionListBloc | ColumnBloc | LeafBloc
 
 export type SectionColor = 'primary' | 'green' | 'purple'
 

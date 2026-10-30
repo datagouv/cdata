@@ -1,7 +1,7 @@
 <template>
   <div
     :data-edit-item="edit ? (band ? 'band' : '') : undefined"
-    class="relative"
+    class="relative h-full"
   >
     <!-- Above the item, so that it never covers the item's own controls. The bottom padding
          bridges the gap down to the outline: the pointer stays on the item on its way up.
@@ -14,11 +14,11 @@
       class="absolute z-30"
       :class="band ? 'top-2 left-2' : container ? 'bottom-full -right-1.5 pb-1.5' : 'bottom-full -left-1.5 pb-1.5'"
     >
-      <div class="flex items-center gap-0.5 rounded-md bg-new-primary text-white text-xs shadow-sm p-0.5">
+      <div class="flex items-center gap-0.5 rounded-md bg-(--edit-accent) text-(--edit-accent-text) text-xs shadow-sm p-0.5">
         <button
           v-if="draggable"
           type="button"
-          class="inline-flex items-center justify-center size-6 rounded opacity-80 hover:opacity-100 hover:bg-white/10 cursor-grab active:cursor-grabbing touch-none"
+          class="inline-flex items-center justify-center size-6 rounded opacity-80 hover:opacity-100 hover:!bg-current/10 cursor-grab active:cursor-grabbing touch-none"
           data-drag-handle
           :title="$t('Glisser pour déplacer (ou flèches du clavier)')"
           :aria-label="$t('Déplacer')"
@@ -34,7 +34,7 @@
         >
           <MenuButton
             ref="menuButton"
-            class="inline-flex items-center justify-center size-6 rounded opacity-80 hover:opacity-100 hover:bg-white/10"
+            class="inline-flex items-center justify-center size-6 rounded opacity-80 hover:opacity-100 hover:!bg-current/10"
             :aria-label="$t('Actions sur {label}', { label })"
           >
             <RiMore2Fill class="size-4" />
@@ -96,6 +96,20 @@ const floatingStyles = useEditorMenu(menuButton, menuItems, 'bottom-start')
 </script>
 
 <style>
+/* The colour of the editor's controls (outlines, tabs, insertion lines, "add" buttons): the
+   main one of the site, turned white on a coloured section, where it would not show, and back
+   to the main one on a white card inside it (an accordion). */
+:root,
+[data-edit-accent="primary"] {
+  --edit-accent: var(--color-new-primary);
+  --edit-accent-text: var(--color-white);
+}
+
+[data-edit-accent="white"] {
+  --edit-accent: var(--color-white);
+  --edit-accent-text: var(--color-new-primary);
+}
+
 /* Only the innermost hovered item, and the innermost focused one, show their outline and
    their tab: the editor stays as quiet as the page, whatever the nesting. The two are told
    apart: a bloc keeping the focus, its input just typed in, must not hide the tab of the
@@ -112,7 +126,7 @@ const floatingStyles = useEditorMenu(menuButton, menuItems, 'bottom-start')
 }
 
 [data-edit-item]:is(:hover:not(:has([data-edit-item]:hover)), :focus-within:not(:has([data-edit-item]:focus-within))) {
-  outline: 2px solid var(--color-new-primary);
+  outline: 2px solid var(--edit-accent);
   outline-offset: 6px;
   border-radius: 2px;
 }

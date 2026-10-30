@@ -1,9 +1,9 @@
 import { test, expect } from '../base'
 import { createPost, deletePosts } from '../helpers'
-import type { SectionBloc, SectionContentBloc } from '~/types/pages'
+import type { ColumnBloc, ColumnContentBloc, MarkdownBloc, SectionBloc, SectionContentBloc, TitleBloc } from '~/types/pages'
 
-const title = (text: string): SectionContentBloc => ({ class: 'TitleBloc', id: crypto.randomUUID(), width: null, title: text, subtitle: null })
-const markdown = (content: string): SectionContentBloc => ({ class: 'MarkdownBloc', id: crypto.randomUUID(), width: null, content })
+const title = (text: string): TitleBloc => ({ class: 'TitleBloc', id: crypto.randomUUID(), width: null, title: text, subtitle: null })
+const markdown = (content: string): MarkdownBloc => ({ class: 'MarkdownBloc', id: crypto.randomUUID(), width: null, content })
 const section = (blocs: Array<SectionContentBloc>, color: SectionBloc['color'] = null): SectionBloc => ({ class: 'SectionBloc', id: crypto.randomUUID(), color, blocs })
 
 test.describe('Post side menu', () => {
@@ -32,6 +32,26 @@ test.describe('Post side menu', () => {
     await page.goto(`/pages/${post.slug}`)
     await expect(page.getByRole('heading', { name: 'Un lien' })).toBeVisible()
     await expect(page.getByRole('navigation', { name: 'Sommaire' }).getByRole('link')).toHaveText(['Santé', 'Données', 'Emploi', 'Données', 'Liens utiles'])
+  })
+
+  test('a blocs page lists the titles of its columns, not that of its banner in a column', async ({ page, request }) => {
+    const uniqueId = Date.now()
+    const column = (blocs: Array<ColumnContentBloc>): ColumnBloc => ({ class: 'ColumnBloc', id: crypto.randomUUID(), width: '1/2', blocs })
+    const post = await createPost(request, {
+      name: `Inventaire ${uniqueId}`,
+      kind: 'page',
+      body_type: 'blocs',
+      sidemenu: true,
+      blocs: [
+        section([column([title(`Inventaire ${uniqueId}`), markdown('Le bandeau.')])], 'primary'),
+        section([column([title('Santé'), markdown('## Données\n\nSur la santé.')]), title('Emploi')]),
+      ],
+    })
+    createdIds.push(post.id)
+
+    await page.goto(`/pages/${post.slug}`)
+    await expect(page.getByRole('heading', { level: 1, name: `Inventaire ${uniqueId}` })).toBeVisible()
+    await expect(page.getByRole('navigation', { name: 'Sommaire' }).getByRole('link')).toHaveText(['Santé', 'Données', 'Emploi'])
   })
 
   test('a link to a bloc title opens the page on that title', async ({ page, request }) => {

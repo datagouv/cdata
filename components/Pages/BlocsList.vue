@@ -1,7 +1,7 @@
 <template>
   <div class="relative">
-    <!-- Before the first bloc: above the list, in the room the section or the accordion item
-         leaves, as after the last one. -->
+    <!-- Before the first bloc: above the list, in the room the section, the accordion item or
+         the column leaves, as after the last one. -->
     <BlocInserter
       v-if="edit && blocs.length"
       class="absolute inset-x-0 bottom-full"
@@ -21,11 +21,15 @@
       :class="{ 'min-h-8': edit }"
     >
       <!-- One element per bloc, holding the bloc and its controls: the drop item, whose
-           position decides where a dragged bloc lands. -->
+           position decides where a dragged bloc lands. A title, an image or a column beside a
+           taller bloc (a hero, its title and its text, and its illustration) is centered on it;
+           the others fill the height of the row, so that the cards of a row are as tall as each
+           other. -->
       <div
         v-for="(bloc, index) in blocs"
         :key="bloc.id"
         class="relative min-w-0 sm:col-span-(--span) max-sm:mt-(--stacked-space) sm:mt-(--row-space)"
+        :class="{ 'self-center': CENTERED_BLOCS.includes(bloc.class) }"
         :style="placement(index)"
         :data-bloc-class="bloc.class"
         data-drop-item
@@ -44,7 +48,7 @@
           :edit
           :label="labels[bloc.class] ?? bloc.class"
           draggable
-          :container="bloc.class === 'AccordionListBloc'"
+          :container="bloc.class === 'AccordionListBloc' || bloc.class === 'ColumnBloc'"
           :data-testid="`bloc-${bloc.class}`"
           @delete="blocs.splice(index, 1)"
           @drag-start="startBlocsDrag($event, { list: listRef!, index, kind: 'bloc', blocClass: bloc.class, label: labels[bloc.class] ?? bloc.class })"
@@ -105,7 +109,7 @@
             @keydown="resizeWithKeyboard($event, index)"
           >
             <div
-              class="w-0.5 h-full bg-new-primary transition-opacity"
+              class="w-0.5 h-full bg-(--edit-accent) transition-opacity"
               :class="resizing === index ? 'opacity-100' : 'opacity-0 group-hover/boundary:opacity-100 group-focus-within/boundary:opacity-100'"
             />
             <span
@@ -134,8 +138,8 @@
       </div>
     </div>
 
-    <!-- After the last bloc: below the list, in the room the section or the accordion item
-         leaves. -->
+    <!-- After the last bloc: below the list, in the room the section, the accordion item or the
+         column leaves. -->
     <BlocInserter
       v-if="edit && blocs.length"
       class="absolute inset-x-0 top-full"
@@ -154,9 +158,12 @@
         :level
         @new-blocs="blocs.push(...($event as Array<T>))"
       >
+        <!-- Without the grey background the DSFR gives a hovered button, as the subtitle one
+             of `TitleBloc` -->
         <button
           type="button"
-          class="flex items-center gap-1 text-sm whitespace-nowrap text-gray-400 hover:text-gray-600"
+          class="flex items-center gap-1 text-sm whitespace-nowrap hover:!bg-transparent"
+          :class="color ? 'text-white/70 hover:text-white' : 'text-gray-400 hover:text-gray-600'"
           :data-testid="`add-bloc-in-${level}`"
         >
           <RiAddLine class="size-4" />
@@ -178,7 +185,7 @@ import RoundAddButton from './RoundAddButton.vue'
 import type { BlocWidth, SectionColor, SectionContentBloc } from '~/types/pages'
 import { SECTION_COLOR } from '~/utils/blocs'
 import { BLOC_COMPONENTS, OBJECT_WIDTH } from '~/utils/pages'
-import { BLOCS_LEVEL, BLOC_SPANS, acceptsDropped, renderedShare, rowSpacings, rowStarts, type BlocsLevel, type RowSpacing, type RowWidth } from '~/utils/blocsLayout'
+import { BLOC_SPANS, HEADING_LEVEL, acceptsDropped, renderedShare, rowSpacings, rowStarts, type BlocClass, type BlocsLevel, type RowSpacing, type RowWidth } from '~/utils/blocsLayout'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 const props = defineProps<{
@@ -191,13 +198,15 @@ const props = defineProps<{
 
 const blocs = defineModel<Array<T>>({ required: true })
 
-provide(BLOCS_LEVEL, props.level)
+if (props.level !== 'column') provide(HEADING_LEVEL, props.level)
 if (props.level === 'section') provide(SECTION_COLOR, toRef(() => props.color ?? null))
+
+const CENTERED_BLOCS: Array<BlocClass> = ['TitleBloc', 'ImageBloc', 'ColumnBloc']
 
 const { t } = useTranslation()
 const labels = useBlocLabels()
 
-// A bloc moves between sections and accordion items, where it is allowed.
+// A bloc moves between sections, accordion items and columns, where it is allowed.
 const listRef = ref<HTMLElement | null>(null)
 useDropList(listRef, {
   orientation: 'grid',
