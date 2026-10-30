@@ -61,8 +61,6 @@ const description = t('Vous recherchez des données publiques sur un sujet préc
 useSeoMeta({
   title,
   description,
-  ogTitle: title,
-  ogDescription: description,
 })
 const route = useRoute()
 

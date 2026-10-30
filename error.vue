@@ -185,9 +185,7 @@ useHeadSafe({
   htmlAttrs: {
     lang: locale,
   },
-  titleTemplate: (titleChunk) => {
-    return titleChunk ? `${titleChunk} - data.gouv.fr` : 'data.gouv.fr'
-  },
 })
-useSeoMeta({ robots: 'noindex' })
+// app.vue is not mounted on error pages, so set the default title here too.
+useSeoMeta({ title: useRuntimeConfig().public.title, robots: 'noindex' })
 </script>

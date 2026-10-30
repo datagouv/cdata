@@ -30,15 +30,13 @@ useHeadSafe({
   htmlAttrs: {
     lang: locale,
   },
-  titleTemplate: (titleChunk) => {
-    return titleChunk ? `${titleChunk} - data.gouv.fr` : 'data.gouv.fr'
-  },
 })
 
 useSeoMeta({
-  description: runtimeConfig.public.description,
-  ogTitle: runtimeConfig.public.title,
-  ogDescription: runtimeConfig.public.description,
+  // Default so pages without their own title never render an empty <title>.
+  // Pages setting their own title override this entry.
+  title: runtimeConfig.public.title,
+  description: normalizeSeoDescription(runtimeConfig.public.description),
   ogType: 'website',
   ogUrl: () => `${siteConfig.url}${route.path}`,
   ogSiteName: runtimeConfig.public.title,

@@ -138,7 +138,7 @@ const { data: discussions } = await useAPI<PaginatedArray<Thread>>('/api/1/discu
 const discussionsCount = computed(() => discussions.value?.total ?? 0)
 
 const title = computed(() => `${topic.value?.name} | ${config.public.title}`)
-const description = computed(() => topic.value ? getDescriptionShort(topic.value) : '')
+const description = computed(() => normalizeSeoDescription(topic.value ? getDescriptionShort(topic.value) : undefined))
 
 // Topics are curated collections, most of them built for a third-party portal
 // (ecospheres…). Indexing them here makes our copy compete with — and outrank —

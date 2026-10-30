@@ -186,8 +186,6 @@ const description = t('Vous recherchez des exemples concrets d\'exploitation des
 useSeoMeta({
   title,
   description,
-  ogTitle: title,
-  ogDescription: description,
 })
 defineOgImage('MainPage.takumi', {
   title: 'Réutilisations',

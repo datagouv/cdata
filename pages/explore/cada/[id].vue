@@ -229,9 +229,13 @@ const themeParts = computed(() => splitCadaValues(advice.value?.['Thème et sous
 const meanings = computed(() => splitCadaValues(advice.value?.['Sens et motivation']))
 const tags = computed(() => splitCadaValues(advice.value?.['Mots clés']))
 
+const title = computed(() => t('Avis CADA {id}', { id: adviceId.value }))
+// Leave the site-wide description when the advice has no subject text.
+const description = computed(() => normalizeSeoDescription(advice.value?.Objet))
+
 useSeoMeta({
-  title: () => t('Avis CADA {id}', { id: adviceId.value }),
-  description: () => advice.value ? advice.value.Objet : t('Avis non trouvé'),
+  title,
+  description,
 })
 
 defineOgImage('MainPage.takumi', {

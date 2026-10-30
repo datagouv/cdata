@@ -13,17 +13,18 @@ export const AI_SUGGESTION_MIN_DESCRIPTION_LENGTH = 200 // min `description` len
  * Returns the short description to display.
  * If description_short is provided, it is used.
  * Otherwise, the first DESCRIPTION_SHORT_MAX_LENGTH characters of description are used.
+ * Whitespace runs are collapsed to keep the output single-line: it feeds HTML meta tags.
  */
-export function getDescriptionShort({ description, descriptionShort }: {
+export function getDescriptionShort({ description, description_short: descriptionShort }: {
   description: string | null | undefined
-  descriptionShort?: string | null | undefined
-}) {
+  description_short?: string | null | undefined
+}): string {
   if (descriptionShort?.trim()) {
-    return descriptionShort
+    return descriptionShort.replace(/\s+/g, ' ').trim()
   }
   if (description?.trim()) {
     // description field is a markdown field that may contain HTML tags, so we should trim it
-    const plainText = removeMarkdownSync(description).trim()
+    const plainText = removeMarkdownSync(description).replace(/\s+/g, ' ').trim()
     if (plainText.length > DESCRIPTION_SHORT_MAX_LENGTH) {
       return `${plainText.substring(0, DESCRIPTION_SHORT_MAX_LENGTH - 1)}…`
     }

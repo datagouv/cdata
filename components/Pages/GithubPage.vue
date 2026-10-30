@@ -66,7 +66,7 @@ if (!props.slug || error.value || (status.value === 'success' && !data.value)) {
 }
 
 const title = computed(() => data.value?.data.title)
-const description = computed(() => data.value?.data.description)
+const description = computed(() => normalizeSeoDescription(data.value?.data.description))
 
 useSeoMeta({
   title,
