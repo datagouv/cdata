@@ -11,85 +11,87 @@
       <h2 class="font-bold text-lg mb-4">
         {{ $t('Source de données') }}
       </h2>
-      <div class="grid gap-4 lg:grid-cols-3">
-        <fieldset class="min-w-0">
-          <ProducerSelect
-            v-model="producer"
-            :label="$t('Avec qui souhaitez-vous publier ?')"
-            :required="true"
-            hide-no-organization-notice
-            all
-          />
-        </fieldset>
-        <fieldset
-          v-if="producer"
-          class="min-w-0"
-        >
-          <SearchableSelect
-            v-model="dataset"
-            :label="$t('Jeu de données')"
-            :placeholder="$t('Recherchez un jeu de données...')"
-            :display-value="(option: DatasetSuggest) => option.title"
-            :get-option-id="(option: DatasetSuggest) => option.id"
-            :multiple="false"
-            :suggest="suggestDataset"
-          />
-        </fieldset>
-        <fieldset
-          v-if="dataset"
-          class="min-w-0"
-        >
-          <label
-            for="resource-select"
-            class="fr-label"
-          >{{ $t('Choix de la ressource') }}</label>
-          <select
-            id="resource-select"
-            v-model="selectedResource"
-            class="w-full fr-select"
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center">
+        <div class="grid flex-1 gap-4 lg:grid-cols-3">
+          <fieldset class="min-w-0">
+            <ProducerSelect
+              v-model="producer"
+              :label="$t('Avec qui souhaitez-vous publier ?')"
+              :required="true"
+              hide-no-organization-notice
+              all
+            />
+          </fieldset>
+          <fieldset
+            v-if="producer"
+            class="min-w-0"
           >
-            <option
-              value=""
-              disabled
+            <SearchableSelect
+              v-model="dataset"
+              :label="$t('Jeu de données')"
+              :placeholder="$t('Recherchez un jeu de données...')"
+              :display-value="(option: DatasetSuggest) => option.title"
+              :get-option-id="(option: DatasetSuggest) => option.id"
+              :multiple="false"
+              :suggest="suggestDataset"
+            />
+          </fieldset>
+          <fieldset
+            v-if="dataset"
+            class="min-w-0"
+          >
+            <label
+              for="resource-select"
+              class="fr-label"
+            >{{ $t('Choix de la ressource') }}</label>
+            <select
+              id="resource-select"
+              v-model="selectedResource"
+              class="w-full fr-select"
             >
-              {{ $t('Sélectionnez une ressource') }}
-            </option>
-            <option
-              v-for="resource in resources"
-              :key="resource.id"
-              :value="resource.id"
-            >
-              {{ resource.title }}
-            </option>
-          </select>
-        </fieldset>
+              <option
+                value=""
+                disabled
+              >
+                {{ $t('Sélectionnez une ressource') }}
+              </option>
+              <option
+                v-for="resource in resources"
+                :key="resource.id"
+                :value="resource.id"
+              >
+                {{ resource.title }}
+              </option>
+            </select>
+          </fieldset>
+        </div>
+        <p
+          class="mb-0 flex shrink-0 items-center gap-2 text-sm"
+          :class="sourceLoading ? '' : selectedResource ? 'text-new-success' : 'text-new-gray-medium'"
+        >
+          <template v-if="sourceLoading">
+            <RiLoader4Line
+              class="size-4 animate-spin"
+              aria-hidden="true"
+            />
+            {{ $t('Chargement…') }}
+          </template>
+          <template v-else-if="selectedResource">
+            <RiCheckboxCircleLine
+              class="size-4"
+              aria-hidden="true"
+            />
+            {{ $t('{count} colonnes disponibles', { count: resourceColumns.length }) }}
+          </template>
+          <template v-else>
+            <RiInformationLine
+              class="size-4"
+              aria-hidden="true"
+            />
+            {{ $t('Source à sélectionner') }}
+          </template>
+        </p>
       </div>
-      <p
-        class="mb-0 mt-4 flex items-center gap-2 text-sm"
-        :class="sourceLoading ? '' : selectedResource ? 'text-new-success' : 'text-new-gray-medium'"
-      >
-        <template v-if="sourceLoading">
-          <RiLoader4Line
-            class="size-4 animate-spin"
-            aria-hidden="true"
-          />
-          {{ $t('Chargement…') }}
-        </template>
-        <template v-else-if="selectedResource">
-          <RiCheckboxCircleLine
-            class="size-4"
-            aria-hidden="true"
-          />
-          {{ $t('{count} colonnes disponibles', { count: resourceColumns.length }) }}
-        </template>
-        <template v-else>
-          <RiInformationLine
-            class="size-4"
-            aria-hidden="true"
-          />
-          {{ $t('Source à sélectionner') }}
-        </template>
-      </p>
     </section>
 
     <div class="grid lg:grid-cols-12 gap-4 lg:gap-8">
