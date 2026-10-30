@@ -254,8 +254,9 @@ const echartsOption = computed(() => {
     },
     grid: {
       top: 60,
-      // Room for the legend row when several series are shown.
-      bottom: seriesCount > 1 ? 60 : 40,
+      // Labels + nameLocation 'middle' name; more room for the legend row when
+      // several series are shown.
+      bottom: seriesCount > 1 ? 80 : 60,
       left: 20,
       right: 20,
       containLabel: true,
@@ -263,6 +264,11 @@ const echartsOption = computed(() => {
     xAxis: {
       type: xAxisType,
       name: props.chart.x_axis.column_x,
+      // 'end' (the default) renders the name past the grid edge, where it gets
+      // clipped by the canvas; 'middle' centers it under the axis.
+      nameLocation: 'middle' as const,
+      // Clears the rotated axis labels between the axis line and the name.
+      nameGap: 30,
       min: xAxisType !== 'category' ? xAxisColumn.value?.min ?? xAxisBounds.value.min ?? undefined : undefined,
       max: xAxisType !== 'category' ? xAxisColumn.value?.max ?? xAxisBounds.value.max ?? undefined : undefined,
       // 'auto' + hideOverlap: ECharts skips category labels that don't fit

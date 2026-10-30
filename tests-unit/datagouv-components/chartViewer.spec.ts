@@ -69,7 +69,7 @@ describe('ChartViewer', () => {
     const option = await mountAndCaptureOption([{ column_y: 'nb', type: 'line' }])
 
     expect(option.legend.show).toBe(false)
-    expect(option.grid.bottom).toBe(40)
+    expect(option.grid.bottom).toBe(60)
   })
 
   it('shows the legend for a multi-series chart and leaves room for it', async () => {
@@ -79,8 +79,16 @@ describe('ChartViewer', () => {
     ])
 
     expect(option.legend.show).toBe(true)
-    expect(option.grid.bottom).toBe(60)
+    expect(option.grid.bottom).toBe(80)
     expect(option.series.map((s: { name: string }) => s.name)).toEqual(['nb', 'rate'])
+  })
+
+  it('centers the x axis name under the axis and clears the labels with a gap', async () => {
+    const option = await mountAndCaptureOption([{ column_y: 'nb', type: 'line' }])
+
+    expect(option.xAxis.name).toBe('year')
+    expect(option.xAxis.nameLocation).toBe('middle')
+    expect(option.xAxis.nameGap).toBe(30)
   })
 
   it('formats the tooltip with the X value once, then one line per series', async () => {
