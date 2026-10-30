@@ -129,6 +129,49 @@ describe('buildChatDisplayItems', () => {
     expect(trace?.output).toBeNull()
     expect(trace?.details).toEqual([{ label: 'Lignes', value: '3' }])
   })
+
+  it('shows a running summary for an sql trace that has not finished', () => {
+    const [item] = buildChatDisplayItems([
+      { type: 'tool-execute_sql', state: 'input-streaming', input: { sql: 'SELECT 1' } },
+    ])
+
+    expect(item).toMatchObject({ kind: 'trace', trace: { summary: 'Exécution en cours' } })
+  })
+
+  it('counts the rows of a pipe-table string output for the summary', () => {
+    const output = 'col1 | col2\nval1 | val2\nval3 | val4\nval5 | val6'
+    const [item] = buildChatDisplayItems([
+      { type: 'tool-execute_sql', state: 'output-available', input: {}, output },
+    ])
+
+    expect(item).toMatchObject({ kind: 'trace', trace: { summary: '3 lignes' } })
+  })
+
+  it('uses the truncation notice total instead of the visible row count', () => {
+    const output = 'col1\nval1\nRésultat tronqué : 42 lignes au total…'
+    const [item] = buildChatDisplayItems([
+      { type: 'tool-execute_sql', state: 'output-available', input: {}, output },
+    ])
+
+    expect(item).toMatchObject({ kind: 'trace', trace: { summary: '42 lignes' } })
+  })
+
+  it('formats a single-row result in the singular', () => {
+    const output = 'col1 | col2\nval1 | val2'
+    const [item] = buildChatDisplayItems([
+      { type: 'tool-execute_sql', state: 'output-available', input: {}, output },
+    ])
+
+    expect(item).toMatchObject({ kind: 'trace', trace: { summary: '1 ligne' } })
+  })
+
+  it('falls back to the static summary when the sql output is not a string', () => {
+    const [item] = buildChatDisplayItems([
+      { type: 'tool-execute_sql', state: 'output-available', input: {}, output: { rowCount: 3 } },
+    ])
+
+    expect(item).toMatchObject({ kind: 'trace', trace: { summary: 'Je calcule la réponse à partir des données' } })
+  })
 })
 
 describe('ToolTrace', () => {

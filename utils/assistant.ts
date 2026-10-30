@@ -75,6 +75,29 @@ const TOOL_LABELS: Record<string, { label: string, summary: string }> = {
 }
 
 const FALLBACK_TOOL_LABEL = { label: 'Opération', summary: 'Je poursuis l’analyse' }
+const SQL_RUNNING_SUMMARY = 'Exécution en cours'
+// Matches the trailing notice of udata's rendered SQL results.
+const SQL_TRUNCATED_RE = /^Résultat tronqué : (\d+)/
+
+// udata renders SQL results as a pipe table: header line, one line per row,
+// then an optional truncation notice carrying the total row count.
+function countSqlResultRows(output: string): number {
+  const lines = output.split('\n')
+  const last = lines[lines.length - 1] ?? ''
+  const truncated = last.match(SQL_TRUNCATED_RE)
+  if (truncated) return Number(truncated[1])
+  return lines.filter(line => line.trim() !== '').length - 1 // minus the header
+}
+
+function formatRowCount(count: number): string {
+  return count <= 1 ? '1 ligne' : `${count.toLocaleString('fr-FR')} lignes`
+}
+
+function buildSqlSummary(part: Record<string, unknown>): string {
+  if (part.state !== 'output-available') return SQL_RUNNING_SUMMARY
+  if (typeof part.output !== 'string' || !part.output) return TOOL_LABELS['tool-execute_sql']!.summary
+  return formatRowCount(countSqlResultRows(part.output))
+}
 // The tool part failed without an errorText from the SDK.
 const TOOL_ERROR_FALLBACK = 'Échec de l’opération'
 const DETAIL_TRUNCATE_AT = 200
@@ -165,7 +188,7 @@ function buildToolTrace(type: string, part: Record<string, unknown>): ToolTrace 
     type,
     state,
     label: labels.label,
-    summary: error ? errorText! : labels.summary,
+    summary: error ? errorText! : (type === 'tool-execute_sql' ? buildSqlSummary(part) : labels.summary),
     error,
     errorText,
     code: type === 'tool-execute_sql' && typeof input?.sql === 'string' ? input.sql : null,
