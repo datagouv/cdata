@@ -248,12 +248,13 @@ const echartsOption = computed(() => {
       },
     },
     legend: {
-      show: false,
+      show: seriesCount > 1,
       bottom: 0,
     },
     grid: {
       top: 60,
-      bottom: 40,
+      // Room for the legend row when several series are shown.
+      bottom: seriesCount > 1 ? 60 : 40,
       left: 20,
       right: 20,
       containLabel: true,
