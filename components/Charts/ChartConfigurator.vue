@@ -4,114 +4,163 @@
     class="block"
     @submit.prevent="saveChart"
   >
-    <section
-      class="mb-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light"
-      aria-label="Source de données"
-    >
-      <h2 class="font-bold text-lg mb-4">
-        {{ $t('Source de données') }}
-      </h2>
-      <div class="flex flex-col gap-4 lg:flex-row lg:items-center">
-        <div class="grid flex-1 gap-4 lg:grid-cols-3">
-          <fieldset class="min-w-0">
-            <ProducerSelect
-              v-model="producer"
-              :label="$t('Avec qui souhaitez-vous publier ?')"
-              :required="true"
-              hide-no-organization-notice
-              all
-            />
-          </fieldset>
-          <fieldset
-            v-if="producer"
-            class="min-w-0"
-          >
-            <SearchableSelect
-              v-model="dataset"
-              :label="$t('Jeu de données')"
-              :placeholder="$t('Recherchez un jeu de données...')"
-              :display-value="(option: DatasetSuggest) => option.title"
-              :get-option-id="(option: DatasetSuggest) => option.id"
-              :multiple="false"
-              :suggest="suggestDataset"
-            />
-          </fieldset>
-          <fieldset
-            v-if="dataset"
-            class="min-w-0"
-          >
-            <label
-              for="resource-select"
-              class="fr-label"
-            >{{ $t('Choix de la ressource') }}</label>
-            <select
-              id="resource-select"
-              v-model="selectedResource"
-              class="w-full fr-select"
+    <div class="rounded-md border border-new-gray-light bg-white">
+      <section
+        class="border-b border-new-gray-light py-4 px-6"
+        aria-label="Source de données"
+      >
+        <h2 class="font-bold text-lg mb-4">
+          {{ $t('Source de données') }}
+        </h2>
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center">
+          <div class="grid flex-1 gap-4 lg:grid-cols-3">
+            <fieldset class="min-w-0">
+              <ProducerSelect
+                v-model="producer"
+                :label="$t('Avec qui souhaitez-vous publier ?')"
+                :required="true"
+                hide-no-organization-notice
+                all
+              />
+            </fieldset>
+            <fieldset
+              v-if="producer"
+              class="min-w-0"
             >
-              <option
-                value=""
-                disabled
-              >
-                {{ $t('Sélectionnez une ressource') }}
-              </option>
-              <option
-                v-for="resource in resources"
-                :key="resource.id"
-                :value="resource.id"
-              >
-                {{ resource.title }}
-              </option>
-            </select>
-          </fieldset>
-        </div>
-        <p
-          class="mb-0 flex shrink-0 items-center gap-2 text-sm"
-          :class="sourceLoading ? '' : selectedResource ? 'text-new-success' : 'text-new-gray-medium'"
-        >
-          <template v-if="sourceLoading">
-            <RiLoader4Line
-              class="size-4 animate-spin"
-              aria-hidden="true"
-            />
-            {{ $t('Chargement…') }}
-          </template>
-          <template v-else-if="selectedResource">
-            <RiCheckboxCircleLine
-              class="size-4"
-              aria-hidden="true"
-            />
-            {{ $t('{count} colonnes disponibles', { count: resourceColumns.length }) }}
-          </template>
-          <template v-else>
-            <RiInformationLine
-              class="size-4"
-              aria-hidden="true"
-            />
-            {{ $t('Source à sélectionner') }}
-          </template>
-        </p>
-      </div>
-    </section>
-
-    <div class="grid lg:grid-cols-12 gap-4 lg:gap-8">
-      <div class="col-span-7 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
-        <template v-if="selectedResource">
-          <div class="rounded-lg border border-new-gray-light p-4">
-            <h3 class="font-medium text-lg text-new-gray-dark mb-0">
-              {{ form.title || $t('Sans titre') }}
-            </h3>
-            <p
-              v-if="form.description"
-              class="text-new-gray-medium mt-4 mb-0"
+              <SearchableSelect
+                v-model="dataset"
+                :label="$t('Jeu de données')"
+                :placeholder="$t('Recherchez un jeu de données...')"
+                :display-value="(option: DatasetSuggest) => option.title"
+                :get-option-id="(option: DatasetSuggest) => option.id"
+                :multiple="false"
+                :suggest="suggestDataset"
+              />
+            </fieldset>
+            <fieldset
+              v-if="dataset"
+              class="min-w-0"
             >
-              {{ form.description }}
-            </p>
+              <label
+                for="resource-select"
+                class="fr-label"
+              >{{ $t('Choix de la ressource') }}</label>
+              <select
+                id="resource-select"
+                v-model="selectedResource"
+                class="w-full fr-select"
+              >
+                <option
+                  value=""
+                  disabled
+                >
+                  {{ $t('Sélectionnez une ressource') }}
+                </option>
+                <option
+                  v-for="resource in resources"
+                  :key="resource.id"
+                  :value="resource.id"
+                >
+                  {{ resource.title }}
+                </option>
+              </select>
+            </fieldset>
           </div>
+          <p
+            class="mb-0 flex shrink-0 items-center gap-2 text-sm"
+            :class="sourceLoading ? '' : selectedResource ? 'text-new-success' : 'text-new-gray-medium'"
+          >
+            <template v-if="sourceLoading">
+              <RiLoader4Line
+                class="size-4 animate-spin"
+                aria-hidden="true"
+              />
+              {{ $t('Chargement…') }}
+            </template>
+            <template v-else-if="selectedResource">
+              <RiCheckboxCircleLine
+                class="size-4"
+                aria-hidden="true"
+              />
+              {{ $t('{count} colonnes disponibles', { count: resourceColumns.length }) }}
+            </template>
+            <template v-else>
+              <RiInformationLine
+                class="size-4"
+                aria-hidden="true"
+              />
+              {{ $t('Source à sélectionner') }}
+            </template>
+          </p>
+        </div>
+      </section>
+
+      <div class="grid lg:grid-cols-12">
+        <div class="col-span-7 space-y-4 py-4 px-6">
+          <template v-if="selectedResource">
+            <div class="rounded-lg border border-new-gray-light p-4">
+              <h3 class="font-medium text-lg text-new-gray-dark mb-0">
+                {{ form.title || $t('Sans titre') }}
+              </h3>
+              <p
+                v-if="form.description"
+                class="text-new-gray-medium mt-4 mb-0"
+              >
+                {{ form.description }}
+              </p>
+            </div>
+            <div
+              v-if="!form.query"
+              class="flex flex-col items-center justify-center h-full py-24"
+              data-testid="no-chart-blank-state"
+            >
+              <span class="grid size-14 place-items-center rounded-full bg-gray-lower text-new-gray-medium-clic">
+                <RiBarChartBoxLine
+                  class="size-7"
+                  aria-hidden="true"
+                />
+              </span>
+              <p class="text-new-gray-dark font-medium mb-0 mt-4">
+                {{ $t('Aucun graphique créé') }}
+              </p>
+              <p class="text-new-gray-medium text-sm mt-1.5 text-center">
+                {{ $t('Utilisez l\'assistant ou l\'édition manuelle pour créer votre première visualisation.') }}
+              </p>
+            </div>
+            <div
+              v-else
+              class="relative overflow-hidden rounded-lg border border-new-gray-light"
+            >
+              <ClientOnly>
+                <ChartViewerWrapper
+                  ref="chartViewerWrapperRef"
+                  :chart="chartForViewer"
+                />
+              </ClientOnly>
+              <div
+                v-if="previewLoading"
+                class="absolute inset-0 z-10 grid place-items-center bg-white/80"
+                data-testid="preview-loading-overlay"
+              >
+                <div class="text-center text-sm text-new-gray-medium">
+                  <RiLoader4Line
+                    class="mx-auto mb-2 block size-8 animate-spin"
+                    aria-hidden="true"
+                  />
+                  {{ $t('Mise à jour de la prévisualisation') }}
+                </div>
+              </div>
+            </div>
+            <div
+              v-if="sourceText"
+              class="rounded-lg border border-new-gray-light px-4 py-2 text-sm text-new-gray-medium"
+            >
+              {{ $t('Source') }}: {{ sourceText }}
+            </div>
+          </template>
           <div
-            v-if="!form.query"
+            v-else
             class="flex flex-col items-center justify-center h-full py-24"
-            data-testid="no-chart-blank-state"
           >
             <span class="grid size-14 place-items-center rounded-full bg-gray-lower text-new-gray-medium-clic">
               <RiBarChartBoxLine
@@ -119,273 +168,226 @@
                 aria-hidden="true"
               />
             </span>
+
             <p class="text-new-gray-dark font-medium mb-0 mt-4">
-              {{ $t('Aucun graphique créé') }}
+              {{ $t('Aucune source sélectionnée') }}
             </p>
             <p class="text-new-gray-medium text-sm mt-1.5 text-center">
-              {{ $t('Utilisez l\'assistant ou l\'édition manuelle pour créer votre première visualisation.') }}
+              {{ $t('Choisissez un jeu de données et une ressource dans le bandeau source pour commencer.') }}
             </p>
           </div>
-          <div
-            v-else
-            class="relative overflow-hidden rounded-lg border border-new-gray-light"
-          >
-            <ClientOnly>
-              <ChartViewerWrapper
-                ref="chartViewerWrapperRef"
-                :chart="chartForViewer"
-              />
-            </ClientOnly>
-            <div
-              v-if="previewLoading"
-              class="absolute inset-0 z-10 grid place-items-center bg-white/80"
-              data-testid="preview-loading-overlay"
-            >
-              <div class="text-center text-sm text-new-gray-medium">
-                <RiLoader4Line
-                  class="mx-auto mb-2 block size-8 animate-spin"
-                  aria-hidden="true"
-                />
-                {{ $t('Mise à jour de la prévisualisation') }}
-              </div>
-            </div>
-          </div>
-          <div
-            v-if="sourceText"
-            class="rounded-lg border border-new-gray-light px-4 py-2 text-sm text-new-gray-medium"
-          >
-            {{ $t('Source') }}: {{ sourceText }}
-          </div>
-        </template>
-        <div
-          v-else
-          class="flex flex-col items-center justify-center h-full py-24"
-        >
-          <span class="grid size-14 place-items-center rounded-full bg-gray-lower text-new-gray-medium-clic">
-            <RiBarChartBoxLine
-              class="size-7"
-              aria-hidden="true"
-            />
-          </span>
-
-          <p class="text-new-gray-dark font-medium mb-0 mt-4">
-            {{ $t('Aucune source sélectionnée') }}
-          </p>
-          <p class="text-new-gray-medium text-sm mt-1.5 text-center">
-            {{ $t('Choisissez un jeu de données et une ressource dans le bandeau source pour commencer.') }}
-          </p>
         </div>
-      </div>
-
-      <div
-        class="col-span-5 space-y-6 py-4 px-6 rounded-lg bg-white border border-new-gray-light"
-        :class="activePanel === 'assistant' ? 'lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] flex flex-col' : ''"
-      >
-        <SegmentedControl
-          v-model="activePanel"
-          grow
-          :options="panelOptions"
-        />
 
         <div
-          :class="{ hidden: activePanel !== 'form' }"
-          data-testid="form-panel"
+          class="col-span-5 space-y-6 border-t border-new-gray-light py-4 px-6 lg:border-l lg:border-t-0"
+          :class="activePanel === 'assistant' ? 'lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] flex flex-col' : ''"
         >
-          <div class="space-y-6">
-            <template v-if="selectedResource">
-              <fieldset class="min-w-0 space-y-4">
-                <p class="font-bold mb-2">
-                  {{ $t('Contenu') }}
-                </p>
-                <div>
-                  <label
-                    for="chart-title"
-                    class="font-bold fr-label"
-                  >{{ $t('Titre') }}</label>
-                  <input
-                    id="chart-title"
-                    v-model="form.title"
-                    type="text"
-                    class="w-full fr-input"
-                  >
-                </div>
+          <SegmentedControl
+            v-model="activePanel"
+            grow
+            :options="panelOptions"
+          />
 
-                <div>
-                  <label
-                    for="chart-description"
-                    class="font-bold fr-label"
-                  >{{ $t('Description') }}</label>
-                  <textarea
-                    id="chart-description"
-                    v-model="form.description"
-                    class="w-full fr-input"
-                    rows="2"
-                  />
-                </div>
-              </fieldset>
+          <div
+            :class="{ hidden: activePanel !== 'form' }"
+            data-testid="form-panel"
+          >
+            <div class="space-y-6">
+              <template v-if="selectedResource">
+                <fieldset class="min-w-0 space-y-4">
+                  <p class="font-bold mb-2">
+                    {{ $t('Contenu') }}
+                  </p>
+                  <div>
+                    <label
+                      for="chart-title"
+                      class="font-bold fr-label"
+                    >{{ $t('Titre') }}</label>
+                    <input
+                      id="chart-title"
+                      v-model="form.title"
+                      type="text"
+                      class="w-full fr-input"
+                    >
+                  </div>
 
-              <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-                <label
-                  for="chart-query"
-                  class="fr-label font-bold"
-                >
-                  {{ $t('Requête SQL') }}
-                </label>
-                <textarea
-                  id="chart-query"
-                  v-model="form.query"
-                  aria-label="Requête SQL"
-                  rows="6"
-                  class="w-full fr-input font-mono text-sm"
-                  :placeholder="$t('SELECT ...')"
-                />
-              </fieldset>
-
-              <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-                <p class="font-bold mb-2">
-                  {{ $t('Schéma de la ressource') }}
-                </p>
-                <ul class="space-y-1 m-0 p-0 list-none">
-                  <li
-                    v-for="column in resourceColumns"
-                    :key="column.name"
-                    class="flex items-center gap-2 text-sm"
-                  >
-                    <component
-                      :is="getColumnTypeIcon(column.type)"
-                      class="size-4 text-new-gray-medium shrink-0"
+                  <div>
+                    <label
+                      for="chart-description"
+                      class="font-bold fr-label"
+                    >{{ $t('Description') }}</label>
+                    <textarea
+                      id="chart-description"
+                      v-model="form.description"
+                      class="w-full fr-input"
+                      rows="2"
                     />
-                    <span class="font-mono">{{ column.name }}</span>
-                    <span class="text-new-gray-medium">{{ typeConfig[column.type]?.label || column.type }}</span>
-                  </li>
-                </ul>
-              </fieldset>
+                  </div>
+                </fieldset>
 
-              <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-                <p class="font-bold mb-2">
-                  {{ $t('Axe Y') }}
-                </p>
-                <AccordionGroup>
-                  <Accordion :title="$t('Styles')">
-                    <div class="space-y-4">
-                      <div>
-                        <label
-                          for="chart-type"
-                          class="fr-label"
-                        >{{ $t('Type de graphique') }}</label>
-                        <select
-                          id="chart-type"
-                          v-model="form.chart_type"
-                          class="w-full fr-select"
-                        >
-                          <option value="line">
-                            {{ $t('Ligne') }}
-                          </option>
-                          <option value="histogram">
-                            {{ $t('Histogramme') }}
-                          </option>
-                        </select>
-                      </div>
-                      <div>
-                        <label
-                          for="y-axis-label"
-                          class="fr-label"
-                        >{{ $t('Label') }}</label>
-                        <input
-                          id="y-axis-label"
-                          v-model="form.y_axis.label"
-                          type="text"
-                          class="w-full fr-input"
-                        >
-                      </div>
-                      <div class="grid grid-cols-2 gap-4">
+                <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
+                  <label
+                    for="chart-query"
+                    class="fr-label font-bold"
+                  >
+                    {{ $t('Requête SQL') }}
+                  </label>
+                  <textarea
+                    id="chart-query"
+                    v-model="form.query"
+                    aria-label="Requête SQL"
+                    rows="6"
+                    class="w-full fr-input font-mono text-sm"
+                    :placeholder="$t('SELECT ...')"
+                  />
+                </fieldset>
+
+                <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
+                  <p class="font-bold mb-2">
+                    {{ $t('Schéma de la ressource') }}
+                  </p>
+                  <ul class="space-y-1 m-0 p-0 list-none">
+                    <li
+                      v-for="column in resourceColumns"
+                      :key="column.name"
+                      class="flex items-center gap-2 text-sm"
+                    >
+                      <component
+                        :is="getColumnTypeIcon(column.type)"
+                        class="size-4 text-new-gray-medium shrink-0"
+                      />
+                      <span class="font-mono">{{ column.name }}</span>
+                      <span class="text-new-gray-medium">{{ typeConfig[column.type]?.label || column.type }}</span>
+                    </li>
+                  </ul>
+                </fieldset>
+
+                <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
+                  <p class="font-bold mb-2">
+                    {{ $t('Axe Y') }}
+                  </p>
+                  <AccordionGroup>
+                    <Accordion :title="$t('Styles')">
+                      <div class="space-y-4">
                         <div>
                           <label
-                            for="y-axis-min"
+                            for="chart-type"
                             class="fr-label"
-                          >{{ $t('Min') }}</label>
-                          <input
-                            id="y-axis-min"
-                            v-model.number="form.y_axis.min"
-                            type="number"
-                            class="w-full fr-input"
-                          >
-                        </div>
-                        <div>
-                          <label
-                            for="y-axis-max"
-                            class="fr-label"
-                          >{{ $t('Max') }}</label>
-                          <input
-                            id="y-axis-max"
-                            v-model.number="form.y_axis.max"
-                            type="number"
-                            class="w-full fr-input"
-                          >
-                        </div>
-                      </div>
-                      <div class="grid grid-cols-2 gap-4">
-                        <div>
-                          <label
-                            for="y-axis-unit"
-                            class="fr-label"
-                          >{{ $t('Unité') }}</label>
-                          <input
-                            id="y-axis-unit"
-                            v-model="form.y_axis.unit"
-                            type="text"
-                            class="w-full fr-input"
-                            :placeholder="$t('ex: €, %, kg')"
-                          >
-                        </div>
-                        <div>
-                          <label
-                            for="y-axis-unit-position"
-                            class="fr-label"
-                          >{{ $t('Position unité')
-                          }}</label>
+                          >{{ $t('Type de graphique') }}</label>
                           <select
-                            id="y-axis-unit-position"
-                            v-model="form.y_axis.unit_position"
+                            id="chart-type"
+                            v-model="form.chart_type"
                             class="w-full fr-select"
                           >
-                            <option value="suffix">
-                              {{ $t('Suffixe') }}
+                            <option value="line">
+                              {{ $t('Ligne') }}
                             </option>
-                            <option value="prefix">
-                              {{ $t('Préfixe') }}
+                            <option value="histogram">
+                              {{ $t('Histogramme') }}
                             </option>
                           </select>
                         </div>
+                        <div>
+                          <label
+                            for="y-axis-label"
+                            class="fr-label"
+                          >{{ $t('Label') }}</label>
+                          <input
+                            id="y-axis-label"
+                            v-model="form.y_axis.label"
+                            type="text"
+                            class="w-full fr-input"
+                          >
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                          <div>
+                            <label
+                              for="y-axis-min"
+                              class="fr-label"
+                            >{{ $t('Min') }}</label>
+                            <input
+                              id="y-axis-min"
+                              v-model.number="form.y_axis.min"
+                              type="number"
+                              class="w-full fr-input"
+                            >
+                          </div>
+                          <div>
+                            <label
+                              for="y-axis-max"
+                              class="fr-label"
+                            >{{ $t('Max') }}</label>
+                            <input
+                              id="y-axis-max"
+                              v-model.number="form.y_axis.max"
+                              type="number"
+                              class="w-full fr-input"
+                            >
+                          </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-4">
+                          <div>
+                            <label
+                              for="y-axis-unit"
+                              class="fr-label"
+                            >{{ $t('Unité') }}</label>
+                            <input
+                              id="y-axis-unit"
+                              v-model="form.y_axis.unit"
+                              type="text"
+                              class="w-full fr-input"
+                              :placeholder="$t('ex: €, %, kg')"
+                            >
+                          </div>
+                          <div>
+                            <label
+                              for="y-axis-unit-position"
+                              class="fr-label"
+                            >{{ $t('Position unité')
+                            }}</label>
+                            <select
+                              id="y-axis-unit-position"
+                              v-model="form.y_axis.unit_position"
+                              class="w-full fr-select"
+                            >
+                              <option value="suffix">
+                                {{ $t('Suffixe') }}
+                              </option>
+                              <option value="prefix">
+                                {{ $t('Préfixe') }}
+                              </option>
+                            </select>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </Accordion>
-                </AccordionGroup>
-              </fieldset>
-            </template>
+                    </Accordion>
+                  </AccordionGroup>
+                </fieldset>
+              </template>
+            </div>
+
+            <div
+              v-if="selectedResource && isAdmin"
+              class="shrink-0"
+            >
+              <BrandedButton type="submit">
+                {{ $t('Sauvegarder le graphique') }}
+              </BrandedButton>
+            </div>
           </div>
 
           <div
-            v-if="selectedResource && isAdmin"
-            class="shrink-0"
+            :class="{ hidden: activePanel !== 'assistant' }"
+            class="flex-1 min-h-0 flex flex-col"
+            data-testid="assistant-panel"
           >
-            <BrandedButton type="submit">
-              {{ $t('Sauvegarder le graphique') }}
-            </BrandedButton>
+            <ClientOnly>
+              <ChatPanel
+                :resource-id="selectedResource || null"
+                @use-query="onUseQuery"
+              />
+            </ClientOnly>
           </div>
-        </div>
-
-        <div
-          :class="{ hidden: activePanel !== 'assistant' }"
-          class="flex-1 min-h-0 flex flex-col"
-          data-testid="assistant-panel"
-        >
-          <ClientOnly>
-            <ChatPanel
-              :resource-id="selectedResource || null"
-              @use-query="onUseQuery"
-            />
-          </ClientOnly>
         </div>
       </div>
     </div>
