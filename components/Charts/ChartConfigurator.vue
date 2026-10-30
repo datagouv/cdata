@@ -82,31 +82,29 @@
       <div class="col-span-7 space-y-4 py-4 px-6 rounded-lg bg-white border border-new-gray-light">
         <template v-if="selectedResource">
           <div>
-            <div class="mt-8 pt-4 border-t border-new-gray-light">
-              <h3 class="font-medium text-lg text-new-gray-dark mb-0">
-                {{ form.title || $t('Sans titre') }}
-              </h3>
-              <p
-                v-if="form.description"
-                class="text-new-gray-medium mt-4 mb-0"
-              >
-                {{ form.description }}
-              </p>
-            </div>
-            <div>
-              <ClientOnly>
-                <ChartViewerWrapper
-                  ref="chartViewerWrapperRef"
-                  :chart="chartForViewer"
-                />
-              </ClientOnly>
-            </div>
-            <div
-              v-if="sourceText"
-              class="text-sm text-new-gray-medium"
+            <h3 class="font-medium text-lg text-new-gray-dark mb-0">
+              {{ form.title || $t('Sans titre') }}
+            </h3>
+            <p
+              v-if="form.description"
+              class="text-new-gray-medium mt-4 mb-0"
             >
-              {{ $t('Source') }}: {{ sourceText }}
-            </div>
+              {{ form.description }}
+            </p>
+          </div>
+          <div>
+            <ClientOnly>
+              <ChartViewerWrapper
+                ref="chartViewerWrapperRef"
+                :chart="chartForViewer"
+              />
+            </ClientOnly>
+          </div>
+          <div
+            v-if="sourceText"
+            class="text-sm text-new-gray-medium"
+          >
+            {{ $t('Source') }}: {{ sourceText }}
           </div>
         </template>
         <div
