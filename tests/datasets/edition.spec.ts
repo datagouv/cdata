@@ -34,11 +34,16 @@ test('can edit a dataset and changes are visible on the public page', async ({ p
   await expect(page.getByText(newDescription)).toBeVisible()
 })
 
-test('the link preview of the description editor never renders a javascript: link', async ({ page, request }) => {
+test('the link preview of the description editor keeps safe links and never renders a javascript: link', async ({ page, request }) => {
   // Any editor of the dataset can write its description through the API, so the link
   // reaches the editor of another member without going through the editor UI.
-  const href = 'javascript:alert(document.domain)'
-  const dataset = await createDataset(request, `Test link preview ${Date.now()}`, `Introduction.\n\n[Lisez la doc](${href})`)
+  const unsafeHref = 'javascript:alert(document.domain)'
+  const safeHref = 'https://www.data.gouv.fr/'
+  const dataset = await createDataset(
+    request,
+    `Test link preview ${Date.now()}`,
+    `Introduction.\n\n[Lisez la doc](${unsafeHref})\n\n[Le site](${safeHref})`,
+  )
   createdDatasets.push(dataset.id)
 
   await gotoHydrated(page, `/admin/datasets/${dataset.id}/`)
@@ -48,8 +53,12 @@ test('the link preview of the description editor never renders a javascript: lin
   await editor.getByText('Lisez la doc').hover()
 
   // The tooltip still shows the stored URL, so the editor can see the link and remove it.
-  const previewLink = page.getByTitle(href)
-  await expect(previewLink).toBeVisible()
-  await expect(previewLink).not.toHaveAttribute('href', /^javascript:/i)
+  const unsafePreviewLink = page.getByTitle(unsafeHref)
+  await expect(unsafePreviewLink).toBeVisible()
+  // Without any href, a click on the preview doesn't reload the edit page.
+  await expect(unsafePreviewLink).not.toHaveAttribute('href')
   await expect(page.locator('a[href^="javascript:"]')).toHaveCount(0)
+
+  await editor.getByText('Le site').hover()
+  await expect(page.getByTitle(safeHref)).toHaveAttribute('href', safeHref)
 })

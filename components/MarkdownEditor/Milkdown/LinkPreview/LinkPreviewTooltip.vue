@@ -9,7 +9,7 @@
     <div class="flex-1 truncate">
       <a
         class="fr-link"
-        :href="sanitizeLinkHref(link)"
+        :href="sanitizeLinkHref(link) || undefined"
         :title="link"
       >
         {{ link }}
