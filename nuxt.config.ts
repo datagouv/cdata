@@ -60,8 +60,6 @@ export default defineNuxtConfig({
     crispIdentifier: '',
     crispKey: '',
     crispWebsiteId: '',
-    pagesGhRepoName: 'datagouv/datagouvfr-pages',
-    pagesGhRepoBranch: 'master',
     albertApiBaseUrl: 'https://albert.api.etalab.gouv.fr/',
     albertApiKey: '',
     public: {
