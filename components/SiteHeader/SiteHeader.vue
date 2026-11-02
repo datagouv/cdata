@@ -626,7 +626,8 @@ onMounted(() => {
     change_email_already_taken: { type: 'error', text: t('Cette adresse email est déjà utilisée par un autre compte. Votre adresse email n\'a pas été modifiée.') },
     proconnect_reauth_success: { type: 'success', text: t('Compte confirmé.') },
     proconnect_reauth_failed: { type: 'error', text: t('La confirmation de votre identité avec ProConnect a échoué. Veuillez réessayer.') },
-    proconnect_reauth_identity_mismatch: { type: 'error', text: t('Vous vous êtes identifié sur ProConnect avec une autre adresse email que celle de ce compte.') },
+    proconnect_reauth_unavailable: { type: 'error', text: t('Votre session n’a pas été ouverte avec ProConnect : confirmez votre identité avec votre mot de passe.') },
+    proconnect_reauth_identity_mismatch: { type: 'error', text: t('Vous vous êtes identifié sur ProConnect avec une autre adresse email que celle de ce compte ({email}).', { email: me.value?.email }) },
   }
 
   if (route.query.flash) {
