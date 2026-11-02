@@ -153,6 +153,7 @@
             :href="resource.latest"
             rel="ugc nofollow noopener"
             :title="downloadButtonTitle"
+            :data-testid="`download-${resource.id}`"
             download
             class="relative matomo_download z-2"
             :icon="unavailable ? RiFileWarningLine : RiDownloadLine"
