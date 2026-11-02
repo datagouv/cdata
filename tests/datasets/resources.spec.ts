@@ -145,7 +145,7 @@ test.describe('Public resources display', () => {
 
     // csv is not a "URL" format: the action is a download link pointing to the
     // stable "latest" URL of the resource
-    const downloadLink = page.getByRole('link', { name: 'Télécharger', exact: true })
+    const downloadLink = page.getByTestId(`download-${resources[0].id}`)
     await expect(downloadLink).toBeVisible()
     await expect(downloadLink).toHaveAttribute('href', resources[0].latest)
   })
