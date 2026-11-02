@@ -100,8 +100,12 @@
 
       <div class="grid lg:grid-cols-12">
         <div class="col-span-7 space-y-4 py-4 px-6">
-          <template v-if="selectedResource">
-            <div class="rounded-lg border border-new-gray-light p-4">
+          <div
+            v-if="selectedResource"
+            class="overflow-hidden rounded-md border border-gray-default divide-y divide-gray-default"
+            data-testid="chart-preview-block"
+          >
+            <div class="p-4">
               <h3 class="font-medium text-lg text-new-gray-dark mb-0">
                 {{ form.title || $t('Sans titre') }}
               </h3>
@@ -132,7 +136,7 @@
             </div>
             <div
               v-else
-              class="relative overflow-hidden rounded-lg border border-new-gray-light"
+              class="relative"
             >
               <ClientOnly>
                 <ChartViewerWrapper
@@ -156,11 +160,11 @@
             </div>
             <div
               v-if="sourceText"
-              class="rounded-lg border border-new-gray-light px-4 py-2 text-sm text-new-gray-medium"
+              class="px-4 py-2 text-sm text-new-gray-medium"
             >
               {{ $t('Source') }}: {{ sourceText }}
             </div>
-          </template>
+          </div>
           <div
             v-else
             class="flex flex-col items-center justify-center h-full py-24"
