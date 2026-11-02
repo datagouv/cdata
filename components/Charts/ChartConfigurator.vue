@@ -98,6 +98,28 @@
         </div>
       </section>
 
+      <div
+        class="grid bg-gray-some lg:grid-cols-12"
+        data-testid="panels-header"
+      >
+        <div class="col-span-7 py-2 px-6 shadow-[inset_0_-1px_0_var(--color-gray-default)]">
+          <h2 class="mb-0 text-xs font-bold">
+            {{ $t('Visualisation') }}
+          </h2>
+          <p class="mb-0 mt-0.5 text-[11px] leading-4 text-new-gray-medium">
+            {{ $t('Prévisualisation et données source') }}
+          </p>
+        </div>
+        <div class="col-span-5 border-t border-new-gray-medium-clic py-2 px-6 shadow-[inset_0_-1px_0_var(--color-gray-default)] lg:border-l lg:border-t-0">
+          <h2 class="mb-0 text-xs font-bold">
+            {{ $t('Créer une visualisation') }}
+          </h2>
+          <p class="mb-0 mt-0.5 text-[11px] leading-4 text-new-gray-medium">
+            {{ $t('Assistant de création de visualisation') }}
+          </p>
+        </div>
+      </div>
+
       <div class="grid lg:grid-cols-12">
         <div class="col-span-7 space-y-4 py-4 px-6">
           <div
@@ -186,7 +208,7 @@
         </div>
 
         <div
-          class="col-span-5 space-y-6 border-t border-new-gray-light py-4 px-6 lg:border-l lg:border-t-0"
+          class="col-span-5 space-y-6 border-t border-new-gray-medium-clic py-4 px-6 lg:border-l lg:border-t-0"
           :class="activePanel === 'assistant' ? 'lg:sticky lg:top-24 lg:max-h-[calc(100vh-8rem)] flex flex-col' : ''"
         >
           <SegmentedControl
