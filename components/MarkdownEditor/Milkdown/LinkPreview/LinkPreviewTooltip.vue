@@ -9,7 +9,7 @@
     <div class="flex-1 truncate">
       <a
         class="fr-link"
-        :href="link"
+        :href="sanitizeLinkHref(link) || undefined"
         :title="link"
       >
         {{ link }}
@@ -41,6 +41,7 @@ import { ref, toRaw } from 'vue'
 import { usePluginViewContext } from '@prosemirror-adapter/vue'
 import { useInstance } from '@milkdown/vue'
 import { TextSelection } from '@milkdown/prose/state'
+import { sanitizeLinkHref } from '@milkdown/preset-commonmark'
 import { RiLink, RiLinkUnlink, RiPencilLine } from '@remixicon/vue'
 import { linkTooltipState } from '~/components/MarkdownEditor/Milkdown/LinkEdit/linkEditTooltipCtx'
 import { removeLink } from '~/components/MarkdownEditor/ProseMirror/handleLink'
