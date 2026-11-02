@@ -1,6 +1,5 @@
 <template>
-  <form :action="`${config.public.apiBase}/api/1/proconnect/login/`">
-    <slot />
+  <form :action="`${config.public.apiBase}${ACTION_PATHS[action]}`">
     <div class="fr-connect-group flex flex-col items-center">
       <button class="fr-connect">
         <span class="fr-connect__login">{{ label }}</span>
@@ -12,7 +11,7 @@
           target="_blank"
           rel="noopener"
         >
-          {{ $t(`Qu'est-ce que ProConnect ?`) }}
+          {{ $t(`Qu'est-ce que ProConnect ?`) }}
         </CdataLink>
       </p>
     </div>
@@ -20,8 +19,14 @@
 </template>
 
 <script setup lang="ts">
+const ACTION_PATHS = {
+  login: '/api/1/proconnect/login/',
+  reauth: '/api/1/proconnect/reauth/',
+} as const
+
 defineProps<{
   label: string
+  action: keyof typeof ACTION_PATHS
 }>()
 
 const config = useRuntimeConfig()

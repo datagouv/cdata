@@ -15,7 +15,7 @@ test('a successful ProConnect reauthentication goes on to the remembered destina
 test('the ProConnect button asks udata for a reauthentication, not a login', async ({ page }) => {
   let requested: URL | undefined
   // Stop at udata: the round-trip itself goes through ProConnect.
-  await page.route('**/api/1/proconnect/login/**', (route) => {
+  await page.route('**/api/1/proconnect/**', (route) => {
     requested = new URL(route.request().url())
     return route.abort()
   })
@@ -23,7 +23,7 @@ test('the ProConnect button asks udata for a reauthentication, not a login', asy
 
   await page.getByRole('button', { name: 'S’identifier avec ProConnect' }).click()
 
-  await expect.poll(() => requested?.searchParams.get('reauth')).toBe('1')
+  await expect.poll(() => requested?.pathname).toBe('/api/1/proconnect/reauth/')
 })
 
 test('a failed ProConnect reauthentication stays on the page and says so', async ({ page }) => {

@@ -52,13 +52,10 @@
 
         <Divider>{{ $t('ou') }}</Divider>
 
-        <ProConnectButton :label="$t('S’identifier avec')">
-          <input
-            type="hidden"
-            name="reauth"
-            value="1"
-          >
-        </ProConnectButton>
+        <ProConnectButton
+          :label="$t('S’identifier avec')"
+          action="reauth"
+        />
       </div>
     </div>
   </div>

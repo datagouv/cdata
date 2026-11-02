@@ -83,7 +83,10 @@
 
         <Divider>{{ $t('ou') }}</Divider>
 
-        <ProConnectButton :label="$t('Se connecter avec')" />
+        <ProConnectButton
+          :label="$t('Se connecter avec')"
+          action="login"
+        />
       </div>
     </div>
     <div class="container bg-white max-w-xl p-6 border border-gray-lower flex flex-col sm:items-center">
