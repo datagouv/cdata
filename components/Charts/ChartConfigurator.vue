@@ -9,10 +9,10 @@
         class="border-b border-new-gray-light py-4 px-6"
         aria-label="Source de données"
       >
-        <h2 class="mb-1 text-xs font-bold">
+        <h2 class="mb-0 text-xs font-bold">
           {{ $t('Source de données') }}
         </h2>
-        <p class="m-0 text-[10px] text-new-gray-medium">
+        <p class="mb-0 mt-0.5 text-[11px] leading-4 text-new-gray-medium">
           {{ $t('Contexte commun à la prévisualisation et à l’assistant') }}
         </p>
         <div class="flex flex-col gap-4 lg:flex-row lg:items-center">
@@ -70,26 +70,26 @@
             </fieldset>
           </div>
           <p
-            class="mb-0 flex shrink-0 items-center gap-2 text-sm"
+            class="mb-0 flex shrink-0 items-center gap-1.5 text-[10px]"
             :class="sourceLoading ? '' : selectedResource ? 'text-new-success' : 'text-new-gray-medium'"
           >
             <template v-if="sourceLoading">
               <RiLoader4Line
-                class="size-4 animate-spin"
+                class="size-3 animate-spin"
                 aria-hidden="true"
               />
               {{ $t('Chargement…') }}
             </template>
             <template v-else-if="selectedResource">
               <RiCheckboxCircleLine
-                class="size-4"
+                class="size-3"
                 aria-hidden="true"
               />
               {{ $t('{count} colonnes disponibles', { count: resourceColumns.length }) }}
             </template>
             <template v-else>
               <RiInformationLine
-                class="size-4"
+                class="size-3"
                 aria-hidden="true"
               />
               {{ $t('Source à sélectionner') }}
