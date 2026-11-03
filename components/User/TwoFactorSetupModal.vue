@@ -5,7 +5,6 @@
     size="lg"
     form
     @submit.prevent="($el, _close) => submit(_close)"
-    @open="fetchStatusAndQRCode"
   >
     <template #button="{ attrs, listeners }">
       <BrandedButton
@@ -94,7 +93,16 @@ import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplan
 const { t } = useTranslation()
 const me = useMe()
 const isConfigured = ref(false)
-const isOpen = ref(false)
+
+// The open state lives in the URL, unlike other modals: when the setup requires a fresh
+// session, the agent is sent to /verify with this URL as `next`, and comes back to the
+// setup itself rather than to a page where they would have to start it again.
+const route = useRoute()
+const router = useRouter()
+const isOpen = computed({
+  get: () => route.query.two_factor === 'setup',
+  set: open => router.replace({ query: { ...route.query, two_factor: open ? 'setup' : undefined } }),
+})
 
 const emit = defineEmits<{
   setupComplete: []
@@ -110,14 +118,26 @@ const {
   validateCode,
 } = useTwoFactorSetup()
 
+const { $api } = useNuxtApp()
 const fetchStatusAndQRCode = async () => {
   // fetch two factor status. If freshness is required, a 401 is returned with automatic handling and redirection to /verify
-  const { data: twoFactorData, status } = await useAPI<{ response: { tf_primary_method: string | null, reauth_required: boolean } | null }>('/tf-setup')
-  if (status.value !== 'error') {
-    isConfigured.value = !!twoFactorData.value?.response?.tf_primary_method
-    await fetchQRCode()
+  try {
+    const { response } = await $api<{ response: { tf_primary_method: string | null } | null }>('/tf-setup')
+    isConfigured.value = !!response?.tf_primary_method
   }
+  catch {
+    return
+  }
+  await fetchQRCode()
 }
+
+// Fetched once the URL says the modal is open, so that a reauthentication sends back here.
+watch(isOpen, (open) => {
+  if (open) fetchStatusAndQRCode()
+})
+onMounted(() => {
+  if (isOpen.value) fetchStatusAndQRCode()
+})
 
 const submit = async (close: () => void) => {
   const success = await validateCode(async () => {
