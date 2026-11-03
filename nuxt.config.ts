@@ -34,10 +34,6 @@ export default defineNuxtConfig({
   },
   css: ['~/assets/css/main.css'],
 
-  vue: {
-    runtimeCompiler: true,
-  },
-
   site: {
     url: 'https://www.data.gouv.fr',
     name: 'data.gouv.fr',
@@ -60,8 +56,6 @@ export default defineNuxtConfig({
     crispIdentifier: '',
     crispKey: '',
     crispWebsiteId: '',
-    pagesGhRepoName: 'datagouv/datagouvfr-pages',
-    pagesGhRepoBranch: 'master',
     albertApiBaseUrl: 'https://albert.api.etalab.gouv.fr/',
     albertApiKey: '',
     public: {

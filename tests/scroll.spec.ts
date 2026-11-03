@@ -1,19 +1,44 @@
 import type { APIRequestContext, Page } from '@playwright/test'
 import { test, expect } from './base'
-import { API_BASE, createDatasetWithRemoteResources, deleteDatasets } from './helpers'
+import { API_BASE, createDatasetWithRemoteResources, createPost, deleteDatasets, deletePosts } from './helpers'
 
 // The whole scroll behaviour comes from Nuxt: hash anchors, keeping the position
 // between the tabs of a same object (`definePageMeta({ scrollToTop })`), and
 // scrolling back to the top on any other navigation.
 
-const editorialPage = '/pages/donnees-energie'
-const anchor = 'reutilisations'
+const anchor = 'emploi'
 const dataset = '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret'
 
 test.describe('Anchors', () => {
-  // Editorial pages ship their own table of contents made of plain `#anchor`
-  // links, which a custom scrollBehavior answering `{ top: 0 }` to every
-  // navigation used to cancel: the URL moved, the viewport did not.
+  const createdPosts: Array<string> = []
+  let editorialPage: string
+
+  // An editorial page with a side menu, made of plain `#anchor` links, and a title far
+  // enough down for the page to have to scroll to it.
+  test.beforeEach(async ({ request }) => {
+    const post = await createPost(request, {
+      name: `Inventaire ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      sidemenu: true,
+      blocs: [
+        { class: 'SectionBloc', id: crypto.randomUUID(), color: null, blocs: [
+          { class: 'TitleBloc', id: crypto.randomUUID(), width: null, title: 'Santé', subtitle: null },
+          { class: 'MarkdownBloc', id: crypto.randomUUID(), width: null, content: Array(40).fill('Sur la santé.').join('\n\n') },
+          { class: 'TitleBloc', id: crypto.randomUUID(), width: null, title: 'Emploi', subtitle: null },
+        ] },
+      ],
+    })
+    createdPosts.push(post.id)
+    editorialPage = `/pages/${post.slug}`
+  })
+
+  test.afterEach(async ({ request }) => {
+    await deletePosts(request, createdPosts)
+  })
+
+  // A custom scrollBehavior answering `{ top: 0 }` to every navigation used to cancel the
+  // `#anchor` links: the URL moved, the viewport did not.
   test('landing on a page with a hash scrolls to the anchor', async ({ page }) => {
     await page.goto(`${editorialPage}#${anchor}`)
 
