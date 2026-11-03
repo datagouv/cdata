@@ -240,7 +240,17 @@
               v-if="appConfig.isFrenchGovernment"
               class="w-full text-right mb-2"
             >
-              <LogoNumeriqueGouv class="inline-block w-45" />
+              <div class="fr-enlarge-link inline-block p-4 -m-4">
+                <a
+                  href="https://www.numerique.gouv.fr/offre-accompagnement/numeriquegouv-charte-utilisation/"
+                  target="_blank"
+                  rel="noopener"
+                  :title="$t('Numérique.gouv - nouvel onglet')"
+                  class="block after:!content-none"
+                >
+                  <LogoNumeriqueGouv class="block w-45" />
+                </a>
+              </div>
             </div>
             <p class="fr-footer__content-desc text-right">
               {{ $t("Un produit de la Direction Interministérielle du Numérique (DINUM).") }}
