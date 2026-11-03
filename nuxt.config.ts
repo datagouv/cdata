@@ -34,10 +34,6 @@ export default defineNuxtConfig({
   },
   css: ['~/assets/css/main.css'],
 
-  vue: {
-    runtimeCompiler: true,
-  },
-
   site: {
     url: 'https://www.data.gouv.fr',
     name: 'data.gouv.fr',
