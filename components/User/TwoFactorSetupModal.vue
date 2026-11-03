@@ -88,6 +88,7 @@
 <script setup lang="ts">
 import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
 import { RiShieldCheckLine } from '@remixicon/vue'
+import { FetchError } from 'ofetch'
 import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplanation.vue'
 
 const { t } = useTranslation()
@@ -132,10 +133,11 @@ const fetchStatusAndQRCode = async () => {
     const { response } = await $api<{ response: { tf_primary_method: string | null } | null }>('/tf-setup')
     isConfigured.value = !!response?.tf_primary_method
   }
-  catch {
-    // Still here when the error is not a reauthentication: drop the request so that the
-    // button can ask again.
-    if (requested.value) setRequested(false)
+  catch (e) {
+    // A 401 has already sent the agent to /verify or /login, with this page's URL as
+    // `next`: rewriting the query now would strip it from the new page. Any other error
+    // leaves them here, so the request is dropped for the button to ask again.
+    if (!(e instanceof FetchError) || e.statusCode !== 401) setRequested(false)
     return
   }
   shown.value = true
