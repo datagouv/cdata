@@ -1,70 +1,60 @@
+import type { APIRequestContext, Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { createPost, deletePosts } from '../helpers'
+import { createPost, deletePosts, gotoHydrated } from '../helpers'
 
-// Pages are stored in the datagouvfr-pages GitHub repository, either as a
-// Markdown or as an HTML file, and the server route has to find out which one
-// exists. Both extensions must keep rendering.
-const pages = [
-  { url: '/pages/legal/cgu', title: 'Modalités d’utilisation', heading: 'Modalités d’utilisation' }, // .md
-  { url: '/pages/donnees_covid', title: 'Données relatives au Covid-19', heading: 'Les données relatives au COVID-19' }, // .html
-]
+// The footer link to the terms of use leads to /pages/legal/cgu by an in-app navigation,
+// the only one where the browser calls the API itself.
+const nextPage = '/pages/legal/cgu'
+const nextPost = /\/api\/1\/posts\/cgu\/(\?|$)/
 
 test.describe('Pages content', () => {
-  pages.forEach(({ url, title, heading }) => {
-    test(`${url} renders its content`, async ({ page }) => {
-      const response = await page.goto(url)
-      expect(response?.status()).toBe(200)
-      await expect(page.getByLabel('Vous êtes ici :')).toContainText(title)
-      await expect(page.getByRole('heading', { level: 1, name: heading })).toBeVisible()
-    })
+  const createdIds: Array<string> = []
+
+  test.afterEach(async ({ request }) => {
+    await deletePosts(request, createdIds)
   })
 
-  test.describe('with a news sharing the slug of a page', () => {
-    const createdIds: Array<string> = []
+  async function gotoNewPage(page: Page, request: APIRequestContext) {
+    const post = await createPost(request, { name: `Page ${Date.now()}`, content: 'Contenu', kind: 'page' })
+    createdIds.push(post.id)
+    // Clicked before the hydration, the link would load the next page from the server,
+    // which the routes below do not intercept.
+    await gotoHydrated(page, `/pages/${post.slug}`)
+    return post
+  }
 
-    test.afterEach(async ({ request }) => {
-      await deletePosts(request, createdIds)
-    })
+  test('the slug of a news is not a page', async ({ page, request }) => {
+    const news = await createPost(request, { name: `Actualité ${Date.now()}`, kind: 'news', headline: 'Une actualité', content: 'Contenu' })
+    createdIds.push(news.id)
 
-    test('the page path still renders the page, not the news', async ({ page, request }) => {
-      const news = await createPost(request, { name: 'Actualité CGU', kind: 'news', slug: 'cgu', content: 'Contenu' })
-      createdIds.push(news.id)
-
-      const response = await page.goto('/pages/legal/cgu')
-      expect(response?.status()).toBe(200)
-      await expect(page).toHaveURL(/\/pages\/legal\/cgu$/)
-      await expect(page.getByRole('heading', { level: 1, name: 'Modalités d’utilisation' })).toBeVisible()
-    })
+    const response = await page.goto(`/pages/${news.slug}`)
+    expect(response?.status()).toBe(404)
+    await expect(page.getByRole('heading', { level: 1, name: '404' })).toBeVisible()
   })
 
   test.describe('when the posts API fails', () => {
     // The 500 below is the point of the test: the browser logs it.
     test.use({ allowedConsoleMessages: ['the server responded with a status of 500'] })
 
-    test('an API failure on the edito page shows an error, not the 404 of the GitHub fallback', async ({ page }) => {
-      await page.goto('/pages/legal/licences')
-      await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    test('the page shows an error, not a 404', async ({ page, request }) => {
+      await gotoNewPage(page, request)
 
-      // Intercepted in the browser only, hence the in-app navigation: the server
-      // rendering would call the API directly.
-      // A regex, not a glob: the API calls carry a `?lang=` query the glob would not match
-      await page.route(/\/api\/1\/posts\/cgu\/(\?|$)/, route => route.fulfill({ status: 500 }))
+      await page.route(nextPost, route => route.fulfill({ status: 500 }))
       await page.locator('footer').getByRole('link', { name: 'Modalités d\'utilisation' }).click()
-      await page.waitForURL('**/pages/legal/cgu')
+      await page.waitForURL(`**${nextPage}`)
 
       await expect(page.getByText('Une erreur est survenue lors du chargement.')).toBeVisible()
       await expect(page.getByRole('heading', { name: '404' })).toHaveCount(0)
     })
   })
 
-  test('going back before the next page is loaded shows the previous one, not a 404', async ({ page }) => {
-    await page.goto('/pages/legal/licences')
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+  test('going back before the next page is loaded shows the previous one, not a 404', async ({ page, request }) => {
+    const post = await gotoNewPage(page, request)
 
     // The next page never answers: the back navigation always happens while it
     // is still loading, and the previous page is still the one displayed.
     let releaseNextPage = () => {}
-    await page.route('**/nuxt-api/pages/legal/cgu', async (route) => {
+    await page.route(nextPost, async (route) => {
       await new Promise<void>((resolve) => {
         releaseNextPage = resolve
       })
@@ -72,15 +62,15 @@ test.describe('Pages content', () => {
     })
 
     await page.locator('footer').getByRole('link', { name: 'Modalités d\'utilisation' }).click()
-    await page.waitForURL('**/pages/legal/cgu')
+    await page.waitForURL(`**${nextPage}`)
     await page.goBack()
-    await page.waitForURL('**/pages/legal/licences')
+    await page.waitForURL(`**/pages/${post.slug}`)
 
     // The abandoned page used to raise its 404 a few ms after the back
     // navigation. Nothing marks the moment it would have, hence a fixed window.
     await page.waitForTimeout(1000)
     await expect(page.getByRole('heading', { name: '404' })).toHaveCount(0)
-    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await expect(page.getByRole('heading', { level: 1, name: post.name })).toBeVisible()
     releaseNextPage()
   })
 })
