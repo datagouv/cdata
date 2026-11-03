@@ -83,7 +83,10 @@ const route = useRoute()
 // Read before the site header consumes the flash and strips it from the URL.
 const proconnectSucceeded = route.query.flash === 'proconnect_reauth_success'
 
-const goToNext = () => navigateTo(sessionStorage.getItem('next') || '/')
+// Replace: going back to /verify?flash=proconnect_reauth_success would bounce the agent
+// forward again, the site header's own replace that strips the flash being cancelled by
+// this navigation.
+const goToNext = () => navigateTo(sessionStorage.getItem('next') || '/', { replace: true })
 
 onMounted(async () => {
   if (route.query.next) {

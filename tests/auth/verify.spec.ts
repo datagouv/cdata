@@ -12,6 +12,16 @@ test('a successful ProConnect reauthentication goes on to the remembered destina
   await expect(page.getByText('Compte confirmé.')).toBeVisible()
 })
 
+test('going back after a successful ProConnect reauthentication does not bounce forward', async ({ page }) => {
+  await gotoHydrated(page, '/verify?next=/admin/me/profile')
+  await page.goto('/verify?flash=proconnect_reauth_success')
+  await expect(page).toHaveURL(/\/admin\/me\/profile/)
+
+  await page.goBack()
+
+  await expect(page).toHaveURL(/\/verify\?next=/)
+})
+
 test.describe('when the two-factor setup requires a fresh session', () => {
   // The 401 below is the point of the test: the browser logs it.
   test.use({ allowedConsoleMessages: ['the server responded with a status of 401'] })
