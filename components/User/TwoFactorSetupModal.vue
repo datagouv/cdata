@@ -94,14 +94,21 @@ const { t } = useTranslation()
 const me = useMe()
 const isConfigured = ref(false)
 
-// The open state lives in the URL, unlike other modals: when the setup requires a fresh
-// session, the agent is sent to /verify with this URL as `next`, and comes back to the
-// setup itself rather than to a page where they would have to start it again.
+// The request for the setup lives in the URL, unlike other modals: when the setup requires
+// a fresh session, the agent is sent to /verify with this URL as `next`, and comes back to
+// the setup itself rather than to a page where they would have to start it again.
 const route = useRoute()
 const router = useRouter()
+const requested = computed(() => route.query.two_factor === 'setup')
+const setRequested = (value: boolean) => router.replace({ query: { ...route.query, two_factor: value ? 'setup' : undefined } })
+// Shown only once udata accepts the setup, so that it does not flash before /verify.
+const shown = ref(false)
 const isOpen = computed({
-  get: () => route.query.two_factor === 'setup',
-  set: open => router.replace({ query: { ...route.query, two_factor: open ? 'setup' : undefined } }),
+  get: () => shown.value,
+  set: (open) => {
+    if (!open) shown.value = false
+    setRequested(open)
+  },
 })
 
 const emit = defineEmits<{
@@ -126,17 +133,21 @@ const fetchStatusAndQRCode = async () => {
     isConfigured.value = !!response?.tf_primary_method
   }
   catch {
+    // Still here when the error is not a reauthentication: drop the request so that the
+    // button can ask again.
+    if (requested.value) setRequested(false)
     return
   }
+  shown.value = true
   await fetchQRCode()
 }
 
-// Fetched once the URL says the modal is open, so that a reauthentication sends back here.
-watch(isOpen, (open) => {
-  if (open) fetchStatusAndQRCode()
+watch(requested, (value) => {
+  if (value) fetchStatusAndQRCode()
+  else shown.value = false
 })
 onMounted(() => {
-  if (isOpen.value) fetchStatusAndQRCode()
+  if (requested.value) fetchStatusAndQRCode()
 })
 
 const submit = async (close: () => void) => {
