@@ -272,9 +272,10 @@
                     :placeholder="$t('SELECT ...')"
                   />
 
+                  <!-- cursor-auto: DSFR's core.css puts cursor: pointer on the whole
+                  details element, so the column list would look clickable. -->
                   <details
-                    open
-                    class="group min-w-0"
+                    class="group min-w-0 cursor-auto"
                     data-testid="resource-schema"
                   >
                     <summary class="flex cursor-pointer list-none items-center gap-1 text-[11px] font-medium leading-4 [&::-webkit-details-marker]:hidden">

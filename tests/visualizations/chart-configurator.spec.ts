@@ -88,7 +88,9 @@ test('description input updates form value without debounce', async ({ page }) =
 test('resource schema is displayed with the profile columns', async ({ page }) => {
   await setupChart(page)
 
-  const schema = page.locator('fieldset', { hasText: 'Schéma de la ressource' })
+  // Collapsed by default: open it to read the columns.
+  const schema = page.getByTestId('resource-schema')
+  await schema.locator('summary').click()
   await expect(schema.getByText('nom_region', { exact: true })).toBeVisible()
   await expect(schema.getByText('Nombre de logements', { exact: true })).toBeVisible()
 })
@@ -492,7 +494,9 @@ test('ignores a late profile response after changing resources', async ({ page }
     await route.fulfill({ json: profileB })
   })
 
-  const schema = page.locator('fieldset', { hasText: 'Schéma de la ressource' })
+  // Collapsed by default: open it to read the columns.
+  const schema = page.getByTestId('resource-schema')
+  await schema.locator('summary').click()
   await expect(schema.getByText('nom_region', { exact: true })).toBeVisible()
   const resourceSelect = page.locator('#resource-select')
 
