@@ -291,9 +291,6 @@
           title="Vous recherchez une API ou une base de données des plaques d'immatriculation, permis de conduire, ou des cartes grises ?"
           heading="h4"
         >
-          <p>
-            Les volumétries d'appel sont décrites dans la <a href="https://www.data.gouv.fr/fr/dataservices/api-decoupage-administratif-api-geo/">fiche de l'API</a>.
-          </p>
           <p class="mb-0">
             Il existe des API et bases de données, celles-ci ne sont pas référencées sur data.gouv.fr à ce jour. Ces API et bases de données, qui sont opérées par le Ministère de l'Intérieur, sont en accès restreint à un petit nombre d'acteurs institutionnels. Notre support n'est pas en mesure de vous aider à ce sujet.
           </p>

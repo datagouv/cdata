@@ -852,6 +852,73 @@ test.describe('Sections', () => {
     await expect(page.getByText('du gras')).toHaveCSS('color', white)
   })
 
+  test('the outline of a hovered bloc is white on a colored section, where blue would not show', async ({ page, request }) => {
+    const accordionId = crypto.randomUUID()
+    const itemId = crypto.randomUUID()
+    const post = await createPost(request, {
+      name: `Colored editor ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [
+        {
+          class: 'SectionBloc',
+          id: crypto.randomUUID(),
+          color: 'primary',
+          blocs: [
+            markdown('Sur fond bleu'),
+            { class: 'AccordionListBloc', id: accordionId, width: null, items: [{ id: itemId, title: 'Item', content: [markdown('Sur la carte blanche')] }] },
+          ],
+        },
+        { class: 'SectionBloc', id: crypto.randomUUID(), color: null, blocs: [markdown('Sur fond neutre')] },
+      ],
+    })
+    createdIds.push(post.id)
+    await page.setViewportSize({ width: 1280, height: 1600 })
+    // The hash opens the accordion item
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true#accordion-${accordionId}-${itemId}`)
+
+    const outline = async (text: string) => {
+      const bloc = page.getByTestId('bloc-MarkdownBloc').filter({ hasText: text })
+      await bloc.hover()
+      return bloc.evaluate(element => getComputedStyle(element).outlineColor)
+    }
+    expect(await outline('Sur fond bleu')).toBe('rgb(255, 255, 255)')
+    // The accordion is a white card on the colored section: blue again inside it
+    expect(await outline('Sur la carte blanche')).not.toBe('rgb(255, 255, 255)')
+    expect(await outline('Sur fond neutre')).not.toBe('rgb(255, 255, 255)')
+  })
+
+  test('the buttons of the editor keep their background when hovered on a colored section', async ({ page, request }) => {
+    const post = await createPost(request, {
+      name: `Colored buttons ${Date.now()}`,
+      kind: 'page',
+      body_type: 'blocs',
+      blocs: [{ class: 'SectionBloc', id: crypto.randomUUID(), color: 'primary', blocs: [markdown('Texte')] }],
+    })
+    createdIds.push(post.id)
+    await gotoHydrated(page, `/pages/${post.slug}?edit=true`)
+
+    const hoveredBackground = async (button: Locator) => {
+      await button.hover()
+      return button.evaluate(element => getComputedStyle(element).backgroundColor)
+    }
+    // The round "add" button stays white, as the other controls of a colored section
+    await page.getByTestId('prepend-bloc-in-section').hover()
+    expect(await hoveredBackground(page.getByTestId('prepend-bloc-in-section').getByRole('button'))).toBe('rgb(255, 255, 255)')
+    // The buttons of a tab are only tinted with the color of their icon
+    const section = page.getByTestId('page-SectionBloc')
+    await section.hover({ position: { x: 20, y: 20 } })
+    expect(await hoveredBackground(section.locator(':scope > [data-edit-tab]').getByRole('button', { name: 'Déplacer' }))).toMatch(/\/ 0\.1\)$/)
+
+    // The API refuses an empty section: it only exists in the editor, once its last bloc is
+    // deleted. Its "add" button stays on the color of the section.
+    const text = page.getByTestId('bloc-MarkdownBloc')
+    await text.hover()
+    await text.getByRole('button', { name: 'Actions sur Texte' }).click()
+    await page.getByRole('menuitem', { name: 'Supprimer' }).click()
+    expect(await hoveredBackground(page.getByRole('button', { name: 'Ajouter un bloc', exact: true }))).toBe('rgba(0, 0, 0, 0)')
+  })
+
   test('a section is dragged after another', async ({ page, request }) => {
     const post = await createPost(request, {
       name: `Sections ${Date.now()}`,

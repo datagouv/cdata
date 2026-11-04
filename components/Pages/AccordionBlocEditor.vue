@@ -1,7 +1,10 @@
 <template>
-  <!-- On a colored section, the accordion is a white card: its titles and its content keep
-       the colors of a neutral background. -->
-  <AccordionGroup :class="{ 'bg-white rounded-lg px-6 py-4': sectionColor }">
+  <!-- On a colored section, the accordion is a white card: its titles, its content and the
+       editor's controls inside it keep the colors of a neutral background. -->
+  <AccordionGroup
+    :class="{ 'bg-white rounded-lg px-6 py-4': sectionColor }"
+    :data-edit-accent="sectionColor ? 'primary' : undefined"
+  >
     <div
       ref="listRef"
       data-drop-list

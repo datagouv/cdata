@@ -109,7 +109,7 @@
             @keydown="resizeWithKeyboard($event, index)"
           >
             <div
-              class="w-0.5 h-full bg-new-primary transition-opacity"
+              class="w-0.5 h-full bg-(--edit-accent) transition-opacity"
               :class="resizing === index ? 'opacity-100' : 'opacity-0 group-hover/boundary:opacity-100 group-focus-within/boundary:opacity-100'"
             />
             <span
@@ -158,9 +158,12 @@
         :level
         @new-blocs="blocs.push(...($event as Array<T>))"
       >
+        <!-- Without the grey background the DSFR gives a hovered button, as the subtitle one
+             of `TitleBloc` -->
         <button
           type="button"
-          class="flex items-center gap-1 text-sm whitespace-nowrap text-gray-400 hover:text-gray-600"
+          class="flex items-center gap-1 text-sm whitespace-nowrap hover:!bg-transparent"
+          :class="color ? 'text-white/70 hover:text-white' : 'text-gray-400 hover:text-gray-600'"
           :data-testid="`add-bloc-in-${level}`"
         >
           <RiAddLine class="size-4" />

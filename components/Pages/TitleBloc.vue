@@ -34,11 +34,14 @@
     >
       {{ bloc.subtitle }}
     </div>
+    <!-- Without the grey background the DSFR gives a hovered button: on a coloured section, it
+         hid the white text. An editor control, hidden while dragging. -->
     <button
       v-else-if="edit"
       type="button"
-      class="text-sm"
+      class="text-sm hover:!bg-transparent"
       :class="sectionColor ? 'text-white/70 hover:text-white' : 'text-gray-400 hover:text-gray-600'"
+      data-edit-control
       @click="bloc.subtitle = $t('Sous-titre')"
     >
       + {{ $t('Ajouter un sous-titre') }}

@@ -19,6 +19,7 @@ logs
 .fleet
 .idea
 .claude
+.worktrees
 .tool-versions
 
 # Local env files
