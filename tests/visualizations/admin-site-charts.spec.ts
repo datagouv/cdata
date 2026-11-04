@@ -1,6 +1,6 @@
 import type { BrowserContext } from '@playwright/test'
 import { test, expect } from '../base'
-import { createChart, deleteAllCharts, deleteChart, setupAndSaveChart } from './fixtures'
+import { createChart, deleteChart, setupAndSaveChart } from './fixtures'
 
 test.describe('with charts', () => {
   const createdIds: Array<string> = []
@@ -15,8 +15,6 @@ test.describe('with charts', () => {
     uniqueSuffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
     setupContext = await browser.newContext({ storageState: 'playwright/.auth/user.json' })
     const page = await setupContext.newPage()
-
-    await deleteAllCharts(setupContext.request)
 
     histogramChart = await setupAndSaveChart(page, {
       title: `Admin histogramme E2E ${uniqueSuffix}`,
