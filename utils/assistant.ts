@@ -79,23 +79,32 @@ const SQL_RUNNING_SUMMARY = 'Exécution en cours'
 // Matches the trailing notice of udata's rendered SQL results.
 const SQL_TRUNCATED_RE = /^Résultat tronqué : (\d+)/
 
+const SQL_NOT_RUN_SUMMARY = 'Requête non exécutée'
+// Openings of udata's execute_sql refusals and failures: those outputs are
+// plain sentences, not result tables.
+const SQL_NOT_RUN_RE = /^(Requête refusée|Action refusée|Ressource introuvable|L['’]exécution de la requête a échoué)/
+const SQL_EMPTY_RE = /^Requête exécutée avec succès, aucune ligne/
+
 // udata renders SQL results as a pipe table: header line, one line per row,
 // then an optional truncation notice carrying the total row count.
 function countSqlResultRows(output: string): number {
+  if (SQL_EMPTY_RE.test(output)) return 0
   const lines = output.split('\n')
   const last = lines[lines.length - 1] ?? ''
   const truncated = last.match(SQL_TRUNCATED_RE)
   if (truncated) return Number(truncated[1])
-  return lines.filter(line => line.trim() !== '').length - 1 // minus the header
+  return Math.max(0, lines.filter(line => line.trim() !== '').length - 1) // minus the header
 }
 
 function formatRowCount(count: number): string {
-  return count <= 1 ? '1 ligne' : `${count.toLocaleString('fr-FR')} lignes`
+  if (count === 0) return 'Aucune ligne'
+  return count === 1 ? '1 ligne' : `${count.toLocaleString('fr-FR')} lignes`
 }
 
 function buildSqlSummary(part: Record<string, unknown>): string {
   if (part.state !== 'output-available') return SQL_RUNNING_SUMMARY
   if (typeof part.output !== 'string' || !part.output) return TOOL_LABELS['tool-execute_sql']!.summary
+  if (SQL_NOT_RUN_RE.test(part.output)) return SQL_NOT_RUN_SUMMARY
   return formatRowCount(countSqlResultRows(part.output))
 }
 // The tool part failed without an errorText from the SDK.

@@ -165,6 +165,22 @@ describe('buildChatDisplayItems', () => {
     expect(item).toMatchObject({ kind: 'trace', trace: { summary: '1 ligne' } })
   })
 
+  it.each([
+    ['an empty result message', 'Requête exécutée avec succès, aucune ligne retournée.', 'Aucune ligne'],
+    ['a header-only table', 'col1 | col2', 'Aucune ligne'],
+    ['a guard refusal', 'Requête refusée : l’assistant fonctionne en lecture seule et cette requête n’est pas autorisée (Function is not allowed: X).', 'Requête non exécutée'],
+    ['a budget refusal', 'Requête refusée : la limite de 3 requêtes SQL par question est atteinte.', 'Requête non exécutée'],
+    ['a tool budget refusal', 'Action refusée : la limite de 5 appels d’outils par tour est atteinte.', 'Requête non exécutée'],
+    ['a tabular failure', 'L\'exécution de la requête a échoué : le service tabulaire est indisponible.', 'Requête non exécutée'],
+    ['an unknown resource', 'Ressource introuvable : aucune ressource visible ne correspond à cet identifiant.', 'Requête non exécutée'],
+  ])('does not report a row for %s', (_case, output, summary) => {
+    const [item] = buildChatDisplayItems([
+      { type: 'tool-execute_sql', state: 'output-available', input: {}, output },
+    ])
+
+    expect(item).toMatchObject({ kind: 'trace', trace: { summary } })
+  })
+
   it('falls back to the static summary when the sql output is not a string', () => {
     const [item] = buildChatDisplayItems([
       { type: 'tool-execute_sql', state: 'output-available', input: {}, output: { rowCount: 3 } },
