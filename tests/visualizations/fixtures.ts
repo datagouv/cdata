@@ -100,7 +100,7 @@ export async function setupAndSaveChart(page: Page, options: SetupAndSaveChartOp
   await page.getByLabel('Titre').fill(title)
   await page.getByLabel('Description').fill(description)
   await page.getByLabel('Requête SQL').fill('SELECT nom_region, nb_logements FROM logements ORDER BY nb_logements DESC')
-  await page.getByLabel('Type de graphique').selectOption(options.type ?? 'line')
+  await page.getByTestId('chart-type').getByText(options.type === 'histogram' ? 'Histogramme' : 'Courbe').click()
 
   // The chart preview must be rendered before saving, otherwise the capture is empty
   // and no image upload happens.

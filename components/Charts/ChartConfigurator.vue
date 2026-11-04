@@ -303,29 +303,46 @@
                   </details>
                 </fieldset>
 
+                <div class="min-w-0 border-t border-new-gray-light py-4">
+                  <fieldset
+                    class="m-0 min-w-0"
+                    data-testid="chart-type"
+                  >
+                    <legend class="font-bold mb-4">
+                      {{ $t('Type de graphique') }}
+                    </legend>
+                    <div class="grid grid-cols-2 gap-2">
+                      <label
+                        v-for="option in chartTypeOptions"
+                        :key="option.value"
+                        class="inline-flex min-h-[38px] cursor-pointer items-center justify-center gap-2 rounded border px-2 text-[11px] transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-new-primary motion-reduce:transition-none"
+                        :class="form.chart_type === option.value
+                          ? 'border-new-primary bg-[#ececfe] font-semibold text-new-primary'
+                          : 'border-gray-default bg-white text-new-gray-dark hover:border-new-gray-medium'"
+                      >
+                        <input
+                          v-model="form.chart_type"
+                          type="radio"
+                          name="chart-type"
+                          :value="option.value"
+                          class="sr-only"
+                        >
+                        <component
+                          :is="option.icon"
+                          class="size-4 shrink-0"
+                          aria-hidden="true"
+                        />
+                        {{ option.label }}
+                      </label>
+                    </div>
+                  </fieldset>
+                </div>
+
                 <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
                   <p class="font-bold mb-2">
                     {{ $t('Axe Y') }}
                   </p>
                   <div class="space-y-4">
-                    <div>
-                      <label
-                        for="chart-type"
-                        class="fr-label"
-                      >{{ $t('Type de graphique') }}</label>
-                      <select
-                        id="chart-type"
-                        v-model="form.chart_type"
-                        class="w-full fr-select"
-                      >
-                        <option value="line">
-                          {{ $t('Ligne') }}
-                        </option>
-                        <option value="histogram">
-                          {{ $t('Histogramme') }}
-                        </option>
-                      </select>
-                    </div>
                     <div>
                       <label
                         for="y-axis-label"
@@ -457,7 +474,7 @@ import { buildTypeConfig, useGetProfile, useHasTabularData, toast, BrandedButton
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, nextTick, reactive, ref, watch } from 'vue'
 import { watchDebounced } from '@vueuse/core'
-import { RiArrowDownSLine, RiBarChartBoxLine, RiCheckboxCircleLine, RiInformationLine, RiLoader4Line, RiSettings3Line, RiText } from '@remixicon/vue'
+import { RiArrowDownSLine, RiBarChartBoxLine, RiBarChartLine, RiLineChartLine, RiCheckboxCircleLine, RiInformationLine, RiLoader4Line, RiSettings3Line, RiText } from '@remixicon/vue'
 import { isMeAdmin } from '~/utils/auth'
 import ProducerSelect from '../ProducerSelect.vue'
 import ChatPanel from '../Assistant/ChatPanel.vue'
@@ -496,6 +513,10 @@ const panelOptions = computed(() => [
   { value: 'form', label: t('Formulaire') },
   { value: 'assistant', label: t('Assistant') },
 ])
+const chartTypeOptions = computed(() => [
+  { value: 'histogram', label: t('Histogramme'), icon: RiBarChartLine },
+  { value: 'line', label: t('Courbe'), icon: RiLineChartLine },
+] as const)
 const chartViewerWrapperRef = ref<InstanceType<typeof ChartViewerWrapper> | null>(null)
 const sourceLoading = ref(false)
 const previewLoading = ref(false)

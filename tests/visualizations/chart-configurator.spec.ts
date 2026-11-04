@@ -351,14 +351,11 @@ test('uses the SQL textarea without declarative x-axis or filter controls', asyn
 test('chart type selection is sent in the save payload', async ({ page }) => {
   await setupChart(page)
 
-  await page.getByText('Styles').click()
-  const chartType = page.locator('#chart-type')
-  await expect(chartType).toBeVisible()
-  expect(await chartType.inputValue()).toBe('line')
-  expect(await chartType.locator('option').evaluateAll(options =>
-    options.map(option => (option as HTMLOptionElement).value),
-  )).toEqual(['line', 'histogram'])
-  await chartType.selectOption('histogram')
+  const chartType = page.getByTestId('chart-type')
+  await expect(chartType.getByRole('radio')).toHaveCount(2)
+  await expect(chartType.getByRole('radio', { name: 'Courbe' })).toBeChecked()
+  await chartType.getByText('Histogramme').click()
+  await expect(chartType.getByRole('radio', { name: 'Histogramme' })).toBeChecked()
 
   await page.getByLabel('Requête SQL').fill(CHART_QUERY)
   const { response, body } = await saveChart(page)
