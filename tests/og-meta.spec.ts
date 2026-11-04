@@ -10,6 +10,8 @@ async function getMetaContent(page: Page, selector: string) {
 test.describe('OG meta tags', () => {
   // Crawlers only read the server HTML: without JS these fail if the meta tags
   // only appear after hydration.
+  // The fallback tests use /dashboard because it sets no page title: switch to another
+  // untitled page if it ever gets one.
   test.describe('server-rendered meta', () => {
     test.use({ javaScriptEnabled: false })
 
