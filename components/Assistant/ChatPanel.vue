@@ -98,7 +98,7 @@
     <!-- A div, not a form: this panel lives inside the chart configurator's root
     form and nested forms are invalid HTML. Enter submits via handleEnter. -->
     <div
-      class="mt-auto overflow-hidden rounded-md border bg-white transition-[border-color,box-shadow] focus-within:border-new-primary focus-within:shadow-[0_0_0_1px_var(--color-new-primary)]"
+      class="mt-auto overflow-hidden rounded-md border border-gray-default bg-white transition-[border-color,box-shadow] focus-within:border-new-primary focus-within:shadow-[0_0_0_2px_var(--color-blue-light)]"
     >
       <div class="flex h-28 flex-col px-2 py-2">
         <textarea
@@ -107,7 +107,7 @@
           v-model="input"
           rows="3"
           :maxlength="MAX_INPUT_LENGTH"
-          class="min-h-0 w-full flex-1 resize-none border-0 bg-transparent text-sm outline-none placeholder:text-new-gray-medium"
+          class="min-h-0 w-full flex-1 resize-none border-0 bg-transparent text-[11px] leading-5 text-new-gray-dark outline-none placeholder:text-new-gray-medium-clic"
           :aria-label="$t('Votre demande')"
           :disabled="waiting || busy"
           :placeholder="$t('Décrivez le graphique souhaité…')"
