@@ -304,6 +304,41 @@ describe('useResourceCapabilities tabsOptions', () => {
     ])
   })
 
+  test('shows Données and Structure des données for a WFS layer with a JSON output', () => {
+    const result = withConfig({ tabularApiUrl: TABULAR_API_URL }, () => {
+      const r = resource({
+        'analysis:parsing:ogc_metadata': {
+          format: 'wfs',
+          version: '2.0.0',
+          output_formats: ['text/xml; subtype=gml/3.2', 'application/json'],
+          detected_layer: { name: 'ns:layer', default_crs: 'EPSG:2154' },
+        },
+      }, 'wfs', 'remote')
+      r.url = 'https://example.com/wfs?SERVICE=WFS&REQUEST=GetCapabilities'
+      const { tabsOptions, previewKind, hasPreview } = useResourceCapabilities(() => r, () => dataset)
+      return { tabs: tabsOptions.value, previewKind: previewKind.value, hasPreview: hasPreview.value }
+    })
+    expect(result.previewKind).toBe('wfs')
+    expect(result.hasPreview).toBe(true)
+    expect(result.tabs).toEqual([
+      { key: 'data', label: 'Données' },
+      { key: 'data-structure', label: 'Structure des données' },
+      { key: 'metadata', label: 'Métadonnées' },
+    ])
+  })
+
+  test('no WFS tabs without a JSON output or over http', () => {
+    const wfsTabs = (url: string, outputFormats: string[]) => withConfig({ tabularApiUrl: TABULAR_API_URL }, () => {
+      const r = resource({
+        'analysis:parsing:ogc_metadata': { format: 'wfs', version: '2.0.0', output_formats: outputFormats, detected_layer: { name: 'ns:layer', default_crs: null } },
+      }, 'wfs', 'remote')
+      r.url = url
+      return useResourceCapabilities(() => r, () => dataset).tabsOptions.value.map(tab => tab.key)
+    })
+    expect(wfsTabs('https://example.com/wfs', ['text/xml; subtype=gml/3.2'])).toEqual(['metadata'])
+    expect(wfsTabs('http://example.com/wfs', ['application/json'])).toEqual(['metadata'])
+  })
+
   test('shows the data tab first when only the pmtiles export failed on a CSV with a working table', () => {
     const result = tabs(
       { 'analysis:parsing:parsing_table': 'abc', 'analysis:parsing:error': 'pmtiles_export:GeoJSON to PMTiles conversion failed with exit code 110' },

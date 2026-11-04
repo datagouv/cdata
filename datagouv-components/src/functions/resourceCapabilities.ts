@@ -1,5 +1,6 @@
-import type { Resource, WfsMetadata, OgcLayerInfo } from '../types/resources'
+import type { Resource } from '../types/resources'
 import { isSafeHttpUrl } from './helpers'
+import { buildWfsUrl, getWfsLayer } from './wfs'
 
 const GENERATED_FORMATS = ['parquet', 'pmtiles', 'geojson']
 
@@ -58,32 +59,14 @@ const WFS_EXPORT_FORMATS = [
   },
 ]
 
-function buildWfsDownloadUrl(baseUrl: string, wfsMetadata: WfsMetadata, format: { name: string, mimetype: string }, layer: OgcLayerInfo) {
-  const version = wfsMetadata.version
-  const query = new URLSearchParams({
-    SERVICE: 'WFS',
-    REQUEST: 'GetFeature',
-    VERSION: version,
-    ...(Number(version.split('.')[0]) >= 2 ? { TYPENAMES: layer.name } : { TYPENAME: layer.name }),
-    OUTPUTFORMAT: format.mimetype,
-    ...(layer.default_crs ? { SRSNAME: layer.default_crs } : {}),
-  })
-  return `${baseUrl.split('?')[0]}?${query.toString()}`
-}
-
 export function getWfsExportFormats(resource: Pick<Resource, 'extras' | 'url'>) {
-  const wfsMetadata = resource.extras['analysis:parsing:ogc_metadata'] as WfsMetadata | null
-  if (!wfsMetadata || wfsMetadata.format !== `wfs`) return []
-  const outputFormats = wfsMetadata.output_formats.map((format: string) => format.toLowerCase())
-  const layer = wfsMetadata.detected_layer
+  // `getWfsLayer` rejects a non-http(s) `resource.url`, which every URL below is built on.
+  const layer = getWfsLayer(resource)
   if (!layer) return []
-  // Every download URL below is built on top of `resource.url`, so its scheme is the one
-  // of `resource.url`: guard it once here rather than on each of the built URLs.
-  if (!isSafeHttpUrl(resource.url)) return []
-  const formats = WFS_EXPORT_FORMATS.filter(format => outputFormats.includes(format.mimetype.toLowerCase()))
+  const outputFormats = layer.outputFormats.map(format => format.toLowerCase())
+  return WFS_EXPORT_FORMATS.filter(format => outputFormats.includes(format.mimetype.toLowerCase()))
     .map(format => ({
-      url: buildWfsDownloadUrl(resource.url, wfsMetadata, format, layer),
+      url: buildWfsUrl(layer, 'GetFeature', { outputFormat: format.mimetype, srsName: layer.defaultCrs }),
       format: format.name,
     }))
-  return formats
 }

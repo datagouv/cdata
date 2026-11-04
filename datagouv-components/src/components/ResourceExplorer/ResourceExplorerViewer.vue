@@ -86,6 +86,15 @@
                 </template>
               </Suspense>
 
+              <!-- A WFS layer's first rows: full-bleed like the tabular table. -->
+              <WfsPreview
+                v-else-if="previewKind === 'wfs' && wfsPreviewLayer"
+                :resource="resource"
+                :layer="wfsPreviewLayer"
+                :fill="fullscreen"
+                :can-edit="canEdit"
+              />
+
               <!-- PDF is a full-bleed visual preview like the table and the map: it
                    owns its own reader backdrop, so it sits outside the padded wrapper. -->
               <PdfPreview
@@ -146,6 +155,12 @@
                 v-if="hasTabularData"
                 :resource="resource"
               />
+              <WfsDataStructure
+                v-else-if="wfsPreviewLayer"
+                :resource="resource"
+                :layer="wfsPreviewLayer"
+                :can-edit="canEdit"
+              />
             </div>
             <div v-if="tab.key === 'metadata'">
               <Metadata :resource />
@@ -191,6 +206,8 @@ import TabularTable from '../TabularExplorer/TabularTable.vue'
 import TabularMobileFilters from '../TabularExplorer/TabularMobileFilters.vue'
 import TabularSkeleton from '../TabularExplorer/TabularSkeleton.vue'
 import DataStructure from '../ResourceAccordion/DataStructure.vue'
+import WfsDataStructure from '../ResourceAccordion/WfsDataStructure.vue'
+import WfsPreview from '../ResourceAccordion/WfsPreview.vue'
 import Metadata from '../ResourceAccordion/Metadata.vue'
 import ResourceViewerHeader from './ResourceViewerHeader.vue'
 import { trackEvent } from '../../functions/matomo'
@@ -198,6 +215,7 @@ import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { useResourceCapabilities } from '../../composables/useResourceCapabilities'
 import { provideTabularProfile } from '../../composables/useTabularProfile'
+import { provideWfsSchema } from '../../composables/useWfs'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
@@ -256,8 +274,13 @@ const {
   hasPmtilesError,
   pmtilesError,
   ogcWms,
+  wfsPreviewLayer,
   tabsOptions,
 } = useResourceCapabilities(() => props.resource, () => props.dataset)
+
+// One schema request for the data and structure tabs of a WFS layer. Before the
+// `await` below: `provide()` needs the component instance, lost after it.
+provideWfsSchema()
 
 // Share the tabular profile fetch between TabularExplorer and DataStructure tabs.
 // Only tabular resources have one: asking for the profile of a PDF or an image is a

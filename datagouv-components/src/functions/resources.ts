@@ -264,7 +264,9 @@ export function hasTabularParsingError(resource: Resource): boolean {
 
 type CorsStatus = 'allowed' | 'blocked' | 'unknown'
 
-export const getResourceCorsStatus = (resource: Resource): CorsStatus => {
+// `trustedDomains` defaults to the components config, read through `inject()`:
+// pass it when calling outside a component setup (a watcher, a later callback).
+export const getResourceCorsStatus = (resource: Resource, trustedDomains?: string[]): CorsStatus => {
   const extras = resource.extras
   if (!extras || !('check:cors:allow-origin' in extras)) {
     return 'unknown'
@@ -274,11 +276,10 @@ export const getResourceCorsStatus = (resource: Resource): CorsStatus => {
   const rawMethods = extras['check:cors:allow-methods'] as string | undefined
 
   // Check if allow-origin is '*' or contains one of our trusted domains
-  const config = useComponentsConfig()
-  const trustedDomains = config.trustedDomains ?? []
+  const domains = trustedDomains ?? useComponentsConfig().trustedDomains ?? []
   const hasPublicCors = allowOrigin === '*'
   const hasSpecificCors = allowOrigin
-    ? trustedDomains.some((domain) => {
+    ? domains.some((domain) => {
         try {
           const hostname = new URL(allowOrigin).hostname
           return hostname === domain || hostname.endsWith(`.${domain}`)
