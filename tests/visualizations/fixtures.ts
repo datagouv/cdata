@@ -149,14 +149,3 @@ export async function createChart(request: APIRequestContext, options: CreateCha
 export async function deleteChart(request: APIRequestContext, id: string): Promise<void> {
   await request.delete(`${API_BASE_URL}/api/1/visualizations/${id}/`)
 }
-
-export async function deleteAllCharts(request: APIRequestContext): Promise<void> {
-  const response = await request.get(`${API_BASE_URL}/api/1/visualizations/`, {
-    params: { page_size: '100' },
-  })
-  if (!response.ok()) return
-  const { data } = await response.json() as { data: Array<{ id: string }> }
-  for (const chart of data) {
-    await deleteChart(request, chart.id)
-  }
-}
