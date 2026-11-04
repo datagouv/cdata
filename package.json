@@ -64,6 +64,7 @@
     "@vueuse/integrations": "^14.4.0",
     "@vueuse/nuxt": "^14.4.0",
     "@vueuse/router": "^14.4.0",
+    "ai": "^7.0.153",
     "bowser": "^2.14.1",
     "culori": "^4.0.2",
     "dompurify": "^3.4.16",

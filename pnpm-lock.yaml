@@ -142,6 +142,9 @@ importers:
       '@vueuse/router':
         specifier: ^14.4.0
         version: 14.4.0(vue-router@5.4.0(@vue/compiler-sfc@3.5.43)(esbuild@0.28.2)(rolldown@1.2.13)(rollup@4.64.3)(vite@8.3.4(@types/node@24.19.1)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.105.1)(sass@1.105.1)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.43(typescript@5.9.3)))(vue@3.5.43(typescript@5.9.3))
+      ai:
+        specifier: ^7.0.153
+        version: 7.0.153(zod@4.6.5)
       bowser:
         specifier: ^2.14.1
         version: 2.14.1
