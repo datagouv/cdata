@@ -37,6 +37,20 @@ let echartsInstance: EChartsType | null = null
 // in this blue.
 const CHART_COLORS = ['#000091', '#82B5F2', '#29598F', '#31A7AE', '#81EEF5', '#B478F1', '#CFB1F5', '#CECECE']
 
+// Dense line series turn into a solid bead of markers: keep at most this many
+// evenly spaced ones (size 0 hides the rest; the axis tooltip still covers
+// every point). Each series starts at its own offset within the step so
+// overlapping series do not stack their markers on the same x positions.
+const MAX_LINE_SYMBOLS = 12
+const LINE_SYMBOL_SIZE = 8
+
+function lineSymbolSize(pointCount: number, seriesIndex: number, seriesCount: number) {
+  const step = Math.max(1, Math.ceil(pointCount / MAX_LINE_SYMBOLS))
+  const offset = Math.floor((seriesIndex * step) / seriesCount)
+  return (_value: unknown, params: { dataIndex: number }) =>
+    params.dataIndex % step === offset ? LINE_SYMBOL_SIZE : 0
+}
+
 function capture(): string | null {
   return echartsInstance?.getDataURL() ?? null
 }
@@ -134,7 +148,7 @@ const echartsOption = computed(() => {
   const seriesCount = props.chart.series.length
   if (!props.chart.series || seriesCount === 0) return
 
-  const seriesArray = props.chart.series.map((s) => {
+  const seriesArray = props.chart.series.map((s, seriesIndex) => {
     const xColumn = s.column_x_name_override ?? props.chart.x_axis.column_x
     const yColumn = s.aggregate_y ? `${s.column_y}__${s.aggregate_y}` : s.column_y
     const resourceId = s.resource_id
@@ -197,9 +211,20 @@ const echartsOption = computed(() => {
       })
     }
 
+    const lineOptions = s.type === 'histogram'
+      ? {}
+      // showAllSymbol: ECharts' own 'auto' thinning (category axes) would
+      // fight the evenly spaced selection.
+      : {
+          smooth: true,
+          showAllSymbol: true,
+          symbolSize: lineSymbolSize(sortedData.length, seriesIndex, seriesCount),
+        }
+
     return {
       series: {
         type: s.type === 'histogram' ? 'bar' : 'line',
+        ...lineOptions,
         dimensions: s.aggregate_y ? [xColumn, yColumn] : resourceColumns.map(c => c.name),
         name: yColumn,
         encode: {
