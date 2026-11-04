@@ -285,12 +285,5 @@ onMounted(() => {
   }
 })
 
-// Checked on arriving at a step only: `save()` empties the form on purpose once
-// published, and reacting to that would pull the user back to the first step while
-// they are being sent to the dataset page
-watch(currentStep, () => {
-  if (!isCurrentStepValid.value) {
-    moveToStep(1)
-  }
-}, { immediate: true })
+useStepGuard(currentStep, isCurrentStepValid, () => moveToStep(1))
 </script>
