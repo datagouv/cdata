@@ -57,7 +57,6 @@ const config = useComponentsConfig()
 
 const status = ref<'idle' | 'pending' | 'success' | 'error'>('idle')
 const queryResult = ref<SqlQueryResult | null>(null)
-const error = ref<Error | null>(null)
 
 // Date.parse accepts bare years and numeric identifiers, so require a date prefix.
 const ISO_DATE_PREFIX = /^\d{4}-\d{2}-\d{2}(?:[T ]|$)/
@@ -170,12 +169,10 @@ async function runQuery() {
   if (!tabularApiUrl || !query || !resourceId) {
     status.value = 'success'
     queryResult.value = null
-    error.value = null
     return
   }
 
   status.value = 'pending'
-  error.value = null
 
   try {
     const result = await executeSqlQuery(tabularApiUrl, resourceId, query)
@@ -186,14 +183,16 @@ async function runQuery() {
   catch (err) {
     if (sequence !== requestSequence) return
     console.error(err)
-    error.value = err instanceof Error ? err : new Error(String(err))
     queryResult.value = null
     status.value = 'error'
   }
 }
 
+// One getter per field: a single getter returning a new array would fire on
+// every new chart object (parents rebuild it on each form change) and re-run
+// the query for a title or axis label edit.
 watchDebounced(
-  () => [props.chart.query, props.chart.resource_id, props.tabularApiUrl],
+  [() => props.chart.query, () => props.chart.resource_id, () => props.tabularApiUrl],
   runQuery,
   { debounce: config.searchDebounce ?? 300, immediate: true },
 )

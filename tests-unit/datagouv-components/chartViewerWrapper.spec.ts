@@ -335,4 +335,19 @@ describe('ChartViewerWrapper', () => {
     expect(wrapper.text()).toContain('Une erreur est survenue lors du chargement des données du graphique.')
     expect(wrapper.text()).not.toContain('847057e0-4c03-4099-85aa-9796fb6003bf')
   })
+
+  it('does not re-run the query when only presentation fields change', async () => {
+    executeSqlQueryMock.mockResolvedValue({ columns: ['date', 'votes'], rows: [['2024-01-01', 1]] })
+    const chart = chartFixture('SELECT date, votes FROM data')
+    const wrapper = mountWrapper(chart)
+    await waitForFetch()
+
+    // Parents rebuild the chart object on every form change (title, axis label...).
+    await wrapper.setProps({ chart: { ...chart, y_axis: { ...chart.y_axis, label: 'Votes' } } })
+    await flushPromises()
+    expect(executeSqlQueryMock).toHaveBeenCalledOnce()
+
+    await wrapper.setProps({ chart: { ...chart, query: 'SELECT date, votes FROM data LIMIT 5' } })
+    await vi.waitFor(() => expect(executeSqlQueryMock).toHaveBeenCalledTimes(2))
+  })
 })
