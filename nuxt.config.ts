@@ -55,6 +55,7 @@ export default defineNuxtConfig({
     rememberCookieName: 'remember_token',
     crispIdentifier: '',
     crispKey: '',
+    albertApiKey: '',
     crispWebsiteId: '',
     albertApiBaseUrl: 'https://albert.api.etalab.gouv.fr/',
     albertApiKey: '',
