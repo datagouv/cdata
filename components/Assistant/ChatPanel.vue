@@ -50,6 +50,7 @@
           <MarkdownViewer
             v-else-if="item.kind === 'text'"
             :content="item.text"
+            no-images
           />
         </template>
       </article>
