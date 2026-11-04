@@ -37,7 +37,8 @@ test.describe('OG meta tags', () => {
       const ogDescription = await getMetaContent(page, 'meta[property="og:description"]')
       const description = await getMetaContent(page, 'meta[name="description"]')
       expect(ogTitle).toContain('Base Sirene')
-      expect(ogDescription).toBeTruthy()
+      // Text from the fixture dataset's description: the site-wide fallback would not contain it
+      expect(ogDescription).toContain('Sirene open data actualités')
       expect(ogDescription).toBe(description)
     })
 
