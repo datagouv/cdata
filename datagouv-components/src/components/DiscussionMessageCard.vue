@@ -7,17 +7,17 @@
       {{ discussion.title }}
     </template>
 
-    <div
-      v-if="discussion.organization || discussion.user"
-      class="flex flex-wrap items-center gap-x-2 gap-y-1 mt-2"
-    >
+    <ObjectCardMeta class="mt-2">
       <ObjectCardOwner
+        v-if="discussion.organization || discussion.user"
+        show-details
         :organization="discussion.organization"
         :owner="discussion.user"
         :organization-url="organizationUrl"
       />
       <TranslationT
-        class="text-sm/6 text-gray-secondary tabular-nums"
+        tag="span"
+        class="tabular-nums"
         keypath="Posté {date}"
       >
         <template #date>
@@ -28,7 +28,7 @@
           />
         </template>
       </TranslationT>
-    </div>
+    </ObjectCardMeta>
     <ObjectCardShortDescription
       :text="firstMessageContent"
       class="mt-2 max-md:hidden"
@@ -44,6 +44,7 @@ import type { RouteLocationRaw } from 'vue-router'
 import type { Thread } from '../types/discussions'
 import FormattedDate from './FormattedDate.vue'
 import ObjectCard from './ObjectCard.vue'
+import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import TranslationT from './TranslationT.vue'
