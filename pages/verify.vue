@@ -2,10 +2,20 @@
   <div class="bg-gray-some py-6 space-y-6">
     <div class="container bg-white max-w-xl p-6 border border-gray-lower">
       <h1 class="text-center text-gray-title font-extrabold text-2xl">
-        {{ $t('Confirmer votre mot de passe') }}
+        {{ $t('Confirmer votre identité') }}
       </h1>
 
-      <div class="space-y-6">
+      <!-- Back from a successful ProConnect reauthentication: only leaving remains. -->
+      <div
+        v-if="proconnectSucceeded"
+        class="flex justify-center py-6"
+      >
+        <AnimatedLoader />
+      </div>
+      <div
+        v-else
+        class="space-y-6"
+      >
         <SimpleBanner
           v-if="getAllErrorsInErrorFields(errors, '')"
           type="danger"
@@ -39,13 +49,20 @@
             </BrandedButton>
           </div>
         </form>
+
+        <Divider>{{ $t('ou') }}</Divider>
+
+        <ProConnectButton
+          :label="$t('S’identifier avec')"
+          action="reauth"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
+import { AnimatedLoader, BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
 import type { FieldsErrors } from '~/types/form'
 import { usePostApiWithCsrf } from '~/utils/api'
 
@@ -63,10 +80,21 @@ const errors = ref<FieldsErrors>({})
 const me = useMe()
 
 const route = useRoute()
+// Read before the site header consumes the flash and strips it from the URL.
+const proconnectSucceeded = route.query.flash === 'proconnect_reauth_success'
 
-onMounted(() => {
+// Replace: going back to /verify?flash=proconnect_reauth_success would bounce the agent
+// forward again, the site header's own replace that strips the flash being cancelled by
+// this navigation.
+const goToNext = () => navigateTo(sessionStorage.getItem('next') || '/', { replace: true })
+
+onMounted(async () => {
   if (route.query.next) {
     sessionStorage.setItem('next', route.query.next as string)
+  }
+  // Back from ProConnect: udata redirects here, the destination stayed in `sessionStorage`.
+  if (proconnectSucceeded) {
+    await goToNext()
   }
 })
 
@@ -82,14 +110,7 @@ const connect = async () => {
 
     toast.success(t('Compte confirmé.'))
     await loadMe(me)
-
-    const next = sessionStorage.getItem('next')
-    if (next) {
-      navigateTo(next)
-    }
-    else {
-      await navigateTo('/')
-    }
+    await goToNext()
   }
   catch (e) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

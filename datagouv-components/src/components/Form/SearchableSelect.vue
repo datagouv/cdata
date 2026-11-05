@@ -311,6 +311,10 @@ const filteredAndGroupedOptions = computed<Record<string, Array<T>>>(() => {
 function compareTwoOptions(a: T | null, b: T | null) {
   if (a === b) return true
   if (!a || !b) return false
+  // In multiple mode, Headless UI compares the options with the whole selection array
+  // when the combobox reopens while its options are still mounted (leave transition).
+  // No option matches the selection itself, like with Headless UI's default `===` comparator.
+  if (Array.isArray(a) || Array.isArray(b)) return false
 
   return props.getOptionId(a) === props.getOptionId(b)
 }

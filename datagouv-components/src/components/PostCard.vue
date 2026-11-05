@@ -1,43 +1,39 @@
 <template>
-  <ObjectCard media-size="lg">
+  <ObjectCard
+    :url="postUrl || post.page || '#'"
+    :icon="RiArticleLine"
+    media-size="lg"
+  >
     <template #media>
-      <img
-        v-if="post.image"
+      <CardMedia
         :src="post.image"
-        class="w-full h-full object-cover"
         :alt="post.name"
-      >
-      <Placeholder
-        v-else
-        type="Dataset"
-        class="w-full h-full"
+        kind="post"
       />
     </template>
-
-    <ObjectCardHeader
-      :icon="RiArticleLine"
-      :url="postUrl || post.page || '#'"
-    >
+    <template #title>
       {{ post.name }}
-    </ObjectCardHeader>
+    </template>
 
-    <ObjectCardShortDescription :text="post.headline || post.content" />
-
-    <TranslationT
-      v-if="post.published || post.created_at"
-      tag="div"
-      class="text-sm text-gray-medium mt-1"
-      keypath="Publié {date}"
-    >
-      <template #date>
-        <FormattedDate
-          :date="post.published || post.created_at"
-          format="relative"
-          :options="{ dateStyle: 'long', timeStyle: 'short' }"
-        />
-      </template>
-    </TranslationT>
-
+    <ObjectCardMeta v-if="post.published || post.created_at">
+      <TranslationT
+        tag="span"
+        class="tabular-nums"
+        keypath="Publié {date}"
+      >
+        <template #date>
+          <FormattedDate
+            :date="post.published || post.created_at"
+            format="relative"
+            :options="{ dateStyle: 'long', timeStyle: 'short' }"
+          />
+        </template>
+      </TranslationT>
+    </ObjectCardMeta>
+    <ObjectCardShortDescription
+      :text="post.headline || post.content"
+      class="max-md:hidden"
+    />
     <slot />
   </ObjectCard>
 </template>
@@ -46,11 +42,11 @@
 import { RiArticleLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Post } from '../types/posts'
-import Placeholder from './Placeholder.vue'
-import ObjectCard from './ObjectCard.vue'
-import ObjectCardHeader from './ObjectCardHeader.vue'
-import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
+import CardMedia from './CardMedia.vue'
 import FormattedDate from './FormattedDate.vue'
+import ObjectCard from './ObjectCard.vue'
+import ObjectCardMeta from './ObjectCardMeta.vue'
+import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import TranslationT from './TranslationT.vue'
 
 defineProps<{

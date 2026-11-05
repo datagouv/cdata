@@ -1,8 +1,11 @@
 <template>
   <div>
-    <PreviewUnavailable v-if="hasError">
-      {{ t("L'aperçu de ce fichier n'a pas pu être chargé. Téléchargez-le depuis l'onglet Téléchargements.") }}
-    </PreviewUnavailable>
+    <PreviewError
+      v-if="hasError"
+      :resource="resource"
+      :error-type="errorType"
+      :show-producer-cta="showProducerCta"
+    />
     <PreviewLoader v-else-if="loading" />
     <div
       v-else
@@ -113,12 +116,13 @@ import { trackEvent } from '../../functions/matomo'
 import type { Resource } from '../../types/resources'
 import { useComponentsConfig } from '../../config'
 import BrandedButton from '../BrandedButton.vue'
-import PreviewUnavailable from './PreviewUnavailable.vue'
+import PreviewError from './PreviewError.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
 import PreviewLoader from './PreviewLoader.vue'
+import { getTransientErrorType } from '../../functions/previewErrors'
 
-const props = defineProps<{ resource: Resource }>()
+const props = defineProps<{ resource: Resource, showProducerCta?: boolean }>()
 
 const { t } = useTranslation()
 
@@ -201,6 +205,10 @@ function sortByField(col: string) {
 };
 
 const parsingFinishedAt = computed(() => props.resource.extras['analysis:parsing:finished_at'] as string | undefined)
+
+// A tabular API failure is (most often) transient: when metadata gives no
+// diagnosis, describe a failure rather than claiming the file can't be previewed.
+const errorType = computed(() => getTransientErrorType(props.resource))
 
 onMounted(() => {
   getTableInfos(currentPage.value)

@@ -101,6 +101,9 @@
   --color-gray-default: #e5e5e5;
   --color-gray-plain: #3a3a3a;
   --color-gray-some: #f6f6f6;
+  --color-gray-secondary: #555555;
+  --color-gray-active: #f0f0f0;
+  --color-blue-france-contrast: #ececfe;
   --color-gray-logo: #373c42;
   --color-gray-dark: #242424;
   --color-gray-disabled: #2A2A2A;
@@ -140,6 +143,7 @@
   --color-pink-soft: #FFE4F2;
   --color-pink: #CF006D;
 
+  --shadow-overlay: 0 8px 24px #16161614;
   --shadow-input-blue: inset 0 -2px 0 0 #000091;
   --shadow-input: inset 0 -2px 0 0 var(--blue-cumulus-sun-368-moon-732);
 
