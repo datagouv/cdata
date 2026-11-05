@@ -2,7 +2,7 @@ import type { Chart } from '@datagouv/components-next'
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
-import { ASSISTANT_CHAT_PATH, createChartOutput, createChartStream } from '../assistantApi'
+import { ASSISTANT_CHAT_PATH, createChartOutput, createChartStream, routeAssistantStream } from '../assistantApi'
 import { createChart, deleteChart, mockTabular, RESOURCE_ID, setupChart } from './fixtures'
 import data from './data.json' with { type: 'json' }
 
@@ -953,28 +953,6 @@ test('test_a_tool_result_is_applied_only_once', async ({ page }) => {
   }
   await expect(page.getByLabel('Titre')).toHaveValue('Titre modifié à la main')
 })
-
-/** Answers the chat with `stream` instead of the fake services' script. */
-async function routeAssistantStream(page: Page, stream: string) {
-  await page.route(`${ASSISTANT_API_BASE}${ASSISTANT_CHAT_PATH}`, async (route) => {
-    const origin = route.request().headers()['origin'] ?? '*'
-    const cors = {
-      'Access-Control-Allow-Origin': origin,
-      'Access-Control-Allow-Credentials': 'true',
-      'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      'Access-Control-Allow-Headers': 'content-type',
-    }
-    if (route.request().method() === 'OPTIONS') {
-      await route.fulfill({ status: 204, headers: cors })
-      return
-    }
-    await route.fulfill({
-      status: 200,
-      headers: { ...cors, 'Content-Type': 'text/event-stream', 'x-vercel-ai-ui-message-stream': 'v1' },
-      body: stream,
-    })
-  })
-}
 
 test('test_a_result_for_another_resource_is_ignored', async ({ page }) => {
   await setupChart(page)
