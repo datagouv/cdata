@@ -53,12 +53,12 @@ test.describe('chart cards', () => {
     await expect(histogramLink).toBeVisible()
     await expect(histogramCard.getByText('Admin User')).toBeVisible()
     await expect(histogramCard.getByText('Mis à jour')).toBeVisible()
-    await expect(histogramCard.locator('[aria-label="0 vues"]')).toBeVisible()
+    await expect(histogramCard.getByText('0 vues', { exact: true })).toBeVisible()
     await expect(histogramCard.getByText('Histogramme de test pour la carte.')).toBeVisible()
 
     const lineCard = page.locator('article').filter({ hasText: privateLineChart.title })
     await expect(lineCard).toBeVisible()
-    await expect(lineCard.locator('[aria-label="0 vues"]')).toBeVisible()
+    await expect(lineCard.getByText('0 vues', { exact: true })).toBeVisible()
   })
 
   test('with image displays an img, without image a placeholder', async ({ page }) => {
@@ -70,7 +70,7 @@ test.describe('chart cards', () => {
 
     const lineCard = page.locator('article').filter({ hasText: privateLineChart.title })
     await expect(lineCard.locator('img')).toHaveCount(0)
-    await expect(lineCard.locator('div.bg-gray-lower')).toBeVisible()
+    await expect(lineCard.getByRole('img', { name: privateLineChart.title })).toBeVisible()
   })
 
   test('title link points to the chart page', async ({ page }) => {
@@ -87,9 +87,9 @@ test.describe('chart cards', () => {
     await page.waitForLoadState('networkidle')
 
     const lineCard = page.locator('article').filter({ hasText: privateLineChart.title })
-    await expect(lineCard.locator('.fr-badge')).toHaveText('Brouillon')
+    await expect(lineCard.getByText('Brouillon', { exact: true })).toBeVisible()
 
     const histogramCard = page.locator('article').filter({ hasText: histogramChart.title })
-    await expect(histogramCard.locator('.fr-badge')).toHaveCount(0)
+    await expect(histogramCard.getByText('Brouillon', { exact: true })).toHaveCount(0)
   })
 })
