@@ -1,149 +1,113 @@
 /**
  * Keeps server-initiated HTTP(S) fetches of user-supplied URLs on public hosts (SSRF mitigation).
- * Blocks literal private/reserved IPs and hostnames whose DNS answers include any such address.
+ *
+ * Two independent concerns, mirroring udata's `udata/ssrf.py`:
+ * - when: the address is checked by the socket's own DNS lookup, so the checked address is the
+ *   connected one (no DNS rebinding window, every redirect hop checked);
+ * - what: only globally reachable addresses pass. Anything the IANA special-purpose registries
+ *   do not mark as global is refused, rather than enumerating the ranges known to be dangerous.
  */
 
 import dns from 'node:dns'
-import net, { type LookupFunction } from 'node:net'
+import net, { BlockList, type LookupFunction } from 'node:net'
 import { Agent } from 'undici'
 
-function isForbiddenIPv4(ip: string): boolean {
-  const parts = ip.split('.').map(p => Number(p))
-  // Reject malformed strings (SSRF tricks, octal confusion, etc.): require four decimal octets 0–255.
-  if (parts.length !== 4 || parts.some(n => !Number.isInteger(n) || n < 0 || n > 255)) {
-    return true
-  }
-  const [a, b] = parts
-
-  // 127.0.0.0/8 — loopback (localhost, internal services bound to loopback only).
-  if (a === 127) {
-    return true
-  }
-  // 10.0.0.0/8 — RFC 1918 private class A.
-  if (a === 10) {
-    return true
-  }
-  // 172.16.0.0/12 — RFC 1918 private (172.16.x.x through 172.31.x.x).
-  if (a === 172 && b >= 16 && b <= 31) {
-    return true
-  }
-  // 192.168.0.0/16 — RFC 1918 private class C space.
-  if (a === 192 && b === 168) {
-    return true
-  }
-  // 169.254.0.0/16 — link-local (includes cloud instance metadata endpoints such as 169.254.169.254).
-  if (a === 169 && b === 254) {
-    return true
-  }
-  // 0.0.0.0/8 — "this network", non-routable / ambiguous on many stacks.
-  if (a === 0) {
-    return true
-  }
-  // 224.0.0.0/4 — multicast; 240.0.0.0/4 — reserved / future use. Not suitable targets for outbound fetches.
-  if (a >= 224) {
-    return true
-  }
-  return false
+/** IPv4 ranges that are not globally reachable (IANA IPv4 special-purpose registry), plus multicast. */
+const NON_GLOBAL_IPV4 = new BlockList()
+for (const [network, prefix] of [
+  ['0.0.0.0', 8], // "this network", 0.0.0.0 reaches localhost
+  ['10.0.0.0', 8], // private
+  ['100.64.0.0', 10], // shared address space (CGNAT)
+  ['127.0.0.0', 8], // loopback
+  ['169.254.0.0', 16], // link-local, cloud instance metadata (169.254.169.254)
+  ['172.16.0.0', 12], // private
+  ['192.0.0.0', 24], // IETF protocol assignments
+  ['192.0.2.0', 24], // documentation (TEST-NET-1)
+  ['192.168.0.0', 16], // private
+  ['198.18.0.0', 15], // benchmarking
+  ['198.51.100.0', 24], // documentation (TEST-NET-2)
+  ['203.0.113.0', 24], // documentation (TEST-NET-3)
+  ['224.0.0.0', 4], // multicast
+  ['240.0.0.0', 4], // reserved, broadcast
+] as const) {
+  NON_GLOBAL_IPV4.addSubnet(network, prefix, 'ipv4')
 }
 
-/** RFC 4291 IPv4-mapped IPv6: ::ffff: followed by 32 bits (dotted quad or two hextets). */
-const IPV4_MAPPED_COMPRESSED = '::ffff:'
-/** Same mapping in fully expanded form (no :: compression before ffff). */
-const IPV4_MAPPED_EXPANDED = '0:0:0:0:0:ffff:'
+/**
+ * IPv6 is checked the other way around: only global unicast (2000::/3) can be public, which
+ * rules out ::, ::1, IPv4-compatible ::/96, ULA, link-local, site-local and multicast at once.
+ */
+const GLOBAL_UNICAST_IPV6 = new BlockList()
+GLOBAL_UNICAST_IPV6.addSubnet('2000::', 3, 'ipv6')
 
-const DOTTED_IPV4 = /^\d{1,3}(?:\.\d{1,3}){3}$/
-const TWO_HEXTETS = /^([0-9a-f]{1,4}):([0-9a-f]{1,4})$/i
+/** Non-global ranges inside 2000::/3 (IANA IPv6 special-purpose registry). */
+const NON_GLOBAL_IPV6 = new BlockList()
+for (const [network, prefix] of [
+  ['2001::', 23], // IETF protocol assignments (Teredo, benchmarking, ORCHID…)
+  ['2001:db8::', 32], // documentation
+  ['3fff::', 20], // documentation
+] as const) {
+  NON_GLOBAL_IPV6.addSubnet(network, prefix, 'ipv6')
+}
 
-function tailAfterIpv4MappedPrefix(normalizedIpv6: string): string | null {
-  if (normalizedIpv6.startsWith(IPV4_MAPPED_COMPRESSED)) {
-    return normalizedIpv6.slice(IPV4_MAPPED_COMPRESSED.length)
+/** The eight 16-bit groups of a valid IPv6 address. */
+function ipv6Hextets(address: string): number[] {
+  let text = address.toLowerCase()
+  const dottedTail = /(\d+)\.(\d+)\.(\d+)\.(\d+)$/.exec(text)
+  if (dottedTail) {
+    const [o1, o2, o3, o4] = dottedTail.slice(1).map(Number)
+    text = `${text.slice(0, dottedTail.index)}${((o1 << 8) | o2).toString(16)}:${((o3 << 8) | o4).toString(16)}`
   }
-  if (normalizedIpv6.startsWith(IPV4_MAPPED_EXPANDED)) {
-    return normalizedIpv6.slice(IPV4_MAPPED_EXPANDED.length)
+  const [head, tail] = text.split('::')
+  const headGroups = head ? head.split(':') : []
+  const tailGroups = tail ? tail.split(':') : []
+  const zeros = tail === undefined ? [] : Array(8 - headGroups.length - tailGroups.length).fill('0')
+  return [...headGroups, ...zeros, ...tailGroups].map(group => Number.parseInt(group, 16))
+}
+
+function ipv4FromHextets(high: number, low: number): string {
+  return `${high >> 8}.${high & 0xFF}.${low >> 8}.${low & 0xFF}`
+}
+
+/**
+ * The IPv4 address an IPv6 address routes to, if any: `::ffff:7f00:1`, `2002:7f00:1::` and
+ * `64:ff9b::7f00:1` all reach 127.0.0.1. Unwrapping keeps them from smuggling a private target,
+ * and keeps a NAT64 address standing for a public IPv4 reachable.
+ */
+function embeddedIpv4(address: string): string | null {
+  const h = ipv6Hextets(address)
+  const firstFiveZero = h.slice(0, 5).every(group => group === 0)
+  // ::ffff:0:0/96 — IPv4-mapped
+  if (firstFiveZero && h[5] === 0xFFFF) {
+    return ipv4FromHextets(h[6], h[7])
+  }
+  // 2002::/16 — 6to4
+  if (h[0] === 0x2002) {
+    return ipv4FromHextets(h[1], h[2])
+  }
+  // 64:ff9b::/96 — NAT64 well-known prefix
+  if (h[0] === 0x64 && h[1] === 0xFF9B && h.slice(2, 6).every(group => group === 0)) {
+    return ipv4FromHextets(h[6], h[7])
   }
   return null
 }
 
-/** Last 32 bits of an IPv4-mapped address given as two 16-bit words (e.g. c0a8 and 0001 → 192.168.0.1). */
-function dottedIpv4FromMappedWords(highU16: number, lowU16: number): string | null {
-  const o1 = (highU16 >> 8) & 0xff
-  const o2 = highU16 & 0xff
-  const o3 = (lowU16 >> 8) & 0xff
-  const o4 = lowU16 & 0xff
-  const dotted = `${o1}.${o2}.${o3}.${o4}`
-  return net.isIP(dotted) === 4 ? dotted : null
-}
-
-/**
- * If `ipv6` is an IPv4-mapped address in a strict canonical form, returns the embedded IPv4 string.
- * Only `::ffff:…` and `0:0:0:0:0:ffff:…` prefixes are accepted so unrelated `ffff` labels are ignored.
- */
-function ipv4MappedEmbedded(ipv6: string): string | null {
-  const norm = ipv6.toLowerCase()
-  const payload = tailAfterIpv4MappedPrefix(norm)
-  if (!payload) {
-    return null
-  }
-  if (DOTTED_IPV4.test(payload)) {
-    return payload
-  }
-  const parts = TWO_HEXTETS.exec(payload)
-  if (!parts) {
-    return null
-  }
-  const high = Number.parseInt(parts[1], 16)
-  const low = Number.parseInt(parts[2], 16)
-  if (!Number.isFinite(high) || !Number.isFinite(low)) {
-    return null
-  }
-  return dottedIpv4FromMappedWords(high, low)
-}
-
-function ipv6FirstHextet(ipv6: string): number {
-  const s = ipv6.toLowerCase()
-  const doubleIdx = s.indexOf('::')
-  if (doubleIdx === -1) {
-    const seg = s.split(':')[0] || '0'
-    return Number.parseInt(seg, 16) || 0
-  }
-  if (doubleIdx === 0) {
-    return 0
-  }
-  const left = s.slice(0, doubleIdx)
-  const first = left.split(':').filter(Boolean)[0] ?? '0'
-  return Number.parseInt(first, 16) || 0
-}
-
-function isForbiddenIPv6(ip: string): boolean {
-  if (net.isIP(ip) !== 6) {
-    return true
-  }
-  const norm = ip.toLowerCase()
-  if (norm === '::1' || norm === '0:0:0:0:0:0:0:1') {
-    return true
-  }
-  const mapped = ipv4MappedEmbedded(norm)
-  if (mapped) {
-    return isForbiddenIPv4(mapped)
-  }
-  const first = ipv6FirstHextet(norm)
-  if (first >= 0xfe80 && first <= 0xfebf) {
-    return true
-  }
-  if (first >= 0xfc00 && first <= 0xfdff) {
-    return true
-  }
-  return false
-}
-
-function isForbiddenHostAddress(address: string, family: number): boolean {
+/** Whether `address` (a valid IPv4 or IPv6 address, no brackets) must not be fetched. */
+function isForbiddenAddress(addressWithZone: string): boolean {
+  // A zone index (fe80::1%eth0) only scopes a link-local address, it never makes one public.
+  const address = addressWithZone.split('%')[0]
+  const family = net.isIP(address)
   if (family === 4) {
-    return isForbiddenIPv4(address)
+    return NON_GLOBAL_IPV4.check(address, 'ipv4')
   }
-  if (family === 6) {
-    return isForbiddenIPv6(address)
+  if (family !== 6) {
+    return true
   }
-  return true
+  const ipv4 = embeddedIpv4(address)
+  if (ipv4) {
+    return NON_GLOBAL_IPV4.check(ipv4, 'ipv4')
+  }
+  return !GLOBAL_UNICAST_IPV6.check(address, 'ipv6') || NON_GLOBAL_IPV6.check(address, 'ipv6')
 }
 
 export class ForbiddenFetchHostError extends Error {
@@ -157,6 +121,9 @@ export class ForbiddenFetchHostError extends Error {
  * DNS lookup used by the socket itself: the addresses it validates are the ones the connection
  * uses. Checking a hostname in a separate lookup before fetching is not enough, since a
  * DNS-rebinding name can answer a public IP to the check and a private one to the connection.
+ *
+ * Unlike udata, which only rules out the blocked candidates, a host with any non-public address
+ * is refused as a whole: a legitimate documentation host has no reason to publish one.
  */
 export const publicOnlyLookup: LookupFunction = (hostname, options, callback) => {
   dns.lookup(hostname, { ...options, all: true }, (err, addresses) => {
@@ -164,7 +131,7 @@ export const publicOnlyLookup: LookupFunction = (hostname, options, callback) =>
       callback(err, '')
       return
     }
-    if (!addresses.length || addresses.some(a => isForbiddenHostAddress(a.address, a.family))) {
+    if (!addresses.length || addresses.some(a => isForbiddenAddress(a.address))) {
       callback(new ForbiddenFetchHostError(hostname), '')
       return
     }
@@ -189,14 +156,7 @@ export const publicFetchDispatcher = new Agent({ connect: { lookup: publicOnlyLo
  */
 export function isForbiddenIpLiteral(hostname: string): boolean {
   const unbracketed = hostname.startsWith('[') && hostname.endsWith(']') ? hostname.slice(1, -1) : hostname
-  const literalKind = net.isIP(unbracketed)
-  if (literalKind === 4) {
-    return isForbiddenIPv4(unbracketed)
-  }
-  if (literalKind === 6) {
-    return isForbiddenIPv6(unbracketed)
-  }
-  return false
+  return net.isIP(unbracketed) !== 0 && isForbiddenAddress(unbracketed)
 }
 
 /**

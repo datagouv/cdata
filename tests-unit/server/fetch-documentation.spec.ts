@@ -3,13 +3,14 @@ import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { fetchDocumentationContent } from '~/server/routes/nuxt-api/albert/utils/fetch-documentation'
-import { publicOnlyLookup } from '~/server/utils/public-fetch'
+import { isForbiddenIpLiteral, publicOnlyLookup } from '~/server/utils/public-fetch'
 
 const DISALLOWED_URL_MESSAGE = 'Documentation URL is not allowed. Use a public http(s) URL.'
-const PUBLIC_ADDRESS = '203.0.113.10'
+const PUBLIC_ADDRESS = '1.1.1.1'
+const PUBLIC_IPV6_ADDRESS = '2606:4700:4700::1111'
 
 // Hoisted above the declarations, hence the literal instead of PUBLIC_ADDRESS.
-vi.mock('node:dns/promises', () => ({ lookup: async () => [{ address: '203.0.113.10', family: 4 }] }))
+vi.mock('node:dns/promises', () => ({ lookup: async () => [{ address: '1.1.1.1', family: 4 }] }))
 
 type LookupCallback = (err: NodeJS.ErrnoException | null, address: string | LookupAddress[], family?: number) => void
 
@@ -35,7 +36,8 @@ describe('fetchDocumentationContent', () => {
       hits++
       res.end('internal secret')
     })
-    await new Promise<void>(resolve => server.listen(0, '127.0.0.1', resolve))
+    // Dual-stack, like a server bound to every interface: reachable through 127.0.0.1, ::1 and ::.
+    await new Promise<void>(resolve => server.listen(0, '::', resolve))
     port = (server.address() as AddressInfo).port
   })
 
@@ -57,6 +59,13 @@ describe('fetchDocumentationContent', () => {
     expect(hits).toBe(0)
   })
 
+  it('refuses a hostname resolving to the unspecified IPv6 address', async () => {
+    stubSocketDns([{ address: '::', family: 6 }])
+
+    await expect(fetchDocumentationContent(`http://unspecified.test:${port}/`)).rejects.toThrow(DISALLOWED_URL_MESSAGE)
+    expect(hits).toBe(0)
+  })
+
   it('refuses a hostname when one of its addresses is private', async () => {
     stubSocketDns([{ address: PUBLIC_ADDRESS, family: 4 }, { address: '127.0.0.1', family: 4 }])
 
@@ -66,12 +75,72 @@ describe('fetchDocumentationContent', () => {
 
   it.each([
     'http://127.0.0.1:{port}/',
+    'http://0.0.0.0:{port}/',
     'http://[::1]:{port}/',
+    'http://[::]:{port}/',
     'http://[::ffff:127.0.0.1]:{port}/',
     'http://169.254.169.254/latest/meta-data/',
   ])('refuses the private IP literal %s', async (url) => {
     await expect(fetchDocumentationContent(url.replace('{port}', String(port)))).rejects.toThrow(DISALLOWED_URL_MESSAGE)
     expect(hits).toBe(0)
+  })
+})
+
+describe('isForbiddenIpLiteral', () => {
+  it.each([
+    '0.0.0.0',
+    '10.0.0.1',
+    '100.64.0.1', // CGNAT
+    '127.0.0.1',
+    '169.254.169.254', // cloud metadata
+    '172.16.0.1',
+    '192.0.0.1',
+    '192.0.2.1',
+    '192.168.1.1',
+    '198.18.0.1',
+    '198.51.100.1',
+    '203.0.113.1',
+    '224.0.0.1',
+    '255.255.255.255',
+    '::',
+    '::1',
+    '[::1]',
+    '::7f00:1', // IPv4-compatible
+    '::ffff:127.0.0.1',
+    '::ffff:7f00:1',
+    '::ffff:a9fe:a9fe',
+    '64:ff9b::7f00:1', // NAT64 of 127.0.0.1
+    '64:ff9b::a9fe:a9fe', // NAT64 of 169.254.169.254
+    '2002:7f00:1::', // 6to4 of 127.0.0.1
+    '2002:a9fe:a9fe::1',
+    '100::1', // discard-only
+    '2001::1', // Teredo
+    '2001:db8::1',
+    '3fff::1',
+    'fc00::1',
+    'fd12:3456::1',
+    'fe80::1',
+    'fe80::1%eth0',
+    'fec0::1', // site-local
+    'ff02::1',
+  ])('refuses %s', (address) => {
+    expect(isForbiddenIpLiteral(address)).toBe(true)
+  })
+
+  it.each([
+    PUBLIC_ADDRESS,
+    '8.8.8.8',
+    PUBLIC_IPV6_ADDRESS,
+    `[${PUBLIC_IPV6_ADDRESS}]`,
+    '::ffff:1.1.1.1',
+    '64:ff9b::101:101', // NAT64 of 1.1.1.1
+    '2002:101:101::1', // 6to4 of 1.1.1.1
+  ])('accepts %s', (address) => {
+    expect(isForbiddenIpLiteral(address)).toBe(false)
+  })
+
+  it('leaves hostnames to the connection-time lookup', () => {
+    expect(isForbiddenIpLiteral('localhost')).toBe(false)
   })
 })
 
@@ -81,12 +150,12 @@ describe('publicOnlyLookup', () => {
   })
 
   it('hands public addresses to the socket, in both lookup shapes', async () => {
-    stubSocketDns([{ address: PUBLIC_ADDRESS, family: 4 }, { address: '2001:db8::1', family: 6 }])
+    stubSocketDns([{ address: PUBLIC_ADDRESS, family: 4 }, { address: PUBLIC_IPV6_ADDRESS, family: 6 }])
 
     const all = await new Promise((resolve, reject) => {
       publicOnlyLookup('public.test', { all: true }, (err, addresses) => err ? reject(err) : resolve(addresses))
     })
-    expect(all).toEqual([{ address: PUBLIC_ADDRESS, family: 4 }, { address: '2001:db8::1', family: 6 }])
+    expect(all).toEqual([{ address: PUBLIC_ADDRESS, family: 4 }, { address: PUBLIC_IPV6_ADDRESS, family: 6 }])
 
     const single = await new Promise((resolve, reject) => {
       publicOnlyLookup('public.test', {}, (err, address, family) => err ? reject(err) : resolve({ address, family }))
@@ -94,8 +163,13 @@ describe('publicOnlyLookup', () => {
     expect(single).toEqual({ address: PUBLIC_ADDRESS, family: 4 })
   })
 
-  it.each(['127.0.0.1', '10.0.0.1', '172.16.0.1', '192.168.1.1', '169.254.169.254', '0.0.0.0'])('refuses %s', async (address) => {
-    stubSocketDns([{ address, family: 4 }])
+  it.each([
+    { address: '127.0.0.1', family: 4 },
+    { address: '169.254.169.254', family: 4 },
+    { address: '::', family: 6 },
+    { address: '64:ff9b::a9fe:a9fe', family: 6 },
+  ])('refuses $address', async (record) => {
+    stubSocketDns([record])
 
     const error = await new Promise((resolve) => {
       publicOnlyLookup('private.test', { all: true }, err => resolve(err))
