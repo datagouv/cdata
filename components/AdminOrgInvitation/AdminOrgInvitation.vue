@@ -12,13 +12,13 @@
     <div class="flex flex-wrap justify-between gap-5">
       <div class="space-y-1">
         <div class="flex flex-wrap items-start gap-2">
-          <NuxtImg
+          <img
             v-if="invitation.organization.logo"
             class="rounded-sm border border-gray-default size-10 object-contain bg-white"
             :src="invitation.organization.logo"
             loading="lazy"
             alt=""
-          />
+          >
           <div
             v-else
             class="size-10 rounded-sm border border-gray-default bg-gray-lower flex items-center justify-center"

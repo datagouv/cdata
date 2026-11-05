@@ -9,7 +9,6 @@ export default defineNuxtConfig({
 
   modules: [
     '@nuxt/eslint',
-    '@nuxt/image',
     '@nuxt/scripts',
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
@@ -409,15 +408,6 @@ export default defineNuxtConfig({
     ],
   },
 
-  image: {
-    screens: {
-      xs: 320,
-      sm: 576,
-      md: 768,
-      lg: 992,
-      xl: 1248,
-    },
-  },
   // The bundler plugin stamps a debug id into every chunk and the same id into the copies it
   // uploads, so Sentry pairs a frame with its map by identity instead of by release and URL.
   // It does that during `renderChunk`, which is the only moment it can: Nitro records each
