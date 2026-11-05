@@ -1,11 +1,11 @@
 /**
- * Ensures a hostname is safe for server-initiated HTTP(S) fetches (SSRF mitigation).
+ * Keeps server-initiated HTTP(S) fetches of user-supplied URLs on public hosts (SSRF mitigation).
  * Blocks literal private/reserved IPs and hostnames whose DNS answers include any such address.
  */
 
-import type { LookupAddress } from 'node:dns'
-import { lookup } from 'node:dns/promises'
-import net from 'node:net'
+import dns from 'node:dns'
+import net, { type LookupFunction } from 'node:net'
+import { Agent } from 'undici'
 
 function isForbiddenIPv4(ip: string): boolean {
   const parts = ip.split('.').map(p => Number(p))
@@ -146,42 +146,69 @@ function isForbiddenHostAddress(address: string, family: number): boolean {
   return true
 }
 
-/**
- * @param hostname - `URL.hostname` (already punycode for IDN)
- * @param rejectedErrorMessage - thrown when the host must not be fetched
- */
-export async function assertPublicFetchHost(hostname: string, rejectedErrorMessage: string): Promise<void> {
-  if (!hostname) {
-    throw new Error(rejectedErrorMessage)
+export class ForbiddenFetchHostError extends Error {
+  constructor(hostname: string) {
+    super(`Refusing to connect to non-public host ${hostname}`)
+    this.name = 'ForbiddenFetchHostError'
   }
+}
 
-  const literalKind = net.isIP(hostname)
-  if (literalKind === 4) {
-    if (isForbiddenIPv4(hostname)) {
-      throw new Error(rejectedErrorMessage)
+/**
+ * DNS lookup used by the socket itself: the addresses it validates are the ones the connection
+ * uses. Checking a hostname in a separate lookup before fetching is not enough, since a
+ * DNS-rebinding name can answer a public IP to the check and a private one to the connection.
+ */
+export const publicOnlyLookup: LookupFunction = (hostname, options, callback) => {
+  dns.lookup(hostname, { ...options, all: true }, (err, addresses) => {
+    if (err) {
+      callback(err, '')
+      return
     }
-    return
+    if (!addresses.length || addresses.some(a => isForbiddenHostAddress(a.address, a.family))) {
+      callback(new ForbiddenFetchHostError(hostname), '')
+      return
+    }
+    if (options.all) {
+      callback(null, addresses)
+      return
+    }
+    callback(null, addresses[0].address, addresses[0].family)
+  })
+}
+
+/**
+ * Dispatcher for fetches of user-supplied URLs. Each connection, redirects included, resolves
+ * through `publicOnlyLookup`.
+ */
+export const publicFetchDispatcher = new Agent({ connect: { lookup: publicOnlyLookup } })
+
+/**
+ * Sockets skip the DNS lookup for IP literals, so `publicOnlyLookup` never sees them:
+ * they must be checked on the URL before fetching.
+ * @param hostname - `URL.hostname` (already punycode for IDN, IPv6 in brackets)
+ */
+export function isForbiddenIpLiteral(hostname: string): boolean {
+  const unbracketed = hostname.startsWith('[') && hostname.endsWith(']') ? hostname.slice(1, -1) : hostname
+  const literalKind = net.isIP(unbracketed)
+  if (literalKind === 4) {
+    return isForbiddenIPv4(unbracketed)
   }
   if (literalKind === 6) {
-    if (isForbiddenIPv6(hostname)) {
-      throw new Error(rejectedErrorMessage)
-    }
-    return
+    return isForbiddenIPv6(unbracketed)
   }
+  return false
+}
 
-  let records: LookupAddress[]
-  try {
-    records = await lookup(hostname, { all: true, verbatim: true })
-  }
-  catch {
-    throw new Error(rejectedErrorMessage)
-  }
-  if (!records.length) {
-    throw new Error(rejectedErrorMessage)
-  }
-  for (const r of records) {
-    if (isForbiddenHostAddress(r.address, r.family)) {
-      throw new Error(rejectedErrorMessage)
+/**
+ * Whether `error` (a fetch failure) was caused by `publicOnlyLookup` refusing the host.
+ */
+export function isForbiddenFetchHostError(error: unknown): boolean {
+  let current: unknown = error
+  while (current instanceof Error) {
+    if (current instanceof ForbiddenFetchHostError) {
+      return true
     }
+    current = current.cause
   }
+  return false
 }

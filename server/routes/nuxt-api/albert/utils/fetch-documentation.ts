@@ -3,7 +3,8 @@
  * Handles HTML (strips tags, decodes character references), trims and normalizes whitespace.
  */
 
-import { assertPublicFetchHost } from '~/server/utils/assert-public-fetch-host'
+import { fetch, type Response } from 'undici'
+import { isForbiddenFetchHostError, isForbiddenIpLiteral, publicFetchDispatcher } from '~/server/utils/public-fetch'
 
 const FETCH_TIMEOUT_MS = 15_000
 
@@ -161,7 +162,11 @@ const NAMED_HTML_ENTITIES: Record<string, string> = {
   bull: '\u2022',
 }
 
-async function assertSafeDocumentationUrl(urlString: string): Promise<URL> {
+/**
+ * Hostnames are checked at connection time by `publicFetchDispatcher`; only what the
+ * socket never resolves (scheme, IP literals) is checked here.
+ */
+function assertSafeDocumentationUrl(urlString: string): URL {
   let parsed: URL
   try {
     parsed = new URL(urlString)
@@ -173,11 +178,13 @@ async function assertSafeDocumentationUrl(urlString: string): Promise<URL> {
   if (proto !== 'http:' && proto !== 'https:') {
     throw new Error(DISALLOWED_URL_MESSAGE)
   }
-  await assertPublicFetchHost(parsed.hostname, DISALLOWED_URL_MESSAGE)
+  if (!parsed.hostname || isForbiddenIpLiteral(parsed.hostname)) {
+    throw new Error(DISALLOWED_URL_MESSAGE)
+  }
   return parsed
 }
 
-function parseContentLength(headers: Headers): number | null {
+function parseContentLength(headers: Response['headers']): number | null {
   const raw = headers.get('content-length')
   if (raw == null || raw === '') {
     return null
@@ -226,16 +233,26 @@ async function fetchDocumentationResponse(
   initialUrl: string,
   signal: AbortSignal,
 ): Promise<{ text: string, finalUrl: string }> {
-  let currentHref = (await assertSafeDocumentationUrl(initialUrl)).href
+  let currentHref = assertSafeDocumentationUrl(initialUrl).href
   let redirects = 0
 
   while (true) {
-    const response = await fetch(currentHref, {
-      method: 'GET',
-      redirect: 'manual',
-      signal,
-      headers: FETCH_HEADERS,
-    })
+    let response: Response
+    try {
+      response = await fetch(currentHref, {
+        method: 'GET',
+        redirect: 'manual',
+        signal,
+        headers: FETCH_HEADERS,
+        dispatcher: publicFetchDispatcher,
+      })
+    }
+    catch (err) {
+      if (isForbiddenFetchHostError(err)) {
+        throw new Error(DISALLOWED_URL_MESSAGE, { cause: err })
+      }
+      throw err
+    }
 
     if (response.status >= 300 && response.status < 400) {
       if (redirects >= MAX_REDIRECTS) {
@@ -256,7 +273,7 @@ async function fetchDocumentationResponse(
         response.body?.cancel().catch(() => {})
         throw new Error('Failed to load documentation from URL.')
       }
-      await assertSafeDocumentationUrl(nextUrl.href)
+      assertSafeDocumentationUrl(nextUrl.href)
       currentHref = nextUrl.href
       response.body?.cancel().catch(() => {})
       continue
