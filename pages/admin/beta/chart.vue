@@ -30,11 +30,9 @@ const chart = ref<ChartForm>({
   title: 'Mon graphique',
   description: '',
   private: false,
-  x_axis: {
-    column_x: '',
-    type: 'discrete',
-    sort_combined: '',
-  },
+  query: '',
+  resource_id: '',
+  chart_type: 'line',
   y_axis: {
     label: '',
     min: null,
@@ -42,9 +40,6 @@ const chart = ref<ChartForm>({
     unit: '',
     unit_position: 'suffix',
   },
-  filter: null,
-  chart_type: 'histogram',
-  series: [],
   extras: {},
 })
 </script>

@@ -18,6 +18,11 @@ export type TabularDataResponse = {
 
 export type TabularAggregateType = 'avg' | 'sum' | 'count' | 'min' | 'max'
 
+export type SqlQueryResult = {
+  columns: Array<string>
+  rows: Array<Array<string | number | null>>
+}
+
 export type FetchTabularDataOptions = {
   resourceId: string
   page?: number
@@ -135,4 +140,37 @@ export async function getData(config: PluginConfig, id: string, page: number, so
 export function useGetProfile() {
   const config = useComponentsConfig()
   return (id: string) => ofetch<TabularProfileResponse>(`${config.tabularApiUrl}/api/resources/${id}/profile/`)
+}
+
+const SQL_TIMEOUT_MS = 30_000
+
+// PROVISIONAL CONTRACT — to confirm with the Tabular API owners before release.
+// Hypothétique : POST {tabularApiUrl}/api/resources/{rid}/sql avec corps JSON
+// {"query": sql}, réponse {"columns": [...], "rows": [[...]]}. Ce bloc est le
+// seul endroit où le contrat SQL est construit.
+function sqlEndpointUrl(tabularApiUrl: string, resourceId: string): string {
+  return `${tabularApiUrl}/api/resources/${resourceId}/sql`
+}
+
+/**
+ * Execute a read-only SQL query against a tabular resource
+ * (hypothetical contract, see `sqlEndpointUrl`).
+ *
+ * No client-side row limiting: the SQL endpoint (DuckDB) enforces the
+ * authoritative row cap server-side, so the query is sent as-is.
+ */
+export async function executeSqlQuery(tabularApiUrl: string, resourceId: string, sql: string): Promise<SqlQueryResult> {
+  try {
+    return await ofetch<SqlQueryResult>(sqlEndpointUrl(tabularApiUrl, resourceId), {
+      method: 'POST',
+      body: { query: sql },
+      timeout: SQL_TIMEOUT_MS,
+    })
+  }
+  catch (error) {
+    const detail = error instanceof Error ? error.message : String(error)
+    const wrapped: Error & { cause?: unknown } = new Error(`L'exécution de la requête a échoué : ${detail}`)
+    wrapped.cause = error
+    throw wrapped
+  }
 }

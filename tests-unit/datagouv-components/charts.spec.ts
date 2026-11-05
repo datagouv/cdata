@@ -9,30 +9,52 @@ const baseChart = {
   private: false,
   organization: { id: 'org-1' },
   owner: null,
-  x_axis: { column_x: 'annee', type: 'categorical', sort_x_by: 'axis_x', sort_x_direction: 'asc' },
+  query: 'SELECT region, COUNT(*) AS total FROM data GROUP BY region',
+  resource_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
+  chart_type: 'line',
   y_axis: { label: 'Total', min: 0, max: 100, unit: '€', unit_position: 'suffix' },
-  series: [{ type: 'bar', column_y: 'montant', aggregate_y: 'sum', filters: null }],
   extras: {},
 } as unknown as Chart
 
 describe('toChartForm / toChartApi', () => {
-  it('encodes the sort as a combined string and decodes it back', () => {
-    const form = toChartForm(baseChart)
-    expect(form.x_axis.sort_combined).toEqual('axis_x-asc')
-
-    const api = toChartApi(form)
-    expect(api.x_axis.sort_x_by).toEqual('axis_x')
-    expect(api.x_axis.sort_x_direction).toEqual('asc')
+  it('round-trips the chart type', () => {
+    const histogramChart = { ...baseChart, chart_type: 'histogram' } as unknown as Chart
+    const form = toChartForm(histogramChart)
+    expect(form.chart_type).toBe('histogram')
+    expect(toChartApi(form).chart_type).toBe('histogram')
   })
 
-  it('round-trips the absence of sort as null', () => {
-    const chart = { ...baseChart, x_axis: { ...baseChart.x_axis, sort_x_by: null, sort_x_direction: null } } as Chart
-    const form = toChartForm(chart)
-    expect(form.x_axis.sort_combined).toEqual('')
+  it('defaults the chart type to line when absent', () => {
+    const legacyChart = { ...baseChart } as Record<string, unknown>
+    delete legacyChart.chart_type
+
+    const form = toChartForm(legacyChart as unknown as Chart)
+    expect(form.chart_type).toBe('line')
+    expect(toChartApi(form).chart_type).toBe('line')
+  })
+
+  it('round-trips query, resource_id and y_axis', () => {
+    const form = toChartForm(baseChart)
+    expect(form.query).toEqual('SELECT region, COUNT(*) AS total FROM data GROUP BY region')
+    expect(form.resource_id).toEqual('f47ac10b-58cc-4372-a567-0e02b2c3d479')
+    expect(form.y_axis).toEqual({ label: 'Total', min: 0, max: 100, unit: '€', unit_position: 'suffix' })
 
     const api = toChartApi(form)
-    expect(api.x_axis.sort_x_by).toBeNull()
-    expect(api.x_axis.sort_x_direction).toBeNull()
+    expect(api.query).toEqual('SELECT region, COUNT(*) AS total FROM data GROUP BY region')
+    expect(api.resource_id).toEqual('f47ac10b-58cc-4372-a567-0e02b2c3d479')
+    expect(api.y_axis).toEqual({ label: 'Total', min: 0, max: 100, unit: '€', unit_position: 'suffix' })
+  })
+
+  it('sends query and resource_id as-is in the API payload', () => {
+    const chart = {
+      ...baseChart,
+      query: 'SELECT annee, AVG(taux) FROM data GROUP BY annee LIMIT 500',
+      resource_id: '9b2e5f4a-3c1d-4e6f-8a7b-1c2d3e4f5a6b',
+    } as unknown as Chart
+
+    const api = toChartApi(toChartForm(chart))
+    expect(api.query).toEqual('SELECT annee, AVG(taux) FROM data GROUP BY annee LIMIT 500')
+    expect(api.resource_id).toEqual('9b2e5f4a-3c1d-4e6f-8a7b-1c2d3e4f5a6b')
   })
 
   it('maps ownership both ways', () => {
@@ -41,69 +63,30 @@ describe('toChartForm / toChartApi', () => {
 
     const ownedChart = { ...baseChart, organization: null, owner: { id: 'user-1' } } as unknown as Chart
     expect(toChartForm(ownedChart).owned).toEqual({ owner: 'user-1', organization: null })
+    expect(toChartApi(toChartForm(ownedChart))).toMatchObject({ owner: 'user-1', organization: null })
   })
 
-  it('applies the selected chart type to the first serie', () => {
-    const form = { ...toChartForm(baseChart), chart_type: 'line' as const }
-    expect(toChartApi(form).series[0].type).toEqual('line')
-  })
-
-  it('applies the form filter to the first serie when it has none', () => {
-    const filter = { column: 'region', value: 'Bretagne' }
-    const form = { ...toChartForm(baseChart), filter } as ReturnType<typeof toChartForm>
-    expect(toChartApi(form).series[0].filters).toEqual(filter)
-  })
-
-  it('round-trips grouped filters through the form', () => {
-    const filters = {
-      _cls: 'AndFilters',
-      filters: [
-        { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Bretagne' },
-        { _cls: 'OrFilters', filters: [
-          { _cls: 'Filter', column: 'annee', condition: 'exact', value: '2020' },
-          { _cls: 'Filter', column: 'annee', condition: 'exact', value: '2021' },
-        ] },
-      ],
-    } as const
+  it('normalizes empty y_axis fields in the form and back to nullables in the API payload', () => {
     const chart = {
       ...baseChart,
-      series: [{ type: 'bar', column_y: 'montant', aggregate_y: 'sum', filters }],
+      y_axis: { label: null, min: null, max: null, unit: null, unit_position: null },
     } as unknown as Chart
 
     const form = toChartForm(chart)
-    expect(form.filter).toEqual(filters)
+    expect(form.y_axis).toEqual({ label: '', min: null, max: null, unit: '', unit_position: 'suffix' })
 
     const api = toChartApi(form)
-    expect(api.series[0].filters).toEqual(filters)
+    expect(api.y_axis).toEqual({ label: null, min: null, max: null, unit: null, unit_position: 'suffix' })
   })
 
-  it('round-trips a count aggregation', () => {
-    const chart = {
-      ...baseChart,
-      x_axis: { ...baseChart.x_axis, column_x: 'region' },
-      series: [{ type: 'bar', column_y: 'region', aggregate_y: 'count', filters: null }],
-    } as unknown as Chart
-
-    const form = toChartForm(chart)
-    expect(form.series[0].aggregate_y).toEqual('count')
-    expect(form.series[0].column_y).toEqual('region')
+  it('keeps empty strings as null in the API payload', () => {
+    const form = toChartForm(baseChart)
+    form.y_axis.label = ''
+    form.y_axis.unit = ''
 
     const api = toChartApi(form)
-    expect(api.series[0].aggregate_y).toEqual('count')
-    expect(api.series[0].column_y).toEqual('region')
-  })
-
-  it('preserves an empty aggregate as null in the API payload', () => {
-    const chart = {
-      ...baseChart,
-      series: [{ type: 'bar', column_y: 'montant', aggregate_y: null, filters: null }],
-    } as unknown as Chart
-
-    const form = toChartForm(chart)
-    expect(form.series[0].aggregate_y).toEqual('')
-
-    const api = toChartApi(form)
-    expect(api.series[0].aggregate_y).toBeNull()
+    expect(api.y_axis.label).toBeNull()
+    expect(api.y_axis.unit).toBeNull()
   })
 })
 

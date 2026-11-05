@@ -106,7 +106,6 @@ const props = defineProps<{
 
 const { t } = useTranslation()
 
-const chartIcon = computed(() => {
-  return props.chart.series[0]?.type === 'line' ? RiLineChartLine : RiBarChartBoxLine
-})
+// Icon reflects the chart type stored on the model (like pre-reduction cards).
+const chartIcon = computed(() => props.chart.chart_type === 'line' ? RiLineChartLine : RiBarChartBoxLine)
 </script>

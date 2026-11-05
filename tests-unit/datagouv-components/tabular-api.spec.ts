@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest'
-import { buildFilterQuery } from '~/datagouv-components/src/functions/tabularApi'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { buildFilterQuery, executeSqlQuery } from '~/datagouv-components/src/functions/tabularApi'
 import type { AndFilters, Filter, OrFilters } from '~/datagouv-components/src/types/visualizations'
 
 function f(column: string, condition: Filter['condition'], value: string | null = 'x'): Filter {
@@ -67,5 +67,43 @@ describe('buildFilterQuery', () => {
       ],
     }
     expect(buildFilterQuery(filters)).toBe('a__exact=1')
+  })
+})
+
+describe('executeSqlQuery', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
+  function stubFetch(response: Response) {
+    const calls: Array<{ url: string, method: string, body: unknown }> = []
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const request = input instanceof Request ? input : new Request(input, init)
+      calls.push({ url: request.url, method: request.method, body: JSON.parse(await request.text()) })
+      return response
+    }))
+    return calls
+  }
+
+  it('posts the query to the resource SQL endpoint', async () => {
+    const calls = stubFetch(new Response(JSON.stringify({ columns: ['a'], rows: [[1]] }), {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    }))
+
+    const result = await executeSqlQuery('https://tabular.example.com', 'rid-1', 'SELECT 1')
+
+    expect(calls).toHaveLength(1)
+    expect(calls[0].url).toBe('https://tabular.example.com/api/resources/rid-1/sql')
+    expect(calls[0].method).toBe('POST')
+    expect(calls[0].body).toEqual({ query: 'SELECT 1' })
+    expect(result).toEqual({ columns: ['a'], rows: [[1]] })
+  })
+
+  it('raises a French error when the endpoint fails', async () => {
+    stubFetch(new Response('Server error', { status: 500 }))
+
+    await expect(executeSqlQuery('https://tabular.example.com', 'rid-1', 'SELECT 1'))
+      .rejects.toThrowError(/L'exécution de la requête a échoué/)
   })
 })

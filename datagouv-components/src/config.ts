@@ -22,7 +22,6 @@ export type PluginConfig = {
   schemasSiteUrl?: string
   schemasSiteName?: string
   tabularApiUrl?: string
-  chartsApiBase?: string
   tabularApiPageSize?: number
   tabularAllowRemote?: boolean
   tabularApiDataserviceId?: string

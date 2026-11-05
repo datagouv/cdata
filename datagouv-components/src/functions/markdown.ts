@@ -32,6 +32,20 @@ function rehypeLazyLoad(this: Processor): Transformer {
   }
 }
 
+// Replaces images with their alt text, so rendering never fetches a URL
+// chosen by the content (an image URL can carry data out of the page).
+function rehypeNoImages(this: Processor): Transformer {
+  return function transformer(htmlAST: Node): Node {
+    visit(htmlAST as hast.Root, 'element', function visitor(el, index, parent) {
+      if (el.tagName !== 'img' || !parent || index === undefined) return
+      const alt = el.properties?.alt
+      parent.children.splice(index, 1, { type: 'text', value: typeof alt === 'string' ? alt : '' })
+      return index
+    })
+    return htmlAST
+  }
+}
+
 function rehypeNoHeadings(this: Processor): Transformer {
   return function transformer(htmlAST: Node): Node {
     visit(htmlAST, 'element', function visitor(el: hast.Element) {
@@ -58,10 +72,11 @@ function rehypeNoHeadings(this: Processor): Transformer {
   }
 }
 
-export function formatMarkdown(md: string, config: number | { minDepth: number, noHeadings: boolean, followLinks?: boolean } = 3) {
+export function formatMarkdown(md: string, config: number | { minDepth: number, noHeadings: boolean, followLinks?: boolean, noImages?: boolean } = 3) {
   let minDepth: number
   let noHeadings = false
   let followLinks = false
+  let noImages = false
   if (typeof config === 'number') {
     minDepth = config
   }
@@ -69,6 +84,7 @@ export function formatMarkdown(md: string, config: number | { minDepth: number, 
     minDepth = config.minDepth
     noHeadings = config.noHeadings
     followLinks = config.followLinks ?? false
+    noImages = config.noImages ?? false
   }
   const result = unified()
     .use(behead, { minDepth: minDepth > 1 ? minDepth : undefined } as Options)
@@ -87,6 +103,7 @@ export function formatMarkdown(md: string, config: number | { minDepth: number, 
     .use(rehypeHighlight)
     .use(rehypeSlug)
     .use(rehypeSanitize)
+    .use(noImages ? [rehypeNoImages] : [])
     // Markdown mostly comes from users: links leaving the site must not pass on its search
     // ranking, or they become worth spamming for. `followLinks` is for content written by the team.
     .use(rehypeExternalLinks, {
