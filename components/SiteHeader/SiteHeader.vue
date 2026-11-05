@@ -533,7 +533,7 @@
 import { NuxtImg as _NuxtImg } from '#components'
 import type { Component } from 'vue'
 import { BrandedButton, Toggletip, useGetUserAvatar, toast } from '@datagouv/components-next'
-import { RiAccountCircleLine, RiAddLine, RiCheckLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiTerminalLine, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
+import { RiAccountCircleLine, RiAddLine, RiCheckLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiTerminalLine, RiLineChartLine, RiServerLine, RiArticleLine, RiBarChartBoxLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
 import LogoAsText from '../LogoAsText.vue'
@@ -593,10 +593,11 @@ const publishMenu = [
   { label: t('Une réutilisation'), icon: RiLineChartLine, link: '/admin/reuses/new' },
   { label: t('Un moissonneur'), icon: RiServerLine, link: '/admin/harvesters/new' },
   { label: t('Une organisation'), icon: RiBuilding2Line, link: '/admin/organizations/new' },
-  { label: t('Un article'), icon: RiArticleLine, link: '/admin/posts/new', show: isMeAdmin() },
+  { label: t('Un article'), icon: RiArticleLine, link: '/admin/posts/new', show: () => isAdmin(me.value) },
+  { label: t('Un graphique'), icon: RiBarChartBoxLine, link: '/admin/beta/chart', show: () => isAdmin(me.value) },
 ]
 
-const filteredPublishMenu = computed(() => publishMenu.filter(item => !('show' in item) || item.show))
+const filteredPublishMenu = computed(() => publishMenu.filter(item => item.show?.() ?? true))
 
 function getAriaCurrent(link: string) {
   if (route.path === link) {
