@@ -1,0 +1,234 @@
+<template>
+  <section class="flex flex-col h-full space-y-4">
+    <h3 class="font-bold text-lg m-0">
+      {{ $t('Assistant') }}
+    </h3>
+
+    <p
+      v-if="waiting"
+      id="assistant-waiting"
+      class="text-new-gray-medium text-sm m-0"
+    >
+      {{ $t('Sélectionnez une ressource pour discuter avec l’assistant.') }}
+    </p>
+
+    <div
+      v-if="messages.length"
+      ref="messagesContainerRef"
+      class="flex-1 min-h-0 overflow-y-auto space-y-4"
+      @scroll="onMessagesScroll"
+    >
+      <article
+        v-for="message in messages"
+        :key="message.id"
+        :data-message-role="message.role"
+        :class="message.role === 'user'
+          ? 'ml-auto flex max-w-[88%] flex-col items-end'
+          : undefined"
+      >
+        <div
+          v-if="message.role === 'user'"
+          class="whitespace-pre-wrap rounded-md bg-gray-lower px-3 py-2 text-sm"
+        >
+          {{ userMessageText(message.parts) }}
+        </div>
+        <template
+          v-for="(item, index) in buildChatDisplayItems(message.parts)"
+          v-else
+          :key="index"
+        >
+          <ToolTrace
+            v-if="item.kind === 'trace'"
+            :trace="item.trace"
+            class="mb-2"
+          />
+          <ThinkingBlock
+            v-else-if="item.kind === 'thinking'"
+            :text="item.text"
+            class="mb-2"
+          />
+          <MarkdownViewer
+            v-else-if="item.kind === 'text'"
+            :content="item.text"
+            no-images
+          />
+        </template>
+      </article>
+    </div>
+
+    <p
+      v-if="errorMessage"
+      role="alert"
+      class="text-sm text-red-600 m-0"
+    >
+      {{ $t(errorMessage) }}
+    </p>
+
+    <!-- A div, not a form: this panel lives inside the chart configurator's root
+    form and nested forms are invalid HTML. Enter submits via handleEnter. -->
+    <div
+      class="mt-auto overflow-hidden rounded-md border border-gray-default bg-white transition-[border-color,box-shadow] focus-within:border-new-primary focus-within:shadow-[0_0_0_2px_var(--color-blue-light)]"
+    >
+      <div class="flex h-28 flex-col px-2 py-2">
+        <textarea
+          id="assistant-input"
+          ref="textareaRef"
+          v-model="input"
+          rows="3"
+          :maxlength="MAX_INPUT_LENGTH"
+          class="min-h-0 w-full flex-1 resize-none border-0 bg-transparent text-[11px] leading-5 text-new-gray-dark outline-none placeholder:text-new-gray-medium-clic"
+          :aria-label="$t('Votre demande')"
+          :disabled="waiting || busy"
+          :placeholder="$t('Décrivez le graphique souhaité…')"
+          @keydown.enter="handleEnter"
+        />
+        <footer class="flex items-center justify-end gap-2">
+          <span
+            v-if="input.length >= COUNTER_THRESHOLD"
+            class="mr-auto text-[11px] tabular-nums"
+            :class="input.length >= MAX_INPUT_LENGTH ? 'text-new-error' : 'text-new-gray-medium'"
+          >{{ input.length.toLocaleString('fr-FR') }} / {{ MAX_INPUT_LENGTH.toLocaleString('fr-FR') }}</span>
+          <button
+            v-if="busy"
+            type="button"
+            class="flex h-7 shrink-0 items-center gap-1 rounded-md border border-new-gray-dark px-2 text-xs font-medium text-new-gray-dark hover:bg-gray-100"
+            @click="stop"
+          >
+            <RiStopMiniLine
+              class="size-4"
+              aria-hidden="true"
+            />
+            {{ $t('Arrêter') }}
+          </button>
+          <button
+            v-else
+            type="button"
+            :aria-label="$t('Envoyer')"
+            class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-new-primary text-white hover:bg-new-primary-hover disabled:cursor-not-allowed disabled:bg-new-gray-medium-clic"
+            :disabled="waiting || !input.trim()"
+            @click="submit"
+          >
+            <RiArrowUpLine
+              class="size-4"
+              aria-hidden="true"
+            />
+          </button>
+        </footer>
+      </div>
+    </div>
+  </section>
+</template>
+
+<script setup lang="ts">
+import { RiArrowUpLine, RiStopMiniLine } from '@remixicon/vue'
+import { computed, nextTick, ref, toRef, watch } from 'vue'
+import ToolTrace from './ToolTrace.vue'
+import ThinkingBlock from './ThinkingBlock.vue'
+import { useAssistantChat } from './useAssistantChat'
+import { buildChatDisplayItems, chartToolResults, isNearChatBottom, mapAssistantError } from '~/utils/assistant'
+import type { ChartToolResult } from '~/utils/assistant'
+import type { ChartForApi } from '@datagouv/components-next'
+import MarkdownViewer from '~/datagouv-components/src/components/MarkdownViewer.vue'
+
+const props = defineProps<{
+  resourceId: string | null
+  visualization: ChartForApi | null
+}>()
+
+const emit = defineEmits<{
+  (e: 'chart-result', result: ChartToolResult): void
+}>()
+
+const { error, messages, sendMessage, status, stop } = useAssistantChat(toRef(props, 'resourceId'), () => props.visualization)
+
+const MAX_INPUT_LENGTH = 4000
+const COUNTER_THRESHOLD = 3600
+
+const input = ref('')
+const textareaRef = ref<HTMLTextAreaElement | null>(null)
+const messagesContainerRef = ref<HTMLElement | null>(null)
+// Latched on each scroll event: the user keeps the auto-scroll only while
+// they stay near the bottom, so reading history is never interrupted.
+const nearBottom = ref(true)
+
+function onMessagesScroll() {
+  const el = messagesContainerRef.value
+  if (el) nearBottom.value = isNearChatBottom(el)
+}
+
+async function scrollMessagesToBottom() {
+  await nextTick()
+  const el = messagesContainerRef.value
+  if (el) el.scrollTop = el.scrollHeight
+}
+
+// New messages and streaming growth (which mutates parts in place) both reach
+// this deep watch; scroll only when the user is already near the bottom.
+watch(messages, () => {
+  if (nearBottom.value) scrollMessagesToBottom()
+}, { deep: true })
+
+// Tool call ids already handled: results present at mount (restored history)
+// are recorded without emitting, then each new one is emitted exactly once.
+// Ids are unique, so the set survives a resource change (history cleared).
+const seenToolCallIds = new Set(chartToolResults(messages.value).map(result => result.toolCallId))
+
+watch(messages, (value) => {
+  for (const result of chartToolResults(value)) {
+    if (seenToolCallIds.has(result.toolCallId)) continue
+    seenToolCallIds.add(result.toolCallId)
+    emit('chart-result', result)
+  }
+}, { deep: true })
+
+// First paint of the conversation also scrolls (messages go from none to some).
+nearBottom.value = true
+scrollMessagesToBottom()
+
+const waiting = computed(() => !props.resourceId)
+// 'error' is not busy: a failed request leaves the status on 'error' until the
+// next one starts, and the composer must stay usable so the user can retry.
+const busy = computed(() => status.value === 'submitted' || status.value === 'streaming')
+const errorMessage = computed(() => (error.value ? mapAssistantError(error.value) : null))
+
+// User input is plain text, not markdown: render it as-is.
+function userMessageText(parts: Array<{ type: string, text?: unknown }>): string {
+  return parts.map(part => (part.type === 'text' && typeof part.text === 'string' ? part.text : '')).filter(Boolean).join('\n')
+}
+
+// Guard against double submissions (double click, repeated Enter).
+const SEND_COOLDOWN_MS = 1000
+let lastSubmittedAt = 0
+
+function submit() {
+  const text = input.value.trim()
+  const now = Date.now()
+  if (!text || waiting.value || busy.value || now - lastSubmittedAt < SEND_COOLDOWN_MS) return
+  lastSubmittedAt = now
+  lastSentText = text
+  sendMessage({ text })
+  input.value = ''
+}
+
+// Text of the in-flight request, restored in the composer if it fails so a
+// network error never loses the user's message.
+let lastSentText: string | null = null
+
+// The composer stays disabled for the whole request, so give the focus back
+// once the status settles (error included, to make retrying immediate).
+watch(status, async (value) => {
+  if (value !== 'ready' && value !== 'error') return
+  if (value === 'error' && lastSentText !== null) {
+    input.value = lastSentText
+    lastSentText = null
+  }
+  await nextTick()
+  textareaRef.value?.focus()
+})
+
+function handleEnter(event: KeyboardEvent) {
+  if (event.shiftKey || event.isComposing) return
+  event.preventDefault()
+  submit()
+}
+</script>
