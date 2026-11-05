@@ -1,9 +1,10 @@
-import type { Page } from '@playwright/test'
+import type { Locator, Page } from '@playwright/test'
 import { test, expect } from '../base'
+import * as path from 'path'
 import { deleteEditItem, focusedDragHandle, gotoHydrated } from '../helpers'
 
-// Both tests save the edito page of the site's datasets: run in parallel, one would
-// overwrite what the other just saved.
+// The tests save the edito page of the site's datasets: run in parallel, one would overwrite
+// what another just saved.
 test.describe.configure({ mode: 'serial' })
 
 test('can save edito page from admin without error toast', async ({ page }) => {
@@ -22,6 +23,22 @@ test('can save edito page from admin without error toast', async ({ page }) => {
   // Verify error toast is NOT visible
   await expect(page.getByText('Erreur lors de la sauvegarde')).not.toBeVisible()
 })
+
+async function emptyPage(page: Page) {
+  const pageBlocs = page.locator('[data-testid^="page-"][data-drop-item]')
+  while (await pageBlocs.count() > 0) {
+    const before = await pageBlocs.count()
+    await deleteEditItem(pageBlocs.first())
+    await expect(pageBlocs).toHaveCount(before - 1)
+  }
+  await expect(page.getByText('Cette page est vide')).toBeVisible()
+}
+
+async function uploadImage(page: Page, bloc: Locator, button: string) {
+  const fileChooser = page.waitForEvent('filechooser')
+  await bloc.getByRole('button', { name: button }).click()
+  await (await fileChooser).setFiles(path.join(import.meta.dirname, '../../public/illustrations/administration.svg'))
+}
 
 // Sections are the only blocs of a page: no menu to pick one from
 async function addSection(page: Page) {
@@ -85,13 +102,7 @@ test('can edit edito page with all bloc types', async ({ page }) => {
   await gotoHydrated(page, '/datasets?edit=true')
 
   // === Step 0: Delete all existing sections to start fresh ===
-  const pageBlocs = page.locator('[data-testid^="page-"][data-drop-item]')
-  while (await pageBlocs.count() > 0) {
-    const before = await pageBlocs.count()
-    await deleteEditItem(pageBlocs.first())
-    await expect(pageBlocs).toHaveCount(before - 1)
-  }
-  await expect(page.getByText('Cette page est vide')).toBeVisible()
+  await emptyPage(page)
 
   // === Step 1: A green section, with a title and a button, as the heroes were ===
   await addSection(page)
@@ -235,4 +246,71 @@ test('can edit edito page with all bloc types', async ({ page }) => {
     fullPage: true,
     maxDiffPixelRatio: 0.01, // Allow 1% pixel difference for minor rendering variations
   })
+})
+
+test('can illustrate a section and link pages with cards', async ({ page }) => {
+  await gotoHydrated(page, '/datasets?edit=true')
+  await emptyPage(page)
+
+  // A hero: its title, and its illustration on the side
+  await addSection(page)
+  await addTitleInLastSection(page, 'Les données des élections')
+  await addBlocInLastSection(page, 'ImageBloc')
+  const image = page.getByTestId('bloc-ImageBloc')
+  await uploadImage(page, image, 'Choisir une image')
+  await expect(image.locator('img')).toHaveAttribute('src', /\/content\/[0-9a-f]+\.svg$/)
+  await image.getByRole('textbox', { name: 'Texte alternatif' }).fill('Une mairie et un bureau de vote')
+  await page.mouse.click(1, 1)
+
+  // A summary: a card per page, side by side
+  await addSection(page)
+  await addBlocInLastSection(page, 'CardBloc')
+  const card = page.getByTestId('bloc-CardBloc').first()
+  const cardTitle = card.getByLabel('Titre de la carte')
+  await cardTitle.click()
+  await cardTitle.fill('Culture')
+  await page.mouse.click(1, 1)
+  await card.getByRole('button', { name: 'Ajouter une description' }).click()
+  const description = card.getByLabel('Description de la carte')
+  await description.click()
+  await description.fill('Données sur l\'offre culturelle, les pratiques culturelles, l\'économie de la culture, etc.')
+  await page.mouse.click(1, 1)
+  await card.getByRole('textbox', { name: 'URL de la carte' }).fill('/pages/donnees_culture')
+  await card.getByRole('textbox', { name: 'URL de la carte' }).blur()
+  await uploadImage(page, card, 'Choisir une image')
+  await expect(card.getByRole('button', { name: 'Remplacer l\'image' })).toBeVisible()
+
+  // A title and a URL are required: emptied, they keep their previous value. An image is not.
+  await addBlocInLastSection(page, 'CardBloc')
+  const other = page.getByTestId('bloc-CardBloc').nth(1)
+  const otherTitle = other.getByLabel('Titre de la carte')
+  await otherTitle.click()
+  await otherTitle.fill('')
+  await page.mouse.click(1, 1)
+  const otherUrl = other.getByRole('textbox', { name: 'URL de la carte' })
+  await otherUrl.fill('')
+  await otherUrl.blur()
+  await expect(otherUrl).toHaveValue('/')
+  await uploadImage(page, other, 'Choisir une image')
+  await other.getByRole('button', { name: 'Retirer l\'image' }).click()
+  await expect(other.getByRole('button', { name: 'Choisir une image' })).toBeVisible()
+
+  // An image never uploaded is not saved
+  await addBlocInLastSection(page, 'ImageBloc')
+
+  await page.getByRole('button', { name: 'Sauvegarder' }).click()
+  await expect(page.getByText('Page créée').or(page.getByText('Page sauvegardée'))).toBeVisible()
+
+  await gotoHydrated(page, '/datasets')
+  const sections = page.getByTestId('page-SectionBloc')
+  // The illustration and the image of the first card only
+  await expect(sections.locator('img')).toHaveCount(2)
+  await expect(sections.getByRole('img', { name: 'Une mairie et un bureau de vote' })).toBeVisible()
+  const cardLink = sections.getByRole('link', { name: 'Culture' })
+  await expect(cardLink).toHaveAttribute('href', '/pages/donnees_culture')
+  await expect(sections.getByText('Données sur l\'offre culturelle')).toBeVisible()
+  const otherLink = sections.getByRole('link', { name: 'Titre de la carte' })
+  await expect(otherLink).toHaveAttribute('href', '/')
+  // The cards of a row are as tall as each other, whatever they hold
+  expect((await otherLink.boundingBox())!.height).toBe((await cardLink.boundingBox())!.height)
 })

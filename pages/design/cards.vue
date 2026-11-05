@@ -20,8 +20,8 @@
       Dataset
     </h2>
     <div class="not-prose grid gap-4 md:grid-cols-2">
-      <EmbedsDatasetCard slug="municipales-2020-resultats-2nd-tour" />
-      <EmbedsDatasetCard slug="elections-municipales-2020-liste-des-candidats-elus-au-t1-et-liste-des-communes-entierement-pourvues" />
+      <EmbedsDatasetCard slug="base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret" />
+      <EmbedsDatasetCard slug="base-adresse-nationale" />
     </div>
 
     <h3 class="mb-3">
@@ -190,7 +190,11 @@ import { computed } from 'vue'
 import { ChartCard, DatasetCard, DiscussionMessageCard, LoadingBlock, PostCard, ReuseHorizontalCard, TopicCard, type Chart, type DatasetV2, type PaginatedArray, type Post, type ReuseV2, type Thread, type TopicV2 } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
-const { data: datasetData, status: datasetStatus } = await useAPI<DatasetV2>('/api/2/datasets/municipales-2020-resultats-2nd-tour/', { lazy: true, server: false })
+const datasetQuery = useRoute().query.dataset
+const datasetSlug = (Array.isArray(datasetQuery) ? datasetQuery[0] : datasetQuery) || 'base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret'
+// Own key: by default this URL is also fetched by the first EmbedsDatasetCard above, and a shared
+// useFetch key lets that card receive this request's data while still hydrating (hydration mismatch).
+const { data: datasetData, status: datasetStatus } = await useAPI<DatasetV2>(`/api/2/datasets/${encodeURIComponent(datasetSlug)}/`, { key: `design-cards-dataset-${datasetSlug}`, lazy: true, server: false })
 
 const { data: reusesData, status: reusesHorizontalStatus } = await useAPI<PaginatedArray<ReuseV2>>('/api/2/reuses/', { lazy: true, server: false, query: { page_size: 2 } })
 const reusesForHorizontal = computed(() => reusesData.value?.data ?? [])

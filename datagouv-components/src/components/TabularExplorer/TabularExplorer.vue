@@ -1,10 +1,10 @@
 <template>
   <div class="flex min-h-0 flex-1 flex-col">
-    <PreviewUnavailable v-if="previewError">
-      {{ t("L'aperçu de ce fichier n'a pas pu être chargé.") }}
-      <br>
-      <span class="text-xs break-words">{{ previewError }}</span>
-    </PreviewUnavailable>
+    <PreviewError
+      v-if="previewError"
+      error-type="load_failed"
+      :detail="typeof previewError === 'string' ? previewError : undefined"
+    />
 
     <!-- Same skeleton as the Suspense fallback above us: in both cases the slot isn't
          rendered yet, so its toolbar is a placeholder too. -->
@@ -31,7 +31,7 @@ import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { injectTabularProfile } from '../../composables/useTabularProfile'
 import { hasFilterForColumn as _hasFilterForColumn, buildDateFilterParams, buildGlobalSearchConditions, isSameSort, useFormatTabular } from '../../functions/tabular'
-import PreviewUnavailable from '../ResourceAccordion/PreviewUnavailable.vue'
+import PreviewError from '../ResourceAccordion/PreviewError.vue'
 import TabularSkeleton from './TabularSkeleton.vue'
 import type { TabularDataResponse, TabularRow, SortConfig, ColumnFilters, DateFilter, TabularUrlAlias } from './types'
 import { provideTabularContext, type ActiveFilter } from './useTabularContext'

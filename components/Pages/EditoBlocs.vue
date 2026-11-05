@@ -19,13 +19,18 @@
          colored sections opening the page stay above it as banners, the others go next to it -->
     <template v-if="sidemenu && !isEditing">
       <div
-        v-for="section in leadingColoredSections"
+        v-for="(section, index) in leadingColoredSections"
         :key="section.id"
-        class="py-24"
-        :class="heroBgColor(section.color!)"
+        :class="[sectionPadding(index), heroBgColor(section.color!)]"
         data-testid="page-SectionBloc"
       >
         <div class="container">
+          <div
+            v-if="index === 0 && $slots.breadcrumb"
+            class="hero-breadcrumb mb-16"
+          >
+            <slot name="breadcrumb" />
+          </div>
           <BlocsList
             :model-value="section.blocs"
             :edit="false"
@@ -34,7 +39,16 @@
           />
         </div>
       </div>
-      <div class="container md:flex md:gap-8 py-12">
+      <div
+        v-if="$slots.breadcrumb && !leadingColoredSections.length"
+        class="container pt-4"
+      >
+        <slot name="breadcrumb" />
+      </div>
+      <div
+        class="container md:flex md:gap-8 pb-12"
+        :class="{ 'pt-12': !$slots.breadcrumb || leadingColoredSections.length }"
+      >
         <HeadingsSidemenu
           v-if="sidemenuHeadings.length"
           :headings="sidemenuHeadings"
@@ -55,8 +69,15 @@
       </div>
     </template>
 
+    <!-- No section to hold the breadcrumb -->
     <div
-      v-else
+      v-if="!workingBlocs.length && $slots.breadcrumb && !(sidemenu && !isEditing)"
+      class="container pt-4"
+    >
+      <slot name="breadcrumb" />
+    </div>
+    <div
+      v-if="!(sidemenu && !isEditing)"
       ref="listRef"
       data-drop-list
     >
@@ -68,7 +89,8 @@
         draggable
         band
         class="group/section"
-        :class="[striped ? 'py-24' : 'py-12', bloc.color ? heroBgColor(bloc.color) : striped && 'odd:bg-gray-some even:bg-white']"
+        :class="[sectionPadding(index), bloc.color ? heroBgColor(bloc.color) : striped && neutralBackground(index)]"
+        :data-edit-accent="bloc.color ? 'white' : undefined"
         :data-testid="`page-${bloc.class}`"
         data-drop-item
         @delete="workingBlocs.splice(index, 1)"
@@ -122,6 +144,12 @@
           </BrandedButton>
         </div>
         <div class="container">
+          <div
+            v-if="index === 0 && $slots.breadcrumb"
+            :class="bloc.color ? 'hero-breadcrumb mb-16' : 'mb-6'"
+          >
+            <slot name="breadcrumb" />
+          </div>
           <BlocsList
             v-model="workingBlocs[index].blocs"
             :edit="isEditing"
@@ -206,7 +234,10 @@
         >
           {{ $t('Annuler') }}
         </BrandedButton>
-        <BrandedButton @click="save">
+        <BrandedButton
+          :loading="uploads > 0"
+          @click="save"
+        >
           {{ $t('Sauvegarder') }}
         </BrandedButton>
       </div>
@@ -223,15 +254,15 @@ import BlocsDragLayer from './BlocsDragLayer.vue'
 import BlocsList from './BlocsList.vue'
 import EditItem from './EditItem.vue'
 import HeadingsSidemenu from '~/components/Sidemenu/HeadingsSidemenu.vue'
-import type { PageBloc, SectionBloc, SectionColor } from '~/types/pages'
+import type { PageBloc, SectionBloc, SectionColor, SectionContentBloc } from '~/types/pages'
 import { anchorHeadings, slugify, type Heading } from '~/utils/headings'
 import { isMeAdmin } from '~/utils/auth'
-import { BLOCS_MAIN_COLOR, FOLLOW_LINKS, PAGE_TITLE_ID, normalizeBlocs, withoutEmptyBlocs, type BlocsMainColor, type LegacyBloc } from '~/utils/blocs'
+import { BLOCS_MAIN_COLOR, FOLLOW_LINKS, PAGE_TITLE_ID, UPLOADS_IN_PROGRESS, withoutEmptyBlocs, type BlocsMainColor } from '~/utils/blocs'
 import { heroBgColor } from '~/utils/hero'
 import { moveWithKeyboard, startBlocsDrag, useDropList } from '~/composables/useBlocsDrag'
 
 const props = withDefaults(defineProps<{
-  blocs: Array<PageBloc | LegacyBloc>
+  blocs: Array<PageBloc>
   edit?: boolean
   editable?: boolean
   striped?: boolean
@@ -265,10 +296,12 @@ const props = withDefaults(defineProps<{
 
 provide(BLOCS_MAIN_COLOR, props.mainColor)
 provide(FOLLOW_LINKS, props.followLinks)
+const uploads = ref(0)
+provide(UPLOADS_IN_PROGRESS, uploads)
 
-// From the raw array, so that the working copy below can be `structuredClone`d (a
-// reactive proxy cannot be).
-const normalizedBlocs = computed(() => normalizeBlocs(toRaw(props.blocs), !props.forOrganization))
+// The raw array, so that the working copy below can be `structuredClone`d (a reactive proxy
+// cannot be).
+const savedBlocs = computed(() => toRaw(props.blocs))
 
 const emit = defineEmits<{
   cancel: []
@@ -284,15 +317,19 @@ const localBlocs = ref<Array<PageBloc> | null>(null)
 
 watchEffect(() => {
   if (isEditing.value && !localBlocs.value) {
-    localBlocs.value = structuredClone(normalizedBlocs.value)
+    localBlocs.value = structuredClone(savedBlocs.value)
   }
 })
 
-const workingBlocs = computed(() => localBlocs.value ?? normalizedBlocs.value)
+const workingBlocs = computed(() => localBlocs.value ?? savedBlocs.value)
+
+// The blocs of a section in reading order, those of its columns in their place: a column only
+// lays them out.
+const readBlocs = (blocs: Array<SectionContentBloc>) => blocs.flatMap(bloc => bloc.class === 'ColumnBloc' ? bloc.blocs : [bloc])
 
 // The title of the page: the first bloc of the page, when it is a title.
 const pageTitleId = computed(() => {
-  const first = workingBlocs.value[0]?.blocs[0]
+  const first = readBlocs(workingBlocs.value[0]?.blocs ?? [])[0]
   return props.untitled && first?.class === 'TitleBloc' ? first.id : null
 })
 provide(PAGE_TITLE_ID, pageTitleId)
@@ -306,6 +343,23 @@ const SECTION_COLORS: Array<{ value: SectionColor | null, label: string }> = [
   { value: 'purple', label: t('Fond violet') },
 ]
 
+const slots = useSlots()
+
+// The first section holds the breadcrumb at its top, as the banner of an organization does: it
+// gives up its top padding for it.
+function sectionPadding(index: number): string {
+  const bottom = props.striped ? 'pb-24' : 'pb-12'
+  if (index === 0 && slots.breadcrumb) return `pt-4 ${bottom}`
+  return props.striped ? 'py-24' : 'py-12'
+}
+
+// The neutral sections alternate their backgrounds. A page opening on one, right under the site
+// header, starts on white: a gray band there would set the top of the page apart for nothing.
+const neutralOffset = computed(() => props.untitled && workingBlocs.value[0] && !workingBlocs.value[0].color ? 1 : 0)
+function neutralBackground(index: number): string {
+  return (index + neutralOffset.value) % 2 === 0 ? 'bg-gray-some' : 'bg-white'
+}
+
 const leadingColoredSections = computed(() => {
   const index = workingBlocs.value.findIndex(section => !section.color)
   return workingBlocs.value.slice(0, index === -1 ? workingBlocs.value.length : index)
@@ -315,7 +369,7 @@ const leadingColoredSections = computed(() => {
 // of the page is not one of its parts, and the content of the accordions is folded.
 const sidemenuHeadings = computed<Array<Heading>>(() => workingBlocs.value
   .slice(leadingColoredSections.value.length)
-  .flatMap(section => section.blocs)
+  .flatMap(section => readBlocs(section.blocs))
   .flatMap((bloc) => {
     if (bloc.class === 'TitleBloc') return bloc.id === pageTitleId.value ? [] : [{ id: slugify(bloc.title), label: bloc.title, level: 2 }]
     if (bloc.class === 'MarkdownBloc') return anchorHeadings(formatMarkdown(bloc.content, { minDepth: 2, noHeadings: false })).headings
@@ -325,7 +379,7 @@ const sidemenuHeadings = computed<Array<Heading>>(() => workingBlocs.value
 
 // Check if there are unsaved changes
 const hasUnsavedChanges = computed(() => {
-  return localBlocs.value !== null && JSON.stringify(toRaw(localBlocs.value)) !== JSON.stringify(normalizedBlocs.value)
+  return localBlocs.value !== null && JSON.stringify(toRaw(localBlocs.value)) !== JSON.stringify(savedBlocs.value)
 })
 
 // Warn before leaving with unsaved changes.

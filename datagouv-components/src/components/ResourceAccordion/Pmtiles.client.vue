@@ -1,8 +1,10 @@
 <template>
   <div class="flex h-full flex-col">
-    <PreviewUnavailable v-if="hasError">
-      {{ t("L'aperçu cartographique de ce fichier n'a pas pu être chargé.") }}
-    </PreviewUnavailable>
+    <PreviewError
+      v-if="hasError"
+      :resource="resource"
+      error-type="map_load"
+    />
     <div
       v-else
       class="flex min-h-0 flex-1 flex-col"
@@ -55,7 +57,8 @@
 import { computed, onMounted, ref, useTemplateRef } from 'vue'
 import { RiExternalLinkFill } from '@remixicon/vue'
 import { Protocol, PMTiles } from 'pmtiles'
-import maplibregl from 'maplibre-gl'
+import * as maplibregl from 'maplibre-gl'
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import DOMPurify from 'dompurify'
 import { useComponentsConfig } from '../../config'
 import { useFormatDate } from '../../functions/dates'
@@ -64,7 +67,7 @@ import type { Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 import BrandedButton from '../BrandedButton.vue'
 import styleVector from '../../../assets/json/vector.json'
-import PreviewUnavailable from './PreviewUnavailable.vue'
+import PreviewError from './PreviewError.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
 import { getMapAttribution } from '../../functions/owned'
@@ -93,6 +96,9 @@ const lastUpdate = computed(() => {
 })
 
 const container = useTemplateRef('containerRef')
+
+// v6 with a bundler cannot resolve the worker from import.meta.url; point it at the chunk Vite emits.
+maplibregl.setWorkerUrl(maplibreWorkerUrl)
 
 const attributions = computed(() => getMapAttribution(props.dataset))
 
@@ -183,7 +189,7 @@ async function displayMap() {
             'type': typeLayer.value as 'fill' | 'circle' | 'line',
             'paint': {
               [`${typeLayer.value}-color`]: 'steelblue',
-              [`${typeLayer.value}-opacity`]: { base: 1, stops: [[0, 0.9], [10, 0.6]] },
+              [`${typeLayer.value}-opacity`]: ['interpolate', ['linear'], ['zoom'], 0, 0.9, 10, 0.6],
             },
           } as maplibregl.AddLayerObject)
           map.on('click', layer.layer, showMapPopup)

@@ -13,7 +13,7 @@ import type { License } from './types/licenses'
 import type { Member, MemberRole, NewOrganization, Organization, OrganizationOrSuggest, OrganizationReference, OrganizationSuggest } from './types/organizations'
 import type { Owned, OwnedWithFullObject, OwnedWithId } from './types/owned'
 import type { Comment, Thread } from './types/discussions'
-import type { PageBloc, SectionBloc, SectionContentBloc, BlocWidth, LeafBloc, ObjectBloc, TitleBloc, DatasetBloc, DataserviceBloc, ReuseBloc, ExploreBloc, LinkInBloc, LinksListBloc, MarkdownBloc, AccordionContentBloc, AccordionItemBloc, AccordionListBloc, ButtonBloc, SectionColor } from './types/pages'
+import type { PageBloc, SectionBloc, SectionContentBloc, BlocWidth, LeafBloc, ObjectBloc, TitleBloc, DatasetBloc, DataserviceBloc, ReuseBloc, ExploreBloc, LinkInBloc, LinksListBloc, MarkdownBloc, AccordionContentBloc, AccordionItemBloc, AccordionListBloc, ButtonBloc, ImageBloc, CardBloc, ColumnBloc, ColumnContentBloc, SectionColor } from './types/pages'
 import type { Post, PostAncestor } from './types/posts'
 import type { ReuseReference, NewReuse, Reuse, ReuseV2, ReuseTopic, ReuseType } from './types/reuses'
 import type { RegisteredSchema, Schema, SchemaDetails, SchemaField, SchemaPath, SchemaPublicationMode, SchemaResponseData, SchemaVersion, ValidataError } from './types/schemas'
@@ -147,6 +147,7 @@ export * from './functions/metrics'
 export * from './functions/never'
 export * from './functions/organizations'
 export * from './functions/owned'
+export * from './functions/previewErrors'
 export * from './functions/resources'
 export * from './functions/reuses'
 export * from './functions/schemas'
@@ -233,6 +234,10 @@ export type {
   AccordionItemBloc,
   AccordionListBloc,
   ButtonBloc,
+  ImageBloc,
+  CardBloc,
+  ColumnBloc,
+  ColumnContentBloc,
   SectionColor,
   PaginatedArray,
   Post,

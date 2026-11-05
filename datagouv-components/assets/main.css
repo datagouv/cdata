@@ -193,6 +193,22 @@
       @apply p-1! font-mono! bg-gray-lower! text-sm! text-gray-medium! rounded!;
   }
 
+  /* The DSFR numbers the items of a list with `counters(li-counter)`, which also prints the
+     counter of any list earlier in the page: under a breadcrumb of three links, "3.1." instead
+     of "1.". A counter of its own, contained in each text, keeps "1." there and "2.1." in a
+     nested list, overriding the DSFR rules which are outside of any layer. The two spaces after
+     the number are no-break spaces, as in the DSFR. */
+  .prose {
+    contain: style;
+  }
+  .prose ol {
+    counter-reset: prose-li !important;
+    --ol-content: counters(prose-li, ".") ".  ";
+  }
+  .prose ol > li {
+    counter-increment: prose-li !important;
+  }
+
   /* Vue Sonner Toast custom colors */
   [data-sonner-toast][data-type="success"] {
     background-color: var(--color-new-success-light) !important;

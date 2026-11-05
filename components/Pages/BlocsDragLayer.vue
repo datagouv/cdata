@@ -3,8 +3,9 @@
     <template v-if="blocsDrag">
       <div
         v-if="blocsDrag.target"
-        class="fixed z-50 rounded-full bg-new-primary pointer-events-none"
+        class="fixed z-50 rounded-full pointer-events-none"
         :style="{
+          background: accentOf(blocsDrag.target.list),
           left: `${blocsDrag.target.line.left}px`,
           top: `${blocsDrag.target.line.top}px`,
           width: `${blocsDrag.target.line.width}px`,
@@ -24,4 +25,10 @@
 
 <script setup lang="ts">
 import { blocsDrag } from '~/composables/useBlocsDrag'
+
+// Drawn above the page, the indicator does not inherit the colour of the editor's controls
+// from the section it points into (white on a coloured one, see `EditItem`): read there.
+function accentOf(list: HTMLElement): string {
+  return getComputedStyle(list).getPropertyValue('--edit-accent')
+}
 </script>

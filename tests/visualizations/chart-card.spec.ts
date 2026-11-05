@@ -1,19 +1,18 @@
+import type { Chart } from '@datagouv/components-next'
 import { test, expect } from '../base'
-import { createChart, deleteAllCharts, deleteChart } from './fixtures'
+import { createChart, deleteChart } from './fixtures'
 
 test.use({ allowedConsoleMessages: ['No match found for location with path "/design/chart"'] })
 
 test.describe('chart cards', () => {
   const createdIds: Array<string> = []
+  let histogramChart: Chart
+  let privateLineChart: Chart
 
-  test.beforeEach(async ({ request }) => {
-    // The /design/cards page only shows the 2 most recent charts. Clean first so
-    // our fixtures are the only ones displayed, then create fresh charts for this test.
-    await deleteAllCharts(request)
-
+  test.beforeEach(async ({ page, request }) => {
     const uniqueSuffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
 
-    const histogramChart = await createChart(request, {
+    histogramChart = await createChart(request, {
       title: `Carte histogramme E2E ${uniqueSuffix}`,
       description: 'Histogramme de test pour la carte.',
       type: 'histogram',
@@ -22,7 +21,7 @@ test.describe('chart cards', () => {
     })
     createdIds.push(histogramChart.id)
 
-    const privateLineChart = await createChart(request, {
+    privateLineChart = await createChart(request, {
       title: `Carte courbe E2E ${uniqueSuffix}`,
       description: 'Courbe privée de test pour la carte.',
       type: 'line',
@@ -30,6 +29,12 @@ test.describe('chart cards', () => {
       withImage: false,
     })
     createdIds.push(privateLineChart.id)
+
+    // /design/cards shows the 2 most recent charts of the whole DB, which tests running in
+    // parallel keep changing: serve this test's own charts as that list instead.
+    await page.route(url => url.pathname === '/api/1/visualizations/', route => route.fulfill({
+      json: { data: [histogramChart, privateLineChart], page: 1, page_size: 2, total: 2, next_page: null, previous_page: null },
+    }))
   })
 
   test.afterEach(async ({ request }) => {
@@ -42,7 +47,7 @@ test.describe('chart cards', () => {
     await page.goto('/design/cards')
     await page.waitForLoadState('networkidle')
 
-    const histogramCard = page.locator('article').filter({ hasText: /Carte histogramme E2E/ })
+    const histogramCard = page.locator('article').filter({ hasText: histogramChart.title })
     await expect(histogramCard).toBeVisible()
     const histogramLink = histogramCard.locator('h3 a')
     await expect(histogramLink).toBeVisible()
@@ -51,7 +56,7 @@ test.describe('chart cards', () => {
     await expect(histogramCard.locator('[aria-label="0 vues"]')).toBeVisible()
     await expect(histogramCard.getByText('Histogramme de test pour la carte.')).toBeVisible()
 
-    const lineCard = page.locator('article').filter({ hasText: /Carte courbe E2E/ })
+    const lineCard = page.locator('article').filter({ hasText: privateLineChart.title })
     await expect(lineCard).toBeVisible()
     await expect(lineCard.locator('[aria-label="0 vues"]')).toBeVisible()
   })
@@ -60,10 +65,10 @@ test.describe('chart cards', () => {
     await page.goto('/design/cards')
     await page.waitForLoadState('networkidle')
 
-    const histogramCard = page.locator('article').filter({ hasText: /Carte histogramme E2E/ })
+    const histogramCard = page.locator('article').filter({ hasText: histogramChart.title })
     await expect(histogramCard.locator('img')).toHaveCount(1)
 
-    const lineCard = page.locator('article').filter({ hasText: /Carte courbe E2E/ })
+    const lineCard = page.locator('article').filter({ hasText: privateLineChart.title })
     await expect(lineCard.locator('img')).toHaveCount(0)
     await expect(lineCard.locator('div.bg-gray-lower')).toBeVisible()
   })
@@ -72,7 +77,7 @@ test.describe('chart cards', () => {
     await page.goto('/design/cards')
     await page.waitForLoadState('networkidle')
 
-    const histogramCard = page.locator('article').filter({ hasText: /Carte histogramme E2E/ })
+    const histogramCard = page.locator('article').filter({ hasText: histogramChart.title })
     const link = histogramCard.locator('h3 a')
     await expect(link).toHaveAttribute('href', /\/visualizations\/carte-histogramme-e2e-/)
   })
@@ -81,10 +86,10 @@ test.describe('chart cards', () => {
     await page.goto('/design/cards')
     await page.waitForLoadState('networkidle')
 
-    const lineCard = page.locator('article').filter({ hasText: /Carte courbe E2E/ })
+    const lineCard = page.locator('article').filter({ hasText: privateLineChart.title })
     await expect(lineCard.locator('.fr-badge')).toHaveText('Brouillon')
 
-    const histogramCard = page.locator('article').filter({ hasText: /Carte histogramme E2E/ })
+    const histogramCard = page.locator('article').filter({ hasText: histogramChart.title })
     await expect(histogramCard.locator('.fr-badge')).toHaveCount(0)
   })
 })

@@ -1,27 +1,33 @@
 import type { Component } from 'vue'
-import { RiCursorLine, RiDatabase2Line, RiHeading, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine } from '@remixicon/vue'
+import { RiCursorLine, RiDatabase2Line, RiHeading, RiImageLine, RiLayoutColumnLine, RiLayoutGridLine, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine } from '@remixicon/vue'
 import { v4 as uuidv4 } from 'uuid'
-import type { AccordionListBloc, BlocWidth, ButtonBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionContentBloc, TitleBloc } from '~/types/pages'
+import type { AccordionListBloc, BlocWidth, ButtonBloc, CardBloc, ColumnBloc, ImageBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionContentBloc, TitleBloc } from '~/types/pages'
 import TitleBlocComponent from '~/components/Pages/TitleBloc.vue'
 import MarkdownBlocComponent from '~/components/Pages/MarkdownBloc.vue'
 import LinksListBlocComponent from '~/components/Pages/LinksListBloc.vue'
 import ButtonBlocComponent from '~/components/Pages/ButtonBloc.vue'
+import ImageBlocComponent from '~/components/Pages/ImageBloc.vue'
+import CardBlocComponent from '~/components/Pages/CardBloc.vue'
 import DatasetBlocComponent from '~/components/Pages/DatasetBloc.vue'
 import DataserviceBlocComponent from '~/components/Pages/DataserviceBloc.vue'
 import ReuseBlocComponent from '~/components/Pages/ReuseBloc.vue'
 import AccordionBlocEditorComponent from '~/components/Pages/AccordionBlocEditor.vue'
+import ColumnBlocComponent from '~/components/Pages/ColumnBloc.vue'
 
-// Components rendering the blocs nested in a section or an accordion item.
+// Components rendering the blocs nested in a section, an accordion item or a column.
 // Sections are rendered by `EditoBlocs` itself.
 export const BLOC_COMPONENTS: Record<string, Component> = {
   TitleBloc: TitleBlocComponent,
   MarkdownBloc: MarkdownBlocComponent,
   LinksListBloc: LinksListBlocComponent,
   ButtonBloc: ButtonBlocComponent,
+  ImageBloc: ImageBlocComponent,
+  CardBloc: CardBlocComponent,
   DatasetBloc: DatasetBlocComponent,
   DataserviceBloc: DataserviceBlocComponent,
   ReuseBloc: ReuseBlocComponent,
   AccordionListBloc: AccordionBlocEditorComponent,
+  ColumnBloc: ColumnBlocComponent,
 }
 
 // Width of an object bloc once picked: reuses fit three per row, the others two.
@@ -37,8 +43,11 @@ export function useBlocLabels(): Record<string, string> {
   return {
     SectionBloc: t('Section'),
     ButtonBloc: t('Bouton'),
+    ImageBloc: t('Image'),
+    CardBloc: t('Carte'),
     AccordionListBloc: t('Accordéon'),
     AccordionItem: t('Élément'),
+    ColumnBloc: t('Colonne'),
     TitleBloc: t('Titre'),
     MarkdownBloc: t('Texte'),
     LinksListBloc: t('Liens'),
@@ -55,7 +64,7 @@ export type BlocChoice = {
   name: string
   description: string
 } & (
-  | { key: Exclude<SectionContentBloc['class'], ObjectBloc['class']>, create: () => TitleBloc | MarkdownBloc | LinksListBloc | ButtonBloc | AccordionListBloc }
+  | { key: Exclude<SectionContentBloc['class'], ObjectBloc['class']>, create: () => Exclude<SectionContentBloc, ObjectBloc> }
   // Objects are picked in a selector before their blocs can be built.
   | { key: ObjectBloc['class'] }
 )
@@ -93,12 +102,37 @@ export function useBlocChoices() {
       // Saved as soon as added: its URL is required, the home page of the site until changed.
       create: (): ButtonBloc => ({ class: 'ButtonBloc', id: uuidv4(), width: null, title: t('Titre du bouton'), url: '/' }),
     },
+    ImageBloc: {
+      key: 'ImageBloc',
+      icon: RiImageLine,
+      name: t('Image'),
+      description: t('Une illustration, à côté d\'un titre par exemple'),
+      // Without its image until one is uploaded, see `withoutEmptyBlocs`.
+      create: (): ImageBloc => ({ class: 'ImageBloc', id: uuidv4(), width: null, image: '', alt: null }),
+    },
+    CardBloc: {
+      key: 'CardBloc',
+      icon: RiLayoutGridLine,
+      name: t('Carte'),
+      description: t('Un lien vers une page, avec une image et une description'),
+      // Saved as soon as added, like the button: its URL is required.
+      create: (): CardBloc => ({ class: 'CardBloc', id: uuidv4(), width: '1/4', title: t('Titre de la carte'), url: '/', description: null, image: null }),
+    },
     AccordionListBloc: {
       key: 'AccordionListBloc',
       icon: RiListCheck2,
       name: t('Accordéon'),
       description: t('Liste dépliable de contenus (FAQ, etc.)'),
       create: (): AccordionListBloc => ({ class: 'AccordionListBloc', id: uuidv4(), width: null, items: [] }),
+    },
+    ColumnBloc: {
+      key: 'ColumnBloc',
+      icon: RiLayoutColumnLine,
+      name: t('Colonne'),
+      description: t('Empiler des blocs à côté des autres, un titre et son texte à côté d\'une image par exemple'),
+      // Half of the row, to leave room beside it; without blocs until some are added to it,
+      // see `withoutEmptyBlocs`.
+      create: (): ColumnBloc => ({ class: 'ColumnBloc', id: uuidv4(), width: '1/2', blocs: [] }),
     },
     DatasetBloc: {
       key: 'DatasetBloc',

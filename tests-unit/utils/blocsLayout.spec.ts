@@ -18,6 +18,12 @@ describe('acceptsDropped', () => {
     ['a dataset in an accordion item', 'accordion', bloc('DatasetBloc'), true],
     ['an accordion in an accordion item', 'accordion', bloc('AccordionListBloc'), false],
     ['the explorer in an accordion item', 'accordion', bloc('ExploreBloc'), false],
+    ['a column in a section', 'section', bloc('ColumnBloc'), true],
+    ['a column in an accordion item', 'accordion', bloc('ColumnBloc'), true],
+    ['a title in a column', 'column', bloc('TitleBloc'), true],
+    ['a column in a column', 'column', bloc('ColumnBloc'), false],
+    ['an accordion in a column', 'column', bloc('AccordionListBloc'), false],
+    ['the explorer in a column', 'column', bloc('ExploreBloc'), false],
     ['a section in a section', 'section', { kind: 'band' }, false],
     ['an accordion item in a section', 'section', { kind: 'accordion-item' }, false],
   ])('%s', (_name, level, dragged, accepted) => {
