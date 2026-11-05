@@ -2,7 +2,7 @@ import type { Chart } from '@datagouv/components-next'
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
-import { ASSISTANT_CHAT_PATH, createChartStream } from '../assistantApi'
+import { ASSISTANT_CHAT_PATH, createChartOutput, createChartStream } from '../assistantApi'
 import { createChart, deleteChart, mockTabular, RESOURCE_ID, setupChart } from './fixtures'
 import data from './data.json' with { type: 'json' }
 
@@ -210,8 +210,11 @@ test('sort select displays dynamic column names', async ({ page }) => {
 
   const sortOptions = await listbox.locator('role=option').allTextContents()
 
-  expect(sortOptions).toHaveLength(3)
+  // The default series counts the X column: its counts can be sorted too.
+  expect(sortOptions).toHaveLength(5)
   expect(sortOptions[0]).toBe('Aucun')
+  expect(sortOptions[3]).toContain('Compter - Ascendant')
+  expect(sortOptions[4]).toContain('Compter - Descendant')
 
   expect(sortOptions[1]).toContain('année_publication - Ascendant')
   expect(sortOptions[1]).not.toContain('Axe X - Ascendant')
@@ -951,10 +954,8 @@ test('test_a_tool_result_is_applied_only_once', async ({ page }) => {
   await expect(page.getByLabel('Titre')).toHaveValue('Titre modifié à la main')
 })
 
-test('test_a_result_for_another_resource_is_ignored', async ({ page }) => {
-  await setupChart(page)
-
-  // This answer only: a create_chart for a resource that is no longer the selected one.
+/** Answers the chat with `stream` instead of the fake services' script. */
+async function routeAssistantStream(page: Page, stream: string) {
   await page.route(`${ASSISTANT_API_BASE}${ASSISTANT_CHAT_PATH}`, async (route) => {
     const origin = route.request().headers()['origin'] ?? '*'
     const cors = {
@@ -970,9 +971,16 @@ test('test_a_result_for_another_resource_is_ignored', async ({ page }) => {
     await route.fulfill({
       status: 200,
       headers: { ...cors, 'Content-Type': 'text/event-stream', 'x-vercel-ai-ui-message-stream': 'v1' },
-      body: createChartStream('00000000-0000-4000-8000-000000000000'),
+      body: stream,
     })
   })
+}
+
+test('test_a_result_for_another_resource_is_ignored', async ({ page }) => {
+  await setupChart(page)
+
+  // A create_chart for a resource that is no longer the selected one.
+  await routeAssistantStream(page, createChartStream('00000000-0000-4000-8000-000000000000'))
 
   await page.getByRole('button', { name: 'Assistant', exact: true }).click()
   await sendAssistantMessage(page, 'Premières doses par département')
@@ -982,4 +990,26 @@ test('test_a_result_for_another_resource_is_ignored', async ({ page }) => {
   await expect(page.getByLabel('Titre')).toHaveValue('Mon graphique')
   await expect(page.getByLabel('Nombre de valeurs')).toHaveValue('')
   expect(await page.getByPlaceholder('Rechercher une colonne à afficher...').inputValue()).toBe('année_publication')
+})
+
+test('a count chart sorted by Y keeps its sort', async ({ page }) => {
+  await setupChart(page)
+
+  // Top 5 regions by number of rows: count of the X column, sorted by the counts.
+  const output = createChartOutput(RESOURCE_ID)
+  output.chart.x_axis = { ...output.chart.x_axis, column_x: 'nom_region' }
+  output.chart.series = [{ ...output.chart.series[0]!, column_y: 'nom_region', aggregate_y: 'count' }]
+  await routeAssistantStream(page, createChartStream(RESOURCE_ID, output))
+
+  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await sendAssistantMessage(page, 'Les 5 régions les plus représentées')
+  await expect(page.getByTestId('assistant-panel').locator('article').last()).toContainText('Graphique créé.')
+
+  await page.getByRole('button', { name: 'Formulaire', exact: true }).click()
+  await expect(page.getByLabel('Nombre de valeurs')).toHaveValue('5')
+  await expect(page.locator('#x-axis-sort-combined .input')).toContainText('Compter - Descendant')
+
+  const listbox = page.locator('#x-axis-sort-combined')
+  await listbox.click()
+  await expect(listbox.getByRole('option', { name: 'Compter - Ascendant' })).toBeVisible()
 })

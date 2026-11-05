@@ -82,6 +82,21 @@ describe('ChartViewer limit', () => {
     expect(option.dataset[0].source.map((r: { nb: number }) => r.nb)).toEqual([9, 7, 5])
   })
 
+  it('sorts a count series by its counts', async () => {
+    // tabular-api names a count of the X column `<x>__count`.
+    const data = { [RESOURCE_ID]: [
+      { year: 2020, year__count: 2 }, { year: 2021, year__count: 8 }, { year: 2022, year__count: 5 },
+    ] }
+    const chart = chartConfig([{ column_y: 'year', type: 'histogram' }], { sort_x_by: 'axis_y', sort_x_direction: 'desc', limit: 2 })
+    chart.series[0]!.aggregate_y = 'count'
+    const wrapper = mount(ChartViewer, { props: { chart, series: { data, columns: COLUMNS } } })
+    await flushPromises()
+    const option = setOptionMock.mock.calls.at(-1)![0]
+    wrapper.unmount()
+
+    expect(option.dataset[0].source.map((r: { year: number }) => r.year)).toEqual([2021, 2022])
+  })
+
   it('keeps every value when the limit exceeds the groups', async () => {
     const option = await capture([{ column_y: 'nb', type: 'histogram' }], { limit: 10 })
 

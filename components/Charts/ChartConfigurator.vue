@@ -88,7 +88,7 @@
                 class="size-3"
                 aria-hidden="true"
               />
-              {{ $t('{count} colonnes disponibles', { count: resourceColumns.length }) }}
+              {{ $t('{n} colonnes disponibles | {n} colonne disponible | {n} colonnes disponibles', { n: resourceColumns.length }) }}
             </template>
             <template v-else>
               <RiInformationLine
@@ -156,7 +156,7 @@
                 {{ $t('Aucun graphique créé') }}
               </p>
               <p class="text-new-gray-medium text-sm mt-1.5 text-center">
-                {{ $t('Utilisez l\'assistant ou l\'édition manuelle pour créer votre première visualisation.') }}
+                {{ $t('Utilisez l’assistant ou l’édition manuelle pour créer votre première visualisation.') }}
               </p>
             </div>
             <div v-else>
@@ -252,7 +252,7 @@
                         aria-hidden="true"
                       />
                       {{ $t('Schéma de la ressource') }}
-                      <span class="text-new-gray-medium">· {{ $t('{count} colonnes', { count: resourceColumns.length }) }}</span>
+                      <span class="text-new-gray-medium">· {{ $t('{n} colonnes | {n} colonne | {n} colonnes', { n: resourceColumns.length }) }}</span>
                     </summary>
                     <ul class="mt-3 space-y-1 m-0 p-0 list-none">
                       <li
@@ -807,8 +807,11 @@ function isNumberColumnOption(option: YAxisColumnOption | null | undefined): boo
 
 const sortOptions = computed<SortOption[]>(() => {
   const xAxisColumn = form.value.x_axis.column_x
-  const yAxisColumn = form.value.series[0]?.column_y
-  const sameColumnAsX = xAxisColumn && yAxisColumn === xAxisColumn
+  const serie = form.value.series[0]
+  const isCount = !!serie && getSerieColumnYValue(serie) === COUNT_OPTION
+  // A count series uses the X column by convention, yet sorting by its counts is meaningful.
+  const yAxisColumn = isCount ? t('Compter') : serie?.column_y
+  const sameColumnAsX = !isCount && xAxisColumn && yAxisColumn === xAxisColumn
   const options: SortOption[] = [
     { value: '', column: '', direction: '', label: t('Aucun'), icon: null },
     { value: 'axis_x-asc', column: xAxisColumn || t('Axe X'), direction: 'asc', label: t('Ascendant'), icon: RiArrowUpLine },

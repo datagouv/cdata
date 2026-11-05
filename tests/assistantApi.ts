@@ -57,8 +57,7 @@ function toStream(chunks: Array<Chunk>): string {
 }
 
 /** A Vercel AI UI message stream answering with one `create_chart` call for `resourceId`. */
-export function createChartStream(resourceId: string): string {
-  const output = createChartOutput(resourceId)
+export function createChartStream(resourceId: string, output: ReturnType<typeof createChartOutput> = createChartOutput(resourceId)): string {
   return toStream(toolCallChunks('create_chart', { config: output.chart }, output, 'Graphique créé.'))
 }
 
