@@ -590,6 +590,12 @@ test.describe('navigation', () => {
 
     const published = (await (await request.get(`${API_BASE}/api/1/datasets/${dataset.id}/`)).json()) as Dataset
     expect(published.resources.map(resource => resource.schema?.name)).toEqual([SCHEMAS.durabilite.name])
+
+    // Client-side, as a reload would drop the wizard state anyway
+    await page.evaluate(() => window.useNuxtApp!().$router.push('/admin/datasets/structured?step=1'))
+    await expect(page.getByRole('heading', { name: /Associez un schéma/ })).toBeVisible()
+    await expect(page.getByLabel('Lien vers le jeu de données')).toBeHidden()
+    await expect(page.getByText(dataset.title)).toBeHidden()
   })
 
   test('recharger une étape avancée renvoie au début plutôt qu’à un écran amputé', async ({ page }) => {

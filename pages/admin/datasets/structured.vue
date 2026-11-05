@@ -229,27 +229,31 @@ async function save() {
 
     if (results.every(f => f.status !== 'rejected')) {
       if (publicationMode.value === 'existing') {
+        leftForDataset = true
         await navigateTo(`/datasets/${dataset.slug}`)
-        clearNuxtState(NEW_DATASET_STATE)
       }
       else {
         await moveToStep(4)
+        clearForm()
       }
-      associateSchemaForm.value = {
-        owned: null,
-        existingDataset: null,
-        selectedSchema: null,
-      }
-      clearNuxtState(USE_SPREADSHEET_STATE)
-      clearNuxtState(DATASET_FORM_STATE)
-      clearNuxtState(DATASET_FILES_STATE)
-      clearNuxtState(PUBLICATION_MODE_STATE)
-      clearNuxtState(UPLOADED_FILE_STATE)
     }
   }
   finally {
     finish()
   }
+}
+
+function clearForm() {
+  associateSchemaForm.value = {
+    owned: null,
+    existingDataset: null,
+    selectedSchema: null,
+  }
+  clearNuxtState(USE_SPREADSHEET_STATE)
+  clearNuxtState(DATASET_FORM_STATE)
+  clearNuxtState(DATASET_FILES_STATE)
+  clearNuxtState(PUBLICATION_MODE_STATE)
+  clearNuxtState(UPLOADED_FILE_STATE)
 }
 
 async function updateDataset(asPrivate: boolean) {
@@ -281,6 +285,16 @@ async function updateDataset(asPrivate: boolean) {
 // avoid wiping the dataset created for the current flow on later steps.
 onMounted(() => {
   if (currentStep.value === 1) {
+    clearNuxtState(NEW_DATASET_STATE)
+  }
+})
+
+// Cleared once the page is gone: the dataset page loads first, and the form would
+// empty itself on screen in the meantime
+let leftForDataset = false
+onUnmounted(() => {
+  if (leftForDataset) {
+    clearForm()
     clearNuxtState(NEW_DATASET_STATE)
   }
 })
