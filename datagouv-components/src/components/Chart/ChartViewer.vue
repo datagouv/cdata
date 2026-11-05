@@ -146,6 +146,9 @@ const echartsOption = computed(() => {
   const seriesCount = props.chart.series.length
   if (!props.chart.series || seriesCount === 0) return
 
+  let referenceXs: Array<unknown> | null = null
+  const xKey = (x: unknown) => x instanceof Date ? x.getTime() : String(x)
+
   const seriesArray = props.chart.series.map((s, seriesIndex) => {
     const xColumn = s.column_x_name_override ?? props.chart.x_axis.column_x
     const yColumn = s.aggregate_y ? `${s.column_y}__${s.aggregate_y}` : s.column_y
@@ -209,11 +212,27 @@ const echartsOption = computed(() => {
       })
     }
 
-    // Same cut for every series so they stay aligned on X.
+    // The first series decides the X order and, with a limit, the kept X
+    // values. When sorting by Y each series would otherwise rank X on its own
+    // column: the other series are reordered and cut to the first series' X
+    // values (a missing X gives an empty point) so they stay aligned.
     const limit = props.chart.x_axis.limit
-    const limitedData = limit != null && limit < sortedData.length
-      ? sortedData.slice(0, limit)
-      : sortedData
+    let limitedData: Array<Record<string, unknown>>
+    if (!referenceXs) {
+      limitedData = limit != null && limit < sortedData.length
+        ? sortedData.slice(0, limit)
+        : sortedData
+      referenceXs = limitedData.map(row => row[xColumn])
+    }
+    else if (sortBy === 'axis_y') {
+      const byX = new Map(sortedData.map(row => [xKey(row[xColumn]), row]))
+      limitedData = referenceXs.map(x => byX.get(xKey(x)) ?? { [xColumn]: x })
+    }
+    else {
+      limitedData = limit != null && limit < sortedData.length
+        ? sortedData.slice(0, limit)
+        : sortedData
+    }
 
     const lineOptions = s.type === 'histogram'
       ? {}

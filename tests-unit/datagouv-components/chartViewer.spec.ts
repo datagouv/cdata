@@ -94,6 +94,29 @@ describe('ChartViewer limit', () => {
     expect(option.dataset[0].source).toHaveLength(30)
   })
 
+  it('aligns every series on the first series X values when sorting by Y', async () => {
+    const data = { [RESOURCE_ID]: [
+      { year: 2020, nb: 3, rate: 50 }, { year: 2021, nb: 9, rate: 10 }, { year: 2022, nb: 1, rate: 40 }, { year: 2023, nb: 7, rate: 20 },
+    ] }
+    const option = await capture(
+      [{ column_y: 'nb', type: 'histogram' }, { column_y: 'rate', type: 'histogram' }],
+      { sort_x_by: 'axis_y', sort_x_direction: 'desc', limit: 2 },
+      data,
+    )
+
+    expect(option.dataset.map((d: { source: Array<{ year: number }> }) => d.source.map(r => r.year))).toEqual([[2021, 2023], [2021, 2023]])
+  })
+
+  it('keeps the earliest dates when limiting a date axis with the default sort', async () => {
+    const data = { [RESOURCE_ID]: [
+      { year: '2022-01-01', nb: 1 }, { year: '2020-01-01', nb: 2 }, { year: '2021-01-01', nb: 3 }, { year: '2019-01-01', nb: 4 },
+    ] }
+    const columns: ColumnsDefinition = { [RESOURCE_ID]: [{ name: 'year', type: 'date' }, { name: 'nb', type: 'number' }] }
+    const option = await capture([{ column_y: 'nb', type: 'line' }], { type: 'continuous', limit: 2 }, data, columns)
+
+    expect(option.dataset[0].source.map((r: { year: Date }) => r.year.getUTCFullYear())).toEqual([2019, 2020])
+  })
+
   it('cuts every series on the same X values', async () => {
     const option = await capture(
       [{ column_y: 'nb', type: 'histogram' }, { column_y: 'rate', type: 'histogram' }],

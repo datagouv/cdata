@@ -105,6 +105,40 @@ describe('toChartForm / toChartApi', () => {
     const api = toChartApi(form)
     expect(api.series[0].aggregate_y).toBeNull()
   })
+
+  it('keeps x_axis.limit through the form round trip', () => {
+    const chart = { ...baseChart, x_axis: { ...baseChart.x_axis, limit: 12 } } as unknown as Chart
+    const form = toChartForm(chart)
+    expect(form.x_axis.limit).toEqual(12)
+    expect(toChartApi(form).x_axis.limit).toEqual(12)
+  })
+
+  it('sends a null limit when the chart has none', () => {
+    const chart = { ...baseChart, x_axis: { column_x: 'annee', type: 'discrete', sort_x_by: null, sort_x_direction: null } } as unknown as Chart
+    const form = toChartForm(chart)
+    expect(form.x_axis.limit).toBeNull()
+    expect(toChartApi(form).x_axis.limit).toBeNull()
+  })
+
+  it('applies the chart type and filter to every series', () => {
+    const own = { _cls: 'Filter', column: 'a', condition: 'exact', value: '1' } as const
+    const shared = { _cls: 'Filter', column: 'b', condition: 'exact', value: '2' } as const
+    const chart = {
+      ...baseChart,
+      series: [
+        { type: 'bar', column_y: 'm', aggregate_y: 'sum', filters: shared },
+        { type: 'bar', column_y: 'n', aggregate_y: 'sum', filters: null },
+        { type: 'bar', column_y: 'o', aggregate_y: 'sum', filters: own },
+      ],
+    } as unknown as Chart
+    const form = toChartForm(chart)
+    form.chart_type = 'line'
+    const api = toChartApi(form)
+    expect(api.series.map(s => s.type)).toEqual(['line', 'line', 'line'])
+    expect(api.series[0].filters).toEqual(shared)
+    expect(api.series[1].filters).toEqual(shared)
+    expect(api.series[2].filters).toEqual(own)
+  })
 })
 
 describe('buildColumnsFromProfile', () => {
@@ -208,39 +242,5 @@ describe('buildColumnsFromProfile', () => {
       { name: 'label', type: 'text', min: undefined, max: undefined },
       { name: 'created_at', type: 'date', min: undefined, max: undefined },
     ])
-  })
-
-  it('keeps x_axis.limit through the form round trip', () => {
-    const chart = { ...baseChart, x_axis: { ...baseChart.x_axis, limit: 12 } } as unknown as Chart
-    const form = toChartForm(chart)
-    expect(form.x_axis.limit).toEqual(12)
-    expect(toChartApi(form).x_axis.limit).toEqual(12)
-  })
-
-  it('sends a null limit when the chart has none', () => {
-    const chart = { ...baseChart, x_axis: { column_x: 'annee', type: 'discrete', sort_x_by: null, sort_x_direction: null } } as unknown as Chart
-    const form = toChartForm(chart)
-    expect(form.x_axis.limit).toBeNull()
-    expect(toChartApi(form).x_axis.limit).toBeNull()
-  })
-
-  it('applies the chart type and filter to every series', () => {
-    const own = { _cls: 'Filter', column: 'a', condition: 'exact', value: '1' } as const
-    const shared = { _cls: 'Filter', column: 'b', condition: 'exact', value: '2' } as const
-    const chart = {
-      ...baseChart,
-      series: [
-        { type: 'bar', column_y: 'm', aggregate_y: 'sum', filters: shared },
-        { type: 'bar', column_y: 'n', aggregate_y: 'sum', filters: null },
-        { type: 'bar', column_y: 'o', aggregate_y: 'sum', filters: own },
-      ],
-    } as unknown as Chart
-    const form = toChartForm(chart)
-    form.chart_type = 'line'
-    const api = toChartApi(form)
-    expect(api.series.map(s => s.type)).toEqual(['line', 'line', 'line'])
-    expect(api.series[0].filters).toEqual(shared)
-    expect(api.series[1].filters).toEqual(shared)
-    expect(api.series[2].filters).toEqual(own)
   })
 })
