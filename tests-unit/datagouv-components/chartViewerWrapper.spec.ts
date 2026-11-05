@@ -150,4 +150,56 @@ describe('ChartViewerWrapper data fetching', () => {
     await settle()
     expect(dataCalls()).toHaveLength(count + 1)
   })
+
+  it('keeps the newest chart when a stale response resolves last', async () => {
+    let resolveA: (v: unknown) => void = () => {}
+    ofetchMock.mockImplementation((url: string) => {
+      if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
+      if (url.includes('page=51')) return Promise.resolve({ data: [{ dep: 'z', n: 0 }] })
+      if (url.includes('n__max')) return new Promise((resolve) => {
+        resolveA = resolve
+      })
+      return Promise.resolve({ data: [{ dep: 'b', n: 1 }] })
+    })
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart)
+    await settle()
+    const next = structuredClone(chart)
+    next.series[0]!.aggregate_y = 'sum'
+    await wrapper.setProps({ chart: next })
+    await settle()
+    resolveA({ data: Array.from({ length: 50 }, () => ({ dep: 'a', n: 9 })) })
+    await settle()
+    expect(wrapper.findComponent(ChartViewerStub).props('series').data[RESOURCE_ID]).toEqual([{ dep: 'b', n: 1 }])
+    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
+  })
+
+  it('keeps the data and shows no warning when the 51st-group probe fails', async () => {
+    ofetchMock.mockImplementation(async (url: string) => {
+      if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
+      if (url.includes('page=51')) throw new Error('boom')
+      return rows(50)
+    })
+    const wrapper = mountWrapper(chartFixture())
+    await settle()
+    expect(wrapper.findComponent(ChartViewerStub).props('series').data[RESOURCE_ID]).toHaveLength(50)
+    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
+  })
+
+  it('resets the warning when the chart changes to one with fewer groups', async () => {
+    ofetchMock.mockImplementation(async (url: string) => {
+      if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
+      if (url.includes('page=51')) return rows(1)
+      return url.includes('n__max') ? rows(50) : rows(3)
+    })
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart)
+    await settle()
+    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(true)
+    const next = structuredClone(chart)
+    next.series[0]!.aggregate_y = 'sum'
+    await wrapper.setProps({ chart: next })
+    await settle()
+    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
+  })
 })

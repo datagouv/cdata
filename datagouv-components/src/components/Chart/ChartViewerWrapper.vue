@@ -114,7 +114,11 @@ async function fetchSeriesProfile() {
   }
 }
 
+let latestRequest = 0
+
 async function fetchSeriesData() {
+  const request = ++latestRequest
+  const isStale = () => request !== latestRequest
   pendingOperations.value++
   status.value = 'pending'
   error.value = null
@@ -153,13 +157,14 @@ async function fetchSeriesData() {
         return {
           id: serie.resource_id,
           data: response,
-          more: response.data.length === CHART_PAGE_SIZE && await hasMoreGroups(config, options),
+          more: response.data.length === CHART_PAGE_SIZE && await hasMoreGroups(config, options).catch(() => false),
         }
       })
 
     const results = (await Promise.allSettled(fetchPromises))
       .filter(r => r.status === 'fulfilled')
       .map(r => r.value)
+    if (isStale()) return
     series.data = Object.fromEntries(results.map(result => [
       result.id,
       result.data.data,
@@ -167,6 +172,7 @@ async function fetchSeriesData() {
     moreGroups.value = results.some(result => result.more)
   }
   catch (err) {
+    if (isStale()) return
     error.value = err instanceof Error ? err : new Error('Failed to fetch series data')
     status.value = 'error'
     series.data = {}
