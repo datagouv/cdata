@@ -574,6 +574,16 @@ a.dg-reuse-title[href]::before {
 }
 
 @container (max-width:480px) {
+  .dg-card-heading-row:has(> .object-card-badge, > .dg-card-organization-type) {
+    flex-direction: column;
+  }
+  .dg-card-heading-row > :is(.object-card-badge, .dg-card-organization-type) {
+    order: -1;
+  }
+  .dg-card-heading-row > :is(.dg-card-title, .dg-card-heading) {
+    flex-basis: auto;
+    width: 100%;
+  }
   .dg-object-card-layout:has(.dg-object-card-media-lg, .dg-object-card-media-xl) {
     flex-direction: column;
   }

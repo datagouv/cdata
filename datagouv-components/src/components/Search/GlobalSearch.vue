@@ -274,7 +274,7 @@
                       name="organization"
                       :organization="result"
                     >
-                      <OrganizationHorizontalCard :organization="(result as Organization)" />
+                      <OrganizationCard :organization="(result as Organization)" />
                     </slot>
                   </template>
                   <template v-else-if="currentTypeConfig?.class === 'topics'">
@@ -382,7 +382,7 @@ import RadioGroup from '../RadioGroup.vue'
 import RadioInput from '../RadioInput.vue'
 import DatasetCard from '../DatasetCard.vue'
 import DataserviceCard from '../DataserviceCard.vue'
-import OrganizationHorizontalCard from '../OrganizationHorizontalCard.vue'
+import OrganizationCard from '../OrganizationCard.vue'
 import ReuseHorizontalCard from '../ReuseHorizontalCard.vue'
 import TopicCard from '../TopicCard.vue'
 import SearchInput from './SearchInput.vue'

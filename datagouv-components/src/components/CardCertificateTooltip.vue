@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import '../../assets/cards.css'
-import { ref, onMounted, useId, useTemplateRef } from 'vue'
+import { ref, onMounted, onBeforeUnmount, watchEffect, useId, useTemplateRef } from 'vue'
 import { useFloating, autoUpdate, autoPlacement, shift, offset } from '@floating-ui/vue'
 
 defineOptions({ inheritAttrs: false })
 const id = useId()
 const show = ref(false)
 const standalone = ref(false)
+const keyboardTrigger = ref<HTMLElement | null>(null)
 const reference = useTemplateRef<HTMLElement>('reference')
 const floating = useTemplateRef<HTMLElement>('floating')
 const { floatingStyles } = useFloating(reference, floating, {
@@ -15,7 +16,39 @@ const { floatingStyles } = useFloating(reference, floating, {
   whileElementsMounted: autoUpdate,
 })
 onMounted(() => {
-  standalone.value = !reference.value?.closest('a, button')
+  const parent = reference.value?.closest<HTMLElement>('a, button') ?? null
+  standalone.value = !parent
+  keyboardTrigger.value = parent ?? reference.value
+  parent?.addEventListener('focus', open)
+  parent?.addEventListener('blur', close)
+  parent?.addEventListener('keydown', onParentKeydown)
+})
+function open() {
+  show.value = true
+}
+function close() {
+  show.value = false
+}
+function onParentKeydown(event: KeyboardEvent) {
+  if (event.key === 'Escape') dismiss(event)
+}
+onBeforeUnmount(() => {
+  const parent = keyboardTrigger.value
+  parent?.removeEventListener('focus', open)
+  parent?.removeEventListener('blur', close)
+  parent?.removeEventListener('keydown', onParentKeydown)
+})
+watchEffect((onCleanup) => {
+  const trigger = keyboardTrigger.value
+  if (!trigger || !show.value) return
+  const ids = new Set(trigger.getAttribute('aria-describedby')?.split(/\s+/).filter(Boolean))
+  ids.add(id)
+  trigger.setAttribute('aria-describedby', [...ids].join(' '))
+  onCleanup(() => {
+    const remaining = trigger.getAttribute('aria-describedby')?.split(/\s+/).filter(value => value !== id).join(' ')
+    if (remaining) trigger.setAttribute('aria-describedby', remaining)
+    else trigger.removeAttribute('aria-describedby')
+  })
 })
 function dismiss(event: KeyboardEvent) {
   if (!show.value) return
@@ -37,7 +70,6 @@ function dismiss(event: KeyboardEvent) {
       ref="reference"
       v-bind="$attrs"
       :tabindex="standalone ? 0 : undefined"
-      :aria-describedby="show ? id : undefined"
     ><slot /></span>
     <Teleport
       v-if="show"
