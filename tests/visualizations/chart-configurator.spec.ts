@@ -1,11 +1,57 @@
 import type { Chart } from '@datagouv/components-next'
+import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
-import { setupChart } from './fixtures'
+import { ASSISTANT_CHAT_PATH } from '../assistantApi'
+import { createChart, deleteChart, mockTabular, RESOURCE_ID, setupChart } from './fixtures'
 import data from './data.json' with { type: 'json' }
 
 // API calls go straight to the backend: the frontend (baseURL) does not proxy them
 const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
+const ASSISTANT_API_BASE = (process.env.NUXT_PUBLIC_ASSISTANT_API_BASE || process.env.FAKE_SERVICES_URL || 'http://localhost:3100').replace(/\/$/, '')
+
+async function sendAssistantMessage(page: Page, prompt: string) {
+  const requestPromise = page.waitForRequest(request =>
+    request.url().includes(ASSISTANT_CHAT_PATH) && request.method() === 'POST',
+  )
+  await page.getByLabel('Votre demande').fill(prompt)
+  // The panel ignores a send within a second of the previous one: retry until the
+  // composer is cleared, which only happens once the message is sent.
+  await expect(async () => {
+    await page.getByRole('button', { name: 'Envoyer' }).click()
+    await expect(page.getByLabel('Votre demande')).toHaveValue('', { timeout: 500 })
+  }).toPass()
+  const request = await requestPromise
+  expect(request.url()).toBe(`${ASSISTANT_API_BASE}${ASSISTANT_CHAT_PATH}`)
+  return request
+}
+
+/**
+ * The fixture dataset has a single tabular resource: mark its JSON export as
+ * parsed too, so that the configurator offers a second resource (its profile
+ * and data come from mockTabular). Must run before the dataset is selected.
+ */
+async function withSecondTabularResource(page: Page) {
+  await page.route(/\/api\/2\/datasets\/[^/]+\/resources\//, async (route) => {
+    const response = await route.fetch()
+    const body = await response.json() as { data: Array<{ id: string, format: string, extras: Record<string, unknown> }> }
+    for (const resource of body.data) {
+      if (resource.id !== RESOURCE_ID && resource.format === 'json') {
+        resource.extras = { ...resource.extras, 'analysis:parsing:parsing_table': 'e2e-second-resource' }
+      }
+    }
+    await route.fulfill({ response, json: body })
+  })
+}
+
+async function otherResourceId(page: Page) {
+  const resourceIds = await page.locator('#resource-select option').evaluateAll(options =>
+    options.map(option => (option as HTMLOptionElement).value).filter(Boolean),
+  )
+  const resourceId = resourceIds.find(id => id !== RESOURCE_ID)
+  expect(resourceId, 'the fixture dataset has another tabular resource').toBeDefined()
+  return resourceId!
+}
 
 test('title input updates form value without debounce', async ({ page }) => {
   await setupChart(page)
@@ -23,24 +69,20 @@ test('description input updates form value without debounce', async ({ page }) =
   expect(await page.getByLabel('Description').inputValue()).toBe('Nouvelle description de graphique')
 })
 
-test('chart type selector defaults to histogram', async ({ page }) => {
+test('chart type button group defaults to histogram', async ({ page }) => {
   await setupChart(page)
 
-  const chartTypeButton = page.locator('#chart-type').getByRole('button')
-  const chartTypeText = await chartTypeButton.textContent()
-  expect(chartTypeText).toContain('Histogramme')
+  await expect(page.getByRole('radio', { name: 'Histogramme' })).toBeChecked()
+  await expect(page.getByRole('radio', { name: 'Courbe' })).not.toBeChecked()
 })
 
-test('chart type selector can switch to line chart', async ({ page }) => {
+test('chart type button group can switch to line chart', async ({ page }) => {
   await setupChart(page)
 
-  const chartTypeButton = page.locator('#chart-type').getByRole('button')
-  await chartTypeButton.click()
+  await page.getByTestId('chart-type').getByText('Courbe', { exact: true }).click()
 
-  await page.getByRole('option', { name: 'Ligne', exact: true }).click()
-
-  const chartTypeText = await chartTypeButton.textContent()
-  expect(chartTypeText).toContain('Ligne')
+  await expect(page.getByRole('radio', { name: 'Courbe' })).toBeChecked()
+  await expect(page.getByRole('radio', { name: 'Histogramme' })).not.toBeChecked()
 })
 
 test('x-axis column selector shows available columns', async ({ page }) => {
@@ -88,8 +130,7 @@ test('selecting a date x-axis column switches to line chart and sorts by date as
   await page.getByRole('option', { name: 'jour', exact: true }).click()
   await clickOutside(page)
 
-  const chartTypeButton = page.locator('#chart-type').getByRole('button')
-  await expect(chartTypeButton).toContainText('Ligne')
+  await expect(page.getByRole('radio', { name: 'Courbe' })).toBeChecked()
 
   const sortListbox = page.locator('#x-axis-sort-combined')
   await expect(sortListbox.locator('.input')).toContainText('jour - Ascendant')
@@ -107,8 +148,7 @@ test('selecting a numeric x-axis column does not switch to line chart or force s
   await page.getByRole('option', { name: 'Nombre de logements', exact: true }).click()
   await clickOutside(page)
 
-  const chartTypeButton = page.locator('#chart-type').getByRole('button')
-  await expect(chartTypeButton).toContainText('Histogramme')
+  await expect(page.getByRole('radio', { name: 'Histogramme' })).toBeChecked()
 
   const sortListbox = page.locator('#x-axis-sort-combined')
   await expect(sortListbox.locator('.input')).toContainText('Aucun')
@@ -222,8 +262,6 @@ test('Y axis sort options show dynamic series column name too', async ({ page })
 test('y-axis label input is initially empty', async ({ page }) => {
   await setupChart(page)
 
-  await page.getByText('Styles').click()
-
   const labelInput = page.getByLabel('Label')
   const labelValue = await labelInput.inputValue()
   expect(labelValue).toBe('')
@@ -231,8 +269,6 @@ test('y-axis label input is initially empty', async ({ page }) => {
 
 test('y-axis label input can be filled', async ({ page }) => {
   await setupChart(page)
-
-  await page.getByText('Styles').click()
 
   const labelInput = page.getByLabel('Label')
   await labelInput.fill('Nombre de logements sociaux')
@@ -243,8 +279,6 @@ test('y-axis label input can be filled', async ({ page }) => {
 
 test('y-axis min and max inputs are initially empty', async ({ page }) => {
   await setupChart(page)
-
-  await page.getByText('Styles').click()
 
   const minInput = page.locator('#y-axis-min')
   const maxInput = page.locator('#y-axis-max')
@@ -257,8 +291,6 @@ test('y-axis min and max inputs are initially empty', async ({ page }) => {
 
 test('y-axis min and max can be set', async ({ page }) => {
   await setupChart(page)
-
-  await page.getByText('Styles').click()
 
   const minInput = page.locator('#y-axis-min')
   const maxInput = page.locator('#y-axis-max')
@@ -275,8 +307,6 @@ test('y-axis min and max can be set', async ({ page }) => {
 test('y-axis unit input is initially empty', async ({ page }) => {
   await setupChart(page)
 
-  await page.getByText('Styles').click()
-
   const unitInput = page.getByRole('textbox', { name: 'Unité' })
   const unitValue = await unitInput.inputValue()
   expect(unitValue).toBe('')
@@ -285,8 +315,6 @@ test('y-axis unit input is initially empty', async ({ page }) => {
 test('y-axis unit position defaults to suffix', async ({ page }) => {
   await setupChart(page)
 
-  await page.getByText('Styles').click()
-
   const unitPositionSelect = page.getByLabel('Position unité')
   const unitPosition = await unitPositionSelect.inputValue()
   expect(unitPosition).toBe('suffix')
@@ -294,8 +322,6 @@ test('y-axis unit position defaults to suffix', async ({ page }) => {
 
 test('y-axis unit position can be changed to prefix', async ({ page }) => {
   await setupChart(page)
-
-  await page.getByText('Styles').click()
 
   const unitPositionSelect = page.getByLabel('Position unité')
   await unitPositionSelect.selectOption('Préfixe')
@@ -345,9 +371,7 @@ test('complete chart configuration flow', async ({ page }) => {
   await page.getByLabel('Titre').fill('Graphique complet')
   await page.getByLabel('Description').fill('Test complet de configuration')
 
-  const chartTypeButton = page.locator('#chart-type').getByRole('button')
-  await chartTypeButton.click()
-  await page.getByRole('option', { name: 'Ligne', exact: true }).click()
+  await page.getByTestId('chart-type').getByText('Courbe', { exact: true }).click()
 
   await page.getByTestId('searchable-select-choisir-quoi-afficher').click()
   await page.getByRole('option', { name: 'code_region', exact: true }).click()
@@ -359,8 +383,6 @@ test('complete chart configuration flow', async ({ page }) => {
   await page.getByRole('option', { name: 'Taux de logements vacants* (en %)', exact: true }).first().click()
 
   await page.getByLabel('Agrégation').selectOption('Moyenne')
-
-  await page.getByText('Styles').click()
 
   await page.getByLabel('Label').fill('Taux (%)')
   await page.locator('#y-axis-min').fill('0')
@@ -382,8 +404,7 @@ test('complete chart configuration flow', async ({ page }) => {
   expect(await page.getByLabel('Titre').inputValue()).toBe('Graphique complet')
   expect(await page.getByLabel('Description').inputValue()).toBe('Test complet de configuration')
 
-  const chartTypeText = await page.locator('#chart-type').getByRole('button').textContent()
-  expect(chartTypeText).toContain('Ligne')
+  await expect(page.getByRole('radio', { name: 'Courbe' })).toBeChecked()
 
   expect(await page.getByLabel('Type', { exact: true }).first().inputValue()).toBe('continuous')
   expect(await page.getByLabel('Agrégation').inputValue()).toBe('avg')
@@ -529,7 +550,7 @@ test('y-axis columns should not be empty after selecting resource from loaded ch
   await page.goto(`/admin/beta/charts/${chartData.id}`)
   await page.waitForLoadState('networkidle')
 
-  await page.getByTestId('producer-select').click()
+  await page.getByTestId('searchable-select-avec-qui-souhaitez-vous-publier').click()
   await page.getByRole('option', { name: 'Admin User', exact: true }).click()
 
   const resourceSelect = page.getByLabel('Choix de la ressource')
@@ -574,7 +595,7 @@ test('x-axis dropdown should show columns from all chart resources after loading
   await page.goto(`/admin/beta/charts/${chartData.id}`)
   await page.waitForLoadState('networkidle')
 
-  await page.getByTestId('producer-select').click()
+  await page.getByTestId('searchable-select-avec-qui-souhaitez-vous-publier').click()
   await page.getByRole('option', { name: 'Admin User', exact: true }).click()
 
   await page.getByTestId('searchable-select-choisir-quoi-afficher').click()
@@ -646,4 +667,262 @@ test('filter groups are sent as or params to tabular-api with synced combinator 
   await expect.poll(() => decodeURIComponent(dataRequests[dataRequests.length - 1] ?? '')).toContain(
     'or=(nom_region__exact.Bretagne,année_publication__exact.2020)&année_publication__exact=2021',
   )
+})
+
+test('shows the form panel by default with its pickers and save action', async ({ page }) => {
+  await setupChart(page)
+
+  await expect(page.getByRole('button', { name: 'Formulaire', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByTestId('form-panel')).toBeVisible()
+  await expect(page.getByTestId('assistant-panel')).toBeHidden()
+  await expect(page.getByTestId('producer-select')).toBeVisible()
+  await expect(page.getByTestId('searchable-select-jeu-de-donn-es')).toBeVisible()
+  await expect(page.locator('#resource-select')).toBeVisible()
+  await expect(page.getByTestId('source-status')).toContainText('colonnes disponibles')
+  await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeVisible()
+})
+
+test('resource schema is collapsed and lists the profile columns', async ({ page }) => {
+  await setupChart(page)
+
+  const schema = page.getByTestId('resource-schema')
+  await expect(schema).not.toHaveAttribute('open')
+  await expect(schema.getByText('nom_region', { exact: true })).toBeHidden()
+
+  await schema.locator('summary').click()
+  await expect(schema.getByText('nom_region', { exact: true })).toBeVisible()
+  await expect(schema.getByText('Nombre de logements', { exact: true })).toBeVisible()
+})
+
+test('value limit input is bounded to 50', async ({ page }) => {
+  await setupChart(page)
+
+  await page.getByLabel('Description').fill('Limite du nombre de valeurs')
+  const limitInput = page.getByLabel('Nombre de valeurs')
+  await expect(limitInput).toHaveValue('')
+  await expect(limitInput).toHaveAttribute('min', '1')
+  await expect(limitInput).toHaveAttribute('max', '50')
+  await expect(page.getByText('50 valeurs maximum', { exact: true })).toBeVisible()
+
+  await limitInput.fill('80')
+  await expect(limitInput).toHaveValue('50')
+  await limitInput.fill('0')
+  await expect(limitInput).toHaveValue('1')
+  await limitInput.fill('7')
+  await expect(limitInput).toHaveValue('7')
+
+  const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
+  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  const response = await responsePromise
+  const body = response.request().postDataJSON() as { x_axis: { limit: number | null } }
+  expect(body.x_axis.limit).toBe(7)
+  const chart = (await response.json()) as Chart
+  await deleteChart(page.request, chart.id)
+})
+
+test('an empty value limit is saved as no limit', async ({ page }) => {
+  await setupChart(page)
+
+  await page.getByLabel('Description').fill('Sans limite du nombre de valeurs')
+  const limitInput = page.getByLabel('Nombre de valeurs')
+  await limitInput.fill('5')
+  await limitInput.fill('')
+
+  const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
+  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  const response = await responsePromise
+  const body = response.request().postDataJSON() as { x_axis: { limit: number | null } }
+  expect(body.x_axis.limit).toBeNull()
+  const chart = (await response.json()) as Chart
+  await deleteChart(page.request, chart.id)
+})
+
+test('editing a chart PATCHes the value limit with the x axis', async ({ page }) => {
+  const chart = await createChart(page.request, { title: `Chart configurator limit ${Date.now()}` })
+  try {
+    await mockTabular(page)
+    await page.goto(`/admin/beta/charts/${chart.id}`)
+    await page.waitForLoadState('networkidle')
+    await expect(page.getByLabel('Titre')).toHaveValue(chart.title)
+
+    await page.getByLabel('Nombre de valeurs').fill('5')
+
+    const responsePromise = page.waitForResponse(response =>
+      response.url().includes(`/api/1/visualizations/${chart.id}/`) && response.request().method() === 'PATCH',
+    )
+    await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+    const response = await responsePromise
+    expect(response.status()).toBe(200)
+    const body = response.request().postDataJSON() as { x_axis: { limit: number | null, column_x: string } }
+    expect(body.x_axis.limit).toBe(5)
+    expect(((await response.json()) as Chart).x_axis.limit).toBe(5)
+    await expect(page.getByText('Graphique mis à jour !')).toBeVisible()
+  }
+  finally {
+    await deleteChart(page.request, chart.id)
+  }
+})
+
+test('switching datasets clears the selected resource and its schema', async ({ page }) => {
+  await setupChart(page)
+
+  const datasetSelect = page.getByTestId('searchable-select-jeu-de-donn-es')
+  await datasetSelect.click()
+  await page.getByPlaceholder('Recherchez un jeu de données...').fill('Base SIRENE')
+  await page.getByRole('option', { name: /Base SIRENE/i }).first().click()
+
+  await expect(page.locator('#resource-select')).toHaveValue('')
+  await expect(page.getByText('Schéma de la ressource')).toHaveCount(0)
+  await expect(page.getByTestId('form-panel-empty')).toBeVisible()
+})
+
+test('ignores a late profile response after changing resources', async ({ page }) => {
+  await withSecondTabularResource(page)
+  await setupChart(page)
+  const secondResourceId = await otherResourceId(page)
+
+  const profileB = {
+    profile: {
+      header: ['epci', 'nb'],
+      columns: {
+        epci: { score: 1, format: 'string', python_type: 'string' },
+        nb: { score: 1, format: 'int', python_type: 'int' },
+      },
+      formats: {},
+      profile: {
+        epci: { tops: [], nb_distinct: 5, nb_missing_values: 0 },
+        nb: { tops: [], nb_distinct: 5, nb_missing_values: 0, min: 1, max: 9 },
+      },
+      encoding: 'utf-8',
+      separator: ',',
+      categorical: ['epci'],
+      total_lines: 50,
+      nb_duplicates: 0,
+      columns_fields: {},
+      columns_labels: {},
+      header_row_idx: 0,
+      heading_columns: 0,
+      trailing_columns: 0,
+    },
+  }
+  let releaseProfile!: () => void
+  const profileGate = new Promise<void>((resolve) => {
+    releaseProfile = resolve
+  })
+  let signalProfileRequest!: () => void
+  const profileRequestStarted = new Promise<void>((resolve) => {
+    signalProfileRequest = resolve
+  })
+  await page.route('**/api/resources/*/profile/', async (route) => {
+    const resourceId = new URL(route.request().url()).pathname.match(/\/api\/resources\/([^/]+)\/profile\//)?.[1]
+    if (resourceId !== secondResourceId) {
+      return route.fallback()
+    }
+    signalProfileRequest()
+    await profileGate
+    await route.fulfill({ json: profileB })
+  })
+
+  const schema = page.getByTestId('resource-schema')
+  await schema.locator('summary').click()
+  await expect(schema.getByText('nom_region', { exact: true })).toBeVisible()
+  const resourceSelect = page.locator('#resource-select')
+
+  try {
+    await resourceSelect.selectOption(secondResourceId)
+    await profileRequestStarted
+    // The first resource's columns are already loaded: selecting it back needs no request.
+    await resourceSelect.selectOption(RESOURCE_ID)
+    await expect(schema.getByText('nom_region', { exact: true })).toBeVisible()
+
+    const lateProfileResponse = page.waitForResponse(response =>
+      response.url().includes(`/api/resources/${secondResourceId}/profile/`),
+    )
+    releaseProfile()
+    await (await lateProfileResponse).finished()
+    await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => resolve())))
+
+    await expect(schema.getByText('nom_region', { exact: true })).toBeVisible()
+    await expect(schema.getByText('epci', { exact: true })).toHaveCount(0)
+    expect(await page.getByPlaceholder('Rechercher une colonne à afficher...').inputValue()).toBe('année_publication')
+  }
+  finally {
+    releaseProfile()
+  }
+})
+
+test.describe('for users without organizations', () => {
+  test.use({ storageState: 'playwright/.auth/normal-user.json' })
+
+  test('hides the no-organization notice in the chart configurator', async ({ page }) => {
+    const meResponse = await page.request.get(`${API_BASE_URL}/api/1/me/`)
+    expect(meResponse.ok()).toBe(true)
+    const me = await meResponse.json() as { organizations: Array<unknown> }
+    expect(me.organizations).toHaveLength(0)
+
+    await page.goto('/admin/beta/chart')
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.getByTestId('producer-select')).toBeVisible()
+    await expect(page.getByText('Vous n\'appartenez à aucune organisation', { exact: true })).toHaveCount(0)
+  })
+})
+
+test('assistant waits for a resource before accepting messages', async ({ page }) => {
+  await mockTabular(page)
+  await page.goto('/admin/beta/chart')
+  await page.waitForLoadState('networkidle')
+
+  await page.getByTestId('searchable-select-avec-qui-souhaitez-vous-publier').click()
+  await page.getByRole('option', { name: 'Admin User', exact: true }).click()
+
+  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await expect(page.locator('#assistant-waiting')).toBeVisible()
+  await expect(page.getByLabel('Votre demande')).toBeDisabled()
+})
+
+test('chat message is sent with the selected resource and the conversation survives tab switches', async ({ page }) => {
+  await setupChart(page)
+
+  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await expect(page.getByTestId('assistant-panel')).toBeVisible()
+  await expect(page.getByTestId('form-panel')).toBeHidden()
+  await expect(page.locator('#resource-select')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeHidden()
+
+  const request = await sendAssistantMessage(page, 'Logements par région en histogramme')
+  const body = request.postDataJSON() as { resource_id: string, visualization: { title: string, x_axis: { column_x: string } }, messages: Array<{ role: string }> }
+  expect(body.resource_id).toBe(RESOURCE_ID)
+  expect(body.visualization).toMatchObject({ title: 'Mon graphique', x_axis: { column_x: 'année_publication' } })
+  const lastUserMessage = [...body.messages].reverse().find(m => m.role === 'user')
+  expect(JSON.stringify(lastUserMessage)).toContain('Logements par région en histogramme')
+
+  const reply = page.getByTestId('assistant-panel').locator('article').last()
+  await expect(reply).toContainText('Graphique créé.')
+  const replyText = await reply.innerText()
+
+  await page.getByRole('button', { name: 'Formulaire', exact: true }).click()
+  await expect(page.getByTestId('form-panel')).toBeVisible()
+  await expect(page.getByTestId('assistant-panel')).toBeHidden()
+  await expect(reply).toBeAttached()
+  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  expect(await reply.innerText()).toBe(replyText)
+})
+
+test('changing resource after a chat message sends the new resource_id', async ({ page }) => {
+  await withSecondTabularResource(page)
+  await setupChart(page)
+
+  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  const firstRequest = await sendAssistantMessage(page, 'Logements par région')
+  expect(firstRequest.postDataJSON()).toMatchObject({ resource_id: RESOURCE_ID })
+  await expect(page.getByTestId('assistant-panel').locator('article').last()).toContainText('Graphique créé.')
+
+  await page.getByRole('button', { name: 'Formulaire', exact: true }).click()
+  const secondResourceId = await otherResourceId(page)
+  await page.getByLabel('Choix de la ressource').selectOption(secondResourceId)
+
+  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  const secondRequest = await sendAssistantMessage(page, 'Logements par EPCI')
+  expect(secondRequest.postDataJSON()).toMatchObject({ resource_id: secondResourceId })
 })

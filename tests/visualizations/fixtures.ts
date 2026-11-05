@@ -34,7 +34,9 @@ export async function setupChart(page: Page) {
   await page.goto('/admin/beta/chart')
   await page.waitForLoadState('networkidle')
 
-  await page.getByTestId('producer-select').click()
+  // Click the HeadlessUI toggle button covering the input: in the narrow source band,
+  // clicking the center of the wrapper can land outside it and never open the listbox.
+  await page.getByTestId('searchable-select-avec-qui-souhaitez-vous-publier').click()
   await page.getByRole('option', { name: 'Admin User', exact: true }).click()
 
   await page.getByTestId('searchable-select-jeu-de-donn-es').click()
@@ -81,10 +83,8 @@ export async function setupAndSaveChart(page: Page, options: SetupAndSaveChartOp
   await page.getByLabel('Description').fill(description)
 
   if (options.type) {
-    const chartTypeButton = page.locator('#chart-type').getByRole('button')
-    await chartTypeButton.click()
-    const optionName = options.type === 'line' ? 'Ligne' : 'Histogramme'
-    await page.getByRole('option', { name: optionName, exact: true }).click()
+    const optionName = options.type === 'line' ? 'Courbe' : 'Histogramme'
+    await page.getByTestId('chart-type').getByText(optionName, { exact: true }).click()
   }
 
   // The chart preview must be rendered before saving, otherwise the capture is empty
