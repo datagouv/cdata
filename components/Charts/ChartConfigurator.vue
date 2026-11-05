@@ -643,6 +643,7 @@
               <ChatPanel
                 :resource-id="selectedResource || null"
                 :visualization="visualization"
+                @chart-result="onChartResult"
               />
             </ClientOnly>
           </div>
@@ -662,7 +663,9 @@ import { isMeAdmin } from '~/utils/auth'
 import { keepValidSortCombined } from '~/utils/charts'
 import { fromFilterGroups, toFilterGroups } from '~/utils/chartFilters'
 import type { FilterColumnOption, FilterGroupCombinator, FilterGroupsState } from '~/utils/chartFilters'
+import type { ChartToolResult } from '~/utils/assistant'
 import ChartFilterGroup from './ChartFilterGroup.vue'
+import { applyChartToolResult } from './applyChartToolResult'
 import ProducerSelect from '../ProducerSelect.vue'
 import ChatPanel from '../Assistant/ChatPanel.vue'
 import type { DatasetSuggest } from '~/types/types'
@@ -926,6 +929,18 @@ function handleSerieColumnYChange(index: number, option: YAxisColumnOption | nul
       serie.aggregate_y = null
     }
   }
+}
+
+// Tool calls already applied: a result must never overwrite the user's later
+// manual edits, whatever re-emits it.
+const appliedToolCalls = new Set<string>()
+
+function onChartResult(result: ChartToolResult) {
+  if (appliedToolCalls.has(result.toolCallId)) return
+  // The resource changed while the assistant was answering: the chart is for another one.
+  if (result.kind === 'create' && result.chart.series[0]?.resource_id !== selectedResource.value) return
+  applyChartToolResult(form.value, result)
+  appliedToolCalls.add(result.toolCallId)
 }
 
 function ensureSeriesHasColumnX(resourceId: string) {

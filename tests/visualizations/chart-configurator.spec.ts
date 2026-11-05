@@ -2,13 +2,15 @@ import type { Chart } from '@datagouv/components-next'
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
-import { ASSISTANT_CHAT_PATH } from '../assistantApi'
+import { ASSISTANT_CHAT_PATH, createChartStream } from '../assistantApi'
 import { createChart, deleteChart, mockTabular, RESOURCE_ID, setupChart } from './fixtures'
 import data from './data.json' with { type: 'json' }
 
 // API calls go straight to the backend: the frontend (baseURL) does not proxy them
 const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 const ASSISTANT_API_BASE = (process.env.NUXT_PUBLIC_ASSISTANT_API_BASE || process.env.FAKE_SERVICES_URL || 'http://localhost:3100').replace(/\/$/, '')
+// Title of the chart scripted in tests/assistantApi.ts
+const ASSISTANT_CHART_TITLE = 'Premières doses par département'
 
 async function sendAssistantMessage(page: Page, prompt: string) {
   const requestPromise = page.waitForRequest(request =>
@@ -925,4 +927,59 @@ test('changing resource after a chat message sends the new resource_id', async (
   await page.getByRole('button', { name: 'Assistant', exact: true }).click()
   const secondRequest = await sendAssistantMessage(page, 'Logements par EPCI')
   expect(secondRequest.postDataJSON()).toMatchObject({ resource_id: secondResourceId })
+})
+
+test('test_a_tool_result_is_applied_only_once', async ({ page }) => {
+  await setupChart(page)
+
+  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await sendAssistantMessage(page, 'Premières doses par département, top 5')
+  await expect(page.getByTestId('assistant-panel').locator('article').last()).toContainText('Graphique créé.')
+
+  await page.getByRole('button', { name: 'Formulaire', exact: true }).click()
+  await expect(page.getByLabel('Titre')).toHaveValue(ASSISTANT_CHART_TITLE)
+  await expect(page.getByLabel('Nombre de valeurs')).toHaveValue('5')
+  await expect(page.locator('#x-axis-sort-combined .input')).toContainText('n_cum_dose1 - Descendant')
+
+  await page.getByLabel('Titre').fill('Titre modifié à la main')
+  for (let i = 0; i < 2; i++) {
+    await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+    await expect(page.getByTestId('assistant-panel')).toBeVisible()
+    await page.getByRole('button', { name: 'Formulaire', exact: true }).click()
+    await expect(page.getByTestId('form-panel')).toBeVisible()
+  }
+  await expect(page.getByLabel('Titre')).toHaveValue('Titre modifié à la main')
+})
+
+test('test_a_result_for_another_resource_is_ignored', async ({ page }) => {
+  await setupChart(page)
+
+  // This answer only: a create_chart for a resource that is no longer the selected one.
+  await page.route(`${ASSISTANT_API_BASE}${ASSISTANT_CHAT_PATH}`, async (route) => {
+    const origin = route.request().headers()['origin'] ?? '*'
+    const cors = {
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'content-type',
+    }
+    if (route.request().method() === 'OPTIONS') {
+      await route.fulfill({ status: 204, headers: cors })
+      return
+    }
+    await route.fulfill({
+      status: 200,
+      headers: { ...cors, 'Content-Type': 'text/event-stream', 'x-vercel-ai-ui-message-stream': 'v1' },
+      body: createChartStream('00000000-0000-4000-8000-000000000000'),
+    })
+  })
+
+  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await sendAssistantMessage(page, 'Premières doses par département')
+  await expect(page.getByTestId('assistant-panel').locator('article').last()).toContainText('Graphique créé.')
+
+  await page.getByRole('button', { name: 'Formulaire', exact: true }).click()
+  await expect(page.getByLabel('Titre')).toHaveValue('Mon graphique')
+  await expect(page.getByLabel('Nombre de valeurs')).toHaveValue('')
+  expect(await page.getByPlaceholder('Rechercher une colonne à afficher...').inputValue()).toBe('année_publication')
 })
