@@ -117,8 +117,6 @@ export async function fetchWfsText(url: string, { maxBytes, timeoutMs = DEFAULT_
 }
 
 const SCHEMA_MAX_BYTES = 1_000_000
-// Some servers (MapServer) send the geometries even when only attributes are
-// asked: their answer can then go over the cap.
 const FEATURES_MAX_BYTES = 5_000_000
 export const WFS_PAGE_SIZE = 20
 
@@ -131,8 +129,8 @@ export async function loadWfsFeatures(layer: WfsPreviewLayer, schema: WfsSchema,
   // A layer with only a geometry has nothing to show in a table, and asking it
   // without PROPERTYNAME would download all of its geometries.
   if (!schema.attributes.length) return { rows: [], total: null }
+  // No OUTPUTFORMAT: every server's default is GML, which `parseWfsFeatures` reads.
   const url = buildWfsUrl(layer, 'GetFeature', {
-    outputFormat: layer.jsonFormat,
     count: WFS_PAGE_SIZE,
     // The table never shows the geometry, which weighs most of the answer.
     propertyNames: schema.attributes.map(attribute => attribute.name),

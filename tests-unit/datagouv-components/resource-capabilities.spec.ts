@@ -304,7 +304,7 @@ describe('useResourceCapabilities tabsOptions', () => {
     ])
   })
 
-  test('shows Données and Structure des données for a WFS layer with a JSON output', () => {
+  test('shows Données and Structure des données for a WFS layer', () => {
     const result = withConfig({ tabularApiUrl: TABULAR_API_URL }, () => {
       const r = resource({
         'analysis:parsing:ogc_metadata': {
@@ -327,16 +327,16 @@ describe('useResourceCapabilities tabsOptions', () => {
     ])
   })
 
-  test('no WFS tabs without a JSON output or over http', () => {
-    const wfsTabs = (url: string, outputFormats: string[]) => withConfig({ tabularApiUrl: TABULAR_API_URL }, () => {
+  test('WFS tabs for a GML-only layer, but not over http', () => {
+    const wfsTabs = (url: string) => withConfig({ tabularApiUrl: TABULAR_API_URL }, () => {
       const r = resource({
-        'analysis:parsing:ogc_metadata': { format: 'wfs', version: '2.0.0', output_formats: outputFormats, detected_layer: { name: 'ns:layer', default_crs: null } },
+        'analysis:parsing:ogc_metadata': { format: 'wfs', version: '2.0.0', output_formats: ['text/xml; subtype=gml/3.2'], detected_layer: { name: 'ns:layer', default_crs: null } },
       }, 'wfs', 'remote')
       r.url = url
       return useResourceCapabilities(() => r, () => dataset).tabsOptions.value.map(tab => tab.key)
     })
-    expect(wfsTabs('https://example.com/wfs', ['text/xml; subtype=gml/3.2'])).toEqual(['metadata'])
-    expect(wfsTabs('http://example.com/wfs', ['application/json'])).toEqual(['metadata'])
+    expect(wfsTabs('https://example.com/wfs')).toEqual(['data', 'data-structure', 'metadata'])
+    expect(wfsTabs('http://example.com/wfs')).toEqual(['metadata'])
   })
 
   test('shows the data tab first when only the pmtiles export failed on a CSV with a working table', () => {

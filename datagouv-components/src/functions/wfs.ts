@@ -16,7 +16,7 @@ export type WfsLayer = {
   outputFormats: string[]
 }
 
-export type WfsPreviewLayer = WfsLayer & { jsonFormat: string }
+export type WfsPreviewLayer = WfsLayer
 
 export type WfsAttribute = {
   name: string
@@ -74,31 +74,12 @@ export function getWfsLayer(resource: Pick<Resource, 'extras' | 'url'>): WfsLaye
   }
 }
 
-// GeoJSON flavours, by preference. `text/javascript` (JSONP) is left out on purpose.
-const JSON_FORMATS = ['application/json', 'application/geo+json', 'application/vnd.geo+json', 'geojson', 'json']
-
-// The format string to send back, exactly as the server advertised it
-// (`application/json; subtype=geojson` keeps its parameters).
-export function pickWfsJsonFormat(outputFormats: string[]): string | null {
-  const byBaseType = new Map<string, string>()
-  for (const format of outputFormats) {
-    const base = format.split(';')[0]!.trim().toLowerCase()
-    if (!byBaseType.has(base)) byBaseType.set(base, format)
-  }
-  for (const candidate of JSON_FORMATS) {
-    const format = byBaseType.get(candidate)
-    if (format) return format
-  }
-  return null
-}
-
-// What the data and structure tabs need: a JSON output, and an https URL since
-// the browser blocks an http request from an https page.
+// A layer the browser can query: https only, the browser blocks an http
+// request from an https page. Its rows are read as GML, which every WFS
+// server outputs.
 export function getWfsPreviewLayer(resource: Pick<Resource, 'extras' | 'url'>): WfsPreviewLayer | null {
   const layer = getWfsLayer(resource)
-  if (!layer || new URL(layer.url).protocol !== 'https:') return null
-  const jsonFormat = pickWfsJsonFormat(layer.outputFormats)
-  return jsonFormat ? { ...layer, jsonFormat } : null
+  return layer && new URL(layer.url).protocol === 'https:' ? layer : null
 }
 
 // Parameters dropped from the resource URL because the built request sets them.
@@ -256,24 +237,46 @@ export function parseWfsSchema(text: string, typeName: string): WfsSchema {
   return { attributes, geometry }
 }
 
+const WFS_2_NS = 'http://www.opengis.net/wfs/2.0'
+const XSI_NS = 'http://www.w3.org/2001/XMLSchema-instance'
+
+const elementChildren = (el: Element) => Array.from(el.childNodes).filter((node): node is Element => node.nodeType === 1)
+
+// The features of a GML FeatureCollection, wrapped in `wfs:member` (WFS 2.0),
+// `gml:featureMember` or `gml:featureMembers` (WFS 1.x).
+function featureElements(root: Element): Element[] {
+  return elementChildren(root).flatMap((child) => {
+    if (child.namespaceURI === WFS_2_NS && child.localName === 'member') return elementChildren(child).slice(0, 1)
+    if (isGmlNamespace(child.namespaceURI) && child.localName === 'featureMember') return elementChildren(child).slice(0, 1)
+    if (isGmlNamespace(child.namespaceURI) && child.localName === 'featureMembers') return elementChildren(child)
+    return []
+  })
+}
+
+// Rows read from GML rather than GeoJSON: MapServer's GeoJSON output always
+// carries the geometries, whatever PROPERTYNAME says, when its GML output
+// leaves them out. The values stay text: the table formats them from the
+// schema's types.
 export function parseWfsFeatures(text: string): WfsFeaturePage {
-  const exception = readServiceException(text)
+  const doc = parseXml(text)
+  const exception = readServiceExceptionDocument(doc)
   if (exception) throw new WfsServiceError(exception)
-  let data: unknown
-  try {
-    data = JSON.parse(text)
-  }
-  catch {
-    throw new WfsMalformedResponseError('Invalid JSON document')
-  }
-  const collection = data as { type?: unknown, features?: unknown, numberMatched?: unknown, totalFeatures?: unknown }
-  if (collection?.type !== 'FeatureCollection' || !Array.isArray(collection.features)) {
-    throw new WfsMalformedResponseError('Not a GeoJSON FeatureCollection')
-  }
-  // GeoServer may answer `"numberMatched": "unknown"`: only trust numbers.
-  const total = [collection.numberMatched, collection.totalFeatures].find(value => typeof value === 'number') as number | undefined
-  return {
-    rows: collection.features.map(feature => (feature as { properties?: Record<string, unknown> | null } | null)?.properties ?? {}),
-    total: total ?? null,
-  }
+  const root = doc.documentElement
+  if (root.localName !== 'FeatureCollection') throw new WfsMalformedResponseError('Not a FeatureCollection')
+
+  const rows = featureElements(root).map((feature) => {
+    const row: Record<string, string | null> = {}
+    for (const property of elementChildren(feature)) {
+      // GML's own properties (gml:boundedBy, gml:name…) and a geometry the
+      // server sent anyway: neither is an attribute of the layer.
+      if (isGmlNamespace(property.namespaceURI) || elementChildren(property).length) continue
+      const value = property.textContent?.trim()
+      row[property.localName] = property.getAttributeNS(XSI_NS, 'nil') === 'true' || !value ? null : value
+    }
+    return row
+  })
+  // WFS 2.0 only: `numberOfFeatures` (WFS 1.1) counts this page, not the layer.
+  // MapServer answers `numberMatched="unknown"`.
+  const total = Number.parseInt(root.getAttribute('numberMatched') ?? '', 10)
+  return { rows, total: Number.isNaN(total) ? null : total }
 }

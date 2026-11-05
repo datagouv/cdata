@@ -37,7 +37,6 @@ const layer: WfsPreviewLayer = {
   typeName: 'dreal_b:bande_100m_trait_cote',
   defaultCrs: null,
   outputFormats: ['application/json'],
-  jsonFormat: 'application/json',
 }
 
 const schema: WfsSchema = {
@@ -45,11 +44,9 @@ const schema: WfsSchema = {
   geometry: { name: 'geom', type: 'MultiPolygon' },
 }
 
-const featureCollection = (count: number) => JSON.stringify({
-  type: 'FeatureCollection',
-  features: Array.from({ length: count }, (_, i) => ({ type: 'Feature', geometry: null, properties: { id: i, idcarreau: `c${i}` } })),
-  numberMatched: 192,
-})
+const featureCollection = (count: number) => `<wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs/2.0" xmlns:dreal_b="http://geobretagne.fr/ns/dreal_b" numberMatched="192" numberReturned="${count}">${
+  Array.from({ length: count }, (_, i) => `<wfs:member><dreal_b:bande_100m_trait_cote><dreal_b:id>${i}</dreal_b:id><dreal_b:idcarreau>c${i}</dreal_b:idcarreau></dreal_b:bande_100m_trait_cote></wfs:member>`).join('')
+}</wfs:FeatureCollection>`
 
 describe('fetchWfsText', () => {
   test('returns the body', async () => {
@@ -100,11 +97,12 @@ describe('loadWfsFeatures', () => {
   test('asks the attributes only, without the geometry', async () => {
     fetchMock.mockResolvedValue(new Response(featureCollection(2)))
     const page = await loadWfsFeatures(layer, schema)
-    expect(page).toEqual({ rows: [{ id: 0, idcarreau: 'c0' }, { id: 1, idcarreau: 'c1' }], total: 192 })
+    expect(page).toEqual({ rows: [{ id: '0', idcarreau: 'c0' }, { id: '1', idcarreau: 'c1' }], total: 192 })
     const url = new URL(fetchMock.mock.calls[0]![0] as string)
     expect(url.searchParams.get('PROPERTYNAME')).toBe('id,idcarreau')
     expect(url.searchParams.get('COUNT')).toBe('20')
-    expect(url.searchParams.get('OUTPUTFORMAT')).toBe('application/json')
+    // The server's default output, GML: MapServer's GeoJSON would carry the geometries.
+    expect(url.searchParams.has('OUTPUTFORMAT')).toBe(false)
   })
 
   test('a page over the cap is too large, whatever the server sends', async () => {

@@ -12,15 +12,8 @@ const LAYER = 'dreal_b:bande_100m_trait_cote'
 // A real GeoServer schema, shared with the unit tests.
 const SCHEMA = readFileSync(new URL('../../tests-unit/datagouv-components/fixtures/wfs/geoserver.xsd', import.meta.url), 'utf8')
 
-const FEATURES = JSON.stringify({
-  type: 'FeatureCollection',
-  features: [
-    { type: 'Feature', id: 'a.1', geometry: null, properties: { id: 1, idcarreau: '10kmN277E332' } },
-    { type: 'Feature', id: 'a.2', geometry: null, properties: { id: 2, idcarreau: '10kmN277E333' } },
-  ],
-  numberMatched: 192,
-  numberReturned: 2,
-})
+// A real GeoServer answer (WFS 2.0, GML 3.2), shared with the unit tests.
+const FEATURES = readFileSync(new URL('../../tests-unit/datagouv-components/fixtures/wfs/geoserver.gml', import.meta.url), 'utf8')
 
 const CORS = { 'Access-Control-Allow-Origin': '*' }
 
@@ -67,7 +60,7 @@ async function routeWfs(page: Page, respond: (request: string, route: Route) => 
 
 async function defaultResponse(request: string, route: Route) {
   if (request === 'DescribeFeatureType') return route.fulfill({ contentType: 'text/xml', headers: CORS, body: SCHEMA })
-  if (request === 'GetFeature') return route.fulfill({ contentType: 'application/json', headers: CORS, body: FEATURES })
+  if (request === 'GetFeature') return route.fulfill({ contentType: 'application/gml+xml; version=3.2', headers: CORS, body: FEATURES })
   return route.fulfill({ status: 404, headers: CORS, body: 'Not found' })
 }
 
@@ -87,7 +80,8 @@ test('the data tab shows the first rows of the layer, without its geometry', asy
   const getFeature = requests.getFeature[0]!
   expect(getFeature.searchParams.get('TYPENAMES')).toBe(LAYER)
   expect(getFeature.searchParams.get('PROPERTYNAME')).toBe('id,idcarreau')
-  expect(getFeature.searchParams.get('OUTPUTFORMAT')).toBe('application/json')
+  // The server's default, GML: MapServer's GeoJSON would carry the geometries.
+  expect(getFeature.searchParams.has('OUTPUTFORMAT')).toBe(false)
   expect(getFeature.searchParams.get('COUNT')).toBe('20')
 })
 

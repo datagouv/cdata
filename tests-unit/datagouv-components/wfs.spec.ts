@@ -7,7 +7,6 @@ import {
   getWfsPreviewLayer,
   parseWfsFeatures,
   parseWfsSchema,
-  pickWfsJsonFormat,
   readServiceException,
   WfsMalformedResponseError,
   WfsServiceError,
@@ -68,24 +67,10 @@ describe('getWfsLayer / getWfsPreviewLayer', () => {
     expect(getWfsLayer({ url: 'https://example.com/wfs', extras: {} })).toBeNull()
   })
 
-  test('the preview needs https and a JSON output', () => {
-    expect(getWfsPreviewLayer(wfsResource('https://example.com/wfs'))?.jsonFormat).toBe('application/json')
+  test('the preview needs https, whatever the output formats', () => {
+    expect(getWfsPreviewLayer(wfsResource('https://example.com/wfs', { output_formats: ['text/xml; subtype=gml/3.2'] }))?.typeName).toBe('ns:layer')
     // The browser would block an http request from the https page (mixed content).
     expect(getWfsPreviewLayer(wfsResource('http://example.com/wfs'))).toBeNull()
-    expect(getWfsPreviewLayer(wfsResource('https://example.com/wfs', { output_formats: ['text/xml; subtype=gml/3.2', 'SHAPE-ZIP'] }))).toBeNull()
-  })
-})
-
-describe('pickWfsJsonFormat', () => {
-  test('prefers application/json, keeping the format as advertised', () => {
-    expect(pickWfsJsonFormat(['geojson', 'application/vnd.geo+json', 'application/json'])).toBe('application/json')
-    expect(pickWfsJsonFormat(['KML', 'application/vnd.geo+json'])).toBe('application/vnd.geo+json')
-    expect(pickWfsJsonFormat(['GML3', 'geojson'])).toBe('geojson')
-    expect(pickWfsJsonFormat(['application/json; subtype=geojson'])).toBe('application/json; subtype=geojson')
-  })
-
-  test('never picks JSONP', () => {
-    expect(pickWfsJsonFormat(['text/javascript', 'GML3'])).toBeNull()
   })
 })
 
@@ -241,34 +226,58 @@ describe('readServiceException', () => {
 })
 
 describe('parseWfsFeatures', () => {
-  test('GeoServer, with its total count', () => {
-    const text = '{"type":"FeatureCollection","features":[{"type":"Feature","id":"a.1","geometry":null,"properties":{"id":1,"idcarreau":"10kmN277E332"}},{"type":"Feature","id":"a.2","geometry":null,"properties":{"id":1,"idcarreau":"10kmN277E333"}}],"totalFeatures":192,"numberMatched":192,"numberReturned":2}'
-    expect(parseWfsFeatures(text)).toEqual({
-      rows: [{ id: 1, idcarreau: '10kmN277E332' }, { id: 1, idcarreau: '10kmN277E333' }],
+  test('GeoServer (WFS 2.0), with its total count', () => {
+    expect(parseWfsFeatures(fixture('geoserver.gml'))).toEqual({
+      rows: [{ id: '1', idcarreau: '10kmN277E332' }, { id: '1', idcarreau: '10kmN277E333' }],
       total: 192,
     })
   })
 
-  test('QGIS Server, without a total, geometry left aside', () => {
-    const text = '{"type": "FeatureCollection", "features": [{"geometry":{"type":"Point","coordinates":[0,0]},"id":"x.0","properties":{"unite":"nb/km2","valeur":91.591},"type":"Feature"}]}'
-    expect(parseWfsFeatures(text)).toEqual({ rows: [{ unite: 'nb/km2', valeur: 91.591 }], total: null })
+  test('MapServer (WFS 2.0), whose count is unknown and envelope is not a feature', () => {
+    const page = parseWfsFeatures(fixture('mapserver.gml'))
+    expect(page.total).toBeNull()
+    expect(page.rows).toHaveLength(2)
+    expect(page.rows[0]).toEqual({ gid: '1', lib_dep: 'Cher', emi_nox_kg: expect.any(String) })
   })
 
-  test('a null feature gives an empty row instead of failing', () => {
-    expect(parseWfsFeatures('{"type":"FeatureCollection","features":[null,{"type":"Feature","properties":{"a":1}}]}').rows).toEqual([{}, { a: 1 }])
+  test('MapServer (WFS 1.1, gml:featureMember)', () => {
+    expect(parseWfsFeatures(fixture('mapserver-1.1.gml')).rows.map(row => row.lib_dep)).toEqual(['Cher', 'Eure-et-Loir'])
   })
 
-  test('ignores a non-numeric count', () => {
-    expect(parseWfsFeatures('{"type":"FeatureCollection","features":[],"numberMatched":"unknown"}').total).toBeNull()
+  test('QGIS Server (WFS 1.1): no total, the page count is not the layer\'s', () => {
+    expect(parseWfsFeatures(fixture('qgis.gml'))).toEqual({
+      rows: [{ valeur: '91.591', unite: 'nb d\'individus/km2' }, { valeur: '1394.79', unite: 'nb d\'individus/km2' }],
+      total: null,
+    })
   })
 
-  test('throws the server message when an exception comes instead of JSON', () => {
-    expect(() => parseWfsFeatures(SERVICE_EXCEPTION)).toThrow(WfsServiceError)
+  test('ArcGIS (WFS 2.0)', () => {
+    const page = parseWfsFeatures(fixture('arcgis.gml'))
+    expect(page.total).toBe(11597)
+    expect(page.rows[0]).toEqual({ id_zh: '36', nom: 'Quistinic', surf: '3399.77661133', datappro: '2019-12-19' })
   })
 
-  test('throws on a non-GeoJSON answer', () => {
+  test('gml:featureMembers, nil and empty values, a geometry sent anyway', () => {
+    const gml = `<wfs:FeatureCollection xmlns:wfs="http://www.opengis.net/wfs" xmlns:gml="http://www.opengis.net/gml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:ns="urn:ns" numberOfFeatures="2">
+      <gml:featureMembers>
+        <ns:layer gml:id="l.1"><gml:boundedBy><gml:Envelope/></gml:boundedBy><ns:code>A</ns:code><ns:label xsi:nil="true"/><ns:note></ns:note><ns:geom><gml:Point><gml:pos>0 0</gml:pos></gml:Point></ns:geom></ns:layer>
+        <ns:layer gml:id="l.2"><ns:code>B</ns:code></ns:layer>
+      </gml:featureMembers>
+    </wfs:FeatureCollection>`
+    expect(parseWfsFeatures(gml)).toEqual({
+      rows: [{ code: 'A', label: null, note: null }, { code: 'B' }],
+      total: null,
+    })
+  })
+
+  test('throws the server message when an exception comes instead of features', () => {
+    expect(() => parseWfsFeatures(SERVICE_EXCEPTION)).toThrow(new WfsServiceError('TypeName \'nope\' could not be found'))
+  })
+
+  test('throws on anything else', () => {
     // A gateway error, as sent by geobretagne.fr for an unknown layer.
     expect(() => parseWfsFeatures('{"status":400,"error":"Bad Request"}')).toThrow(WfsMalformedResponseError)
     expect(() => parseWfsFeatures('Unauthorized')).toThrow(WfsMalformedResponseError)
+    expect(() => parseWfsFeatures(fixture('geoserver.xsd'))).toThrow(WfsMalformedResponseError)
   })
 })
