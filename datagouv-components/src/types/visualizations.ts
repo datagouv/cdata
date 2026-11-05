@@ -33,6 +33,7 @@ export type XAxis = {
   sort_x_by: XAxisSortBy | null
   sort_x_direction: SortDirection | null
   type: XAxisType
+  limit: number | null
 }
 
 export type CombinedSort = '' | 'axis_x-asc' | 'axis_x-desc' | 'axis_y-asc' | 'axis_y-desc'

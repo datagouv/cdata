@@ -132,7 +132,7 @@ describe('ChartViewerWrapper data fetching', () => {
     next.title = 'Other'
     next.y_axis.unit = '%'
     next.x_axis.sort_x_by = 'axis_x'
-    ;(next.x_axis as Record<string, unknown>).limit = 10
+    next.x_axis.limit = 10
     await wrapper.setProps({ chart: next })
     await settle()
     expect(dataCalls()).toHaveLength(count)

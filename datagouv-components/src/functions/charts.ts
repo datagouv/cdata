@@ -13,6 +13,7 @@ export function toChartForm(chart: Chart) {
     x_axis: {
       column_x: chart.x_axis.column_x,
       type: chart.x_axis.type,
+      limit: chart.x_axis.limit ?? null,
       sort_combined: chart.x_axis.sort_x_by && chart.x_axis.sort_x_direction
         ? `${chart.x_axis.sort_x_by}-${chart.x_axis.sort_x_direction}`
         : '',
@@ -38,6 +39,7 @@ export function toChartApi(chartForm: ChartForm): ChartForApi {
   const xAxis = {
     column_x: chartForm.x_axis.column_x,
     type: chartForm.x_axis.type,
+    limit: chartForm.x_axis.limit ?? null,
     sort_x_by: chartForm.x_axis.sort_combined
       ? (chartForm.x_axis.sort_combined.split('-')[0] as 'axis_x' | 'axis_y')
       : null,
@@ -59,11 +61,11 @@ export function toChartApi(chartForm: ChartForm): ChartForApi {
       unit: chartForm.y_axis.unit ?? null,
       unit_position: chartForm.y_axis.unit_position ?? null,
     },
-    series: chartForm.series.map((serie, index) => ({
+    series: chartForm.series.map(serie => ({
       ...serie,
-      type: index === 0 && chartForm.chart_type ? chartForm.chart_type : serie.type,
+      type: chartForm.chart_type ?? serie.type,
       aggregate_y: serie.aggregate_y || null,
-      filters: serie.filters || (index === 0 && chartForm.filter ? chartForm.filter : null),
+      filters: serie.filters || chartForm.filter || null,
     })),
     extras: chartForm.extras,
   }

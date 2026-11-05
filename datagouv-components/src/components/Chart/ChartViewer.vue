@@ -32,6 +32,23 @@ const { formatDate } = useFormatDate()
 const chartContainer = ref<HTMLElement | null>(null)
 let echartsInstance: EChartsType | null = null
 
+// One color per series, cycled by ECharts.
+const CHART_COLORS = ['#000091', '#82B5F2', '#29598F', '#31A7AE', '#81EEF5', '#B478F1', '#CFB1F5', '#CECECE']
+
+// Dense line series turn into a solid bead of markers: keep at most this many
+// evenly spaced ones (size 0 hides the rest; the axis tooltip still covers
+// every point). Each series starts at its own offset within the step so
+// overlapping series do not stack their markers on the same x positions.
+const MAX_LINE_SYMBOLS = 12
+const LINE_SYMBOL_SIZE = 8
+
+function lineSymbolSize(pointCount: number, seriesIndex: number, seriesCount: number) {
+  const step = Math.max(1, Math.ceil(pointCount / MAX_LINE_SYMBOLS))
+  const offset = Math.floor((seriesIndex * step) / seriesCount)
+  return (_value: unknown, params: { dataIndex: number }) =>
+    params.dataIndex % step === offset ? LINE_SYMBOL_SIZE : 0
+}
+
 function capture(): string | null {
   return echartsInstance?.getDataURL() ?? null
 }
@@ -129,7 +146,7 @@ const echartsOption = computed(() => {
   const seriesCount = props.chart.series.length
   if (!props.chart.series || seriesCount === 0) return
 
-  const seriesArray = props.chart.series.map((s) => {
+  const seriesArray = props.chart.series.map((s, seriesIndex) => {
     const xColumn = s.column_x_name_override ?? props.chart.x_axis.column_x
     const yColumn = s.aggregate_y ? `${s.column_y}__${s.aggregate_y}` : s.column_y
     const resourceId = s.resource_id
@@ -192,9 +209,26 @@ const echartsOption = computed(() => {
       })
     }
 
+    // Same cut for every series so they stay aligned on X.
+    const limit = props.chart.x_axis.limit
+    const limitedData = limit != null && limit < sortedData.length
+      ? sortedData.slice(0, limit)
+      : sortedData
+
+    const lineOptions = s.type === 'histogram'
+      ? {}
+      // showAllSymbol: ECharts' own 'auto' thinning (category axes) would
+      // fight the evenly spaced selection.
+      : {
+          smooth: true,
+          showAllSymbol: true,
+          symbolSize: lineSymbolSize(limitedData.length, seriesIndex, seriesCount),
+        }
+
     return {
       series: {
         type: s.type === 'histogram' ? 'bar' : 'line',
+        ...lineOptions,
         dimensions: s.aggregate_y ? [xColumn, yColumn] : resourceColumns.map(c => c.name),
         name: yColumn,
         encode: {
@@ -203,7 +237,7 @@ const echartsOption = computed(() => {
         },
       } as LineSeriesOption | BarSeriesOption,
       data: {
-        source: sortedData,
+        source: limitedData,
         dimensions: s.aggregate_y ? [xColumn, yColumn] : resourceColumns.map(c => c.name),
       },
     }
@@ -227,28 +261,31 @@ const echartsOption = computed(() => {
     textStyle: {
       fontFamily: 'Marianne, arial, sans-serif',
     },
-    color: '#000091',
+    color: CHART_COLORS,
     tooltip: {
       trigger: 'axis' as const,
       formatter: (params: Array<{ value: Record<string, unknown>, axisValueLabel: string, seriesName: string }>) => {
-        let tooltip = ''
         const valueFormatter = new Intl.NumberFormat(locale)
         const xAxisFormatter = buildXAxisFormatter(xAxisColumn.value, { dateStyle: 'medium' })
+        const first = params[0]
+        if (!first) return ''
+        const axisLabel = xAxisFormatter ? xAxisFormatter(first.axisValueLabel) : first.axisValueLabel
+        let tooltip = `<strong>${format.encodeHTML(String(axisLabel))}</strong><br>`
         for (const param of params) {
-          const seriesName = param.seriesName
-          const axisLabel = xAxisFormatter ? xAxisFormatter(param.axisValueLabel) : param.axisValueLabel
-          tooltip += `${format.encodeHTML(String(axisLabel))}: <strong>${valueFormatter.format(Number(param.value[seriesName]))}</strong><br>`
+          tooltip += `${format.encodeHTML(param.seriesName)}: <strong>${valueFormatter.format(Number(param.value[param.seriesName]))}</strong><br>`
         }
         return tooltip
       },
     },
     legend: {
-      show: false,
+      show: seriesCount > 1,
       bottom: 0,
     },
     grid: {
       top: 60,
-      bottom: 40,
+      // Labels + nameLocation 'middle' name; more room for the legend row when
+      // several series are shown.
+      bottom: seriesCount > 1 ? 80 : 60,
       left: 20,
       right: 20,
       containLabel: true,
@@ -256,11 +293,20 @@ const echartsOption = computed(() => {
     xAxis: {
       type: xAxisType,
       name: (props.chart.x_axis as XAxis).column_x,
+      // 'end' (the default) renders the name past the grid edge, where it gets
+      // clipped by the canvas; 'middle' centers it under the axis.
+      nameLocation: 'middle' as const,
+      // Clears the axis labels between the axis line and the name.
+      nameGap: 30,
       min: xAxisType !== 'category' ? xAxisColumn.value?.min ?? xAxisBounds.value.min ?? undefined : undefined,
       max: xAxisType !== 'category' ? xAxisColumn.value?.max ?? xAxisBounds.value.max ?? undefined : undefined,
-      axisLabel: xAxisType === 'time'
-        ? { formatter: buildXAxisFormatter(xAxisColumn.value) }
-        : undefined,
+      // 'auto' + hideOverlap: ECharts skips labels that don't fit instead of
+      // overlapping them; merged with the time-axis formatter.
+      axisLabel: {
+        interval: xAxisType === 'category' ? 'auto' as const : undefined,
+        hideOverlap: true,
+        ...(xAxisType === 'time' ? { formatter: buildXAxisFormatter(xAxisColumn.value) } : {}),
+      },
     },
     yAxis: {
       type: 'value' as const,
@@ -268,6 +314,7 @@ const echartsOption = computed(() => {
       min: props.chart.y_axis.min ?? undefined,
       max: props.chart.y_axis.max ?? undefined,
       axisLabel: {
+        hideOverlap: true,
         formatter: buildYAxisFormatter(props.chart.y_axis),
       },
     },
