@@ -15,6 +15,8 @@
     <div
       v-if="messages.length"
       ref="messagesContainerRef"
+      role="log"
+      aria-live="polite"
       class="flex-1 min-h-0 overflow-y-auto space-y-4"
       @scroll="onMessagesScroll"
     >
@@ -126,13 +128,12 @@ import ToolTrace from './ToolTrace.vue'
 import ThinkingBlock from './ThinkingBlock.vue'
 import { useAssistantChat } from './useAssistantChat'
 import { buildChatDisplayItems, chartToolResults, isNearChatBottom, mapAssistantError } from '~/utils/assistant'
-import type { ChartToolResult } from '~/utils/assistant'
-import type { ChartForApi } from '@datagouv/components-next'
+import type { AssistantVisualization, ChartToolResult } from '~/utils/assistant'
 import MarkdownViewer from '~/datagouv-components/src/components/MarkdownViewer.vue'
 
 const props = defineProps<{
   resourceId: string | null
-  visualization: ChartForApi | null
+  visualization: AssistantVisualization | null
 }>()
 
 const emit = defineEmits<{

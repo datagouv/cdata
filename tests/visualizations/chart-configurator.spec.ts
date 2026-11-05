@@ -926,9 +926,12 @@ test('chat message is sent with the selected resource and the conversation survi
   await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeHidden()
 
   const request = await sendAssistantMessage(page, 'Logements par région en histogramme')
-  const body = request.postDataJSON() as { resource_id: string, visualization: { title: string, x_axis: { column_x: string } }, messages: Array<{ role: string }> }
+  const body = request.postDataJSON() as { resource_id: string, visualization: Record<string, unknown>, messages: Array<{ role: string }> }
   expect(body.resource_id).toBe(RESOURCE_ID)
-  expect(body.visualization).toMatchObject({ title: 'Mon graphique', x_axis: { column_x: 'année_publication' } })
+  expect(body.visualization).toMatchObject({ exists: false, title: 'Mon graphique', x_axis: { column_x: 'année_publication' } })
+  // Only the chart itself: no ownership, visibility or extras.
+  expect(Object.keys(body.visualization).sort()).toEqual(['chart_type', 'description', 'exists', 'filter', 'series', 'title', 'x_axis', 'y_axis'])
+  expect(Object.keys((body.visualization.series as Array<object>)[0]!).sort()).toEqual(['aggregate_y', 'column_y', 'filters', 'resource_id', 'type'])
   const lastUserMessage = [...body.messages].reverse().find(m => m.role === 'user')
   expect(JSON.stringify(lastUserMessage)).toContain('Logements par région en histogramme')
 

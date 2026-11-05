@@ -8,7 +8,6 @@
       :aria-expanded="expanded"
       :aria-controls="panelId"
       class="flex w-full items-center gap-2 px-2.5 py-2 text-left hover:bg-gray-100"
-      :aria-label="$t(trace.label)"
       @click="expanded = !expanded"
     >
       <RiWrenchLine

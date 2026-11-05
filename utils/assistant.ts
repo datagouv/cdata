@@ -1,4 +1,4 @@
-import type { ChartForApi, DataSeriesType, GenericFilter, SortDirection, XAxisSortBy, XAxisType, YAxis } from '@datagouv/components-next'
+import type { ChartForApi, ChartForm, DataSeries, DataSeriesType, GenericFilter, SortDirection, XAxis, XAxisSortBy, XAxisType, YAxis } from '@datagouv/components-next'
 
 /**
  * Auto-scroll guard for the chat panel: happy-dom cannot model scroll
@@ -9,17 +9,50 @@ export function isNearChatBottom(element: { scrollTop: number, clientHeight: num
 }
 
 /**
+ * What the assistant sees of the current chart: the fields it can reason
+ * about, never ownership, visibility or extras. `exists` tells a saved chart
+ * (or one being edited) from a new one.
+ */
+export type AssistantVisualization = {
+  exists: boolean
+  title: string
+  description: string
+  x_axis: XAxis
+  y_axis: YAxis
+  series: Array<Pick<DataSeries, 'type' | 'column_y' | 'aggregate_y' | 'resource_id' | 'filters'>>
+  filter: GenericFilter | null
+  chart_type: DataSeriesType | null
+}
+
+export function toAssistantVisualization(
+  chart: ChartForApi,
+  form: Pick<ChartForm, 'filter' | 'chart_type'>,
+  exists: boolean,
+): AssistantVisualization {
+  return {
+    exists,
+    title: chart.title,
+    description: chart.description,
+    x_axis: chart.x_axis,
+    y_axis: chart.y_axis,
+    series: chart.series.map(({ type, column_y, aggregate_y, resource_id, filters }) => ({ type, column_y, aggregate_y, resource_id, filters })),
+    filter: form.filter ?? null,
+    chart_type: form.chart_type ?? null,
+  }
+}
+
+/**
  * Build the assistant chat request body, including the protocol fields required
  * by udata's VercelAIAdapter (SubmitMessage discriminated union). `resource_id`
  * is only sent when a resource is selected and `visualization` (the current
- * chart, `toChartApi` shape) only when there is one.
+ * chart, see `toAssistantVisualization`) only when there is one.
  */
 export function buildChatBody(
   messages: unknown[],
   resourceId: string | null,
-  visualization: ChartForApi | null,
+  visualization: AssistantVisualization | null,
   protocol?: { id: string, trigger: string, messageId?: string },
-): { messages: unknown[], id?: string, trigger?: string, messageId?: string, resource_id?: string, visualization?: ChartForApi } {
+): { messages: unknown[], id?: string, trigger?: string, messageId?: string, resource_id?: string, visualization?: AssistantVisualization } {
   return {
     ...protocol,
     messages,

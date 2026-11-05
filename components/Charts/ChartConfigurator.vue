@@ -663,7 +663,7 @@ import { isMeAdmin } from '~/utils/auth'
 import { keepValidSortCombined } from '~/utils/charts'
 import { fromFilterGroups, toFilterGroups } from '~/utils/chartFilters'
 import type { FilterColumnOption, FilterGroupCombinator, FilterGroupsState } from '~/utils/chartFilters'
-import type { ChartToolResult } from '~/utils/assistant'
+import { toAssistantVisualization, type ChartToolResult } from '~/utils/assistant'
 import ChartFilterGroup from './ChartFilterGroup.vue'
 import { applyChartToolResult } from './applyChartToolResult'
 import ProducerSelect from '../ProducerSelect.vue'
@@ -744,7 +744,7 @@ const savedChart = ref<Chart | null>(null)
 
 const chartForViewer = ref(toChartApi(form.value))
 // What the assistant sees of the chart, read when a message is sent.
-const visualization = computed(() => toChartApi(form.value))
+const visualization = computed(() => toAssistantVisualization(toChartApi(form.value), form.value, !!(props.initialChart || savedChart.value)))
 
 const hasChart = computed(() => !!form.value.x_axis.column_x && form.value.series.length > 0)
 

@@ -67,7 +67,8 @@ test('the assistant creates a chart then updates it without refetching the data'
   await expect.poll(() => dataRequests.length).toBeGreaterThan(dataBeforeCreate)
 
   // Second turn: update_chart only sets the unit, the data is not fetched again.
-  // Let the preview settle: the create can fetch the same data more than once.
+  // Let the preview settle: the create fetches page 1, then a full page triggers the
+  // 51st-group probe (page=51, a distinct URL).
   await page.waitForLoadState('networkidle')
   await page.waitForTimeout(1000)
   const dataBeforeUpdate = dataRequests.length

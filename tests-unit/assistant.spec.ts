@@ -5,8 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ChartForApi } from '@datagouv/components-next'
 import ChatPanel from '~/components/Assistant/ChatPanel.vue'
 import ToolTrace from '~/components/Assistant/ToolTrace.vue'
-import { buildChatBody, buildChatDisplayItems, chartToolResults, isNearChatBottom, mapAssistantError } from '~/utils/assistant'
-import type { ToolTrace as ToolTraceModel } from '~/utils/assistant'
+import { buildChatBody, buildChatDisplayItems, chartToolResults, isNearChatBottom, mapAssistantError, toAssistantVisualization } from '~/utils/assistant'
+import type { AssistantVisualization, ToolTrace as ToolTraceModel } from '~/utils/assistant'
 
 const sendMessageMock = vi.hoisted(() => vi.fn())
 const stopMock = vi.hoisted(() => vi.fn())
@@ -37,7 +37,7 @@ function assistantTextMessage(text: string) {
   }
 }
 
-function mountPanel(resourceId: string | null, visualization: ChartForApi | null = null) {
+function mountPanel(resourceId: string | null, visualization: AssistantVisualization | null = null) {
   return mount(ChatPanel, {
     props: { resourceId, visualization },
     attachTo: document.body,
@@ -60,9 +60,38 @@ function traceOf(part: Record<string, unknown>) {
   return item?.kind === 'trace' ? item.trace : null
 }
 
+describe('toAssistantVisualization', () => {
+  const filter = { _cls: 'Filter', column: 'reg', condition: 'exact', value: '11' } as const
+  const chart = {
+    ...CHART,
+    private: true,
+    extras: { secret: 1 },
+    owner: 'u1',
+    organization: null,
+    series: [{ ...CHART.series[0], filters: filter }],
+  } as unknown as ChartForApi
+
+  it('keeps only what the assistant needs', () => {
+    expect(toAssistantVisualization(chart, { filter, chart_type: 'histogram' }, true)).toEqual({
+      exists: true,
+      title: 'Population',
+      description: '',
+      x_axis: CHART.x_axis,
+      y_axis: CHART.y_axis,
+      series: [{ type: 'line', column_y: 'pop', aggregate_y: 'sum', resource_id: 'r1', filters: filter }],
+      filter,
+      chart_type: 'histogram',
+    })
+  })
+
+  it('tells a new chart from a saved one', () => {
+    expect(toAssistantVisualization(chart, { filter: null }, false)).toMatchObject({ exists: false, filter: null, chart_type: null })
+  })
+})
+
 describe('buildChatBody', () => {
   const messages = [{ id: '1', role: 'user', parts: [{ type: 'text', text: 'Bonjour' }] }]
-  const visualization = CHART as unknown as ChartForApi
+  const visualization = toAssistantVisualization(CHART as unknown as ChartForApi, { filter: null, chart_type: 'line' }, true)
 
   it('includes resource_id when a resource is selected', () => {
     expect(buildChatBody(messages, 'f47ac10b-58cc-4372-a567-0e02b2c3d479', null)).toEqual({
@@ -283,6 +312,15 @@ describe('ToolTrace', () => {
     expect(button.attributes('aria-controls')).toBe(panel.attributes('id'))
   })
 
+  it('names the toggle button with the label and the summary', () => {
+    const button = mountTrace().find('button')
+
+    // No aria-label: the accessible name is the visible label and summary.
+    expect(button.attributes('aria-label')).toBeUndefined()
+    expect(button.text()).toContain('Interrogation des données')
+    expect(button.text()).toContain('Je calcule la réponse à partir des données')
+  })
+
   it('keeps the collapsed panel inert and removes inert when expanded', async () => {
     const wrapper = mountTrace()
     const panel = wrapper.find('.tool-trace-panel')
@@ -332,6 +370,16 @@ describe('ChatPanel', () => {
     expect(textarea.attributes('disabled')).toBeDefined()
     expect(wrapper.find('#assistant-waiting').exists()).toBe(true)
     expect(wrapper.find('#assistant-waiting').text()).toContain('Sélectionnez une ressource')
+  })
+
+  it('announces new messages politely in a log', () => {
+    chatState.messages.value = [assistantTextMessage('Bonjour')]
+    const wrapper = mountPanel('resource-1')
+
+    const log = wrapper.find('[role="log"]')
+    expect(log.exists()).toBe(true)
+    expect(log.attributes('aria-live')).toBe('polite')
+    expect(log.find('article').exists()).toBe(true)
   })
 
   it('enables the input once a resource is selected', () => {

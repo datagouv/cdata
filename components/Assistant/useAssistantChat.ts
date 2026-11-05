@@ -2,10 +2,9 @@ import type { Ref } from 'vue'
 import { watch } from 'vue'
 import { useChat } from '@ai-sdk/vue'
 import { DefaultChatTransport } from 'ai'
-import type { ChartForApi } from '@datagouv/components-next'
-import { buildChatBody } from '~/utils/assistant'
+import { buildChatBody, type AssistantVisualization } from '~/utils/assistant'
 
-export function useAssistantChat(resourceId: Ref<string | null>, visualization: () => ChartForApi | null) {
+export function useAssistantChat(resourceId: Ref<string | null>, visualization: () => AssistantVisualization | null) {
   const runtimeConfig = useRuntimeConfig()
   const apiBase = runtimeConfig.public.apiBase as string
   const assistantApiBase = (runtimeConfig.public.assistantApiBase as string) || apiBase
