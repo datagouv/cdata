@@ -9,6 +9,13 @@
         :chart="chart"
         :series="data"
       />
+      <p
+        v-if="moreGroups"
+        class="fr-text--sm text-gray-plain mt-2 mb-0"
+        data-testid="chart-truncation-warning"
+      >
+        {{ truncationWarning(chart.x_axis.column_x, chart.x_axis.sort_x_by, t) }}
+      </p>
     </template>
     <template #error>
       <div class="text-center py-8 text-gray-500">
@@ -23,11 +30,12 @@ import { computed, reactive, ref, watch } from 'vue'
 import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
 import { useComponentsConfig } from '../../config'
-import { fetchTabularData, useGetProfile } from '../../functions/tabularApi'
+import { fetchTabularData, hasMoreGroups, useGetProfile, type FetchTabularDataOptions } from '../../functions/tabularApi'
 import type { Chart, ChartForApi, ColumnsDefinition } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
 import { watchDebounced } from '@vueuse/shared'
 import { buildColumnsFromProfile } from '../../functions/charts'
+import { CHART_PAGE_SIZE, chartDataKey, truncationWarning } from '../../functions/chartData'
 
 const props = defineProps<{
   chart: Chart | ChartForApi
@@ -48,6 +56,7 @@ const status = ref<'idle' | 'pending' | 'success' | 'error'>('idle')
 const error = ref<Error | null>(null)
 
 const pendingOperations = ref(0)
+const moreGroups = ref(false)
 
 const series = reactive<{
   data: Record<string, Array<Record<string, unknown>>>
@@ -114,6 +123,7 @@ async function fetchSeriesData() {
     if (props.chart.series.length === 0 || !props.chart.x_axis.column_x) {
       status.value = 'success'
       series.data = {}
+      moreGroups.value = false
       return
     }
 
@@ -124,22 +134,26 @@ async function fetchSeriesData() {
       })
       .map(async (serie) => {
         const xColumn = serie.column_x_name_override ?? props.chart.x_axis.column_x
+        const options: FetchTabularDataOptions = {
+          columns: serie.aggregate_y ? undefined : [xColumn, serie.column_y],
+          resourceId: serie.resource_id,
+          page: 1,
+          pageSize: CHART_PAGE_SIZE,
+          sort: { column: xColumn, direction: 'asc' },
+          groupBy: xColumn,
+          aggregation: serie.column_y && serie.aggregate_y
+            ? {
+                column: serie.column_y,
+                type: serie.aggregate_y,
+              }
+            : undefined,
+          filters: serie.filters ?? undefined,
+        }
+        const response = await fetchTabularData(config, options)
         return {
           id: serie.resource_id,
-          data: await fetchTabularData(config, {
-            columns: serie.aggregate_y ? undefined : [xColumn, serie.column_y],
-            resourceId: serie.resource_id,
-            page: 1,
-            pageSize: 100,
-            groupBy: xColumn,
-            aggregation: serie.column_y && serie.aggregate_y
-              ? {
-                  column: serie.column_y,
-                  type: serie.aggregate_y,
-                }
-              : undefined,
-            filters: serie.filters ?? undefined,
-          }),
+          data: response,
+          more: response.data.length === CHART_PAGE_SIZE && await hasMoreGroups(config, options),
         }
       })
 
@@ -150,11 +164,13 @@ async function fetchSeriesData() {
       result.id,
       result.data.data,
     ]))
+    moreGroups.value = results.some(result => result.more)
   }
   catch (err) {
     error.value = err instanceof Error ? err : new Error('Failed to fetch series data')
     status.value = 'error'
     series.data = {}
+    moreGroups.value = false
   }
   finally {
     pendingOperations.value--
@@ -166,11 +182,10 @@ watch(resourceIds, async () => {
 }, { immediate: true })
 
 watchDebounced([
-  () => props.chart.series,
-  () => props.chart.x_axis.column_x,
+  () => chartDataKey(props.chart),
 ], async () => {
   await fetchSeriesData()
-}, { debounce: config.searchDebounce ?? 300, immediate: true, deep: true })
+}, { debounce: config.searchDebounce ?? 300, immediate: true })
 
 watch(pendingOperations, (count) => {
   if (count === 0) {

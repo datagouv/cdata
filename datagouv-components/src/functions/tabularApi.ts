@@ -58,6 +58,14 @@ export async function fetchTabularData(config: PluginConfig, options: FetchTabul
 }
 
 /**
+ * Whether a 51st group exists: same query as the chart's, one row at page 51.
+ */
+export async function hasMoreGroups(config: PluginConfig, options: FetchTabularDataOptions): Promise<boolean> {
+  const response = await fetchTabularData(config, { ...options, page: 51, pageSize: 1 })
+  return response.data.length > 0
+}
+
+/**
  * Serialize a filter tree into tabular-api query params.
  * - `Filter` → `column__condition=value` (ANDed with the other params)
  * - root `AndFilters` → one param per child; `OrFilters` children become `or=(...)` params
