@@ -19,12 +19,7 @@
       :offset="8"
       @opened="loadOrganization"
     >
-      <OrganizationNameWithCertificate
-        :organization
-        as="span"
-        color-class="text-inherit"
-        wrap
-      />
+      <OrganizationNameInline :organization />
       <template #toggletip>
         <section class="flex flex-col gap-4">
           <div class="flex flex-col gap-3 min-w-0">
@@ -34,12 +29,9 @@
                 size-class="size-12 p-1 flex-none rounded border border-gray-default overflow-hidden"
               />
               <h3 class="flex-1 m-0 text-base/6 font-semibold">
-                <OrganizationNameWithCertificate
+                <OrganizationNameInline
                   :organization="summary"
                   :show-type="false"
-                  as="span"
-                  color-class="text-inherit"
-                  wrap
                 />
               </h3>
             </header>
@@ -106,23 +98,13 @@
       class="relative z-2 flex items-center min-w-0 text-gray-title bg-none underline underline-offset-3"
       :to="organizationUrl || organization.page"
     >
-      <OrganizationNameWithCertificate
-        :organization
-        as="span"
-        color-class="text-inherit"
-        wrap
-      />
+      <OrganizationNameInline :organization />
     </AppLink>
     <span
       v-else
       class="relative z-2 flex items-center min-w-0 cursor-text"
     >
-      <OrganizationNameWithCertificate
-        :organization
-        as="span"
-        color-class="text-inherit"
-        wrap
-      />
+      <OrganizationNameInline :organization />
     </span>
   </div>
   <div
@@ -147,7 +129,7 @@ import AppLink from './AppLink.vue'
 import ObjectCardMetric from './ObjectCardMetric.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import OrganizationLogo from './OrganizationLogo.vue'
-import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
+import OrganizationNameInline from './OrganizationNameInline.vue'
 import OrganizationTypeBadge from './OrganizationTypeBadge.vue'
 import Toggletip from './Toggletip.vue'
 

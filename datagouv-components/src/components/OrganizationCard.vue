@@ -32,12 +32,9 @@
       />
     </template>
     <template #title>
-      <OrganizationNameWithCertificate
+      <OrganizationNameInline
         :organization
         :show-type="false"
-        as="span"
-        color-class="text-inherit"
-        wrap
       />
     </template>
     <template
@@ -96,7 +93,7 @@ import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardMetric from './ObjectCardMetric.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import OrganizationLogo from './OrganizationLogo.vue'
-import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
+import OrganizationNameInline from './OrganizationNameInline.vue'
 import OrganizationTypeBadge from './OrganizationTypeBadge.vue'
 
 const props = defineProps<{
