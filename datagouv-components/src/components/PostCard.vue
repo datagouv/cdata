@@ -1,6 +1,8 @@
 <template>
   <ObjectCard
-    class="dg-content-card dg-catalog-card"
+    :url="postUrl || post.page || '#'"
+    :icon="RiArticleLine"
+    :description="post.headline || post.content"
     media-size="lg"
   >
     <template #media>
@@ -10,44 +12,42 @@
         kind="post"
       />
     </template>
-
-    <ObjectCardHeader
-      :icon="RiArticleLine"
-      :url="postUrl || post.page || '#'"
-    >
+    <template #title>
       {{ post.name }}
-    </ObjectCardHeader>
+    </template>
 
-    <TranslationT
-      v-if="post.published || post.created_at"
-      tag="div"
-      class="dg-card-updated"
-      keypath="Publié {date}"
+    <ObjectCardMeta v-if="post.published || post.created_at">
+      <TranslationT
+        tag="span"
+        class="tabular-nums"
+        keypath="Publié {date}"
+      >
+        <template #date>
+          <FormattedDate
+            :date="post.published || post.created_at"
+            format="relative"
+            :options="{ dateStyle: 'long', timeStyle: 'short' }"
+          />
+        </template>
+      </TranslationT>
+    </ObjectCardMeta>
+    <template
+      v-if="$slots.default"
+      #footer
     >
-      <template #date>
-        <FormattedDate
-          :date="post.published || post.created_at"
-          format="relative"
-          :options="{ dateStyle: 'long', timeStyle: 'short' }"
-        />
-      </template>
-    </TranslationT>
-
-    <ObjectCardShortDescription :text="post.headline || post.content" />
-    <slot />
+      <slot />
+    </template>
   </ObjectCard>
 </template>
 
 <script setup lang="ts">
-import '../../assets/cards.css'
 import { RiArticleLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Post } from '../types/posts'
 import CardMedia from './CardMedia.vue'
-import ObjectCard from './ObjectCard.vue'
-import ObjectCardHeader from './ObjectCardHeader.vue'
-import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import FormattedDate from './FormattedDate.vue'
+import ObjectCard from './ObjectCard.vue'
+import ObjectCardMeta from './ObjectCardMeta.vue'
 import TranslationT from './TranslationT.vue'
 
 defineProps<{

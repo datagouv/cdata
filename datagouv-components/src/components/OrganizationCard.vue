@@ -1,133 +1,122 @@
 <template>
-  <section
-    v-if="compact"
-    class="dg-organization-summary"
+  <ObjectCard
+    :url="organization.page"
+    :stacked="!horizontal"
   >
-    <header class="dg-organization-summary-heading">
-      <OrganizationLogo
-        class="dg-card-organization-logo"
-        :organization="organization"
-        size-class="dg-organization-summary-logo"
-      />
-      <OrganizationNameWithCertificate
-        :show-type="false"
-        :organization="organization"
-        as="h3"
-      />
-    </header>
-    <div v-if="type !== 'other'">
-      <OwnerType :type="type" />
-    </div>
-    <OrganizationMetrics
-      v-if="'metrics' in organization && organization.metrics"
-      :metrics="organization.metrics"
-      show-labels
-    />
-    <ObjectCardShortDescription
-      v-if="'description' in organization && organization.description"
-      :text="organization.description"
-    />
-  </section>
-  <OrganizationHorizontalCard
-    v-else
-    :organization
-    class="dg-organization-vertical dg-organization-with-banner"
-  >
-    <template #cover>
+    <template
+      v-if="!horizontal"
+      #cover
+    >
       <div
-        class="dg-organization-card-banner"
-        :style="bannerStyle"
+        data-testid="organization-banner"
+        class="h-16 bg-gray-some"
+        :style="bannerColor ? { backgroundColor: bannerColor } : undefined"
         aria-hidden="true"
       >
         <img
           v-if="bannerImage && !bannerFailed"
           :src="bannerImage"
           alt=""
+          class="size-full object-cover"
           :style="{ objectPosition: `center ${bannerPosition}%` }"
           @error="bannerFailed = true"
         >
       </div>
     </template>
-  </OrganizationHorizontalCard>
+    <template #media>
+      <OrganizationLogo
+        :organization
+        size-class="size-12 p-1"
+      />
+    </template>
+    <template #title>
+      <OrganizationNameWithCertificate
+        :organization
+        :show-type="false"
+        as="span"
+        color-class="text-inherit"
+        wrap
+      />
+    </template>
+    <template
+      v-if="type !== OTHER"
+      #badge
+    >
+      <OrganizationTypeBadge
+        :type
+        class="max-[480px]:hidden"
+      />
+    </template>
+
+    <ObjectCardMeta
+      v-if="'metrics' in organization"
+      class="mt-1 max-[480px]:hidden"
+    >
+      <span class="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <ObjectCardMetric
+          :icon="RiDatabase2Line"
+          :value="organization.metrics.datasets"
+          :label="t('{n} jeux de données | {n} jeu de données | {n} jeux de données', organization.metrics.datasets)"
+        />
+        <ObjectCardMetric
+          :icon="RiTerminalLine"
+          :value="organization.metrics.dataservices"
+          :label="t('{n} API', organization.metrics.dataservices)"
+        />
+        <ObjectCardMetric
+          :icon="RiLineChartLine"
+          :value="organization.metrics.reuses"
+          :label="t('{n} réutilisations | {n} réutilisation | {n} réutilisations', organization.metrics.reuses)"
+        />
+        <ObjectCardMetric
+          :icon="RiStarLine"
+          :value="organization.metrics.followers"
+          :label="t('{n} abonnés | {n} abonné | {n} abonnés', organization.metrics.followers)"
+        />
+      </span>
+    </ObjectCardMeta>
+    <ObjectCardShortDescription
+      v-if="'description' in organization"
+      :text="organization.description"
+      class="mt-1 max-md:hidden"
+    />
+  </ObjectCard>
 </template>
 
 <script setup lang="ts">
-import '../../assets/cards.css'
-import OrganizationHorizontalCard from './OrganizationHorizontalCard.vue'
-import OrganizationMetrics from './OrganizationMetrics.vue'
 import { computed, ref, watch } from 'vue'
-import { getOrganizationType } from '../functions/organizations'
+import { RiDatabase2Line, RiLineChartLine, RiStarLine, RiTerminalLine } from '@remixicon/vue'
+import { getOrganizationType, OTHER } from '../functions/organizations'
 import type { Organization, OrganizationReference } from '../types/organizations'
-import OrganizationLogo from './OrganizationLogo.vue'
+import { useTranslation } from '../composables/useTranslation'
+import ObjectCard from './ObjectCard.vue'
+import ObjectCardMeta from './ObjectCardMeta.vue'
+import ObjectCardMetric from './ObjectCardMetric.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
-import OwnerType from './CardOwnerType.vue'
-import OrganizationNameWithCertificate from './CardOrganizationName.vue'
+import OrganizationLogo from './OrganizationLogo.vue'
+import OrganizationNameWithCertificate from './OrganizationNameWithCertificate.vue'
+import OrganizationTypeBadge from './OrganizationTypeBadge.vue'
 
 const props = defineProps<{
-  compact?: boolean
   organization: Organization | OrganizationReference
+  /**
+   * Puts the logo beside the content, without the banner, for full-width lists.
+   * The card falls back to the vertical layout when it gets too narrow.
+   */
+  horizontal?: boolean
 }>()
 
+const { t } = useTranslation()
+
+const type = computed(() => getOrganizationType(props.organization))
+
+const bannerColor = computed(() => 'banner_color' in props.organization ? props.organization.banner_color : null)
+const bannerImage = computed(() => 'banner_image' in props.organization ? props.organization.banner_image : null)
+const bannerPosition = computed(() => 'banner_image_position' in props.organization ? (props.organization.banner_image_position ?? 50) : 50)
+
+// A broken banner falls back to the plain color instead of the browser's broken image icon.
 const bannerFailed = ref(false)
-const bannerImage = computed(() =>
-  'banner_image' in props.organization ? props.organization.banner_image : null,
-)
-const bannerPosition = computed(() =>
-  'banner_image_position' in props.organization
-    ? (props.organization.banner_image_position ?? 50)
-    : 50,
-)
-const bannerStyle = computed(() =>
-  'banner_color' in props.organization && props.organization.banner_color
-    ? { backgroundColor: props.organization.banner_color }
-    : undefined,
-)
 watch(bannerImage, () => {
   bannerFailed.value = false
 })
-const type = computed(() => getOrganizationType(props.organization))
 </script>
-
-<style scoped>
-.dg-organization-summary {
-  display: flex;
-  flex-direction: column;
-  gap: var(--dg-card-space-12);
-  min-width: 0;
-  color: var(--dg-card-text);
-  font: var(--dg-card-weight-regular) var(--dg-card-text-body)/var(--dg-card-leading-body)
-    var(--dg-card-font-sans);
-}
-.dg-organization-summary-heading {
-  display: flex;
-  align-items: flex-start;
-  gap: var(--dg-card-space-12);
-}
-.dg-organization-summary-logo {
-  width: var(--dg-card-space-48);
-  height: var(--dg-card-space-48);
-  flex: none;
-  border: 1px solid var(--dg-card-border);
-  border-radius: var(--dg-card-radius);
-  overflow: hidden;
-}
-.dg-organization-summary-heading :deep(.dg-organization-name) {
-  flex: 1;
-  align-items: flex-start;
-  font-weight: var(--dg-card-weight-semibold);
-}
-.dg-organization-summary-heading :deep(.dg-organization-name-label) {
-  white-space: normal;
-  overflow: visible;
-  text-overflow: clip;
-  overflow-wrap: anywhere;
-}
-.dg-organization-summary :deep(.dg-card-metric) {
-  gap: var(--dg-card-space-4);
-}
-.dg-organization-summary :deep(.dg-organization-counts) {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--dg-card-space-8) var(--dg-card-space-16);
-}
-</style>

@@ -266,7 +266,10 @@
                       name="reuse"
                       :reuse="result"
                     >
-                      <ReuseHorizontalCard :reuse="(result as ReuseV2)" />
+                      <ReuseCard
+                        :reuse="(result as ReuseV2)"
+                        horizontal
+                      />
                     </slot>
                   </template>
                   <template v-else-if="currentTypeConfig?.class === 'organizations'">
@@ -383,7 +386,7 @@ import RadioInput from '../RadioInput.vue'
 import DatasetCard from '../DatasetCard.vue'
 import DataserviceCard from '../DataserviceCard.vue'
 import OrganizationCard from '../OrganizationCard.vue'
-import ReuseHorizontalCard from '../ReuseHorizontalCard.vue'
+import ReuseCard from '../ReuseCard.vue'
 import TopicCard from '../TopicCard.vue'
 import SearchInput from './SearchInput.vue'
 import Sidemenu from './Sidemenu.vue'

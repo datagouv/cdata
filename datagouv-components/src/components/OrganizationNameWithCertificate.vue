@@ -1,5 +1,45 @@
 <template>
-  <div class="min-w-0 flex gap-1 items-center">
+  <span
+    v-if="wrap"
+    class="min-w-0 [overflow-wrap:anywhere]"
+  >
+    <OwnerTypeIcon
+      v-if="showType"
+      :type="getOrganizationType(organization)"
+      size-class="size-4 inline-block align-[-2px] me-1"
+    /><component
+      :is="as"
+      class="inline m-0 [font:inherit]"
+      :class="colorClass"
+    >
+      {{ organization.name }}<small
+        v-if="organization.acronym && showAcronym"
+        class="text-xs"
+      >
+        {{ organization.acronym }}</small>
+      <span
+        v-if="isOrganizationCertified(organization)"
+        class="relative z-2 ms-1 inline-flex align-[-2px]"
+      >
+        <Tooltip as="span">
+          <RiCheckboxCircleLine
+            class="size-4 block"
+            aria-hidden="true"
+          />
+          <span class="sr-only">{{ certifiedLabel }}</span>
+          <template #tooltip>
+            <p class="text-sm font-normal mb-0">
+              {{ certifiedLabel }}
+            </p>
+          </template>
+        </Tooltip>
+      </span>
+    </component>
+  </span>
+  <div
+    v-else
+    class="min-w-0 flex gap-1 items-center"
+  >
     <OwnerTypeIcon
       v-if="showType"
       :type="getOrganizationType(organization)"
@@ -26,12 +66,12 @@
           'size-5': size === 'base',
           'size-6': size === 'xl',
         }"
-        :aria-label="t(`L'identité de ce service public est certifiée par {certifier}`, { certifier: config.name })"
+        :aria-label="certifiedLabel"
         aria-hidden="true"
       />
       <template #tooltip>
         <p class="text-sm font-normal mb-0">
-          {{ t(`L'identité de ce service public est certifiée par {certifier}`, { certifier: config.name }) }}
+          {{ certifiedLabel }}
         </p>
       </template>
     </Tooltip>
@@ -39,6 +79,7 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { RiCheckboxCircleLine } from '@remixicon/vue'
 import { getOrganizationType, isOrganizationCertified } from '../functions/organizations'
 import type { Organization, OrganizationReference } from '../types/organizations'
@@ -57,6 +98,9 @@ withDefaults(defineProps<{
   size?: 'xl' | 'base' | 'sm' | 'xs'
   colorClass?: string
   as?: string
+  // Lets a long name wrap over several lines, the certificate following its last word,
+  // and inherits the font of its container; by default the name is truncated on one line.
+  wrap?: boolean
 }>(), {
   showAcronym: false,
   showType: true,
@@ -64,4 +108,6 @@ withDefaults(defineProps<{
   colorClass: 'text-new-primary',
   as: 'div',
 })
+
+const certifiedLabel = computed(() => t(`L'identité de ce service public est certifiée par {certifier}`, { certifier: config.name }))
 </script>

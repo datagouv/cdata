@@ -81,9 +81,10 @@
         :data="reuse"
         class="bg-transparent"
       >
-        <ReuseHorizontalCard
+        <ReuseCard
           v-if="data"
           :reuse="data"
+          horizontal
         />
       </LoadingBlock>
     </div>
@@ -187,7 +188,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ChartCard, DatasetCard, DiscussionMessageCard, LoadingBlock, PostCard, ReuseHorizontalCard, TopicCard, type Chart, type DatasetV2, type PaginatedArray, type Post, type ReuseV2, type Thread, type TopicV2 } from '@datagouv/components-next'
+import { ChartCard, DatasetCard, DiscussionMessageCard, LoadingBlock, PostCard, ReuseCard, TopicCard, type Chart, type DatasetV2, type PaginatedArray, type Post, type ReuseV2, type Thread, type TopicV2 } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 
 const datasetQuery = useRoute().query.dataset

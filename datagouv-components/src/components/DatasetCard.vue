@@ -1,11 +1,16 @@
 <template>
-  <ObjectCard class="dg-content-card dg-catalog-card dg-dataset-card">
+  <ObjectCard
+    :url="datasetUrl || dataset.page"
+    :target="datasetUrlInNewTab ? '_blank' : undefined"
+    :icon="RiDatabase2Line"
+    :title-tag
+    :description="$slots.default || !showDescriptionShort ? null : getDescriptionShort(dataset)"
+  >
     <template #media>
       <OrganizationLogo
         v-if="dataset.organization"
-        class="dg-card-organization-logo"
         :organization="dataset.organization"
-        size-class="size-12"
+        size-class="size-12 p-1"
       />
       <Avatar
         v-else-if="dataset.owner"
@@ -18,131 +23,88 @@
         class="size-12"
       />
     </template>
-    <div class="dg-card-heading-row">
-      <ObjectCardHeader
-        :icon="RiDatabase2Line"
-        :url="datasetUrl || dataset.page"
-        :target="datasetUrlInNewTab ? '_blank' : undefined"
-        :title-tag="titleTag"
-      >
-        {{ dataset.title }}
-        <template
-          v-if="dataset.acronym"
-          #extra
-        >
-          <small class="flex-1 ml-2">{{ dataset.acronym }}</small>
-        </template>
-      </ObjectCardHeader>
-
+    <template #title>
+      {{ dataset.title }}<small
+        v-if="dataset.acronym"
+        class="ml-2"
+      >{{ dataset.acronym }}</small>
+    </template>
+    <template
+      v-if="dataset.private || dataset.archived"
+      #badge
+    >
       <ObjectCardBadge
         v-if="dataset.private"
         :icon="RiLockLine"
       >
         {{ t('Brouillon') }}
       </ObjectCardBadge>
-
       <ObjectCardBadge
-        v-else-if="dataset.archived"
+        v-else
         :icon="RiArchiveLine"
-        tone="neutral"
       >
         {{ t('Archivé') }}
       </ObjectCardBadge>
-    </div>
-    <div class="dg-dataset-details">
-      <ObjectCardOwner
-        v-if="dataset.organization || dataset.owner"
-        show-details
-        :organization="dataset.organization"
-        :owner="dataset.owner"
-        :organization-url="organizationUrl"
+    </template>
+
+    <ObjectCardOwner
+      v-if="dataset.organization || dataset.owner"
+      show-details
+      :organization="dataset.organization"
+      :owner="dataset.owner"
+      :organization-url="organizationUrl"
+    />
+    <ObjectCardMeta>
+      <TranslationT
+        tag="span"
+        class="tabular-nums"
+        keypath="Mis à jour {date}"
+      >
+        <template #date>
+          <FormattedDate
+            :date="dataset.last_update"
+            format="relative"
+            :options="{ dateStyle: 'medium' }"
+          />
+        </template>
+      </TranslationT>
+      <DatasetQualityInline
+        :quality="dataset.quality"
+        class="max-[480px]:hidden"
       />
-      <div class="dg-dataset-metadata-row dg-card-unified-metadata">
-        <TranslationT
-          tag="div"
-          class="dg-dataset-updated"
-          keypath="Mis à jour {date}"
-        >
-          <template #date>
-            <FormattedDate
-              :date="dataset.last_update"
-              format="relative"
-              :options="{ dateStyle: 'medium' }"
-            />
-          </template>
-        </TranslationT>
-        <DatasetQualityInline :quality="dataset.quality" />
-        <div class="dg-card-metrics flex flex-wrap items-center text-sm text-gray-medium">
-          <div class="dg-card-metrics flex flex-wrap items-center gap-3">
-            <p
-              class="text-sm mb-0 flex items-center gap-0.5"
-              :aria-label="t('{n} vues | {n} vue | {n} vues', dataset.metrics.views)"
-            >
-              <RiEyeLine
-                data-icon-size="compact"
-                focusable="false"
-                aria-hidden="true"
-                class="dg-ds-icon"
-              />{{ summarize(dataset.metrics.views) }}
-            </p>
-            <p
-              class="text-sm mb-0 flex items-center gap-0.5"
-              :aria-label="
-                t(
-                  '{n} téléchargements des ressources | {n} téléchargement des ressources | {n} téléchargements des ressources',
-                  dataset.metrics.resources_downloads,
-                )
-              "
-            >
-              <RiDownloadLine
-                data-icon-size="compact"
-                focusable="false"
-                aria-hidden="true"
-                class="dg-ds-icon"
-              />{{ summarize(dataset.metrics.resources_downloads) }}
-            </p>
-            <p
-              class="text-sm mb-0 flex items-center gap-0.5"
-              :aria-label="
-                t(
-                  '{n} réutilisations | {n} réutilisation | {n} réutilisations',
-                  dataset.metrics.reuses,
-                )
-              "
-            >
-              <RiLineChartLine
-                data-icon-size="compact"
-                focusable="false"
-                aria-hidden="true"
-                class="dg-ds-icon"
-              />{{ summarize(dataset.metrics.reuses) }}
-            </p>
-            <p
-              class="text-sm mb-0 flex items-center gap-0.5"
-              :aria-label="t('{n} abonnés | {n} abonné | {n} abonnés', dataset.metrics.followers)"
-            >
-              <RiStarLine
-                data-icon-size="compact"
-                focusable="false"
-                aria-hidden="true"
-                class="dg-ds-icon"
-              />{{ summarize(dataset.metrics.followers) }}
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-    <slot>
-      <ObjectCardShortDescription
-        v-if="showDescriptionShort"
-        :text="getDescriptionShort(props.dataset)"
-      />
-    </slot>
+      <span class="flex flex-wrap items-center gap-x-3 gap-y-2 max-[480px]:hidden">
+        <ObjectCardMetric
+          :icon="RiEyeLine"
+          :value="dataset.metrics.views"
+          :label="t('{n} vues | {n} vue | {n} vues', dataset.metrics.views)"
+        />
+        <ObjectCardMetric
+          :icon="RiDownloadLine"
+          :value="dataset.metrics.resources_downloads"
+          :label="t('{n} téléchargements des ressources | {n} téléchargement des ressources | {n} téléchargements des ressources', dataset.metrics.resources_downloads)"
+        />
+        <ObjectCardMetric
+          :icon="RiLineChartLine"
+          :value="dataset.metrics.reuses"
+          :label="t('{n} réutilisations | {n} réutilisation | {n} réutilisations', dataset.metrics.reuses)"
+        />
+        <ObjectCardMetric
+          :icon="RiStarLine"
+          :value="dataset.metrics.followers"
+          :label="t('{n} abonnés | {n} abonné | {n} abonnés', dataset.metrics.followers)"
+        />
+      </span>
+    </ObjectCardMeta>
+    <template
+      v-if="$slots.default"
+      #footer
+    >
+      <slot />
+    </template>
   </ObjectCard>
 </template>
 
 <script setup lang="ts">
-import '../../assets/cards.css'
 import type { RouteLocationRaw } from 'vue-router'
 import {
   RiArchiveLine,
@@ -155,18 +117,17 @@ import {
 } from '@remixicon/vue'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import type { TitleTag } from '../types/ui'
-import { summarize } from '../functions/helpers'
 import { getDescriptionShort } from '../functions/description'
 import { useTranslation } from '../composables/useTranslation'
 import DatasetQualityInline from './DatasetQualityInline.vue'
 import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
 import OrganizationLogo from './OrganizationLogo.vue'
-import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
-import ObjectCardHeader from './ObjectCardHeader.vue'
-import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
+import ObjectCardMeta from './ObjectCardMeta.vue'
+import ObjectCardMetric from './ObjectCardMetric.vue'
+import ObjectCardOwner from './ObjectCardOwner.vue'
 import FormattedDate from './FormattedDate.vue'
 import TranslationT from './TranslationT.vue'
 
@@ -180,7 +141,7 @@ type Props = {
   titleTag?: TitleTag
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   showDescriptionShort: true,
 })
 

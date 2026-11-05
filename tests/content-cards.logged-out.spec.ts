@@ -1,5 +1,13 @@
+import type { Page } from '@playwright/test'
 import { test, expect } from './base'
 import { gotoHydrated } from './helpers'
+
+const certificationLabel = 'L\'identité de ce service public est certifiée par data.gouv.fr'
+
+// Popovers are teleported out of the cards: the organization details are the one holding the link to its page.
+function detailsPanel(page: Page) {
+  return page.locator('#tooltips > *').filter({ has: page.getByRole('link', { name: 'Voir la page de l’organisation' }) })
+}
 
 const organization = {
   id: 'card-organization', name: 'Organisation des cartes', acronym: null,
@@ -31,19 +39,27 @@ test.beforeEach(async ({ page }) => {
   await expect(page.getByRole('heading', { name: reuse.title })).toBeVisible()
 })
 
+test('organization details button is named after the organization', async ({ page }) => {
+  const card = page.getByRole('article').filter({ has: page.getByRole('heading', { name: reuse.title }) })
+  await expect(card.getByRole('button', { name: organization.name })).toHaveAccessibleDescription('À propos de cette organisation')
+})
+
 test('organization details remain independent from the full-card link and close with Escape', async ({ page }) => {
   const card = page.getByRole('article').filter({ has: page.getByRole('heading', { name: reuse.title }) })
-  const trigger = card.getByRole('button', { name: 'À propos de cette organisation' })
+  const trigger = card.getByRole('button', { name: organization.name })
   await trigger.focus()
+  await expect(page.getByRole('tooltip')).toContainText(certificationLabel)
   await page.keyboard.press('Enter')
   await expect(trigger).toHaveAttribute('aria-expanded', 'true')
   const destination = page.getByRole('link', { name: 'Voir la page de l’organisation' })
   await expect(destination).toBeVisible()
   await expect(destination).toHaveAttribute('href', organization.page)
-  const panel = page.locator('.dg-quality-panel:visible')
+  const panel = detailsPanel(page)
   await expect(panel.getByText(organizationDetails.description)).toBeVisible()
-  await expect(panel.getByLabel('42 Jeux de données', { exact: true })).toBeVisible()
+  await expect(panel.getByText('42 jeux de données', { exact: true })).toBeVisible()
   await expect(panel.getByText(organizationDetails.description)).toHaveCSS('-webkit-line-clamp', '2')
+  // Opening the details with the keyboard closes the certification tooltip of the focused button.
+  await expect(page.getByRole('tooltip')).toHaveCount(0)
   await expect(page).toHaveURL(/\/reuses\/search/)
   await page.keyboard.press('Escape')
   await expect(destination).not.toBeVisible()
@@ -58,7 +74,7 @@ test('organization details load only on demand and are reused after reopening', 
     return route.fulfill({ json: organizationDetails })
   })
   expect(requests).toBe(0)
-  const trigger = page.getByRole('button', { name: 'À propos de cette organisation' })
+  const trigger = page.getByRole('button', { name: organization.name })
   await trigger.click()
   await expect(page.getByRole('tooltip')).not.toBeVisible()
   await expect(page.getByText(organizationDetails.description)).toBeVisible()
@@ -74,7 +90,7 @@ test('mobile cards retain identity and date without overflowing the viewport', a
   await expect(card.getByText(reuse.description)).toBeVisible()
   await page.setViewportSize({ width: 375, height: 812 })
   await expect(card.getByRole('heading', { name: reuse.title })).toBeVisible()
-  await expect(card.getByRole('button', { name: 'À propos de cette organisation' })).toBeVisible()
+  await expect(card.getByRole('button', { name: organization.name })).toBeVisible()
   await expect(card.locator('time')).toBeVisible()
   await expect(card.getByText(reuse.description)).not.toBeVisible()
   const box = await card.boundingBox()
@@ -83,11 +99,30 @@ test('mobile cards retain identity and date without overflowing the viewport', a
   expect(box!.x + box!.width).toBeLessThanOrEqual(375)
 })
 
+test.describe('when the organization details fail to load', () => {
+  test.use({ allowedConsoleMessages: ['Failed to load resource: the server responded with a status of 500'] })
+
+  test('the details report it, keep the link to the organization page and retry when reopened', async ({ page }) => {
+    await page.route('**/api/1/organizations/card-organization/**', route => route.fulfill({ status: 500 }))
+    const trigger = page.getByRole('button', { name: organization.name })
+    await trigger.click()
+    const panel = detailsPanel(page)
+    await expect(panel.getByText('Les détails de cette organisation sont temporairement indisponibles.')).toBeVisible()
+    await expect(panel.getByRole('link', { name: 'Voir la page de l’organisation' })).toHaveAttribute('href', organization.page)
+
+    await page.route('**/api/1/organizations/card-organization/**', route => route.fulfill({ json: organizationDetails }))
+    await page.keyboard.press('Escape')
+    await trigger.click()
+    await expect(panel.getByText(organizationDetails.description)).toBeVisible()
+    await expect(panel.getByText('Les détails de cette organisation sont temporairement indisponibles.')).toHaveCount(0)
+  })
+})
+
 test('certification tooltip is keyboard accessible inside organization details', async ({ page }) => {
-  await page.getByRole('button', { name: 'À propos de cette organisation' }).click()
-  const panel = page.locator('.dg-quality-panel:visible')
+  await page.getByRole('button', { name: organization.name }).click()
+  const panel = detailsPanel(page)
   await expect(panel.getByText('Service public', { exact: true })).toBeVisible()
-  const certificate = panel.locator('.dg-organization-certificate')
+  const certificate = panel.getByText(certificationLabel, { exact: true }).locator('..')
   await certificate.focus()
   const tooltip = page.getByRole('tooltip')
   await expect(tooltip).toContainText('certifiée par data.gouv.fr')

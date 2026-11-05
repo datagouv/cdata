@@ -1,26 +1,23 @@
 <template>
   <div
     :id
-    class="dg-content-card dg-schema-card relative border bg-white"
-    :class="{
-      'border-gray-default': !selected && !active,
-      'border-datagouv': selected && !active,
-      'border-blue-outline': active,
-    }"
+    class="relative p-4 rounded border text-sm/[22px] text-gray-title [overflow-wrap:anywhere]"
+    :class="[
+      selectable && selected ? 'border-new-primary ring-1 ring-inset ring-new-primary bg-new-info-light' : 'border-gray-default bg-white',
+      { 'outline-2 outline-new-focus outline-offset-3': active },
+    ]"
     :role="selectable ? 'option' : undefined"
     :tabindex="selectable ? -1 : undefined"
     :aria-selected="selectable && selected"
   >
-    <h3 class="dg-card-heading flex items-start gap-2 pr-8">
+    <h3 class="m-0 flex items-start gap-2 pr-8 text-base/6 font-semibold">
       <RiNodeTree
-        data-icon-size="base"
-        focusable="false"
         aria-hidden="true"
-        class="shrink-0 mt-1 dg-ds-icon"
+        class="size-4 shrink-0 mt-1"
       />
       {{ schema.title }}
     </h3>
-    <div class="dg-schema-tags">
+    <div class="flex flex-wrap gap-1 my-2">
       <Tag
         v-for="label in schema.labels"
         :key="label"
@@ -68,16 +65,13 @@
     </p>
     <RiCheckLine
       v-if="selected"
-      data-icon-size="major"
-      focusable="false"
       aria-hidden="true"
-      class="dg-schema-selected-icon absolute top-4 right-4 dg-ds-icon"
+      class="absolute top-4 right-4 size-5"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import '../../assets/cards.css'
 import Tag from './Tag.vue'
 import { RiCheckLine, RiNodeTree } from '@remixicon/vue'
 import AppLink from './AppLink.vue'

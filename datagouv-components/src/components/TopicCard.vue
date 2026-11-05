@@ -1,5 +1,9 @@
 <template>
-  <ObjectCard class="dg-content-card dg-catalog-card">
+  <ObjectCard
+    :url="topicUrl || topic.page || '#'"
+    :icon="RiBookShelfLine"
+    :description="topic.description"
+  >
     <template
       v-if="showLogo"
       #media
@@ -7,7 +11,7 @@
       <OrganizationLogo
         v-if="topic.organization"
         :organization="topic.organization"
-        size-class="size-12"
+        size-class="size-12 p-1"
       />
       <Avatar
         v-else-if="topic.owner"
@@ -20,13 +24,9 @@
         class="size-12"
       />
     </template>
-
-    <ObjectCardHeader
-      :icon="RiBookShelfLine"
-      :url="topicUrl || topic.page || '#'"
-    >
+    <template #title>
       {{ topic.name }}
-    </ObjectCardHeader>
+    </template>
 
     <ObjectCardOwner
       v-if="topic.organization || topic.owner"
@@ -36,61 +36,69 @@
       :owner="topic.owner"
       :organization-url="organizationUrl"
     />
-    <TranslationT
-      v-if="topic.last_modified"
-      tag="div"
-      class="dg-card-updated"
-      keypath="Mis à jour {date}"
-    >
-      <template #date>
-        <FormattedDate
-          :date="topic.last_modified"
-          format="relative"
-          :options="{ dateStyle: 'medium' }"
-        />
-      </template>
-    </TranslationT>
-    <div
-      v-if="showStats && metrics.length"
-      class="dg-card-metrics dg-topic-metrics"
-    >
-      <span
-        v-for="metric in metrics"
-        :key="metric.label"
-        class="dg-card-metric"
-        :aria-label="`${metric.value} ${metric.label}`"
+    <ObjectCardMeta v-if="topic.last_modified">
+      <TranslationT
+        tag="span"
+        class="tabular-nums"
+        keypath="Mis à jour {date}"
       >
-        <component
-          :is="metric.icon"
-          class="dg-ds-icon"
-          data-icon-size="compact"
-          aria-hidden="true"
-          focusable="false"
-        />{{ summarize(metric.value) }}
+        <template #date>
+          <FormattedDate
+            :date="topic.last_modified"
+            format="relative"
+            :options="{ dateStyle: 'medium' }"
+          />
+        </template>
+      </TranslationT>
+    </ObjectCardMeta>
+    <ObjectCardMeta
+      v-if="showStats && hasStats"
+      class="max-[480px]:hidden"
+    >
+      <span class="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <ObjectCardMetric
+          v-if="topic.nb_datasets !== undefined"
+          :icon="RiDatabase2Line"
+          :value="topic.nb_datasets"
+          :label="t('{n} jeux de données | {n} jeu de données | {n} jeux de données', topic.nb_datasets)"
+        />
+        <ObjectCardMetric
+          v-if="topic.nb_dataservices !== undefined"
+          :icon="RiTerminalLine"
+          :value="topic.nb_dataservices"
+          :label="t('{n} API', topic.nb_dataservices)"
+        />
+        <ObjectCardMetric
+          v-if="topic.nb_reuses !== undefined"
+          :icon="RiLineChartLine"
+          :value="topic.nb_reuses"
+          :label="t('{n} réutilisations | {n} réutilisation | {n} réutilisations', topic.nb_reuses)"
+        />
       </span>
-    </div>
-    <ObjectCardShortDescription :text="topic.description" />
-
-    <slot />
+    </ObjectCardMeta>
+    <template
+      v-if="$slots.default"
+      #footer
+    >
+      <slot />
+    </template>
   </ObjectCard>
 </template>
 
 <script setup lang="ts">
-import '../../assets/cards.css'
 import { computed } from 'vue'
-import { summarize } from '../functions/helpers'
-import { useTranslation } from '../composables/useTranslation'
 import { RiBookShelfLine, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { TopicV2 } from '../types/topics'
-import ObjectCardHeader from './ObjectCardHeader.vue'
-import ObjectCardOwner from './ObjectCardOwner.vue'
-import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
-import OrganizationLogo from './OrganizationLogo.vue'
+import { useTranslation } from '../composables/useTranslation'
 import Avatar from './Avatar.vue'
-import Placeholder from './Placeholder.vue'
-import ObjectCard from './ObjectCard.vue'
 import FormattedDate from './FormattedDate.vue'
+import ObjectCard from './ObjectCard.vue'
+import ObjectCardMeta from './ObjectCardMeta.vue'
+import ObjectCardMetric from './ObjectCardMetric.vue'
+import ObjectCardOwner from './ObjectCardOwner.vue'
+import OrganizationLogo from './OrganizationLogo.vue'
+import Placeholder from './Placeholder.vue'
 import TranslationT from './TranslationT.vue'
 
 type TopicWithStats = TopicV2 & {
@@ -113,22 +121,6 @@ const props = withDefaults(
   },
 )
 const { t } = useTranslation()
-const metrics = computed(() =>
-  [
-    { label: t('Jeux de données'), icon: RiDatabase2Line, value: props.topic.nb_datasets },
-    { label: t('API'), icon: RiTerminalLine, value: props.topic.nb_dataservices },
-    { label: t('Réutilisations'), icon: RiLineChartLine, value: props.topic.nb_reuses },
-  ].filter(
-    (metric): metric is typeof metric & { value: number } =>
-      typeof metric.value === 'number' && Number.isFinite(metric.value),
-  ),
-)
-</script>
 
-<style scoped>
-.dg-topic-metrics {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-}
-</style>
+const hasStats = computed(() => props.topic.nb_datasets !== undefined || props.topic.nb_dataservices !== undefined || props.topic.nb_reuses !== undefined)
+</script>
