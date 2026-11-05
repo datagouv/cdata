@@ -75,6 +75,16 @@ describe('applyChartToolResult', () => {
     expect(form.y_axis.unit).toBe('')
   })
 
+  it('points count series at the x column', () => {
+    const form = makeForm()
+    const chart = makeChart()
+    chart.x_axis.column_x = 'reg'
+    chart.series = [{ ...chart.series[0]!, column_y: 'dep', aggregate_y: 'count' }]
+    applyChartToolResult(form, create(chart))
+    expect(form.series[0]!.column_y).toBe('reg')
+    expect(form.series[0]!.aggregate_y).toBe('count')
+  })
+
   it('keeps the owner and privacy', () => {
     const form = makeForm()
     applyChartToolResult(form, create())

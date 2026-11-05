@@ -39,7 +39,8 @@ export function applyChartToolResult(form: ChartForm, result: ChartToolResult): 
   }
   form.series = chart.series.map(serie => ({
     type: serie.type,
-    column_y: serie.column_y,
+    // main's form only treats a series as "count" when column_y is the x column.
+    column_y: serie.aggregate_y === 'count' ? chart.x_axis.column_x : serie.column_y,
     aggregate_y: serie.aggregate_y ?? '',
     resource_id: serie.resource_id,
     column_x_name_override: null,
@@ -50,8 +51,8 @@ export function applyChartToolResult(form: ChartForm, result: ChartToolResult): 
       label: chart.y_axis.label ?? '',
       unit: chart.y_axis.unit ?? '',
       unit_position: chart.y_axis.unit_position || 'suffix',
-      min: chart.y_axis.min,
-      max: chart.y_axis.max,
+      min: chart.y_axis.min ?? null,
+      max: chart.y_axis.max ?? null,
     }
   }
 }
