@@ -13,8 +13,7 @@
     </h1>
     <DesignCardExamples />
 
-    <h2>Exemples issus de l’API</h2>
-    <p>Ces cartes utilisent les données du serveur configuré ; leur contenu peut évoluer.</p>
+    <p>Les cartes ci-dessous utilisent les données du serveur configuré ; leur contenu peut évoluer.</p>
 
     <h2 class="mb-3">
       Dataset
