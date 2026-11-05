@@ -32,6 +32,7 @@
     "*.{js,ts,vue,jsx,tsx}": "eslint --fix"
   },
   "dependencies": {
+    "@ai-sdk/vue": "^4.0.159",
     "@datagouv/components-next": "workspace:*",
     "@e965/xlsx": "^0.20.3",
     "@floating-ui/vue": "^2.0.1",
@@ -63,6 +64,7 @@
     "@vueuse/integrations": "^14.4.0",
     "@vueuse/nuxt": "^14.4.0",
     "@vueuse/router": "^14.4.0",
+    "ai": "^7.0.159",
     "bowser": "^2.14.1",
     "culori": "^4.0.2",
     "dompurify": "^3.4.16",
