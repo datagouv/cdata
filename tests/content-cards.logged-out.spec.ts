@@ -60,6 +60,7 @@ test('organization details load only on demand and are reused after reopening', 
   expect(requests).toBe(0)
   const trigger = page.getByRole('button', { name: 'À propos de cette organisation' })
   await trigger.click()
+  await expect(page.getByRole('tooltip')).not.toBeVisible()
   await expect(page.getByText(organizationDetails.description)).toBeVisible()
   await page.keyboard.press('Escape')
   await trigger.click()

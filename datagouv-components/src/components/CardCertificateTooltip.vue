@@ -8,6 +8,7 @@ const id = useId()
 const show = ref(false)
 const standalone = ref(false)
 const keyboardTrigger = ref<HTMLElement | null>(null)
+let pointerFocus = false
 const reference = useTemplateRef<HTMLElement>('reference')
 const floating = useTemplateRef<HTMLElement>('floating')
 const { floatingStyles } = useFloating(reference, floating, {
@@ -19,23 +20,34 @@ onMounted(() => {
   const parent = reference.value?.closest<HTMLElement>('a, button') ?? null
   standalone.value = !parent
   keyboardTrigger.value = parent ?? reference.value
-  parent?.addEventListener('focus', open)
-  parent?.addEventListener('blur', close)
+  parent?.addEventListener('focus', onParentFocus)
+  parent?.addEventListener('pointerdown', onParentPointerDown)
+  parent?.addEventListener('blur', onParentBlur)
   parent?.addEventListener('keydown', onParentKeydown)
 })
-function open() {
-  show.value = true
+function onParentFocus(event: FocusEvent) {
+  show.value = !pointerFocus && (event.currentTarget as HTMLElement).matches(':focus-visible')
+}
+function onParentPointerDown() {
+  pointerFocus = true
+  close()
+}
+function onParentBlur() {
+  pointerFocus = false
+  close()
 }
 function close() {
   show.value = false
 }
 function onParentKeydown(event: KeyboardEvent) {
+  pointerFocus = false
   if (event.key === 'Escape') dismiss(event)
 }
 onBeforeUnmount(() => {
   const parent = keyboardTrigger.value
-  parent?.removeEventListener('focus', open)
-  parent?.removeEventListener('blur', close)
+  parent?.removeEventListener('focus', onParentFocus)
+  parent?.removeEventListener('pointerdown', onParentPointerDown)
+  parent?.removeEventListener('blur', onParentBlur)
   parent?.removeEventListener('keydown', onParentKeydown)
 })
 watchEffect((onCleanup) => {
