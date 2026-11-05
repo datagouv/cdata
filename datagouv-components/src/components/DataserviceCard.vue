@@ -79,6 +79,7 @@
         </template>
       </TranslationT>
       <DataserviceQualityInline
+        v-if="dataservice.quality"
         :quality="dataservice.quality"
         class="max-[480px]:hidden"
       />

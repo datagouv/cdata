@@ -10,15 +10,10 @@
     >
       <span class="group-hover:underline underline-offset-3">{{ t('Métadonnées') }}</span>
       <QualityScore
-        v-if="score !== null"
         :score
         compact
         class="translate-y-px"
       />
-      <span
-        v-else
-        class="text-xs/[18px]"
-      >{{ t('Non disponible') }}</span>
       <template #toggletip>
         <slot />
       </template>
@@ -32,7 +27,7 @@ import QualityScore from './QualityScore.vue'
 import Toggletip from './Toggletip.vue'
 
 defineProps<{
-  score: number | null
+  score: number
 }>()
 
 const { t } = useTranslation()

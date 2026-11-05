@@ -52,7 +52,7 @@ const dataservice: Dataservice = {
 export const exampleDataservices = [
   { label: 'Accès ouvert · qualité complète', data: dataservice },
   { label: 'Avec un compte · qualité incomplète', data: { ...dataservice, id: 'demo-api-account', title: 'API des équipements accessibles et des services de proximité', access_type: 'open_with_account' as const, quality: { ...apiQuality, score: 0.4, has_machine_documentation: false, has_business_documentation: false, has_contact_point: false, availability_documented: false, rate_limiting_documented: false, access_conditions_clear: false } } },
-  { label: 'Accès restreint · qualité indisponible', data: { ...dataservice, id: 'demo-api-restricted', title: 'API des demandes administratives', access_type: 'restricted' as const, quality: undefined, organization: exampleOrganizations[1]!.data } },
+  { label: 'Accès restreint · organisation au nom long', data: { ...dataservice, id: 'demo-api-restricted', title: 'API des demandes administratives', access_type: 'restricted' as const, organization: exampleOrganizations[1]!.data } },
   { label: 'Brouillon · sans logo', data: { ...dataservice, id: 'demo-api-draft', title: 'API expérimentale', private: true, organization: exampleOrganizations[3]!.data } },
 ]
 const reuse: Reuse = {
