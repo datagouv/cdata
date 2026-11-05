@@ -94,9 +94,8 @@ export function useWfsSchema(resource: MaybeRefOrGetter<Resource>, layer: MaybeR
       status.value = 'success'
     }
     catch (e) {
-      const diagnosis = await diagnoseWfsError(e, l)
       if (current !== run) return
-      error.value = diagnosis
+      error.value = diagnoseWfsError(e)
       status.value = 'error'
     }
   }
@@ -143,10 +142,8 @@ export function useWfsFeatures(
       status.value = 'success'
     }
     catch (e) {
-      if (isAbortError(e) || current.signal.aborted) return
-      const diagnosis = await diagnoseWfsError(e, l)
-      if (current !== controller) return
-      error.value = diagnosis
+      if (isAbortError(e) || current.signal.aborted || current !== controller) return
+      error.value = diagnoseWfsError(e)
       status.value = 'error'
     }
   }

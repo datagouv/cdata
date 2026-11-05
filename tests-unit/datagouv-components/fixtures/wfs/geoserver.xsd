@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?><xsd:schema xmlns:dreal_b="http://geobretagne.fr/ns/dreal_b" xmlns:gml="http://www.opengis.net/gml/3.2" xmlns:wfs="http://www.opengis.net/wfs/2.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://geobretagne.fr/ns/dreal_b">
+  <xsd:import namespace="http://www.opengis.net/gml/3.2" schemaLocation="https://geobretagne.fr/geoserver/schemas/gml/3.2.1/gml.xsd"/>
+  <xsd:complexType name="bande_100m_trait_coteType">
+    <xsd:complexContent>
+      <xsd:extension base="gml:AbstractFeatureType">
+        <xsd:sequence>
+          <xsd:element maxOccurs="1" minOccurs="0" name="id" nillable="true" type="xsd:int"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="idcarreau" nillable="true" type="xsd:string"/>
+          <xsd:element maxOccurs="1" minOccurs="0" name="geom" nillable="true" type="gml:MultiSurfacePropertyType"/>
+        </xsd:sequence>
+      </xsd:extension>
+    </xsd:complexContent>
+  </xsd:complexType>
+  <xsd:element name="bande_100m_trait_cote" substitutionGroup="gml:AbstractFeature" type="dreal_b:bande_100m_trait_coteType"/>
+</xsd:schema>
