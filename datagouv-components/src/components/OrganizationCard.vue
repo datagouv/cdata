@@ -9,7 +9,8 @@
     >
       <div
         data-testid="organization-banner"
-        class="h-16 bg-gray-some"
+        class="h-16"
+        :class="{ 'bg-gray-some': !bannerColor }"
         :style="bannerColor ? { backgroundColor: bannerColor } : undefined"
         aria-hidden="true"
       >
