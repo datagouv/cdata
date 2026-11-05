@@ -216,13 +216,15 @@ function buildCreateSummary(part: Record<string, unknown>): string {
   return toolErrors(part.output) ?? CHART_CREATED_SUMMARY
 }
 
-const PATCH_FIELDS: Array<{ label: string, changed: (patch: Record<string, unknown>) => boolean }> = [
+type PatchField = { label: string, feminine?: boolean, plural?: boolean, changed: (patch: Record<string, unknown>) => boolean }
+
+const PATCH_FIELDS: PatchField[] = [
   { label: 'titre', changed: patch => 'title' in patch },
-  { label: 'description', changed: patch => 'description' in patch },
+  { label: 'description', feminine: true, changed: patch => 'description' in patch },
   { label: 'type', changed: patch => 'type' in patch },
   { label: 'libellé de l’axe Y', changed: patch => isRecord(patch.y_axis) && 'label' in patch.y_axis },
-  { label: 'unité', changed: patch => isRecord(patch.y_axis) && 'unit' in patch.y_axis },
-  { label: 'bornes', changed: patch => isRecord(patch.y_axis) && ('min' in patch.y_axis || 'max' in patch.y_axis) },
+  { label: 'unité', feminine: true, changed: patch => isRecord(patch.y_axis) && 'unit' in patch.y_axis },
+  { label: 'bornes', feminine: true, plural: true, changed: patch => isRecord(patch.y_axis) && ('min' in patch.y_axis || 'max' in patch.y_axis) },
 ]
 
 function buildUpdateSummary(part: Record<string, unknown>): string {
@@ -233,12 +235,17 @@ function buildUpdateSummary(part: Record<string, unknown>): string {
   if (!isRecord(part.output.patch)) return fallback
 
   const patch = part.output.patch
-  const labels = PATCH_FIELDS.filter(field => field.changed(patch)).map(field => field.label)
-  if (labels.length === 0) return fallback
+  const fields = PATCH_FIELDS.filter(field => field.changed(patch))
+  if (fields.length === 0) return fallback
+  const labels = fields.map(field => field.label)
   const joined = labels.length === 1
     ? labels[0]!
     : `${labels.slice(0, -1).join(', ')} et ${labels[labels.length - 1]}`
-  return `${joined.charAt(0).toUpperCase()}${joined.slice(1)} ${labels.length === 1 ? 'modifié' : 'modifiés'}`
+  // « modifié » agrees with the selected fields: feminine only when all are.
+  const plural = fields.length > 1 || fields[0]!.plural
+  const feminine = fields.every(field => field.feminine)
+  const participle = `modifié${feminine ? 'e' : ''}${plural ? 's' : ''}`
+  return `${joined.charAt(0).toUpperCase()}${joined.slice(1)} ${participle}`
 }
 
 function buildSummary(type: string, part: Record<string, unknown>, fallback: string): string {

@@ -174,7 +174,11 @@ describe('summarizes chart tool traces', () => {
     [{ title: 'T', y_axis: { unit: '€' } }, 'Titre et unité modifiés'],
     [{ title: 'T', description: 'd', y_axis: { unit: '€' } }, 'Titre, description et unité modifiés'],
     [{ type: 'histogram', y_axis: { label: 'L', min: 0, max: 5 } }, 'Type, libellé de l’axe Y et bornes modifiés'],
-    [{ y_axis: { min: 0 } }, 'Bornes modifié'],
+    [{ y_axis: { min: 0 } }, 'Bornes modifiées'],
+    [{ description: 'd' }, 'Description modifiée'],
+    [{ y_axis: { unit: '€' } }, 'Unité modifiée'],
+    [{ description: 'd', y_axis: { max: 1 } }, 'Description et bornes modifiées'],
+    [{ description: 'd', y_axis: { unit: '€' } }, 'Description et unité modifiées'],
   ])('update_chart %j', (patch, summary) => {
     expect(traceOf({ type: 'tool-update_chart', state: 'output-available', output: { status: 'ok', patch } })?.summary).toBe(summary)
   })
