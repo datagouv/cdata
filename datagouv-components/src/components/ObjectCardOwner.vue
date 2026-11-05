@@ -67,16 +67,23 @@
               v-if="'description' in summary"
               :text="summary.description"
             />
+            <div
+              v-if="loading"
+              role="status"
+              class="flex flex-col gap-2"
+            >
+              <span class="sr-only">{{ t('Chargement…') }}</span>
+              <span
+                v-for="width in ['w-4/5', 'w-full', 'w-3/5']"
+                :key="width"
+                class="h-4 rounded bg-gray-some animate-pulse-placeholder"
+                :class="width"
+                aria-hidden="true"
+              />
+            </div>
           </div>
           <p
-            v-if="loading"
-            role="status"
-            class="m-0"
-          >
-            {{ t('Chargement…') }}
-          </p>
-          <p
-            v-else-if="loadFailed"
+            v-if="loadFailed"
             role="status"
             class="m-0"
           >
