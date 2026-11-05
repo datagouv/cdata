@@ -1134,9 +1134,11 @@ watch(
 watch(
   () => form.value.x_axis.column_x,
   (newXColumn) => {
-    const serie = form.value.series[0]
-    if (serie && serie.aggregate_y === 'count') {
-      serie.column_y = newXColumn
+    // A count series counts the X column: keep every one of them on it.
+    for (const serie of form.value.series) {
+      if (serie.aggregate_y === 'count') {
+        serie.column_y = newXColumn
+      }
     }
   },
 )

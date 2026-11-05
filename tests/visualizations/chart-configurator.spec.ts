@@ -768,6 +768,36 @@ test('editing a chart PATCHes the value limit with the x axis', async ({ page })
   }
 })
 
+test('changing the x column moves every count series to it', async ({ page }) => {
+  const countSerie = { type: 'histogram', column_y: 'année_publication', aggregate_y: 'count', resource_id: RESOURCE_ID, column_x_name_override: null, filters: null } as const
+  const chart = await createChart(page.request, {
+    title: `Chart configurator counts ${Date.now()}`,
+    xColumn: 'année_publication',
+    series: [countSerie, { ...countSerie }],
+  })
+  try {
+    await mockTabular(page)
+    await page.goto(`/admin/beta/charts/${chart.id}`)
+    await page.waitForLoadState('networkidle')
+    await expect(page.getByLabel('Titre')).toHaveValue(chart.title)
+
+    await page.getByTestId('searchable-select-choisir-quoi-afficher').click()
+    await page.getByRole('option', { name: 'nom_region', exact: true }).click()
+    await page.keyboard.press('Escape')
+
+    const responsePromise = page.waitForResponse(response =>
+      response.url().includes(`/api/1/visualizations/${chart.id}/`) && response.request().method() === 'PATCH',
+    )
+    await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+    const response = await responsePromise
+    const body = response.request().postDataJSON() as { series: Array<{ column_y: string, aggregate_y: string }> }
+    expect(body.series.map(s => [s.column_y, s.aggregate_y])).toEqual([['nom_region', 'count'], ['nom_region', 'count']])
+  }
+  finally {
+    await deleteChart(page.request, chart.id)
+  }
+})
+
 test('switching datasets clears the selected resource and its schema', async ({ page }) => {
   await setupChart(page)
 

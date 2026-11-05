@@ -113,6 +113,8 @@ export type CreateChartOptions = {
   type?: 'line' | 'histogram'
   private?: boolean
   withImage?: boolean
+  xColumn?: string
+  series?: Chart['series']
 }
 
 /**
@@ -125,9 +127,9 @@ export async function createChart(request: APIRequestContext, options: CreateCha
       title: options.title,
       description: options.description ?? `Description de ${options.title}.`,
       private: options.private ?? false,
-      x_axis: { column_x: 'annee', sort_x_by: null, sort_x_direction: null, type: 'discrete', limit: null },
+      x_axis: { column_x: options.xColumn ?? 'annee', sort_x_by: null, sort_x_direction: null, type: 'discrete', limit: null },
       y_axis: { min: null, max: null, label: null, unit: null, unit_position: 'suffix' },
-      series: [{ type: options.type ?? 'histogram', column_y: 'valeur', aggregate_y: 'sum', resource_id: RESOURCE_ID, column_x_name_override: null, filters: null }],
+      series: options.series ?? [{ type: options.type ?? 'histogram', column_y: 'valeur', aggregate_y: 'sum', resource_id: RESOURCE_ID, column_x_name_override: null, filters: null }],
       extras: {},
     },
   })
