@@ -2,7 +2,6 @@
   <ObjectCard
     :url="topicUrl || topic.page || '#'"
     :icon="RiBookShelfLine"
-    :description="topic.description"
   >
     <template
       v-if="showLogo"
@@ -76,12 +75,11 @@
         />
       </span>
     </ObjectCardMeta>
-    <template
-      v-if="$slots.default"
-      #footer
-    >
-      <slot />
-    </template>
+    <ObjectCardShortDescription
+      :text="topic.description"
+      class="max-md:hidden"
+    />
+    <slot />
   </ObjectCard>
 </template>
 
@@ -97,6 +95,7 @@ import ObjectCard from './ObjectCard.vue'
 import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardMetric from './ObjectCardMetric.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
+import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import OrganizationLogo from './OrganizationLogo.vue'
 import Placeholder from './Placeholder.vue'
 import TranslationT from './TranslationT.vue'

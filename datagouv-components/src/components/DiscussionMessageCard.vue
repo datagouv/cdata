@@ -33,12 +33,7 @@
       :text="firstMessageContent"
       class="mt-2 max-md:hidden"
     />
-    <template
-      v-if="$slots.default"
-      #footer
-    >
-      <slot />
-    </template>
+    <slot />
   </ObjectCard>
 </template>
 

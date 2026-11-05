@@ -4,7 +4,6 @@
     :target="datasetUrlInNewTab ? '_blank' : undefined"
     :icon="RiDatabase2Line"
     :title-tag
-    :description="$slots.default || !showDescriptionShort ? null : getDescriptionShort(dataset)"
   >
     <template #media>
       <OrganizationLogo
@@ -95,12 +94,13 @@
         />
       </span>
     </ObjectCardMeta>
-    <template
-      v-if="$slots.default"
-      #footer
-    >
-      <slot />
-    </template>
+    <slot>
+      <ObjectCardShortDescription
+        v-if="showDescriptionShort"
+        :text="getDescriptionShort(dataset)"
+        class="max-md:hidden"
+      />
+    </slot>
   </ObjectCard>
 </template>
 
@@ -128,6 +128,7 @@ import ObjectCardBadge from './ObjectCardBadge.vue'
 import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardMetric from './ObjectCardMetric.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
+import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import FormattedDate from './FormattedDate.vue'
 import TranslationT from './TranslationT.vue'
 

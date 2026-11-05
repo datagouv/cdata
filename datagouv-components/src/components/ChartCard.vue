@@ -2,7 +2,6 @@
   <ObjectCard
     :url="chartUrl || chart.page"
     :icon="chartIcon"
-    :description="chart.description"
     media-size="xl"
   >
     <template #media>
@@ -63,12 +62,11 @@
         :label="t('{n} vues | {n} vue | {n} vues', chart.metrics.views)"
       />
     </ObjectCardMeta>
-    <template
-      v-if="$slots.default"
-      #footer
-    >
-      <slot />
-    </template>
+    <ObjectCardShortDescription
+      :text="chart.description"
+      class="max-md:hidden"
+    />
+    <slot />
   </ObjectCard>
 </template>
 
@@ -88,6 +86,7 @@ import CardMedia from './CardMedia.vue'
 import FormattedDate from './FormattedDate.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
+import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardMetric from './ObjectCardMetric.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'

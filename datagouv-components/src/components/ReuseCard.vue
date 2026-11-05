@@ -3,7 +3,6 @@
     :url="reuseUrl || reuse.page"
     :icon="horizontal ? RiLineChartLine : undefined"
     :title-tag
-    :description="reuse.description"
     :media-size="horizontal ? 'lg' : undefined"
   >
     <template
@@ -77,12 +76,11 @@
       :reuse
       class="max-[480px]:hidden"
     />
-    <template
-      v-if="$slots.default"
-      #footer
-    >
-      <slot />
-    </template>
+    <ObjectCardShortDescription
+      :text="reuse.description"
+      class="max-md:hidden"
+    />
+    <slot />
   </ObjectCard>
 </template>
 
@@ -95,6 +93,7 @@ import { useTranslation } from '../composables/useTranslation'
 import CardMedia from './CardMedia.vue'
 import FormattedDate from './FormattedDate.vue'
 import ObjectCard from './ObjectCard.vue'
+import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
 import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'

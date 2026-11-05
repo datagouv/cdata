@@ -61,11 +61,6 @@
           </div>
         </div>
         <slot />
-        <ObjectCardShortDescription
-          :text="description"
-          class="max-md:hidden"
-        />
-        <slot name="footer" />
       </div>
     </div>
   </article>
@@ -76,15 +71,12 @@ import { computed, type Component } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { TitleTag } from '../types/ui'
 import AppLink from './AppLink.vue'
-import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 
 const props = withDefaults(defineProps<{
   url: RouteLocationRaw
   target?: string
   icon?: Component
   titleTag?: TitleTag
-  // Rendered after the default slot, clamped to two lines and hidden on small screens.
-  description?: string | null
   // `sm` is a logo or an avatar, `lg` and `xl` an illustration.
   mediaSize?: 'sm' | 'lg' | 'xl'
   // Puts the media above the content instead of beside it. Over a cover, the media overlaps it.
@@ -101,7 +93,6 @@ const slots = defineSlots<{
   cover?(): unknown
   media?(): unknown
   default?(): unknown
-  footer?(): unknown
 }>()
 
 // Beside the content, the media moves above it once the card is too narrow for both.

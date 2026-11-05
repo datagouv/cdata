@@ -3,7 +3,6 @@
     :url="dataserviceUrl || dataservice.self_web_url"
     :icon="isTabularApi ? RiSparklingLine : RiTerminalLine"
     :title-tag
-    :description="showDescription ? dataservice.description : null"
     :highlighted="isTabularApi"
   >
     <template #media>
@@ -96,12 +95,12 @@
         />
       </span>
     </ObjectCardMeta>
-    <template
-      v-if="$slots.default"
-      #footer
-    >
-      <slot />
-    </template>
+    <ObjectCardShortDescription
+      v-if="showDescription"
+      :text="dataservice.description"
+      class="max-md:hidden"
+    />
+    <slot />
   </ObjectCard>
 </template>
 
@@ -129,6 +128,7 @@ import ObjectCardBadge from './ObjectCardBadge.vue'
 import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardMetric from './ObjectCardMetric.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
+import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import DataserviceQualityInline from './DataserviceQualityInline.vue'
 import FormattedDate from './FormattedDate.vue'
 import TranslationT from './TranslationT.vue'

@@ -2,7 +2,6 @@
   <ObjectCard
     :url="postUrl || post.page || '#'"
     :icon="RiArticleLine"
-    :description="post.headline || post.content"
     media-size="lg"
   >
     <template #media>
@@ -31,12 +30,11 @@
         </template>
       </TranslationT>
     </ObjectCardMeta>
-    <template
-      v-if="$slots.default"
-      #footer
-    >
-      <slot />
-    </template>
+    <ObjectCardShortDescription
+      :text="post.headline || post.content"
+      class="max-md:hidden"
+    />
+    <slot />
   </ObjectCard>
 </template>
 
@@ -48,6 +46,7 @@ import CardMedia from './CardMedia.vue'
 import FormattedDate from './FormattedDate.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardMeta from './ObjectCardMeta.vue'
+import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import TranslationT from './TranslationT.vue'
 
 defineProps<{
