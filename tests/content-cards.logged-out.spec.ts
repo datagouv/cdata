@@ -24,12 +24,20 @@ const reuse = {
 }
 const organizationDetails = {
   ...organization,
-  description: 'Description complète de l’organisation, affichée sur deux lignes dans la fiche de détails.',
+  // Long enough to overflow the two lines of the details, short enough to escape the 300 characters cut.
+  description: 'Description complète de l’organisation, assez longue pour dépasser les deux lignes de la fiche de détails : elle présente ses missions, les données qu’elle publie et la façon de la contacter.',
   metrics: { datasets: 42, dataservices: 3, reuses: 7, followers: 12 },
 }
 
+// Counted from the first page load, so a request sent while rendering the cards is counted too.
+let organizationRequests = 0
+
 test.beforeEach(async ({ page }) => {
-  await page.route('**/api/1/organizations/card-organization/**', route => route.fulfill({ json: organizationDetails }))
+  organizationRequests = 0
+  await page.route('**/api/1/organizations/card-organization/**', (route) => {
+    organizationRequests++
+    return route.fulfill({ json: organizationDetails })
+  })
   await page.route('**/api/2/reuses/search/**', route => route.fulfill({
     json: { data: [reuse], total: 1, page: 1, page_size: 20, facets: {} },
   }))
@@ -57,7 +65,10 @@ test('organization details remain independent from the full-card link and close 
   const panel = detailsPanel(page)
   await expect(panel.getByText(organizationDetails.description)).toBeVisible()
   await expect(panel.getByText('42 jeux de données', { exact: true })).toBeVisible()
-  await expect(panel.getByText(organizationDetails.description)).toHaveCSS('-webkit-line-clamp', '2')
+  // The description is clamped to two lines of 22px
+  const descriptionBox = await panel.getByText(organizationDetails.description).boundingBox()
+  expect(descriptionBox).not.toBeNull()
+  expect(descriptionBox!.height).toBeLessThanOrEqual(2 * 22)
   // Opening the details with the keyboard closes the certification tooltip of the focused button.
   await expect(page.getByRole('tooltip')).toHaveCount(0)
   await expect(page).toHaveURL(/\/reuses\/search/)
@@ -68,12 +79,7 @@ test('organization details remain independent from the full-card link and close 
 })
 
 test('organization details load only on demand and are reused after reopening', async ({ page }) => {
-  let requests = 0
-  await page.route('**/api/1/organizations/card-organization/**', (route) => {
-    requests++
-    return route.fulfill({ json: organizationDetails })
-  })
-  expect(requests).toBe(0)
+  expect(organizationRequests).toBe(0)
   const trigger = page.getByRole('button', { name: organization.name })
   await trigger.click()
   await expect(page.getByRole('tooltip')).not.toBeVisible()
@@ -81,7 +87,7 @@ test('organization details load only on demand and are reused after reopening', 
   await page.keyboard.press('Escape')
   await trigger.click()
   await expect(page.getByText(organizationDetails.description)).toBeVisible()
-  expect(requests).toBe(1)
+  expect(organizationRequests).toBe(1)
 })
 
 test('mobile cards retain identity and date without overflowing the viewport', async ({ page }) => {
