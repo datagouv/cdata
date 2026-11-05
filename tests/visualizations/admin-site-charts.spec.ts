@@ -1,6 +1,6 @@
 import type { BrowserContext } from '@playwright/test'
 import { test, expect } from '../base'
-import { createChart, deleteAllCharts, deleteChart, setupAndSaveChart } from './fixtures'
+import { createChart, deleteChart, setupAndSaveChart } from './fixtures'
 
 test.describe('with charts', () => {
   const createdIds: Array<string> = []
@@ -15,8 +15,6 @@ test.describe('with charts', () => {
     uniqueSuffix = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
     setupContext = await browser.newContext({ storageState: 'playwright/.auth/user.json' })
     const page = await setupContext.newPage()
-
-    await deleteAllCharts(setupContext.request)
 
     histogramChart = await setupAndSaveChart(page, {
       title: `Admin histogramme E2E ${uniqueSuffix}`,
@@ -78,11 +76,12 @@ test.describe('with charts', () => {
 
   test('private chart card displays a draft badge', async ({ page }) => {
     const card = page.locator('article').filter({ hasText: privateChart.title })
-    await expect(card.locator('.fr-badge')).toHaveText('Brouillon')
+    await expect(card.getByText('Brouillon', { exact: true })).toBeVisible()
   })
 
   test('deleted chart card displays a deleted badge, taking precedence over the draft badge', async ({ page }) => {
     const card = page.locator('article').filter({ hasText: deletedChart.title })
-    await expect(card.locator('.fr-badge')).toHaveText('Supprimé')
+    await expect(card.getByText('Supprimé', { exact: true })).toBeVisible()
+    await expect(card.getByText('Brouillon', { exact: true })).toHaveCount(0)
   })
 })

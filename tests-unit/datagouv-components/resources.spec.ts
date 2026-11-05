@@ -44,6 +44,9 @@ describe('getResourceCorsStatus', () => {
     expect(corsStatus({ 'check:cors:allow-origin': '*', 'check:cors:allow-methods': 'GET, POST' })).toEqual('allowed')
     expect(corsStatus({ 'check:cors:allow-origin': '*', 'check:cors:allow-methods': 'get' })).toEqual('allowed')
     expect(corsStatus({ 'check:cors:allow-origin': '*', 'check:cors:allow-methods': 'POST' })).toEqual('blocked')
+    // A wildcard among methods allows anything.
+    expect(corsStatus({ 'check:cors:allow-origin': '*', 'check:cors:allow-methods': '*' })).toEqual('allowed')
+    expect(corsStatus({ 'check:cors:allow-origin': '*', 'check:cors:allow-methods': 'POST, *' })).toEqual('allowed')
   })
 })
 

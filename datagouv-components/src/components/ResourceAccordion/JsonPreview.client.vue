@@ -5,6 +5,7 @@
     :resource="resource"
     :max-size="config.maxJsonPreviewCharSize"
     :load="load"
+    :can-edit="canEdit"
   >
     <JsonViewer
       :value="data"
@@ -33,6 +34,7 @@ const JsonViewer = defineAsyncComponent(() =>
 
 const props = defineProps<{
   resource: Resource
+  canEdit?: boolean
 }>()
 
 const config = useComponentsConfig()
