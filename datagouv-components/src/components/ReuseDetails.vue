@@ -1,7 +1,7 @@
 <template>
   <ObjectCardMeta>
     <span v-if="reuseType">{{ reuseType }}</span>
-    <span class="flex flex-wrap items-center gap-x-3 gap-y-2">
+    <ObjectCardMetrics>
       <ObjectCardMetric
         :icon="RiEyeLine"
         :value="reuse.metrics.views"
@@ -12,7 +12,7 @@
         :value="reuse.metrics.followers"
         :label="t('{n} abonnés | {n} abonné | {n} abonnés', reuse.metrics.followers)"
       />
-    </span>
+    </ObjectCardMetrics>
   </ObjectCardMeta>
 </template>
 
@@ -23,6 +23,7 @@ import type { Reuse, ReuseV2 } from '../types/reuses'
 import { useTranslation } from '../composables/useTranslation'
 import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardMetric from './ObjectCardMetric.vue'
+import ObjectCardMetrics from './ObjectCardMetrics.vue'
 
 const props = defineProps<{
   reuse: Reuse | ReuseV2

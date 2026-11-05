@@ -51,7 +51,7 @@
       v-if="'metrics' in organization"
       class="mt-1 max-[480px]:hidden"
     >
-      <span class="flex flex-wrap items-center gap-x-3 gap-y-2">
+      <ObjectCardMetrics>
         <ObjectCardMetric
           :icon="RiDatabase2Line"
           :value="organization.metrics.datasets"
@@ -72,7 +72,7 @@
           :value="organization.metrics.followers"
           :label="t('{n} abonnés | {n} abonné | {n} abonnés', organization.metrics.followers)"
         />
-      </span>
+      </ObjectCardMetrics>
     </ObjectCardMeta>
     <ObjectCardShortDescription
       v-if="'description' in organization"
@@ -91,6 +91,7 @@ import { useTranslation } from '../composables/useTranslation'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardMetric from './ObjectCardMetric.vue'
+import ObjectCardMetrics from './ObjectCardMetrics.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import OrganizationLogo from './OrganizationLogo.vue'
 import OrganizationNameInline from './OrganizationNameInline.vue'

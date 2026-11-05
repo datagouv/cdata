@@ -54,7 +54,7 @@
       v-if="showStats && hasStats"
       class="max-[480px]:hidden"
     >
-      <span class="flex flex-wrap items-center gap-x-3 gap-y-2">
+      <ObjectCardMetrics>
         <ObjectCardMetric
           v-if="topic.nb_datasets !== undefined"
           :icon="RiDatabase2Line"
@@ -73,7 +73,7 @@
           :value="topic.nb_reuses"
           :label="t('{n} réutilisations | {n} réutilisation | {n} réutilisations', topic.nb_reuses)"
         />
-      </span>
+      </ObjectCardMetrics>
     </ObjectCardMeta>
     <ObjectCardShortDescription
       :text="topic.description"
@@ -94,6 +94,7 @@ import FormattedDate from './FormattedDate.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardMetric from './ObjectCardMetric.vue'
+import ObjectCardMetrics from './ObjectCardMetrics.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import OrganizationLogo from './OrganizationLogo.vue'

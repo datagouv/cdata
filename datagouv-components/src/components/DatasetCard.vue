@@ -71,7 +71,7 @@
         :quality="dataset.quality"
         class="max-[480px]:hidden"
       />
-      <span class="flex flex-wrap items-center gap-x-3 gap-y-2 max-[480px]:hidden">
+      <ObjectCardMetrics class="max-[480px]:hidden">
         <ObjectCardMetric
           :icon="RiEyeLine"
           :value="dataset.metrics.views"
@@ -92,7 +92,7 @@
           :value="dataset.metrics.followers"
           :label="t('{n} abonnés | {n} abonné | {n} abonnés', dataset.metrics.followers)"
         />
-      </span>
+      </ObjectCardMetrics>
     </ObjectCardMeta>
     <slot>
       <ObjectCardShortDescription
@@ -127,6 +127,7 @@ import ObjectCard from './ObjectCard.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
 import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardMetric from './ObjectCardMetric.vue'
+import ObjectCardMetrics from './ObjectCardMetrics.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import FormattedDate from './FormattedDate.vue'
