@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { chartDataKey, truncationWarning } from '~/datagouv-components/src/functions/chartData'
+import { chartDataKey, chartRequestSortDirection, truncationWarning } from '~/datagouv-components/src/functions/chartData'
 import type { ChartForApi } from '~/datagouv-components/src/types/visualizations'
 
 const chart = {
@@ -32,6 +32,39 @@ describe('chartDataKey', () => {
     const another = structuredClone(chart)
     another.x_axis.column_x = 'region'
     expect(chartDataKey(another)).not.toBe(chartDataKey(chart))
+  })
+
+  it('changes with the request sort direction only', () => {
+    const yDesc = structuredClone(chart)
+    yDesc.x_axis.sort_x_by = 'axis_y'
+    yDesc.x_axis.sort_x_direction = 'desc'
+    const yAsc = structuredClone(yDesc)
+    yAsc.x_axis.sort_x_direction = 'asc'
+    expect(chartDataKey(yAsc)).toBe(chartDataKey(yDesc))
+    const xDesc = structuredClone(yDesc)
+    xDesc.x_axis.sort_x_by = 'axis_x'
+    expect(chartDataKey(xDesc)).not.toBe(chartDataKey(yDesc))
+  })
+})
+
+describe('chartRequestSortDirection', () => {
+  it('follows a descending X sort', () => {
+    const other = structuredClone(chart)
+    other.x_axis.sort_x_by = 'axis_x'
+    other.x_axis.sort_x_direction = 'desc'
+    expect(chartRequestSortDirection(other)).toBe('desc')
+  })
+
+  it('is ascending in every other case', () => {
+    const cases: Array<[ChartForApi['x_axis']['sort_x_by'], ChartForApi['x_axis']['sort_x_direction']]> = [
+      ['axis_x', 'asc'], ['axis_y', 'desc'], ['axis_y', 'asc'], [null, null],
+    ]
+    for (const [by, direction] of cases) {
+      const other = structuredClone(chart)
+      other.x_axis.sort_x_by = by
+      other.x_axis.sort_x_direction = direction
+      expect(chartRequestSortDirection(other)).toBe('asc')
+    }
   })
 })
 

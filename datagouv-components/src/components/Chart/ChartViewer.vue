@@ -22,7 +22,9 @@ use([CanvasRenderer, LineChart, BarChart, TitleComponent, TooltipComponent, Lege
 const props = defineProps<{
   chart: Chart | ChartForApi
   series: {
+    /** Rows of each series, keyed by the series index. */
     data: Record<string, Array<Record<string, unknown>>>
+    /** Columns of each resource, keyed by resource id. */
     columns: ColumnsDefinition
   }
 }>()
@@ -112,9 +114,9 @@ const xAxisBounds = computed(() => {
   let min: number | undefined
   let max: number | undefined
 
-  for (const s of props.chart.series) {
+  for (const [seriesIndex, s] of props.chart.series.entries()) {
     const xColumn = s.column_x_name_override ?? columnName
-    const data = props.series.data[s.resource_id]
+    const data = props.series.data[String(seriesIndex)]
     if (!data) continue
 
     for (const row of data) {
@@ -155,11 +157,11 @@ const echartsOption = computed(() => {
     const resourceId = s.resource_id
 
     const resourceColumns = props.series.columns[resourceId]
-    if (!xColumn || !yColumn || !resourceId || !s.type || !props.series.data[resourceId] || !resourceColumns) {
+    const rawData = props.series.data[String(seriesIndex)]
+    if (!xColumn || !yColumn || !resourceId || !s.type || !rawData || !resourceColumns) {
       return null
     }
 
-    const rawData = props.series.data[resourceId]
     const sortedData = isDateAxis.value
       ? rawData.map(row => parseXValueAsDate(row, xColumn))
       : [...rawData]
@@ -291,7 +293,9 @@ const echartsOption = computed(() => {
         const axisLabel = xAxisFormatter ? xAxisFormatter(first.axisValueLabel) : first.axisValueLabel
         let tooltip = `<strong>${format.encodeHTML(String(axisLabel))}</strong><br>`
         for (const param of params) {
-          tooltip += `${format.encodeHTML(param.seriesName)}: <strong>${valueFormatter.format(Number(param.value[param.seriesName]))}</strong><br>`
+          const value = param.value[param.seriesName]
+          const formatted = value === null || value === undefined ? '–' : valueFormatter.format(Number(value))
+          tooltip += `${format.encodeHTML(param.seriesName)}: <strong>${formatted}</strong><br>`
         }
         return tooltip
       },

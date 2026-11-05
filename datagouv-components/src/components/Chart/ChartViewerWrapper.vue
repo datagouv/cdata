@@ -35,7 +35,7 @@ import type { Chart, ChartForApi, ColumnsDefinition } from '../../types/visualiz
 import { useTranslation } from '../../composables/useTranslation'
 import { watchDebounced } from '@vueuse/shared'
 import { buildColumnsFromProfile } from '../../functions/charts'
-import { CHART_PAGE_SIZE, chartDataKey, truncationWarning } from '../../functions/chartData'
+import { CHART_PAGE_SIZE, chartDataKey, chartRequestSortDirection, truncationWarning } from '../../functions/chartData'
 
 const props = defineProps<{
   chart: Chart | ChartForApi
@@ -58,6 +58,8 @@ const error = ref<Error | null>(null)
 const pendingOperations = ref(0)
 const moreGroups = ref(false)
 
+// `data` is keyed by series index (several series can read the same
+// resource), `columns` by resource id.
 const series = reactive<{
   data: Record<string, Array<Record<string, unknown>>>
   columns: ColumnsDefinition
@@ -67,9 +69,9 @@ const series = reactive<{
 })
 
 const resourceIds = computed(() => {
-  return props.chart.series
+  return [...new Set(props.chart.series
     .filter(s => s.resource_id)
-    .map(s => s.resource_id)
+    .map(s => s.resource_id))]
 })
 
 async function fetchSeriesProfile() {
@@ -85,12 +87,11 @@ async function fetchSeriesProfile() {
       return
     }
 
-    const fetchPromises = props.chart.series
-      .filter(serie => serie.resource_id)
-      .map(async (serie) => {
+    const fetchPromises = resourceIds.value
+      .map(async (id) => {
         return {
-          id: serie.resource_id,
-          profile: await getProfile(serie.resource_id),
+          id,
+          profile: await getProfile(id),
         }
       })
 
@@ -122,6 +123,7 @@ async function fetchSeriesData() {
   pendingOperations.value++
   status.value = 'pending'
   error.value = null
+  let fullPages: Array<FetchTabularDataOptions> = []
 
   try {
     if (props.chart.series.length === 0 || !props.chart.x_axis.column_x) {
@@ -131,19 +133,21 @@ async function fetchSeriesData() {
       return
     }
 
+    const sortDirection = chartRequestSortDirection(props.chart)
     const fetchPromises = props.chart.series
-      .filter((serie) => {
+      .map((serie, index) => ({ serie, index }))
+      .filter(({ serie }) => {
         const xColumn = serie.column_x_name_override ?? props.chart.x_axis.column_x
         return xColumn && serie.resource_id && serie.column_y
       })
-      .map(async (serie) => {
+      .map(async ({ serie, index }) => {
         const xColumn = serie.column_x_name_override ?? props.chart.x_axis.column_x
         const options: FetchTabularDataOptions = {
           columns: serie.aggregate_y ? undefined : [xColumn, serie.column_y],
           resourceId: serie.resource_id,
           page: 1,
           pageSize: CHART_PAGE_SIZE,
-          sort: { column: xColumn, direction: 'asc' },
+          sort: { column: xColumn, direction: sortDirection },
           groupBy: xColumn,
           aggregation: serie.column_y && serie.aggregate_y
             ? {
@@ -155,9 +159,9 @@ async function fetchSeriesData() {
         }
         const response = await fetchTabularData(config, options)
         return {
-          id: serie.resource_id,
-          data: response,
-          more: response.data.length === CHART_PAGE_SIZE && await hasMoreGroups(config, options).catch(() => false),
+          key: String(index),
+          rows: response.data,
+          options,
         }
       })
 
@@ -166,10 +170,11 @@ async function fetchSeriesData() {
       .map(r => r.value)
     if (isStale()) return
     series.data = Object.fromEntries(results.map(result => [
-      result.id,
-      result.data.data,
+      result.key,
+      result.rows,
     ]))
-    moreGroups.value = results.some(result => result.more)
+    moreGroups.value = false
+    fullPages = results.filter(result => result.rows.length === CHART_PAGE_SIZE).map(result => result.options)
   }
   catch (err) {
     if (isStale()) return
@@ -181,9 +186,18 @@ async function fetchSeriesData() {
   finally {
     pendingOperations.value--
   }
+
+  // The 51st-group probe only adds the truncation warning: the chart is shown
+  // without waiting for it.
+  if (fullPages.length === 0) return
+  const more = await Promise.all(fullPages.map(options => hasMoreGroups(config, options).catch(() => false)))
+  if (isStale()) return
+  moreGroups.value = more.some(Boolean)
 }
 
-watch(resourceIds, async () => {
+// A string key: the computed array is new on every chart change, and the
+// profile only depends on the resources.
+watch(() => resourceIds.value.join(','), async () => {
   await fetchSeriesProfile()
 }, { immediate: true })
 

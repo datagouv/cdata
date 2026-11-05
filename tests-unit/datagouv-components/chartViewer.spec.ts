@@ -50,6 +50,12 @@ function chartConfig(series: Array<SerieSpec>, xAxis: XAxisOverrides = {}): Char
   } as unknown as ChartForApi
 }
 
+// The viewer reads the data of each series by its index: give every series the
+// rows of the shared resource.
+function perSeries(count: number, data: Record<string, Array<Record<string, unknown>>>) {
+  return Object.fromEntries(Array.from({ length: count }, (_, i) => [String(i), data[RESOURCE_ID]!]))
+}
+
 async function capture(
   series: Array<SerieSpec>,
   xAxis: XAxisOverrides = {},
@@ -57,7 +63,7 @@ async function capture(
   columns: ColumnsDefinition = COLUMNS,
 ) {
   const wrapper = mount(ChartViewer, {
-    props: { chart: chartConfig(series, xAxis), series: { data, columns } },
+    props: { chart: chartConfig(series, xAxis), series: { data: perSeries(series.length, data), columns } },
   })
   await flushPromises()
   expect(setOptionMock).toHaveBeenCalled()
@@ -89,7 +95,7 @@ describe('ChartViewer limit', () => {
     ] }
     const chart = chartConfig([{ column_y: 'year', type: 'histogram' }], { sort_x_by: 'axis_y', sort_x_direction: 'desc', limit: 2 })
     chart.series[0]!.aggregate_y = 'count'
-    const wrapper = mount(ChartViewer, { props: { chart, series: { data, columns: COLUMNS } } })
+    const wrapper = mount(ChartViewer, { props: { chart, series: { data: perSeries(1, data), columns: COLUMNS } } })
     await flushPromises()
     const option = setOptionMock.mock.calls.at(-1)![0]
     wrapper.unmount()
@@ -185,6 +191,35 @@ describe('ChartViewer rendering', () => {
     ]) as string
 
     expect(html).toBe(`<strong>2021</strong><br>nb: <strong>${(5).toLocaleString()}</strong><br>rate: <strong>${(2.5).toLocaleString()}</strong><br>`)
+  })
+
+  it('shows a dash in the tooltip for a missing value', async () => {
+    const option = await capture([{ column_y: 'nb', type: 'line' }, { column_y: 'rate', type: 'line' }])
+
+    const html = option.tooltip.formatter([
+      { value: { year: 2021, nb: 5 }, axisValueLabel: '2021', seriesName: 'nb' },
+      { value: { year: 2021, rate: null }, axisValueLabel: '2021', seriesName: 'rate' },
+      { value: { year: 2021 }, axisValueLabel: '2021', seriesName: 'rate' },
+    ]) as string
+
+    expect(html).toBe(`<strong>2021</strong><br>nb: <strong>${(5).toLocaleString()}</strong><br>rate: <strong>–</strong><br>rate: <strong>–</strong><br>`)
+  })
+
+  it('plots each series on the same resource from its own data', async () => {
+    const chart = chartConfig([{ column_y: 'nb', type: 'histogram' }, { column_y: 'rate', type: 'histogram' }])
+    chart.series[0]!.aggregate_y = 'max'
+    chart.series[1]!.aggregate_y = 'max'
+    const data = {
+      0: [{ year: 2020, nb__max: 3 }, { year: 2021, nb__max: 5 }],
+      1: [{ year: 2020, rate__max: 1.5 }, { year: 2021, rate__max: 2.5 }],
+    }
+    const wrapper = mount(ChartViewer, { props: { chart, series: { data, columns: COLUMNS } } })
+    await flushPromises()
+    const option = setOptionMock.mock.calls.at(-1)![0]
+    wrapper.unmount()
+
+    expect(option.dataset.map((d: { source: Array<Record<string, unknown>> }) => d.source)).toEqual([data[0], data[1]])
+    expect(option.series.map((s: { encode: { y: string } }) => s.encode.y)).toEqual(['nb__max', 'rate__max'])
   })
 
   it('returns an empty tooltip when the formatter receives no series', async () => {
