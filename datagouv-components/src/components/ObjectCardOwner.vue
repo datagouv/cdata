@@ -67,19 +67,32 @@
               v-if="'description' in summary"
               :text="summary.description"
             />
+            <!-- Same line boxes as the metrics and the two-line description it stands for -->
             <div
               v-if="loading"
               role="status"
-              class="flex flex-col gap-2"
+              class="flex flex-col gap-3"
             >
               <span class="sr-only">{{ t('Chargement…') }}</span>
               <span
-                v-for="width in ['w-4/5', 'w-full', 'w-3/5']"
-                :key="width"
-                class="h-4 rounded bg-gray-some animate-pulse-placeholder"
-                :class="width"
+                class="h-[18px] w-4/5 rounded bg-gray-some animate-pulse-placeholder"
                 aria-hidden="true"
               />
+              <span
+                class="flex flex-col"
+                aria-hidden="true"
+              >
+                <span
+                  v-for="width in ['w-full', 'w-3/5']"
+                  :key="width"
+                  class="flex items-center h-[22px]"
+                >
+                  <span
+                    class="h-3.5 rounded bg-gray-some animate-pulse-placeholder"
+                    :class="width"
+                  />
+                </span>
+              </span>
             </div>
           </div>
           <p
