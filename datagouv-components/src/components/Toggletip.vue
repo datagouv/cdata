@@ -32,8 +32,8 @@
         <PopoverPanel
           v-show="open"
           ref="panel"
-          class="absolute z-[800]"
-          :class="panelClass ?? ['drop-shadow bg-white rounded-sm w-96', noMargin ? 'p-0' : 'p-3']"
+          class="absolute z-[800] w-[min(24rem,calc(100vw-2rem))] max-h-[70vh] overflow-auto rounded border border-gray-default bg-white shadow-overlay"
+          :class="noMargin ? 'p-0' : 'p-4'"
           :style="floatingStyles"
           static
         >
@@ -48,24 +48,20 @@
 </template>
 
 <script setup lang="ts">
-import { autoPlacement, autoUpdate, offset as offsetMiddleware, shift, useFloating } from '@floating-ui/vue'
+import { autoPlacement, autoUpdate, offset, shift, useFloating } from '@floating-ui/vue'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import { nextTick, useTemplateRef } from 'vue'
 import { RiInformationLine } from '@remixicon/vue'
 import ClientOnly from './ClientOnly.vue'
 import ValueWatcher from './ValueWatcher.vue'
 
-const props = withDefaults(defineProps<{
+withDefaults(defineProps<{
   buttonProps?: object
   buttonClass?: string
-  panelClass?: string
   noMargin?: boolean
   styledButton?: boolean
-  // Gap in pixels between the button and the panel
-  offset?: number
 }>(), {
   styledButton: true,
-  offset: 0,
 })
 
 const emit = defineEmits<{
@@ -77,7 +73,7 @@ const panelRef = useTemplateRef<InstanceType<typeof PopoverPanel>>('panel')
 
 const { floatingStyles, update } = useFloating(popoverRef, panelRef, {
   middleware: [
-    offsetMiddleware(props.offset),
+    offset(8),
     autoPlacement({
       alignment: 'end',
       crossAxis: true,

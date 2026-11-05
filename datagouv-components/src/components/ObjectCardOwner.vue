@@ -15,13 +15,11 @@
         hover:bg-gray-some hover:underline underline-offset-3 aria-expanded:bg-gray-active aria-expanded:underline
         focus-visible:outline-2 focus-visible:outline-new-focus focus-visible:outline-offset-3"
       :button-props="{ title: t('À propos de cette organisation') }"
-      panel-class="w-[min(24rem,calc(100vw-2rem))] max-h-[70vh] overflow-auto p-4 rounded border border-gray-default bg-white shadow-overlay text-sm/[22px] text-gray-title"
-      :offset="8"
       @opened="loadOrganization"
     >
       <OrganizationNameInline :organization />
       <template #toggletip>
-        <section class="flex flex-col gap-4">
+        <section class="flex flex-col gap-4 text-sm/[22px] text-gray-title">
           <div class="flex flex-col gap-3 min-w-0">
             <header class="flex items-start gap-3">
               <OrganizationLogo
