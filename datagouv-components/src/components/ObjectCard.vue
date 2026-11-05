@@ -83,7 +83,7 @@ const props = withDefaults(defineProps<{
   target?: string
   icon?: Component
   titleTag?: TitleTag
-  // Rendered last, clamped to two lines and hidden on small screens.
+  // Rendered after the default slot, clamped to two lines and hidden on small screens.
   description?: string | null
   // `sm` is a logo or an avatar, `lg` and `xl` an illustration.
   mediaSize?: 'sm' | 'lg' | 'xl'

@@ -11,18 +11,15 @@
 import { computed } from 'vue'
 import { removeMarkdownSync } from '../functions/markdown'
 
-const props = withDefaults(
-  defineProps<{
-    text?: string | null
-    maxLength?: number
-  }>(),
-  {
-    maxLength: 300,
-  },
-)
+const props = withDefaults(defineProps<{
+  text?: string | null
+  maxLength?: number
+}>(), {
+  maxLength: 300,
+})
 
 // Truncate in JS to avoid sending very long markdown-cleaned text to the DOM.
-// The visual clamp is handled by `line-clamp-2`.
+// The visual clamp is handled by CSS line-clamp-2.
 const shortDescription = computed(() => {
   if (!props.text) return ''
   const cleaned = removeMarkdownSync(props.text)

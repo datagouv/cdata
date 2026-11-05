@@ -27,7 +27,7 @@
       {{ dataservice.title }}
     </template>
     <template
-      v-if="dataservice.private || dataservice.archived_at || dataservice.access_type !== 'open'"
+      v-if="dataservice.private || dataservice.archived_at || dataservice.access_type === 'restricted' || dataservice.access_type === 'open_with_account'"
       #badge
     >
       <ObjectCardBadge

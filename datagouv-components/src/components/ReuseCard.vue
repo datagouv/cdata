@@ -36,18 +36,20 @@
       v-if="reuse.private || reuse.archived"
       #badge
     >
-      <ObjectCardBadge
-        v-if="reuse.private"
-        :icon="RiLockLine"
-      >
-        {{ t('Brouillon') }}
-      </ObjectCardBadge>
-      <ObjectCardBadge
-        v-else
-        :icon="RiArchiveLine"
-      >
-        {{ t('Archivé') }}
-      </ObjectCardBadge>
+      <span class="flex flex-wrap gap-1">
+        <ObjectCardBadge
+          v-if="reuse.private"
+          :icon="RiLockLine"
+        >
+          {{ t('Brouillon') }}
+        </ObjectCardBadge>
+        <ObjectCardBadge
+          v-if="reuse.archived"
+          :icon="RiArchiveLine"
+        >
+          {{ t('Archivé') }}
+        </ObjectCardBadge>
+      </span>
     </template>
 
     <ObjectCardOwner

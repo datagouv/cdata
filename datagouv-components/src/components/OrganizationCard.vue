@@ -18,6 +18,7 @@
           v-if="bannerImage && !bannerFailed"
           :src="bannerImage"
           alt=""
+          loading="lazy"
           class="size-full object-cover"
           :style="{ objectPosition: `center ${bannerPosition}%` }"
           @error="bannerFailed = true"

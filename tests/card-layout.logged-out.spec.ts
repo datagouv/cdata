@@ -47,20 +47,42 @@ test('certification is described on the focused organization link', async ({ pag
   await expect(link).not.toHaveAttribute('aria-describedby')
 })
 
-test('organization search uses the banner card variant', async ({ page }) => {
+async function searchOrganizationWithBanner(page: Page, bannerImage: string | null) {
   await page.route('**/api/2/organizations/search/**', route => route.fulfill({ json: {
     data: [{
       id: 'banner-organization', name: 'Organisation avec bannière', slug: 'banner-organization',
       page: '/organizations/banner-organization', logo: null, logo_thumbnail: null,
       badges: [{ kind: 'public-service' }], description: '',
-      banner_color: '#ececfe', banner_image: null, banner_image_position: 50,
+      banner_color: '#ececfe', banner_image: bannerImage, banner_image_position: 50,
       metrics: { datasets: 1, dataservices: 0, reuses: 0, followers: 0 },
     }], total: 1, page: 1, page_size: 21,
   } }))
   await gotoHydrated(page, '/organizations')
   await page.getByRole('searchbox').fill('Organisation avec bannière')
-  const card = page.getByRole('article').filter({ has: page.getByRole('heading', { name: 'Organisation avec bannière', exact: true }) })
+  return page.getByRole('article').filter({ has: page.getByRole('heading', { name: 'Organisation avec bannière', exact: true }) })
+}
+
+test('organization search uses the banner card variant', async ({ page }) => {
+  const card = await searchOrganizationWithBanner(page, null)
   await expect(card.getByTestId('organization-banner')).toBeVisible()
+  await expect(card.getByTestId('organization-banner')).toHaveCSS('background-color', 'rgb(236, 236, 254)')
+})
+
+test('an organization banner image is displayed over its color', async ({ page }) => {
+  await page.route('**/card-banner.png', route => route.fulfill({
+    contentType: 'image/png',
+    // 1×1 transparent PNG
+    body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64'),
+  }))
+  const card = await searchOrganizationWithBanner(page, '/card-banner.png')
+  await expect(card.getByTestId('organization-banner').locator('img')).toBeVisible()
+})
+
+test('an organization banner image that fails to load falls back to its color', async ({ page }) => {
+  await page.route('**/broken-card-banner.png', route => route.fulfill({ status: 404 }))
+  const card = await searchOrganizationWithBanner(page, '/broken-card-banner.png')
+  await expect(card.getByTestId('organization-banner')).toBeVisible()
+  await expect(card.getByTestId('organization-banner').locator('img')).toHaveCount(0)
   await expect(card.getByTestId('organization-banner')).toHaveCSS('background-color', 'rgb(236, 236, 254)')
 })
 

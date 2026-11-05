@@ -2,10 +2,10 @@
   <component
     :is="as"
     class="relative"
-    @focusin="show = true"
-    @mouseenter="show = true"
+    @focusin="open"
+    @mouseenter="open"
     @focusout="show = false"
-    @mouseleave="show = false"
+    @mouseleave="closeSoon"
     @keydown.esc="dismiss"
   >
     <span
@@ -27,6 +27,8 @@
         class="z-[900] pt-2"
         :class="tooltipClass"
         :style="floatingStyles"
+        @mouseenter="open"
+        @mouseleave="closeSoon"
       >
         <div class="w-max max-w-[min(22rem,calc(100vw-2rem))] p-3 rounded border border-gray-default bg-white shadow-overlay text-sm/[22px] text-gray-title [overflow-wrap:anywhere]">
           <slot name="tooltip" />
@@ -38,6 +40,7 @@
 
 <script setup lang="ts">
 import { useFloating, autoUpdate, autoPlacement, shift } from '@floating-ui/vue'
+import { useEventListener } from '@vueuse/core'
 import { onBeforeUnmount, onMounted, ref, useId, useTemplateRef, watchEffect } from 'vue'
 
 withDefaults(defineProps<{
@@ -90,23 +93,30 @@ function onParentKeydown(event: KeyboardEvent) {
   if (event.key === 'Escape') dismiss(event)
 }
 
+useEventListener(focusableParent, 'focus', onParentFocus)
+useEventListener(focusableParent, 'pointerdown', onParentPointerDown)
+useEventListener(focusableParent, 'blur', onParentBlur)
+useEventListener(focusableParent, 'keydown', onParentKeydown)
+
 onMounted(() => {
   const parent = referenceRef.value?.parentElement?.closest<HTMLElement>('a, button') ?? null
   focusableParent.value = parent
   needsFocus.value = !parent && !referenceRef.value?.querySelector('a, button, input, select, textarea, [tabindex]')
-  parent?.addEventListener('focus', onParentFocus)
-  parent?.addEventListener('pointerdown', onParentPointerDown)
-  parent?.addEventListener('blur', onParentBlur)
-  parent?.addEventListener('keydown', onParentKeydown)
 })
 
-onBeforeUnmount(() => {
-  const parent = focusableParent.value
-  parent?.removeEventListener('focus', onParentFocus)
-  parent?.removeEventListener('pointerdown', onParentPointerDown)
-  parent?.removeEventListener('blur', onParentBlur)
-  parent?.removeEventListener('keydown', onParentKeydown)
-})
+// The tooltip is teleported out of the reference: moving the pointer from one to the other
+// leaves the reference first, so closing waits for the pointer to reach the tooltip, whose
+// content (a link for instance) must stay usable.
+let closeTimeout: ReturnType<typeof setTimeout> | undefined
+function open() {
+  clearTimeout(closeTimeout)
+  show.value = true
+}
+function closeSoon() {
+  clearTimeout(closeTimeout)
+  closeTimeout = setTimeout(() => show.value = false, 100)
+}
+onBeforeUnmount(() => clearTimeout(closeTimeout))
 
 // Describe the element that holds the focus, and only while the tooltip is rendered:
 // a reference to a missing id is ignored by screen readers.

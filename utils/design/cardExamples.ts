@@ -1,4 +1,4 @@
-import type { Dataset, Dataservice, Organization, OrganizationReference, Reuse } from '@datagouv/components-next'
+import type { Dataset, Dataservice, Organization, OrganizationReference, OrganizationTypes, Reuse } from '@datagouv/components-next'
 
 const page = '/design/cards#exemples'
 const date = '2026-01-12T12:00:00+00:00'
@@ -7,7 +7,7 @@ const access = { access_type: 'open' as const, access_audiences: [], access_type
 const logo = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="8" fill="#ececfe"/><path d="M12 45 32 12l20 33H12Zm13-7h14l-7-12-7 12Z" fill="#000091"/></svg>')}`
 const illustration = `data:image/svg+xml,${encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360"><rect width="640" height="360" fill="#e3f2ed"/><path d="M0 60 640 240M80 0 500 360M0 280 640 80" stroke="white" stroke-width="28"/><path d="M80 280 220 180 390 230 540 80" fill="none" stroke="#000091" stroke-width="8"/><g fill="#000091"><circle cx="80" cy="280" r="14"/><circle cx="220" cy="180" r="14"/><circle cx="390" cy="230" r="14"/><circle cx="540" cy="80" r="14"/></g></svg>')}`
 
-function organization(id: string, name: string, kind: string, certified: boolean, withLogo: boolean): Organization & OrganizationReference {
+function organization(id: string, name: string, kind: OrganizationTypes, certified: boolean, withLogo: boolean): Organization & OrganizationReference {
   return {
     class: 'Organization', id, name, acronym: null, slug: id, uri: '', page,
     logo: withLogo ? logo : '', logo_thumbnail: withLogo ? logo : '',
@@ -18,11 +18,12 @@ function organization(id: string, name: string, kind: string, certified: boolean
     metrics: { datasets: 1240, dataservices: 12, reuses: 37, followers: 2400, members: 8, views: 120000, datasets_by_months: {}, dataservices_by_months: {}, reuses_by_months: {} },
   }
 }
+const company = organization('demo-company', 'Atelier des données', 'company', false, false)
 export const exampleOrganizations = [
   { label: 'Service public certifié · logo et grands nombres', data: organization('demo-public', 'Observatoire des territoires', 'public-service', true, true) },
   { label: 'Collectivité · nom long et sans logo', data: organization('demo-local', 'Communauté de communes des vallées et des plateaux — service des données et de la transition écologique', 'local-authority', true, false) },
   { label: 'Association · description longue', data: organization('demo-association', 'Les données en partage', 'association', false, true) },
-  { label: 'Entreprise · aucune publication', data: { ...organization('demo-company', 'Atelier des données', 'company', false, false), description: '', metrics: { ...organization('unused', '', 'company', false, false).metrics, datasets: 0, dataservices: 0, reuses: 0, followers: 0 } } },
+  { label: 'Entreprise · aucune publication', data: { ...company, description: '', metrics: { ...company.metrics, datasets: 0, dataservices: 0, reuses: 0, followers: 0 } } },
 ]
 const owner = { organization: exampleOrganizations[0]!.data, owner: null }
 const quality = { score: 1, dataset_description_quality: true, resources_documentation: true, license: true, update_frequency: true, update_fulfilled_in_time: true, has_open_format: true, temporal_coverage: true, spatial: true, all_resources_available: true }

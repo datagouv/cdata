@@ -31,7 +31,7 @@
     </div>
     <ObjectCardShortDescription
       :text="firstMessageContent"
-      class="mt-2"
+      class="mt-2 max-md:hidden"
     />
     <template
       v-if="$slots.default"
