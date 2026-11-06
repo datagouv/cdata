@@ -83,8 +83,7 @@
     "vue-content-loader": "^2.0.1",
     "vue-router": "^5.4.0",
     "vue3-text-clamp": "^0.1.2",
-    "yaml": "^2.9.1",
-    "zod": "^4.6.7"
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
