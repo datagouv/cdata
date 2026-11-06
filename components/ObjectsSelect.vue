@@ -78,13 +78,13 @@
             :option
           >
             <div class="flex items-center space-x-2">
-              <NuxtImg
+              <img
                 v-if="objectImageUrl && objectImageUrl(option)"
                 :src="objectImageUrl(option)"
                 alt=""
                 loading="lazy"
                 class="size-5 rounded-full"
-              />
+              >
               <span>{{ option.title }}</span>
             </div>
           </slot>

@@ -82,7 +82,7 @@
                             <BrandedButton
                               :href="me.page"
                               color="tertiary"
-                              :icon="NuxtImg"
+                              :icon="Avatar"
                               :icon-attrs="{
                                 'src': getUserAvatar(me, 24),
                                 'loading': 'lazy',
@@ -262,7 +262,7 @@
                     <BrandedButton
                       :href="me.page"
                       color="tertiary"
-                      :icon="NuxtImg"
+                      :icon="Avatar"
                       :icon-attrs="{
                         'src': getUserAvatar(me, 24),
                         'loading': 'lazy',
@@ -530,8 +530,7 @@
 </template>
 
 <script setup lang="ts">
-import { NuxtImg as _NuxtImg } from '#components'
-import type { Component } from 'vue'
+import type { FunctionalComponent } from 'vue'
 import { BrandedButton, Toggletip, useGetUserAvatar, toast } from '@datagouv/components-next'
 import { RiAccountCircleLine, RiAddLine, RiCheckLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiTerminalLine, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
@@ -542,8 +541,8 @@ import { useMarkAsRead } from '~/composables/useMarkAsRead'
 import { useNotifications } from '~/composables/useNotifications.client'
 import { useLogout, useMaybeMe } from '~/utils/auth'
 
-// @ts-expect-error @nuxt/image v2 types mark the default slot as required (only used with `custom` prop), making NuxtImg incompatible with Component
-const NuxtImg: Component = _NuxtImg
+// BrandedButton takes its icon as a component: the avatar is a plain image wrapped in one.
+const Avatar: FunctionalComponent = (_props, { attrs }) => h('img', attrs)
 
 defineProps<{
   fluid?: boolean

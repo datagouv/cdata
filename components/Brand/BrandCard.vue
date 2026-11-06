@@ -18,12 +18,12 @@
           :class="props.size === 'large' ? 'justify-start h-full' : ''"
         >
           <template v-if="props.useStaticImage && props.imageSrc">
-            <NuxtImg
+            <img
               :src="props.imageSrc"
               :alt="props.imageAlt || ''"
               :srcset="props.imageSrc + ', ' + props.imageSrc.replace('.png', '@2x.png') + ' 2x'"
               :class="props.size === 'large' ? 'w-full h-full sm:-mb-16 self-start object-contain object-top' : 'w-full object-contain object-top'"
-            />
+            >
           </template>
         </div>
       </div>

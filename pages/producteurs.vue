@@ -34,13 +34,13 @@
       </div>
 
       <OnboardingLogoGrid :label="$t('Ils publient des données sur {site}', { site: config.public.title })">
-        <NuxtImg
+        <img
           v-for="logo in producerLogos"
           :key="logo.name"
           :src="`/nuxt_images/onboarding/logo-${logo.name}.png`"
           :alt="logo.label"
           class="h-20 object-contain"
-        />
+        >
       </OnboardingLogoGrid>
     </OnboardingSection>
 

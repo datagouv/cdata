@@ -47,12 +47,12 @@
         v-if="imagePreview"
         class="text-center"
       >
-        <NuxtImg
+        <img
           :src="imagePreview"
           class="border mx-auto max-h-40"
           loading="lazy"
           alt=""
-        />
+        >
       </div>
       <SearchableSelect
         v-if="isMeAdmin()"
