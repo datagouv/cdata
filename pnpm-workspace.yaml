@@ -25,7 +25,7 @@ overrides:
   axios: ^1.16.0
   lodash: ^4.18.1
   ws: ^8.21.0
-  fast-uri: ^3.1.8
+  fast-uri: ^3.1.9
   tar: ^7.5.21
   protocol-buffers-schema: ^3.6.1
   brace-expansion@1: ^1.1.21
@@ -42,15 +42,22 @@ overrides:
   js-yaml@3: ^3.15.1
   js-yaml@4: ^4.3.1
   nanoid@3: ^3.3.17
-  dompurify: ^3.4.16
+  dompurify: ^3.4.17
   # Single Vue for the whole workspace: without it the root importer (Nuxt) and
   # datagouv-components resolve different patches, and vue-tsc in
   # datagouv-components sees two unrelated @vue/runtime-core identities.
   vue: ^3.5.43
   devalue: ^5.9.4
   source-map-js: ^1.2.2
-  serialize-javascript: ^7.1.2
+  serialize-javascript: ^7.1.3
   katex: ^0.18.2
+  node-forge: ^1.4.1
+  undici@6: ^6.29.1
+  glob@10: ^14.0.2
+  glob@13: ^14.0.2
+  # Only pulled as the auto-installed peer of geopf-extensions-openlayers (its
+  # Panoramax control, never imported here): keep a single, patched maplibre.
+  maplibre-gl: ^6.13.0
 
 # GetCapabilities strings (layer title, abstract, attribution, metadata/legend URLs)
 # are rendered as HTML by the library: render them as text and only link http(s) URLs.
