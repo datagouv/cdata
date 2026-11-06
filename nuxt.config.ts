@@ -409,6 +409,9 @@ export default defineNuxtConfig({
   },
 
   fonts: {
+    // Since 1.0 a family without a `preload` option gets its first face preloaded: the
+    // light weights, which most pages never display, so the browser fetches them for nothing.
+    defaults: { preload: false },
     families: [
       ...isFrenchGovernment ? publicFontFaces('Marianne', [300, 400, 500, 700, 800], [300, 400, 500, 700]) : [],
       { name: 'Inconsolata', provider: 'google' as const, weights: [300], global: true },
