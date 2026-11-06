@@ -96,7 +96,7 @@
       <CreateApiTokenModal @created="onTokenCreated" />
     </div>
 
-    <ModalClient
+    <Modal
       :opened="!!tokenToRevoke"
       :title="$t('Révoquer ce token ?')"
       size="lg"
@@ -122,9 +122,9 @@
           </BrandedButton>
         </div>
       </template>
-    </ModalClient>
+    </Modal>
 
-    <ModalClient
+    <Modal
       :opened="!!userAgentsModalList"
       :title="$t('User agents')"
       size="lg"
@@ -139,7 +139,7 @@
           {{ ua }}
         </li>
       </ul>
-    </ModalClient>
+    </Modal>
   </div>
 </template>
 
@@ -148,7 +148,7 @@ import { BrandedButton, CopyButton, FormattedDate, SimpleBanner, toast, Translat
 import { RiDeleteBin6Line } from '@remixicon/vue'
 import type { ApiToken, ApiTokenCreated } from '~/types/api-tokens'
 import CreateApiTokenModal from './CreateApiTokenModal.vue'
-import ModalClient from '~/components/Modal/Modal.client.vue'
+import Modal from '~/components/Modal/Modal.vue'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
