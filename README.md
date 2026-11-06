@@ -30,7 +30,7 @@ If you want to fork cdata, you must :
 
 Before setting up the project, make sure you have the following installed:
 
-- **Node.js** (version 18 or higher) - [Download here](https://nodejs.org/)
+- **Node.js** (the version in [`.nvmrc`](.nvmrc), selected by `nvm use`) - [Download here](https://nodejs.org/)
 - **pnpm** (see [installation methods](https://pnpm.io/installation))
 
 You can check your versions with:
