@@ -295,6 +295,11 @@ export type SortOption<Sort extends string> = {
   label: string
 }
 
+// UI filter keys that map to a different API param name
+export const SearchFilterAliases: Record<string, string> = {
+  organization_facet: 'organization',
+}
+
 export type DatasetSearchConfig = {
   class: 'datasets'
   key?: string
@@ -302,8 +307,8 @@ export type DatasetSearchConfig = {
   icon?: Component | string
   placeholder?: string | null
   hiddenFilters?: HiddenFilter<DatasetSearchFilters>[]
-  basicFilters?: (keyof DatasetSearchFilters)[]
-  advancedFilters?: (keyof DatasetSearchFilters)[]
+  basicFilters?: (keyof DatasetSearchFilters | keyof typeof SearchFilterAliases)[]
+  advancedFilters?: (keyof DatasetSearchFilters | keyof typeof SearchFilterAliases)[]
   sortOptions?: SortOption<DatasetSearchSort>[]
   defaultSort?: DatasetSearchSort
 }
@@ -315,8 +320,8 @@ export type DataserviceSearchConfig = {
   icon?: Component | string
   placeholder?: string | null
   hiddenFilters?: HiddenFilter<DataserviceSearchFilters>[]
-  basicFilters?: (keyof DataserviceSearchFilters)[]
-  advancedFilters?: (keyof DataserviceSearchFilters)[]
+  basicFilters?: (keyof DataserviceSearchFilters | keyof typeof SearchFilterAliases)[]
+  advancedFilters?: (keyof DataserviceSearchFilters | keyof typeof SearchFilterAliases)[]
   sortOptions?: SortOption<DataserviceSearchSort>[]
   defaultSort?: DataserviceSearchSort
 }
@@ -328,8 +333,8 @@ export type ReuseSearchConfig = {
   icon?: Component | string
   placeholder?: string | null
   hiddenFilters?: HiddenFilter<ReuseSearchFilters>[]
-  basicFilters?: (keyof ReuseSearchFilters)[]
-  advancedFilters?: (keyof ReuseSearchFilters)[]
+  basicFilters?: (keyof ReuseSearchFilters | keyof typeof SearchFilterAliases)[]
+  advancedFilters?: (keyof ReuseSearchFilters | keyof typeof SearchFilterAliases)[]
   sortOptions?: SortOption<ReuseSearchSort>[]
   defaultSort?: ReuseSearchSort
 }
@@ -354,8 +359,8 @@ export type TopicSearchConfig = {
   icon?: Component | string
   placeholder?: string | null
   hiddenFilters?: HiddenFilter<TopicSearchFilters>[]
-  basicFilters?: (keyof TopicSearchFilters)[]
-  advancedFilters?: (keyof TopicSearchFilters)[]
+  basicFilters?: (keyof TopicSearchFilters | keyof typeof SearchFilterAliases)[]
+  advancedFilters?: (keyof TopicSearchFilters | keyof typeof SearchFilterAliases)[]
   sortOptions?: SortOption<TopicSearchSort>[]
   defaultSort?: TopicSearchSort
 }
