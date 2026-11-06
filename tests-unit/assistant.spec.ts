@@ -278,6 +278,7 @@ describe('isNearChatBottom', () => {
 describe('mapAssistantError', () => {
   it('maps status codes and falls back', () => {
     expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 401 }))).toContain('Veuillez vous reconnecter')
+    expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 413 }))).toBe('La conversation est trop volumineuse.')
     expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 429 }))).toContain('Quota journalier dépassé')
     expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 503 }))).toContain('Assistant non configuré')
     expect(mapAssistantError(new TypeError('fetch failed'))).toContain('Une erreur est survenue')

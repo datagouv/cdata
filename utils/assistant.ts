@@ -154,6 +154,8 @@ export function chartToolResults(messages: unknown[]): ChartToolResult[] {
 export function mapAssistantError(error: unknown): string {
   const statusCode = (error as { statusCode?: unknown } | null)?.statusCode
   if (statusCode === 401) return 'Veuillez vous reconnecter pour utiliser l’assistant.'
+  // The composer caps input at the server limit: a 413 means the history grew too large.
+  if (statusCode === 413) return 'La conversation est trop volumineuse.'
   if (statusCode === 429) return 'Quota journalier dépassé, réessayez demain.'
   if (statusCode === 503) return 'Assistant non configuré pour le moment.'
   return 'Une erreur est survenue, veuillez réessayer.'
