@@ -154,6 +154,22 @@ async function startWizard(page: Page, schema: SchemaKey) {
   await page.getByRole('button', { name: 'Suivant' }).click()
 }
 
+// Up to the last "Publier" of a file added to an existing dataset, validated against its schema
+async function openValidatedSheetOnExistingDataset(page: Page, dataset: Dataset) {
+  await gotoHydrated(page, '/admin/datasets/structured?step=1')
+  await selectProducer(page)
+  await page.getByText('Ajouter à un jeu de données existant').click()
+  await page.getByLabel('Lien vers le jeu de données').fill(`/datasets/${dataset.id}`)
+  await page.getByRole('button', { name: 'Ajouter le jeu de données' }).click()
+  await expect(page.getByText(dataset.title)).toBeVisible()
+  await selectSchema(page, 'durabilite')
+  await page.getByRole('button', { name: 'Suivant' }).click()
+
+  await page.locator('input[type="file"]').setInputFiles(fixture('lave-linge-virgule.csv'))
+  await page.getByRole('button', { name: 'Publier', exact: true }).click()
+  await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible(SPREADSHEET_OPENED)
+}
+
 async function uploadAndOpenSpreadsheet(page: Page, fileName: string) {
   await page.locator('input[type="file"]').setInputFiles(fixture(fileName))
   await page.getByRole('button', { name: 'Suivant' }).click()
@@ -569,18 +585,7 @@ test.describe('navigation', () => {
     const dataset = await createDataset(request, `Jeu existant ${Date.now()}`, 'Reçoit un fichier chaque année', { organization: organization.id })
     createdDatasets.push(dataset.id)
 
-    await gotoHydrated(page, '/admin/datasets/structured?step=1')
-    await selectProducer(page)
-    await page.getByText('Ajouter à un jeu de données existant').click()
-    await page.getByLabel('Lien vers le jeu de données').fill(`/datasets/${dataset.id}`)
-    await page.getByRole('button', { name: 'Ajouter le jeu de données' }).click()
-    await expect(page.getByText(dataset.title)).toBeVisible()
-    await selectSchema(page, 'durabilite')
-    await page.getByRole('button', { name: 'Suivant' }).click()
-
-    await page.locator('input[type="file"]').setInputFiles(fixture('lave-linge-virgule.csv'))
-    await page.getByRole('button', { name: 'Publier', exact: true }).click()
-    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible(SPREADSHEET_OPENED)
+    await openValidatedSheetOnExistingDataset(page, dataset)
     await page.getByRole('button', { name: 'Publier', exact: true }).click()
 
     // Publishing empties the wizard form while leaving for the dataset page: the
@@ -596,6 +601,49 @@ test.describe('navigation', () => {
     await expect(page.getByRole('heading', { name: /Associez un schéma/ })).toBeVisible()
     await expect(page.getByLabel('Lien vers le jeu de données')).toBeHidden()
     await expect(page.getByText(dataset.title)).toBeHidden()
+  })
+
+  test('le wizard reste intact pendant le chargement du jeu de données existant', async ({ page, request }) => {
+    await stubPublicationApis(page)
+    const dataset = await createDataset(request, `Jeu existant ${Date.now()}`, 'Reçoit un fichier chaque année', { organization: organization.id })
+    createdDatasets.push(dataset.id)
+
+    await openValidatedSheetOnExistingDataset(page, dataset)
+
+    // The dataset page is held while loading, so the wizard can be watched in between
+    let holding = true
+    let release = () => {}
+    const released = new Promise<void>((resolve) => {
+      release = resolve
+    })
+    await page.route(new RegExp(`/api/[12]/datasets/${dataset.slug}/`), async (route) => {
+      if (holding && route.request().method() === 'GET') await released
+      await route.continue()
+    })
+    let uploads = 0
+    page.on('request', (request) => {
+      if (request.method() === 'POST' && new URL(request.url()).pathname === `/api/1/datasets/${dataset.id}/upload/`) uploads++
+    })
+
+    const leaving = page.waitForRequest(request => request.method() === 'GET' && request.url().includes(`/datasets/${dataset.slug}/`))
+    await page.getByRole('button', { name: 'Publier', exact: true }).click()
+    await leaving
+
+    // Emptied on leaving, the form redrew this step without its schema and in "new" mode
+    await expect(page.getByText('Aucun schéma n\'a été sélectionné')).toBeHidden()
+    await expect(page.getByRole('button', { name: 'Publier', exact: true })).toBeVisible()
+
+    // Still on screen, the button must not send the file a second time
+    await page.getByRole('button', { name: 'Publier', exact: true }).click()
+
+    holding = false
+    release()
+    await expect(page).toHaveURL(new RegExp(`/datasets/${dataset.slug}/?$`))
+    await expect(page.getByRole('heading', { name: dataset.title })).toBeVisible()
+
+    expect(uploads).toBe(1)
+    const published = (await (await request.get(`${API_BASE}/api/1/datasets/${dataset.id}/`)).json()) as Dataset
+    expect(published.resources).toHaveLength(1)
   })
 
   test('recharger une étape avancée renvoie au début plutôt qu’à un écran amputé', async ({ page }) => {
