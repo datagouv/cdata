@@ -147,6 +147,7 @@
             <img
               class="w-full object-contain max-h-[400px]"
               :src="reuse.image ?? undefined"
+              alt=""
             >
           </div>
         </div>
