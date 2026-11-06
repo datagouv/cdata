@@ -1,57 +1,49 @@
 <template>
-  <ObjectCard media-size="xl">
-    <template #badge>
+  <ObjectCard
+    :url="chartUrl || chart.page"
+    :icon="chartIcon"
+    media-size="xl"
+  >
+    <template #media>
+      <CardMedia
+        :src="chart.image"
+        :alt="chart.title"
+        kind="chart"
+      />
+    </template>
+    <template #title>
+      {{ chart.title }}
+    </template>
+    <template
+      v-if="chart.deleted_at || chart.private"
+      #badge
+    >
       <ObjectCardBadge
         v-if="chart.deleted_at"
         :icon="RiDeleteBinLine"
+        tone="danger"
       >
         {{ t('Supprimé') }}
       </ObjectCardBadge>
       <ObjectCardBadge
-        v-else-if="chart.private"
+        v-else
         :icon="RiLockLine"
       >
         {{ t('Brouillon') }}
       </ObjectCardBadge>
     </template>
 
-    <template #media>
-      <img
-        v-if="chart.image"
-        :src="chart.image"
-        class="w-full h-full object-cover"
-        :alt="chart.title"
-      >
-      <Placeholder
-        v-else
-        type="Chart"
-        class="w-full h-full"
-      />
-    </template>
-
-    <ObjectCardHeader
-      :icon="chartIcon"
-      :url="chartUrl || chart.page"
-    >
-      {{ chart.title }}
-    </ObjectCardHeader>
-
-    <div
+    <ObjectCardOwner
       v-if="chart.organization || chart.owner"
-      class="text-sm flex flex-wrap gap-y-1 items-center truncate"
-    >
-      <ObjectCardOwner
-        :organization="chart.organization"
-        :owner="chart.owner"
-        :organization-url="organizationUrl"
-      />
-      <RiSubtractLine
-        aria-hidden="true"
-        class="size-4 flex-none fill-gray-medium"
-      />
+      show-details
+      :organization="chart.organization"
+      :owner="chart.owner"
+      :organization-url="organizationUrl"
+    />
+    <ObjectCardMeta>
       <TranslationT
-        tag="p"
-        class="text-sm whitespace-nowrap mb-0 text-gray-medium"
+        tag="span"
+        class="tabular-nums"
         keypath="Mis à jour {date}"
       >
         <template #date>
@@ -62,40 +54,42 @@
           />
         </template>
       </TranslationT>
-    </div>
-
-    <div class="mx-0 -mb-1 flex flex-wrap items-center text-sm text-gray-medium mt-1">
-      <p
-        class="text-sm mb-0 flex items-center gap-0.5"
-        :aria-label="t('{n} vues | {n} vue | {n} vues', chart.metrics.views)"
-      >
-        <RiEyeLine
-          aria-hidden="true"
-          class="size-3.5"
-        />{{ summarize(chart.metrics.views) }}
-      </p>
-    </div>
-
-    <ObjectCardShortDescription :text="chart.description" />
-
+    </ObjectCardMeta>
+    <ObjectCardMeta class="mt-1 max-[480px]:hidden">
+      <ObjectCardMetric
+        :icon="RiEyeLine"
+        :value="chart.metrics.views"
+        :label="t('{n} vues | {n} vue | {n} vues', chart.metrics.views)"
+      />
+    </ObjectCardMeta>
+    <ObjectCardShortDescription
+      :text="chart.description"
+      class="max-md:hidden"
+    />
     <slot />
   </ObjectCard>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { RiBarChartBoxLine, RiDeleteBinLine, RiEyeLine, RiLineChartLine, RiLockLine, RiSubtractLine } from '@remixicon/vue'
+import {
+  RiBarChartBoxLine,
+  RiDeleteBinLine,
+  RiEyeLine,
+  RiLineChartLine,
+  RiLockLine,
+} from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import type { Chart } from '../types/visualizations'
-import { summarize } from '../functions/helpers'
 import { useTranslation } from '../composables/useTranslation'
-import Placeholder from './Placeholder.vue'
+import CardMedia from './CardMedia.vue'
 import FormattedDate from './FormattedDate.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardBadge from './ObjectCardBadge.vue'
-import ObjectCardHeader from './ObjectCardHeader.vue'
-import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
+import ObjectCardMeta from './ObjectCardMeta.vue'
+import ObjectCardMetric from './ObjectCardMetric.vue'
+import ObjectCardOwner from './ObjectCardOwner.vue'
 import TranslationT from './TranslationT.vue'
 
 const props = defineProps<{
