@@ -3,6 +3,27 @@ import tailwindcss from '@tailwindcss/vite'
 import toml from './rollup-plugin-smol-toml'
 
 const isFrenchGovernment = true
+
+// The `local` provider of @nuxt/fonts picks a file by its name among every public asset
+// directory, the build output included, where the DSFR ships Marianne and Spectral files of
+// its own (`Marianne-Light`…): which one it picks then depends on the order of the
+// directories. Listing the files of `public/fonts` leaves it no choice.
+function publicFontFaces(name: string, weights: Array<number>, italicWeights: Array<number>) {
+  return weights.flatMap(weight => [
+    { style: 'normal' as const, suffix: '' },
+    ...(italicWeights.includes(weight) ? [{ style: 'italic' as const, suffix: '-Italic' }] : []),
+  ].map(({ style, suffix }) => ({
+    name,
+    provider: 'none' as const,
+    weight,
+    style,
+    global: true,
+    src: [
+      { url: `/fonts/${name}-${weight}${suffix}.woff2`, format: 'woff2' },
+      { url: `/fonts/${name}-${weight}${suffix}.woff`, format: 'woff' },
+    ],
+  })))
+}
 // const swrDuration = process.env.NUXT_TEMPLATE_CACHE_DURATION ? parseInt(process.env.NUXT_TEMPLATE_CACHE_DURATION) : 60
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -389,13 +410,9 @@ export default defineNuxtConfig({
 
   fonts: {
     families: [
-      ...isFrenchGovernment
-        ? [
-            { name: 'Marianne', provider: 'local' as const, weights: [300, 400, 500, 700, 800], global: true },
-          ]
-        : [],
+      ...isFrenchGovernment ? publicFontFaces('Marianne', [300, 400, 500, 700, 800], [300, 400, 500, 700]) : [],
       { name: 'Inconsolata', provider: 'google' as const, weights: [300], global: true },
-      { name: 'Spectral', provider: 'local' as const, weights: [300, 400, 500, 700, 800], global: true },
+      ...publicFontFaces('Spectral', [300, 400, 500, 700, 800], [300, 400, 500, 700, 800]),
       {
         name: 'URW Gothic',
         provider: 'none',
