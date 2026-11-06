@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 // Pins the real wire contract of useAssistantChat without stubbing it: @ai-sdk/vue's
 // useChat is mocked to capture its init, and the transport built by the composable is
-// exercised directly (api URL, credentials, prepared request body).
+// exercised directly (api URL, authentication, prepared request body).
 import { nextTick, ref } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useChat } from '@ai-sdk/vue'
@@ -15,7 +15,8 @@ const MESSAGES = [{ id: '1', role: 'user', parts: [{ type: 'text', text: 'Bonjou
 
 type TransportInit = {
   api: string
-  credentials: RequestCredentials
+  credentials: RequestCredentials | undefined
+  headers: Record<string, string> | undefined
   prepareSendMessagesRequest: (options: { messages: unknown[], id: string, trigger: 'submit-message', messageId: string | undefined }) => Promise<{ body: unknown }> | { body: unknown }
 }
 
@@ -32,6 +33,7 @@ describe('useAssistantChat wire contract', () => {
         apiBase: 'https://api.example',
       },
     }))
+    vi.stubGlobal('useTranslation', () => ({ locale: 'fr' }))
   })
 
   afterEach(() => {
@@ -43,8 +45,32 @@ describe('useAssistantChat wire contract', () => {
     useAssistantChat(ref(null), () => null)
     const transport = capturedTransport()
 
-    expect(transport.api).toBe('https://api.example/api/1/assistant/chat/')
+    expect(transport.api).toBe('https://api.example/api/1/assistant/chat/?lang=fr')
     expect(transport.credentials).toBe('include')
+    expect(transport.headers).toEqual({})
+  })
+
+  it('sends the current locale as the lang query parameter', () => {
+    vi.stubGlobal('useTranslation', () => ({ locale: 'en' }))
+
+    useAssistantChat(ref(null), () => null)
+
+    expect(capturedTransport().api).toBe('https://api.example/api/1/assistant/chat/?lang=en')
+  })
+
+  it('authenticates with the dev API key instead of the session cookie when configured', () => {
+    vi.stubGlobal('useRuntimeConfig', () => ({
+      public: {
+        apiBase: 'https://api.example',
+        devApiKey: 'a-dev-key',
+      },
+    }))
+
+    useAssistantChat(ref(null), () => null)
+    const transport = capturedTransport()
+
+    expect(transport.headers).toEqual({ 'X-API-KEY': 'a-dev-key' })
+    expect(transport.credentials).toBeUndefined()
   })
 
   it('uses the configured assistant API base when provided', () => {
@@ -57,7 +83,7 @@ describe('useAssistantChat wire contract', () => {
 
     useAssistantChat(ref(null), () => null)
 
-    expect(capturedTransport().api).toBe('https://assistant.example/api/1/assistant/chat/')
+    expect(capturedTransport().api).toBe('https://assistant.example/api/1/assistant/chat/?lang=fr')
   })
 
   it('clears the message history when the selected resource changes', async () => {
