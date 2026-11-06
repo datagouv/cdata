@@ -122,6 +122,11 @@ const resources = useState<Array<ResourceForm>>(DATASET_FILES_STATE, () => [])
 const newDataset = useState<Dataset | null>(NEW_DATASET_STATE, () => null)
 const publicationMode = useState<SchemaPublicationMode>(PUBLICATION_MODE_STATE, () => 'new')
 
+// A second click on "Publier" while the files upload or the dataset page loads would
+// send the files again
+let saving = false
+let leftForDataset = false
+
 const currentStep = computed(() => {
   const step = route.query.step as string
   if (step === '2-sheet') return '2-sheet'
@@ -195,6 +200,8 @@ function openSheet(fileToOpen?: File) {
 }
 
 async function save() {
+  if (saving) return
+  saving = true
   try {
     start()
 
@@ -229,27 +236,34 @@ async function save() {
 
     if (results.every(f => f.status !== 'rejected')) {
       if (publicationMode.value === 'existing') {
-        await navigateTo(`/datasets/${dataset.slug}`)
-        clearNuxtState(NEW_DATASET_STATE)
+        leftForDataset = true
+        // Cancelled by another navigation (a click on a step while the dataset page
+        // loads): the wizard stays, so must its form
+        leftForDataset = !await navigateTo(`/datasets/${dataset.slug}`)
       }
       else {
         await moveToStep(4)
+        clearForm()
       }
-      associateSchemaForm.value = {
-        owned: null,
-        existingDataset: null,
-        selectedSchema: null,
-      }
-      clearNuxtState(USE_SPREADSHEET_STATE)
-      clearNuxtState(DATASET_FORM_STATE)
-      clearNuxtState(DATASET_FILES_STATE)
-      clearNuxtState(PUBLICATION_MODE_STATE)
-      clearNuxtState(UPLOADED_FILE_STATE)
     }
   }
   finally {
     finish()
+    saving = leftForDataset
   }
+}
+
+// `reset` puts back each initial value: deleting the keys would leave the screen still
+// displayed reading `undefined`
+function clearForm() {
+  clearNuxtState([
+    ASSOCIATE_SCHEMA_FORM_STATE,
+    USE_SPREADSHEET_STATE,
+    DATASET_FORM_STATE,
+    DATASET_FILES_STATE,
+    PUBLICATION_MODE_STATE,
+    UPLOADED_FILE_STATE,
+  ], { reset: true })
 }
 
 async function updateDataset(asPrivate: boolean) {
@@ -285,12 +299,14 @@ onMounted(() => {
   }
 })
 
-// Checked on arriving at a step only: `save()` empties the form on purpose once
-// published, and reacting to that would pull the user back to the first step while
-// they are being sent to the dataset page
-watch(currentStep, () => {
-  if (!isCurrentStepValid.value) {
-    moveToStep(1)
+// Cleared once the page is gone: the dataset page loads first, and the form would
+// empty itself on screen in the meantime
+onUnmounted(() => {
+  if (leftForDataset) {
+    clearForm()
+    clearNuxtState(NEW_DATASET_STATE)
   }
-}, { immediate: true })
+})
+
+useStepGuard(currentStep, isCurrentStepValid, () => moveToStep(1))
 </script>

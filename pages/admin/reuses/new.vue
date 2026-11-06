@@ -211,9 +211,5 @@ async function updateReuse(asPrivate: boolean) {
   await navigateTo(`/reuses/${newReuse.value.slug}`)
 }
 
-watchEffect(() => {
-  if (!isCurrentStepValid.value) {
-    moveToStep(1)
-  }
-})
+useStepGuard(currentStep, isCurrentStepValid, () => moveToStep(1))
 </script>

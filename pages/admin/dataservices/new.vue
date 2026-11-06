@@ -188,9 +188,5 @@ async function updateDataservice(asPrivate: boolean) {
   await navigateTo(`/dataservices/${newDataservice.value.slug}`)
 }
 
-watchEffect(() => {
-  if (!isCurrentStepValid.value) {
-    moveToStep(1)
-  }
-})
+useStepGuard(currentStep, isCurrentStepValid, () => moveToStep(1))
 </script>
