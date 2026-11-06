@@ -77,7 +77,7 @@
       </template>
     </BannerNotif>
     <Modal
-      :modal-id="modalId"
+      :id="modalId"
       :opened="isOpen"
       :title="$t('Transfert en attente')"
       size="lg"
