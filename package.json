@@ -101,6 +101,7 @@
     "@types/node": "^24.19.1",
     "@types/sortablejs": "^1.15.9",
     "@vitejs/plugin-vue": "^6.0.9",
+    "@xmldom/xmldom": "0.9.12",
     "husky": "^9.1.7",
     "lightningcss": "^1.33.0",
     "lint-staged": "^17.6.0",

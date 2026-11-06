@@ -36,8 +36,9 @@
     <!-- Tabular preview: the same toolbar + table skeleton the data tab shows while
          TabularExplorer loads. Other previews fall back below. -->
     <TabularSkeleton
-      v-if="previewKind === 'tabular'"
+      v-if="previewKind === 'tabular' || previewKind === 'wfs'"
       :fill="fullscreen"
+      :search-input="previewKind === 'tabular'"
     />
 
     <!-- PDF preview: the same A4 skeleton the PdfPreview shows while pdfjs loads. -->

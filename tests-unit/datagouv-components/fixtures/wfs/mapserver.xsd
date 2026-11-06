@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding="UTF-8" ?>
+<schema
+   targetNamespace="http://mapserver.gis.umn.edu/mapserver" 
+   xmlns:ms="http://mapserver.gis.umn.edu/mapserver" 
+   xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+   xmlns="http://www.w3.org/2001/XMLSchema"
+   xmlns:gml="http://www.opengis.net/gml/3.2"
+   elementFormDefault="qualified" version="0.1" >
+
+  <import namespace="http://www.opengis.net/gml/3.2"
+          schemaLocation="http://schemas.opengis.net/gml/3.2.1/gml.xsd" />
+
+  <element name="emi_centre_val_de_loire_departement_2021" 
+           type="ms:emi_centre_val_de_loire_departement_2021Type" 
+           substitutionGroup="gml:AbstractFeature" />
+
+  <complexType name="emi_centre_val_de_loire_departement_2021Type">
+    <complexContent>
+      <extension base="gml:AbstractFeatureType">
+        <sequence>
+          <element name="msGeometry" type="gml:GeometryPropertyType" minOccurs="0" maxOccurs="1"/>
+          <element name="gid" minOccurs="0" type="integer"/>
+          <element name="code_dep" minOccurs="0" type="integer"/>
+          <element name="lib_dep" minOccurs="0" type="string"/>
+          <element name="emi_nox_kg" minOccurs="0" type="double"/>
+          <element name="emi_so2_kg" minOccurs="0" type="double"/>
+          <element name="emi_pm10_k" minOccurs="0" type="double"/>
+          <element name="emi_pm25_k" minOccurs="0" type="double"/>
+          <element name="emi_co_kg" minOccurs="0" type="double"/>
+          <element name="emi_c6h6_k" minOccurs="0" type="double"/>
+          <element name="emi_covnm_" minOccurs="0" type="double"/>
+          <element name="emi_nh3_kg" minOccurs="0" type="double"/>
+          <element name="emi_as_kg" minOccurs="0" type="double"/>
+          <element name="emi_cd_kg" minOccurs="0" type="double"/>
+          <element name="emi_ni_kg" minOccurs="0" type="double"/>
+          <element name="emi_pb_kg" minOccurs="0" type="double"/>
+          <element name="emi_bap_kg" minOccurs="0" type="double"/>
+          <element name="unite" minOccurs="0" type="string"/>
+          <element name="version" minOccurs="0" type="string"/>
+          <element name="annee_inv" minOccurs="0" type="string"/>
+        </sequence>
+      </extension>
+    </complexContent>
+  </complexType>
+
+</schema>

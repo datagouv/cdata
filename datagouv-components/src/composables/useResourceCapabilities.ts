@@ -2,6 +2,7 @@ import { computed, type MaybeRefOrGetter, toValue } from 'vue'
 import { useComponentsConfig } from '../config'
 import { isOrganizationCertified } from '../functions/organizations'
 import { getGeneratedFormats, getWfsExportFormats } from '../functions/resourceCapabilities'
+import { getWfsPreviewLayer } from '../functions/wfs'
 import { hasPreviewError } from '../functions/previewErrors'
 import { detectOgcService, getParsingErrorMessage, getParsingErrorStep, isImagePreviewFormat, isPmtilesSourceFormat, isTabularPipelineFormat } from '../functions/resources'
 import type { Dataset, DatasetV2 } from '../types/datasets'
@@ -14,7 +15,7 @@ const URL_FORMATS = ['url', 'doi', 'www:link', 'www:link-1.0-http--link', 'www:l
 // Which preview the data tab shows. Single source of truth: the viewer renders it and
 // the skeleton picks the matching placeholder shape, so each holding its own copy of
 // this precedence would let the two drift apart.
-export type PreviewKind = 'json' | 'pdf' | 'xml' | 'image' | 'datafair' | 'openapi' | 'tabular' | 'url' | 'unavailable'
+export type PreviewKind = 'json' | 'pdf' | 'xml' | 'image' | 'datafair' | 'openapi' | 'tabular' | 'wfs' | 'url' | 'unavailable'
 
 export function useResourceCapabilities(
   resource: MaybeRefOrGetter<Resource>,
@@ -73,6 +74,10 @@ export function useResourceCapabilities(
 
   const isResourceUrl = computed(() => URL_FORMATS.includes(toValue(resource).format))
 
+  // A WFS layer the browser can query for its rows and schema (https, GeoJSON output).
+  const wfsPreviewLayer = computed(() => getWfsPreviewLayer(toValue(resource)))
+  const hasWfsPreview = computed(() => !!wfsPreviewLayer.value)
+
   // A dedicated preview always wins over the interactive table: a PDF that also
   // carries a parsing table is a PDF first.
   const previewKind = computed<PreviewKind>(() => {
@@ -85,6 +90,7 @@ export function useResourceCapabilities(
     if (hasDatafairPreview.value) return 'datafair'
     if (hasOpenAPIPreview.value) return 'openapi'
     if (hasTabularData.value) return 'tabular'
+    if (hasWfsPreview.value) return 'wfs'
     return 'unavailable'
   })
 
@@ -97,7 +103,7 @@ export function useResourceCapabilities(
     const r = toValue(resource)
     const options = []
 
-    const dataTab = { key: 'data', label: hasTabularData.value ? t('Données') : t('Aperçu') }
+    const dataTab = { key: 'data', label: hasTabularData.value || hasWfsPreview.value ? t('Données') : t('Aperçu') }
     const mapTab = { key: 'map', label: t('Carte') }
     const hasMap = hasPmtiles.value || ogcWms.value
 
@@ -123,7 +129,7 @@ export function useResourceCapabilities(
       options.push(dataTab)
     }
 
-    if (hasTabularData.value) {
+    if (hasTabularData.value || hasWfsPreview.value) {
       options.push({ key: 'data-structure', label: t('Structure des données') })
     }
 
@@ -153,6 +159,8 @@ export function useResourceCapabilities(
     ogcWms,
     generatedFormats,
     wfsFormats,
+    wfsPreviewLayer,
+    hasWfsPreview,
     defaultWfsProjection,
     isResourceUrl,
     tabsOptions,

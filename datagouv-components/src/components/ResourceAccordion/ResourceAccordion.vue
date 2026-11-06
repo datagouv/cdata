@@ -269,6 +269,13 @@
                 v-else-if="hasOpenAPIPreview"
                 :url="resource.extras['apidocUrl'] as string"
               />
+              <!-- Show the first rows of a WFS layer -->
+              <WfsPreview
+                v-else-if="previewKind === 'wfs' && wfsPreviewLayer"
+                :resource="resource"
+                :layer="wfsPreviewLayer"
+                :can-edit="canEdit"
+              />
               <!-- Show regular preview for other file types -->
               <Preview
                 v-else-if="previewKind === 'tabular'"
@@ -295,6 +302,12 @@
               <DataStructure
                 v-if="hasTabularData"
                 :resource="resource"
+              />
+              <WfsDataStructure
+                v-else-if="wfsPreviewLayer"
+                :resource="resource"
+                :layer="wfsPreviewLayer"
+                :can-edit="canEdit"
               />
             </div>
             <div
@@ -356,11 +369,14 @@ import UrlPreview from './UrlPreview.vue'
 import BrandedButton from '../BrandedButton.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useResourceCapabilities } from '../../composables/useResourceCapabilities'
+import { provideWfsSchema } from '../../composables/useWfs'
 import Metadata from './Metadata.vue'
 import SchemaBadge from './SchemaBadge.vue'
 import ResourceIcon from './ResourceIcon.vue'
 import EditButton from './EditButton.vue'
 import DataStructure from './DataStructure.vue'
+import WfsDataStructure from './WfsDataStructure.vue'
+import WfsPreview from './WfsPreview.vue'
 import Downloads from './Downloads.vue'
 import Preview from './Preview.vue'
 import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'
@@ -405,8 +421,12 @@ const {
   ogcService,
   ogcWms,
   isResourceUrl,
+  wfsPreviewLayer,
   tabsOptions: sharedTabsOptions,
 } = useResourceCapabilities(() => props.resource, () => props.dataset)
+
+// One schema request for the data and structure tabs of a WFS layer.
+provideWfsSchema()
 
 // The fullscreen explorer has a dedicated downloads surface; here the accordion
 // keeps its own tab, placed just before the (optional) API tab.

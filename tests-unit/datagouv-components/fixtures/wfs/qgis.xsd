@@ -1,0 +1,19 @@
+<schema elementFormDefault="qualified" xmlns:qgs="http://www.qgis.org/gml" targetNamespace="http://www.qgis.org/gml" xmlns="http://www.w3.org/2001/XMLSchema" xmlns:gml="http://www.opengis.net/gml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ogc="http://www.opengis.net/ogc" version="1.0">
+ <import namespace="http://www.opengis.net/gml" schemaLocation="http://schemas.opengis.net/gml/3.1.1/base/gml.xsd"/>
+ <element type="qgs:IFR_GRA_HAL_R_COM_SOLESOL_ORHAType" substitutionGroup="gml:_Feature" name="IFR_GRA_HAL_R_COM_SOLESOL_ORHA"/>
+ <complexType name="IFR_GRA_HAL_R_COM_SOLESOL_ORHAType">
+  <complexContent>
+   <extension base="gml:AbstractFeatureType">
+    <sequence>
+     <element maxOccurs="1" type="gml:MultiSurfacePropertyType" minOccurs="0" name="geometry"/>
+     <element type="decimal" nillable="true" name="valeur"/>
+     <element type="string" nillable="true" name="unite"/>
+     <element type="string" nillable="true" name="espece"/>
+     <element type="string" nillable="true" name="campagne"/>
+     <element type="string" nillable="true" name="critere"/>
+     <element type="string" nillable="true" name="source"/>
+    </sequence>
+   </extension>
+  </complexContent>
+ </complexType>
+</schema>

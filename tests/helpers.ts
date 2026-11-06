@@ -53,14 +53,14 @@ export async function createDataset(request: APIRequestContext, title: string, d
   return await response.json()
 }
 
-export async function createRemoteResource(request: APIRequestContext, datasetId: string, title: string, options: { format?: string, extras?: Record<string, unknown> } = {}): Promise<ApiResource> {
+export async function createRemoteResource(request: APIRequestContext, datasetId: string, title: string, options: { format?: string, url?: string, extras?: Record<string, unknown> } = {}): Promise<ApiResource> {
   const { format = 'csv', extras } = options
   const response = await request.post(`${API_BASE}/api/1/datasets/${datasetId}/resources/`, {
     data: {
       title,
       type: 'main',
       filetype: 'remote',
-      url: `https://example.com/${datasetId}/${encodeURIComponent(title)}.${format}`,
+      url: options.url ?? `https://example.com/${datasetId}/${encodeURIComponent(title)}.${format}`,
       format,
       ...(extras ? { extras } : {}),
     },

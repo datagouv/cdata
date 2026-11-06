@@ -248,6 +248,9 @@ importers:
       '@vitejs/plugin-vue':
         specifier: ^6.0.9
         version: 6.0.9(vite@8.3.4(@types/node@24.19.1)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.105.1)(sass@1.105.1)(terser@5.51.2)(yaml@2.9.1))(vue@3.5.43(typescript@5.9.3))
+      '@xmldom/xmldom':
+        specifier: ^0.9.12
+        version: 0.9.12
       husky:
         specifier: ^9.1.7
         version: 9.1.7
