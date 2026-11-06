@@ -348,9 +348,7 @@
                 </TranslationT>
               </SimpleBanner>
               <SimpleBanner
-                v-if="
-                  'ecospheres-indicateurs' in dataset.extras
-                "
+                v-if="ecologieUrl"
                 type="primary-frame"
               >
                 <TranslationT
@@ -359,7 +357,7 @@
                   class="!m-0 text-sm"
                 >
                   <template #link>
-                    <CdataLink :href="`https://${siteConfig.url.includes('demo') ? 'demo.': ''}ecologie.data.gouv.fr/indicators/${dataset.id}`">
+                    <CdataLink :href="ecologieUrl">
                       ecologie.data.gouv.fr
                     </CdataLink>
                   </template>
@@ -499,6 +497,7 @@ import {
   TranslationT,
   getDescriptionShort,
   type Resource,
+  type TopicElement,
   RESOURCE_EXPLORER_PAGE_SIZE,
 } from '@datagouv/components-next'
 import {
@@ -648,6 +647,25 @@ const exploreUrl = computed(() => {
 const exploreHref = computed(() => {
   if (!newExplorerEnabled.value) return exploreUrl.value
   return dataset.value?.resources.total ? `/explore/${dataset.value.slug}` : null
+})
+
+// ecologie.data.gouv.fr shows indicators (flagged by an extra) and the datasets of a
+// given topic. Indicators win.
+const ecologieTopicId = config.public.ecologieTopicId as string | undefined
+const isEcologieIndicator = computed(() => Boolean(dataset.value && 'ecospheres-indicateurs' in dataset.value.extras))
+const { data: ecologieTopicElements } = await useAPI<PaginatedArray<TopicElement>>(
+  () => `/api/2/topics/${ecologieTopicId}/elements/`,
+  {
+    query: { class: 'Dataset', element: dataset.value?.id, page_size: 1 },
+    immediate: Boolean(ecologieTopicId && dataset.value && !isEcologieIndicator.value),
+  },
+)
+const ecologieUrl = computed(() => {
+  if (!dataset.value) return null
+  const base = `https://${siteConfig.url.includes('demo') ? 'demo.' : ''}ecologie.data.gouv.fr`
+  if (isEcologieIndicator.value) return `${base}/indicators/${dataset.value.slug}`
+  const inTopic = ecologieTopicElements.value?.data.some(e => e.element?.id === dataset.value?.id)
+  return inTopic ? `${base}/datasets/${dataset.value.slug}` : null
 })
 
 // The badge labels are a reference list needed only to name the badges this
