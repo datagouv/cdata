@@ -220,6 +220,10 @@ let lastSentText: string | null = null
 watch(status, async (value) => {
   if (value !== 'ready' && value !== 'error') return
   if (value === 'error' && lastSentText !== null) {
+    // useChat keeps the failed user message (and any partial reply): drop that
+    // turn, or resending the restored text would show and send it twice.
+    const failedTurn = messages.value.findLastIndex(message => message.role === 'user')
+    if (failedTurn !== -1) messages.value = messages.value.slice(0, failedTurn)
     input.value = lastSentText
     lastSentText = null
   }

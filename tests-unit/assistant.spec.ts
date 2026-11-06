@@ -782,6 +782,29 @@ describe('ChatPanel', () => {
     expect((textarea.element as HTMLTextAreaElement).value).toBe('Message perdu ?')
   })
 
+  it('drops the failed turn from the history so a retry does not duplicate it', async () => {
+    const answered = [
+      { id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Première question' }] },
+      { id: 'a1', role: 'assistant', parts: [{ type: 'text', text: 'Réponse' }] },
+    ]
+    chatState.messages.value = [...answered]
+    const wrapper = mountPanel('resource-1')
+
+    await wrapper.find('textarea#assistant-input').setValue('Question en échec')
+    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
+    // useChat keeps the user message, and a partial reply when the stream breaks.
+    chatState.messages.value = [
+      ...answered,
+      { id: 'u2', role: 'user', parts: [{ type: 'text', text: 'Question en échec' }] },
+      { id: 'a2', role: 'assistant', parts: [{ type: 'text', text: 'Début de répo' }] },
+    ]
+    chatState.status.value = 'error'
+    chatState.error.value = new Error('fetch failed')
+    await nextTick()
+
+    expect(chatState.messages.value).toEqual(answered)
+  })
+
   it('keeps the composer cleared when the request succeeds', async () => {
     const wrapper = mountPanel('resource-1')
     const textarea = wrapper.find('textarea#assistant-input')
