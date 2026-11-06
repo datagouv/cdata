@@ -12,7 +12,7 @@
     :close
   />
   <ModalClient
-    :modal-id="id"
+    :id
     class="fr-header__search"
     :opened="isOpen"
     :title
