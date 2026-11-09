@@ -1,0 +1,52 @@
+import { createHash } from 'node:crypto'
+
+const HEADERS = {
+  'report-only': 'Content-Security-Policy-Report-Only',
+  'enforce': 'Content-Security-Policy',
+} as const
+
+// The inline scripts of a chunk of the document, with their attributes and their source.
+const INLINE_SCRIPTS = /<script\b(?![^>]*\ssrc=)([^>]*)>([\s\S]*?)<\/script>/g
+
+// Inline scripts the browser never runs, so the policy does not apply to them.
+const DATA_TYPES = ['application/json', 'application/ld+json']
+
+function hash(source: string): string {
+  return `'sha256-${createHash('sha256').update(source).digest('base64')}'`
+}
+
+/**
+ * Only lets the browser run the scripts we serve and the inline ones Nuxt writes (its
+ * import map and `window.__NUXT__.config`), so that some HTML slipping into a page
+ * (an HTML post, a description…) cannot run any.
+ *
+ * The inline scripts are allowed by their hash rather than a nonce: pages are cached by
+ * nginx, a nonce would be served again to every visitor.
+ */
+export default defineNitroPlugin((nitroApp) => {
+  const config = useRuntimeConfig()
+  const header = HEADERS[config.contentSecurityPolicy as keyof typeof HEADERS]
+  if (!header) return
+
+  const hosts = [config.app.cdnURL, config.public.matomo.host]
+    .filter(Boolean)
+    .map(url => new URL(url).origin)
+
+  nitroApp.hooks.hook('render:html', (html, { event }) => {
+    const hashes = new Set<string>()
+    // The body, where the content of the users ends up, is left out on purpose: Nuxt
+    // writes its inline scripts in the head and at the end of the body.
+    for (const chunk of [...html.head, ...html.bodyAppend]) {
+      for (const [, attributes, source] of chunk.matchAll(INLINE_SCRIPTS)) {
+        const type = attributes!.match(/\stype="([^"]*)"/)?.[1]
+        if (!type || !DATA_TYPES.includes(type)) hashes.add(hash(source!))
+      }
+    }
+
+    setResponseHeader(event, header, [
+      ['script-src', '\'self\'', ...hosts, ...hashes].join(' '),
+      'object-src \'none\'',
+      'base-uri \'self\'',
+    ].join('; '))
+  })
+})

@@ -78,6 +78,10 @@ export default defineNuxtConfig({
     crispWebsiteId: '',
     albertApiBaseUrl: 'https://albert.api.etalab.gouv.fr/',
     albertApiKey: '',
+    // Content Security Policy of the pages (server/plugins/content-security-policy.ts):
+    // `disabled`, `report-only` (the browser reports the violations without blocking
+    // anything) or `enforce`. Set through NUXT_CONTENT_SECURITY_POLICY, read at startup.
+    contentSecurityPolicy: 'disabled',
     public: {
       isProduction: true,
       trustedDomains: ['data.gouv.fr'], // Hostnames allowed in Access-Control-Allow-Origin for resource preview CORS checks (includes subdomains)

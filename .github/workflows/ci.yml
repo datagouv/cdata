@@ -352,6 +352,8 @@ jobs:
           NUXT_SITE_URL: http://localhost:3000
           # nuxt-og-image refuses to render OG images in production without a secret to sign their URLs
           NUXT_APP_SECRET: ci-only-secret-of-at-least-32-characters
+          # Enforced so that any script the policy would block fails the tests on a console error
+          NUXT_CONTENT_SECURITY_POLICY: enforce
           NUXT_PUBLIC_CHARTS_API_BASE: http://localhost:7000
           NUXT_PUBLIC_CADA_RESOURCE_ID: 3a6d6fe3-8548-43ed-ad09-72052771447c
           NUXT_PUBLIC_GEOPF_ENABLED: "true"
