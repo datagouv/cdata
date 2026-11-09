@@ -27,8 +27,11 @@ test.describe('Content Security Policy', () => {
     await expect(page.getByText('Du contenu.')).toBeVisible()
 
     expect(await page.evaluate(() => 'injected' in window)).toBe(false)
-    // While the inline scripts of Nuxt run: its config, and the import map the app is loaded through
-    expect(await page.evaluate(() => 'config' in (window.__NUXT__ ?? {}))).toBe(true)
-    await expect.poll(() => page.evaluate(() => '__vue_app__' in (document.querySelector('#__nuxt') ?? {}))).toBe(true)
+    // While the inline scripts of Nuxt run: the app is loaded through the import map, and reads
+    // its runtime config from `window.__NUXT__.config`
+    await expect.poll(() => page.evaluate(() => {
+      const root = document.querySelector('#__nuxt') as { __vue_app__?: { config: { globalProperties: { $config?: { public?: { apiBase?: string } } } } } } | null
+      return root?.__vue_app__?.config.globalProperties.$config?.public?.apiBase
+    })).toBeTruthy()
   })
 })
