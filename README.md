@@ -210,13 +210,27 @@ pnpm run lint:fix      # Automatically fix ESLint issues and format code
 
 > **TODO:** Consider adding Prettier to the main project for more consistent code formatting across the entire codebase.
 
-#### Pre-commit Hooks
+#### Pre-commit Hook (optional)
 
-The project uses [husky](https://typicode.github.io/husky/) and [lint-staged](https://github.com/okonet/lint-staged) to run linting before each commit:
+An optional pre-commit hook based on [husky](https://typicode.github.io/husky/) and [lint-staged](https://github.com/lint-staged/lint-staged) is available. It is **not installed automatically**: linting is enforced by the CI anyway.
+
+Once enabled, it runs before each commit:
 
 - **Automatic linting**: ESLint runs on all staged `.js`, `.ts`, `.vue`, `.jsx`, `.tsx` files
 - **Auto-fix**: Fixable issues are automatically corrected
 - **Commit blocking**: Unfixable errors prevent the commit until resolved
+
+To enable it, run once in your clone:
+
+```bash
+pnpm exec husky
+```
+
+To disable it (including if it was installed automatically by a previous version of the project):
+
+```bash
+git config --unset core.hooksPath
+```
 
 The pre-commit setup is configured in:
 - `package.json`: lint-staged configuration
