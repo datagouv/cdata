@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { sentrySecurityEndpoint } from '../utils/sentry-security-endpoint'
 
 const HEADERS = {
   'report-only': 'Content-Security-Policy-Report-Only',
@@ -36,6 +37,11 @@ export default defineNitroPlugin((nitroApp) => {
   const hosts = [config.app.cdnURL, config.public.matomo.host]
     .filter(Boolean)
     .map(url => new URL(url).origin)
+  const reportUri = config.public.sentry.dsn
+    ? sentrySecurityEndpoint(config.public.sentry.dsn, config.public.apiBase)
+    : undefined
+  // `report-to` is the newer directive, `report-uri` the one most browsers still use
+  const reporting = reportUri ? [`report-uri ${reportUri}`, 'report-to csp'] : []
 
   nitroApp.hooks.hook('render:html', (html, { event }) => {
     const hashes = new Set<string>()
@@ -52,6 +58,8 @@ export default defineNitroPlugin((nitroApp) => {
       ['script-src', '\'self\'', ...hosts, ...hashes].join(' '),
       'object-src \'none\'',
       'base-uri \'self\'',
+      ...reporting,
     ].join('; '))
+    if (reportUri) setResponseHeader(event, 'Reporting-Endpoints', `csp="${reportUri}"`)
   })
 })
