@@ -96,13 +96,13 @@
                 >
                   <template #option="{ option: user }">
                     <div class="flex items-center space-x-2">
-                      <NuxtImg
+                      <img
                         class="rounded-full border border-gray-default size-5"
                         :src="getUserAvatar(user, 24)"
                         loading="lazy"
                         alt=""
                         data-testid="user-avatar"
-                      />
+                      >
                       <span>{{ user.first_name }} {{ user.last_name }}
                         <small
                           v-if="user.email"

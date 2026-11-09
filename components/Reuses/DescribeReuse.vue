@@ -391,12 +391,12 @@
               v-if="imagePreview"
               class="text-center"
             >
-              <NuxtImg
+              <img
                 :src="imagePreview"
                 class="border mx-auto max-h-40 aspect-square"
                 loading="lazy"
                 alt=""
-              />
+              >
             </div>
             <SimpleBanner
               v-if="getFirstWarning('image')"

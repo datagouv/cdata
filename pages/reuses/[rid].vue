@@ -144,10 +144,11 @@
             </div>
           </div>
           <div class="w-7/12 md:w-full md:col-span-7">
-            <NuxtImg
+            <img
               class="w-full object-contain max-h-[400px]"
               :src="reuse.image ?? undefined"
-            />
+              alt=""
+            >
           </div>
         </div>
       </div>
