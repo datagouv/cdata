@@ -1,5 +1,5 @@
 // Shared colour palette for the coloured hero banner (HeroBanner) and the
-// HeroBloc colour picker. Keeping it here avoids repeating the same mapping in
+// coloured sections of the blocs (EditoBlocs). Keeping it here avoids repeating the same mapping in
 // every hero consumer. `purple` and `brown` are two names for the same
 // illustration colour, kept for backward compatibility with existing data.
 export function heroBgColor(color: 'primary' | 'green' | 'purple' | 'brown' | 'dark'): string {

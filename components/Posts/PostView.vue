@@ -1,9 +1,8 @@
 <!-- eslint-disable vue/no-v-html -->
 <template>
   <div>
-    <!-- A full page blocs page shows the breadcrumb only when it is a sub-page -->
     <div
-      v-if="!isFullPageBlocs || post.ancestors.length"
+      v-if="!isFullPageBlocs"
       class="container"
     >
       <div class="flex items-center">
@@ -18,7 +17,7 @@
         </Breadcrumb>
 
         <div
-          v-if="!isFullPageBlocs && isMeAdmin()"
+          v-if="isMeAdmin()"
           class="flex gap-2"
         >
           <EditButton
@@ -38,14 +37,29 @@
       </div>
     </div>
 
-    <!-- Full page blocs mode: no header, just the blocs -->
+    <!-- Full page blocs mode: no header, just the blocs, the breadcrumb at the top of the first
+         section, on its background. -->
     <EditoBlocs
       v-if="isFullPageBlocs"
       :blocs="post.blocs ?? []"
       editable
+      untitled
+      follow-links
       :sidemenu="post.sidemenu"
       :on-save="saveBlocs"
-    />
+    >
+      <template #breadcrumb>
+        <Breadcrumb>
+          <BreadcrumbItem
+            v-for="crumb in breadcrumb"
+            :key="crumb.to ?? 'current'"
+            :to="crumb.to"
+          >
+            {{ crumb.label }}
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </template>
+    </EditoBlocs>
 
     <!-- Header mode: news, and pages that are not full page blocs -->
     <div
@@ -101,6 +115,7 @@
           <EditoBlocs
             :blocs="post.blocs ?? []"
             editable
+            follow-links
             hide-edit-button
             :sidemenu="post.sidemenu"
             :on-save="saveBlocs"
@@ -122,6 +137,7 @@
               :content="post.content"
               :min-heading="2"
               size="md"
+              follow-links
             />
             <div
               v-else
@@ -205,14 +221,16 @@ async function saveBlocs(blocs: Array<PageBloc>) {
     await props.onRefresh()
     toast.success(t('Page sauvegardée'))
   }
-  catch {
+  catch (error) {
     toast.error(t('Erreur lors de la sauvegarde'))
+    // The editor keeps the changes that could not be saved
+    throw error
   }
 }
 
 useSeoMeta({
   title: () => props.post.name,
-  description: () => props.post.headline || undefined,
+  description: () => normalizeSeoDescription(props.post.headline),
   robots: () => props.post.published ? 'all' : 'noindex, nofollow',
 })
 defineOgImage('MainPage.takumi', {

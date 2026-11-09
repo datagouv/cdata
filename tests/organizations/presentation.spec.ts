@@ -31,9 +31,19 @@ test.describe('Organization presentation tab', () => {
       await expect(page).toHaveURL(new RegExp(`/organizations/${org.slug}/presentation`))
       // There is nothing to read yet, so an admin is dropped straight into edit mode.
       await expect(page).toHaveURL(/edit=true/)
-      // The empty state invites the admin to add a first bloc.
+      // The empty state invites the admin to add a first section.
       await expect(page.getByText('Personnalisez votre page de présentation')).toBeVisible()
-      await expect(page.getByRole('button', { name: 'Ajouter un bloc' })).toBeVisible()
+      // Sections are all a page can add at its top level: no menu to pick from.
+      await page.getByRole('button', { name: 'Ajouter une section' }).click()
+      await expect(page.getByTestId('add-bloc-SectionBloc')).toHaveCount(0)
+      await expect(page.getByTestId('add-bloc-in-section')).toBeVisible()
+      // Under the banner of the organization, a section keeps a neutral background.
+      const section = page.getByTestId('page-SectionBloc')
+      await section.hover({ position: { x: 20, y: 20 } })
+      await section.getByRole('button', { name: 'Actions sur Section' }).click()
+      await expect(page.getByRole('menuitem', { name: 'Supprimer' })).toBeVisible()
+      await expect(page.getByRole('menuitem', { name: 'Fond vert' })).toHaveCount(0)
+      await page.keyboard.press('Escape')
 
       // Cancelling drops back to view mode, where the same empty state now offers
       // a CTA to re-enter the composer.
@@ -51,7 +61,10 @@ test.describe('Organization presentation tab', () => {
         data: {
           ...org,
           presentation_blocs: [
-            { class: 'MarkdownBloc', title: 'Bienvenue', subtitle: null, content: '## Nos données\n\nNotre **présentation**.' },
+            { class: 'SectionBloc', blocs: [
+              { class: 'TitleBloc', title: 'Bienvenue', subtitle: null },
+              { class: 'MarkdownBloc', content: '## Nos données\n\nNotre **présentation**.' },
+            ] },
           ],
         },
       })
@@ -128,6 +141,54 @@ test.describe('Organization presentation tab', () => {
     }
   })
 
+  test('links leaving the site are not followed by search engines', async ({ page }) => {
+    const uniqueId = Date.now()
+    const createResp = await page.request.post(`${API_BASE}/api/1/organizations/`, {
+      data: {
+        name: `Presentation links test ${uniqueId}`,
+        description: 'Organization used to test the links of the presentation tab.',
+      },
+    })
+    const org = await createResp.json()
+
+    try {
+      const updateResp = await page.request.put(`${API_BASE}/api/1/organizations/${org.id}/`, {
+        data: {
+          ...org,
+          presentation_blocs: [
+            { class: 'SectionBloc', blocs: [
+              { class: 'TitleBloc', title: 'Liens' },
+              { class: 'MarkdownBloc', content: 'Nos liens.' },
+              {
+                class: 'LinksListBloc',
+                links: [
+                  { title: 'Lien externe', url: 'https://example.com/link', color: '#000000' },
+                  { title: 'Lien interne', url: '/datasets', color: '#000000' },
+                ],
+              },
+              { class: 'ButtonBloc', title: 'Notre site', url: 'https://example.com/main' },
+              { class: 'CardBloc', width: '1/4', title: 'Carte', url: 'https://example.com/card' },
+            ] },
+          ],
+        },
+      })
+      expect(updateResp.ok()).toBe(true)
+
+      // The draft presentation is shown to the admin.
+      await page.goto(`/organizations/${org.slug}/presentation`)
+      const rel = 'ugc nofollow noopener'
+      await expect(page.getByRole('link', { name: 'Notre site' })).toHaveAttribute('rel', rel)
+      await expect(page.getByRole('link', { name: 'Carte' })).toHaveAttribute('rel', rel)
+      await expect(page.getByRole('link', { name: 'Lien externe' })).toHaveAttribute('rel', rel)
+      // Links to the site are marked too: telling them apart is not worth it for now
+      await expect(page.getByRole('link', { name: 'Lien interne' })).toHaveAttribute('rel', rel)
+      await page.waitForLoadState('networkidle')
+    }
+    finally {
+      await page.request.delete(`${API_BASE}/api/1/organizations/${org.id}/`)
+    }
+  })
+
   test('admin invite banner toggles with the presentation publication state', async ({ page }) => {
     const uniqueId = Date.now()
     const createResp = await page.request.post(`${API_BASE}/api/1/organizations/`, {
@@ -152,7 +213,7 @@ test.describe('Organization presentation tab', () => {
         data: {
           ...org,
           presentation_blocs: [
-            { class: 'MarkdownBloc', title: 'Bienvenue', subtitle: null, content: 'Contenu.' },
+            { class: 'SectionBloc', blocs: [{ class: 'MarkdownBloc', content: 'Contenu.' }] },
           ],
           presentation_blocs_published_at: new Date().toISOString(),
         },
@@ -167,7 +228,7 @@ test.describe('Organization presentation tab', () => {
         data: {
           ...org,
           presentation_blocs: [
-            { class: 'MarkdownBloc', title: 'Bienvenue', subtitle: null, content: 'Contenu.' },
+            { class: 'SectionBloc', blocs: [{ class: 'MarkdownBloc', content: 'Contenu.' }] },
           ],
           presentation_blocs_published_at: null,
         },

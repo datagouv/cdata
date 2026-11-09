@@ -111,6 +111,7 @@
                   size="md"
                   :content="card.presentation"
                   :min-heading="3"
+                  follow-links
                 />
               </div>
               <div

@@ -82,6 +82,7 @@
         <MarkdownViewer
           v-if="answerResponse"
           :content="answerResponse"
+          follow-links
         />
         <div
           v-if="'button_link' in question"

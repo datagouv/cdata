@@ -1,75 +1,156 @@
-import { RiDatabase2Line, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine, RiWindow2Line } from '@remixicon/vue'
-import type { AccordionListBloc, DataservicesListBloc, DatasetsListBloc, HeroBloc, LinksListBloc, MarkdownBloc, ReusesListBloc } from '~/types/pages'
-import DatasetsListBlocComponent from '~/components/Pages/DatasetsListBloc.vue'
-import DataservicesListBlocComponent from '~/components/Pages/DataservicesListBloc.vue'
-import ReusesListBlocComponent from '~/components/Pages/ReusesListBloc.vue'
-import LinksListBlocComponent from '~/components/Pages/LinksListBloc.vue'
+import type { Component } from 'vue'
+import { RiCursorLine, RiDatabase2Line, RiHeading, RiImageLine, RiLayoutColumnLine, RiLayoutGridLine, RiLineChartLine, RiLink, RiListCheck2, RiMarkdownLine, RiTerminalLine } from '@remixicon/vue'
+import { v4 as uuidv4 } from 'uuid'
+import type { AccordionListBloc, BlocWidth, ButtonBloc, CardBloc, ColumnBloc, ImageBloc, LinksListBloc, MarkdownBloc, ObjectBloc, SectionContentBloc, TitleBloc } from '~/types/pages'
+import TitleBlocComponent from '~/components/Pages/TitleBloc.vue'
 import MarkdownBlocComponent from '~/components/Pages/MarkdownBloc.vue'
+import LinksListBlocComponent from '~/components/Pages/LinksListBloc.vue'
+import ButtonBlocComponent from '~/components/Pages/ButtonBloc.vue'
+import ImageBlocComponent from '~/components/Pages/ImageBloc.vue'
+import CardBlocComponent from '~/components/Pages/CardBloc.vue'
+import DatasetBlocComponent from '~/components/Pages/DatasetBloc.vue'
+import DataserviceBlocComponent from '~/components/Pages/DataserviceBloc.vue'
+import ReuseBlocComponent from '~/components/Pages/ReuseBloc.vue'
 import AccordionBlocEditorComponent from '~/components/Pages/AccordionBlocEditor.vue'
-import HeroBlocComponent from '~/components/Pages/HeroBloc.vue'
+import ColumnBlocComponent from '~/components/Pages/ColumnBloc.vue'
 
-export function useContentBlocsTypes() {
+// Components rendering the blocs nested in a section, an accordion item or a column.
+// Sections are rendered by `EditoBlocs` itself.
+export const BLOC_COMPONENTS: Record<string, Component> = {
+  TitleBloc: TitleBlocComponent,
+  MarkdownBloc: MarkdownBlocComponent,
+  LinksListBloc: LinksListBlocComponent,
+  ButtonBloc: ButtonBlocComponent,
+  ImageBloc: ImageBlocComponent,
+  CardBloc: CardBlocComponent,
+  DatasetBloc: DatasetBlocComponent,
+  DataserviceBloc: DataserviceBlocComponent,
+  ReuseBloc: ReuseBlocComponent,
+  AccordionListBloc: AccordionBlocEditorComponent,
+  ColumnBloc: ColumnBlocComponent,
+}
+
+// Width of an object bloc once picked: reuses fit three per row, the others two.
+export const OBJECT_WIDTH: Record<ObjectBloc['class'], BlocWidth> = {
+  DatasetBloc: '1/2',
+  DataserviceBloc: '1/2',
+  ReuseBloc: '1/3',
+}
+
+// Name of a bloc in the editor, on the tab shown when it is hovered.
+export function useBlocLabels(): Record<string, string> {
   const { t } = useTranslation()
-
   return {
-    DatasetsListBloc: {
-      icon: RiDatabase2Line,
-      name: t('Données à la une'),
-      description: t('Mettre en avant jusqu\'à 4 jeux de données'),
-      component: DatasetsListBlocComponent,
-      default: (): Omit<DatasetsListBloc, 'id'> => ({ class: 'DatasetsListBloc', title: t('Mes jeux de données'), subtitle: null, datasets: [] }),
-    },
-    DataservicesListBloc: {
-      icon: RiTerminalLine,
-      name: t('API à la une'),
-      description: t('Mettre en avant jusqu\'à 4 API'),
-      component: DataservicesListBlocComponent,
-      default: (): Omit<DataservicesListBloc, 'id'> => ({ class: 'DataservicesListBloc', title: t('Mes API'), subtitle: null, dataservices: [] }),
-    },
-    ReusesListBloc: {
-      icon: RiLineChartLine,
-      name: t('Réutilisations à la une'),
-      description: t('Mettre en avant jusqu\'à 4 réutilisations'),
-      component: ReusesListBlocComponent,
-      default: (): Omit<ReusesListBloc, 'id'> => ({ class: 'ReusesListBloc', title: t('Mes réutilisations'), subtitle: null, reuses: [] }),
-    },
-    LinksListBloc: {
-      icon: RiLink,
-      name: t('Liens à la une'),
-      description: t('Mettre en avant jusqu\'à 4 liens'),
-      component: LinksListBlocComponent,
-      default: (): Omit<LinksListBloc, 'id'> => ({ class: 'LinksListBloc', title: t('Mes liens'), subtitle: null, paragraph: null, main_link_title: null, main_link_url: null, links: [] }),
-    },
-    MarkdownBloc: {
-      icon: RiMarkdownLine,
-      name: t('Texte'),
-      description: t('Ajouter du contenu texte riche'),
-      component: MarkdownBlocComponent,
-      default: (): Omit<MarkdownBloc, 'id'> => ({ class: 'MarkdownBloc', title: 'Titre', subtitle: null, content: '' }),
-    },
+    SectionBloc: t('Section'),
+    ButtonBloc: t('Bouton'),
+    ImageBloc: t('Image'),
+    CardBloc: t('Carte'),
+    AccordionListBloc: t('Accordéon'),
+    AccordionItem: t('Élément'),
+    ColumnBloc: t('Colonne'),
+    TitleBloc: t('Titre'),
+    MarkdownBloc: t('Texte'),
+    LinksListBloc: t('Liens'),
+    ExploreBloc: t('Explorateur'),
+    DatasetBloc: t('Jeu de données'),
+    DataserviceBloc: t('API'),
+    ReuseBloc: t('Réutilisation'),
   }
 }
 
-export function useBlocsTypes() {
-  const contentBlocsTypes = useContentBlocsTypes()
+// A choice of the "add" menu, by the class of the bloc it adds.
+export type BlocChoice = {
+  icon: Component
+  name: string
+  description: string
+} & (
+  | { key: Exclude<SectionContentBloc['class'], ObjectBloc['class']>, create: () => Exclude<SectionContentBloc, ObjectBloc> }
+  // Objects are picked in a selector before their blocs can be built.
+  | { key: ObjectBloc['class'] }
+)
+
+export function useBlocChoices() {
   const { t } = useTranslation()
 
   return {
-    ...contentBlocsTypes,
+    TitleBloc: {
+      key: 'TitleBloc',
+      icon: RiHeading,
+      name: t('Titre'),
+      description: t('Titre et sous-titre'),
+      create: (): TitleBloc => ({ class: 'TitleBloc', id: uuidv4(), width: null, title: t('Titre'), subtitle: null }),
+    },
+    MarkdownBloc: {
+      key: 'MarkdownBloc',
+      icon: RiMarkdownLine,
+      name: t('Texte'),
+      description: t('Ajouter du contenu texte riche'),
+      create: (): MarkdownBloc => ({ class: 'MarkdownBloc', id: uuidv4(), width: null, content: '' }),
+    },
+    LinksListBloc: {
+      key: 'LinksListBloc',
+      icon: RiLink,
+      name: t('Liens'),
+      description: t('Mettre en avant quelques liens'),
+      create: (): LinksListBloc => ({ class: 'LinksListBloc', id: uuidv4(), width: null, links: [] }),
+    },
+    ButtonBloc: {
+      key: 'ButtonBloc',
+      icon: RiCursorLine,
+      name: t('Bouton'),
+      description: t('Un lien mis en avant par un bouton'),
+      // Saved as soon as added: its URL is required, the home page of the site until changed.
+      create: (): ButtonBloc => ({ class: 'ButtonBloc', id: uuidv4(), width: null, title: t('Titre du bouton'), url: '/' }),
+    },
+    ImageBloc: {
+      key: 'ImageBloc',
+      icon: RiImageLine,
+      name: t('Image'),
+      description: t('Une illustration, à côté d\'un titre par exemple'),
+      // Without its image until one is uploaded, see `withoutEmptyBlocs`.
+      create: (): ImageBloc => ({ class: 'ImageBloc', id: uuidv4(), width: null, image: '', alt: null }),
+    },
+    CardBloc: {
+      key: 'CardBloc',
+      icon: RiLayoutGridLine,
+      name: t('Carte'),
+      description: t('Un lien vers une page, avec une image et une description'),
+      // Saved as soon as added, like the button: its URL is required.
+      create: (): CardBloc => ({ class: 'CardBloc', id: uuidv4(), width: '1/4', title: t('Titre de la carte'), url: '/', description: null, image: null }),
+    },
     AccordionListBloc: {
+      key: 'AccordionListBloc',
       icon: RiListCheck2,
       name: t('Accordéon'),
       description: t('Liste dépliable de contenus (FAQ, etc.)'),
-      component: AccordionBlocEditorComponent,
-      default: (): Omit<AccordionListBloc, 'id'> => ({ class: 'AccordionListBloc', title: t('Mon accordéon'), description: null, items: [] }),
+      create: (): AccordionListBloc => ({ class: 'AccordionListBloc', id: uuidv4(), width: null, items: [] }),
     },
-    HeroBloc: {
-      icon: RiWindow2Line,
-      name: t('Hero'),
-      description: t('Bandeau d\'en-tête avec titre et description'),
-      component: HeroBlocComponent,
-      fullWidth: true,
-      default: (): Omit<HeroBloc, 'id'> => ({ class: 'HeroBloc', title: 'Titre', description: null, color: 'primary', main_link_title: null, main_link_url: null }),
+    ColumnBloc: {
+      key: 'ColumnBloc',
+      icon: RiLayoutColumnLine,
+      name: t('Colonne'),
+      description: t('Empiler des blocs à côté des autres, un titre et son texte à côté d\'une image par exemple'),
+      // Half of the row, to leave room beside it; without blocs until some are added to it,
+      // see `withoutEmptyBlocs`.
+      create: (): ColumnBloc => ({ class: 'ColumnBloc', id: uuidv4(), width: '1/2', blocs: [] }),
     },
-  }
+    DatasetBloc: {
+      key: 'DatasetBloc',
+      icon: RiDatabase2Line,
+      name: t('Jeux de données'),
+      description: t('Mettre en avant des jeux de données'),
+    },
+    DataserviceBloc: {
+      key: 'DataserviceBloc',
+      icon: RiTerminalLine,
+      name: t('API'),
+      description: t('Mettre en avant des API'),
+    },
+    ReuseBloc: {
+      key: 'ReuseBloc',
+      icon: RiLineChartLine,
+      name: t('Réutilisations'),
+      description: t('Mettre en avant des réutilisations'),
+    },
+  } satisfies Record<string, BlocChoice>
 }

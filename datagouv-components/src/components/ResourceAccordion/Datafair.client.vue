@@ -9,25 +9,27 @@
           border: none;"
       />
     </div>
-    <PreviewUnavailable v-else>
-      {{ t("L'aperçu de ce fichier n'a pas pu être chargé. Téléchargez-le pour le consulter.") }}
-    </PreviewUnavailable>
+    <PreviewError
+      v-else
+      :resource="resource"
+      :error-type="errorType"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import PreviewUnavailable from './PreviewUnavailable.vue'
+import PreviewError from './PreviewError.vue'
 import type { Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
-import { useTranslation } from '../../composables/useTranslation'
+import { getTransientErrorType } from '../../functions/previewErrors'
 
 const props = defineProps<{
   resource: Resource
   dataset: Dataset | DatasetV2
 }>()
 
-const { t } = useTranslation()
+const errorType = computed(() => getTransientErrorType(props.resource))
 
 const datafairOrigin = computed(() => {
   return props.resource.extras['datafairOrigin'] || props.dataset.extras['datafairOrigin']

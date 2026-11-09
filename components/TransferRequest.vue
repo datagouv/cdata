@@ -76,7 +76,7 @@
         </BrandedButton>
       </template>
     </BannerNotif>
-    <ModalClient
+    <Modal
       :modal-id="modalId"
       :opened="isOpen"
       :title="$t('Transfert en attente')"
@@ -116,14 +116,14 @@
           </BrandedButton>
         </div>
       </template>
-    </ModalClient>
+    </Modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { Avatar, BrandedButton, OrganizationLogo } from '@datagouv/components-next'
 import { RiCheckLine, RiCloseLine, RiSendPlaneLine } from '@remixicon/vue'
-import ModalClient from './Modal/Modal.client.vue'
+import Modal from './Modal/Modal.vue'
 import type { TransferParty, TransferRequest } from '~/types/types'
 
 const props = withDefaults(defineProps<{

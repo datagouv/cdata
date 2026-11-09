@@ -43,6 +43,7 @@
       v-if="siteBlocs.length > 0 || isEditing"
       :blocs="siteBlocs"
       editable
+      follow-links
       main-color="green-illustration"
       :on-save="saveBlocs"
     />
@@ -185,8 +186,6 @@ const description = t('Vous recherchez des exemples concrets d\'exploitation des
 useSeoMeta({
   title,
   description,
-  ogTitle: title,
-  ogDescription: description,
 })
 defineOgImage('MainPage.takumi', {
   title: 'Réutilisations',

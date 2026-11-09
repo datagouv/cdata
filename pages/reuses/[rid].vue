@@ -31,6 +31,7 @@
             <BrandedButton
               :href="reuse.url"
               :new-tab="true"
+              rel="ugc nofollow noopener"
               size="xs"
               @click="$matomo.trackEvent('Réutilisation', `Voir la réutilisation`, 'Bouton :  voir la reutilisation')"
             >
@@ -135,6 +136,7 @@
                 size="xs"
                 :href="reuse.url"
                 :new-tab="true"
+                rel="ugc nofollow noopener"
                 @click="$matomo.trackEvent('Réutilisation', `Voir la réutilisation`, 'Bouton : voir la reutilisation')"
               >
                 {{ $t('Voir la réutilisation') }}
@@ -142,10 +144,11 @@
             </div>
           </div>
           <div class="w-7/12 md:w-full md:col-span-7">
-            <NuxtImg
+            <img
               class="w-full object-contain max-h-[400px]"
               :src="reuse.image ?? undefined"
-            />
+              alt=""
+            >
           </div>
         </div>
       </div>
@@ -189,7 +192,7 @@ const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
 const { data: reuse, status } = await useAPI<Reuse>(url, { showErrorPage: true, redirectOnSlug: 'rid' })
 
 const title = computed(() => `Réutilisation - ${reuse.value?.title} | ${config.public.title}`)
-const description = computed(() => reuse.value ? getDescriptionShort(reuse.value) : '')
+const description = computed(() => normalizeSeoDescription(reuse.value ? getDescriptionShort(reuse.value) : undefined))
 const robots = computed(() => reuse.value && !reuse.value.metrics.datasets && !reuse.value.metrics.datasets ? 'noindex, nofollow' : 'all')
 
 useSeoMeta({

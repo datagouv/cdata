@@ -11,7 +11,7 @@
 
     :close
   />
-  <ModalClient
+  <Modal
     :modal-id="id"
     class="fr-header__search"
     :opened="isOpen"
@@ -36,11 +36,11 @@
         :close
       />
     </template>
-  </ModalClient>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import ModalClient from './Modal.client.vue'
+import Modal from './Modal.vue'
 
 const id = useId() as string
 

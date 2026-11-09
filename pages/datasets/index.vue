@@ -28,6 +28,7 @@
       v-if="siteBlocs.length > 0 || isEditing"
       :blocs="siteBlocs"
       editable
+      follow-links
       :on-save="saveBlocs"
     />
     <EditoFooter
@@ -60,8 +61,6 @@ const description = t('Vous recherchez des données publiques sur un sujet préc
 useSeoMeta({
   title,
   description,
-  ogTitle: title,
-  ogDescription: description,
 })
 const route = useRoute()
 

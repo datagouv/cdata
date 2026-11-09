@@ -28,6 +28,7 @@
       v-if="siteBlocs.length > 0 || isEditing"
       :blocs="siteBlocs"
       editable
+      follow-links
       main-color="brown-illustration"
       :on-save="saveBlocs"
     />
@@ -270,8 +271,6 @@ const description = t('Vous recherchez une API publique pour automatiser des tâ
 useSeoMeta({
   title,
   description,
-  ogTitle: title,
-  ogDescription: description,
 })
 defineOgImage('MainPage.takumi', {
   title: 'API',

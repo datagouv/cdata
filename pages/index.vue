@@ -97,7 +97,7 @@
               {{ $t('Ils publient des données sur {name}', { name: config.public.title }) }}
             </p>
             <div class="grid grid-cols-2 sm:grid-cols-4 justify-between">
-              <nuxt-img
+              <img
                 v-for="{ label, name } in [
                   { label: 'Santé publique France', name: 'spf' },
                   { label: 'CNIL', name: 'cnil' },
@@ -109,7 +109,7 @@
                 :srcset="`/nuxt_images/organizations/${name}.png, /nuxt_images/organizations/${name}@2x.png 2x, /nuxt_images/organizations/${name}@3x.png 3x`"
                 :alt="label"
                 class="size-20 grayscale opacity-80 object-contain"
-              />
+              >
             </div>
           </div>
 
@@ -135,12 +135,12 @@
           <figcaption class="uppercase font-bold text-gray-medium mb-6">
             {{ $t('Jeux de données') }}
           </figcaption>
-          <nuxt-img
+          <img
             src="/nuxt_images/homepage/datasets.png"
             srcset="/nuxt_images/homepage/datasets.png, /nuxt_images/homepage/datasets@2x.png 2x, /nuxt_images/homepage/datasets@3x.png 3x"
             class="w-full sm:-mb-16"
             alt=""
-          />
+          >
         </figure>
       </div>
       <div class="hidden sm:flex px-6 justify-center py-8 sm:pt-10 sm:pb-20 bg-gray-some">
@@ -148,12 +148,12 @@
           <figcaption class="uppercase font-bold text-gray-medium mb-6">
             {{ $t('Réutilisations') }}
           </figcaption>
-          <nuxt-img
+          <img
             src="/nuxt_images/homepage/reuses.png"
             srcset="/nuxt_images/homepage/reuses.png, /nuxt_images/homepage/reuses@2x.png 2x, /nuxt_images/homepage/reuses@3x.png 3x"
             class="w-full"
             alt=""
-          />
+          >
         </figure>
       </div>
       <div class="px-6 flex justify-center py-8 sm:py-24">
@@ -190,7 +190,7 @@
               {{ $t('Ils réutilisent les données de {name}', { name: config.public.title }) }}
             </p>
             <div class="grid grid-cols-2 sm:grid-cols-4 justify-between">
-              <nuxt-img
+              <img
                 v-for="{ label, name } in [
                   { label: 'Le Monde', name: 'lemonde' },
                   { label: 'Google Maps', name: 'googlemaps' },
@@ -202,7 +202,7 @@
                 :srcset="`/nuxt_images/organizations/${name}.png, /nuxt_images/organizations/${name}@2x.png 2x, /nuxt_images/organizations/${name}@3x.png 3x`"
                 :alt="label"
                 class="size-20 grayscale opacity-80 object-contain"
-              />
+              >
             </div>
           </div>
 
@@ -293,12 +293,12 @@
                 :key="exploration.url"
                 class="bg-white"
               >
-                <nuxt-img
+                <img
                   :src="`/nuxt_images/homepage/${exploration.image}.png`"
                   :srcset="`/nuxt_images/homepage/${exploration.image}.png, /nuxt_images/homepage/${exploration.image}@2x.png 2x`"
                   class="w-full h-[300px] object-cover"
                   alt=""
-                />
+                >
                 <div class="p-4 space-y-2.5">
                   <p class="text-sm uppercase font-bold text-gray-medium">
                     {{ exploration.title }}
@@ -496,9 +496,7 @@ const title = t('{site} : Plateforme ouverte des données publiques françaises'
 
 useSeoMeta({
   title,
-  description: config.public.description,
-  ogTitle: title,
-  ogDescription: config.public.description,
+  description: normalizeSeoDescription(config.public.description),
 })
 
 const { data: posts } = await useAPI<PaginatedArray<Post>>('/api/1/posts/', { params: { kind: 'news' } })
