@@ -3,7 +3,7 @@ import * as path from 'node:path'
 import type { Page } from '@playwright/test'
 import type { Dataset } from '@datagouv/components-next'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, createOrganization, deleteDatasets, deleteOrganizations, gotoHydrated, type ApiOrganization } from '../helpers'
+import { API_BASE, createDataset, createOrganization, deleteDatasets, deleteOrganizations, gotoHydrated, type ApiDataset, type ApiOrganization } from '../helpers'
 
 // These tests replay the situation reported in datagouv/data.gouv.fr#2060 with the very
 // files it was reported with: a washing machine durability record, exported as CSV
@@ -155,7 +155,7 @@ async function startWizard(page: Page, schema: SchemaKey) {
 }
 
 // Up to the last "Publier" of a file added to an existing dataset, validated against its schema
-async function openValidatedSheetOnExistingDataset(page: Page, dataset: Dataset) {
+async function openValidatedSheetOnExistingDataset(page: Page, dataset: ApiDataset) {
   await gotoHydrated(page, '/admin/datasets/structured?step=1')
   await selectProducer(page)
   await page.getByText('Ajouter à un jeu de données existant').click()
