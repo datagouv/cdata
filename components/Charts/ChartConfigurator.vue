@@ -211,9 +211,60 @@
             <div class="space-y-6">
               <template v-if="selectedResource">
                 <fieldset class="min-w-0 space-y-4">
-                  <p class="font-bold mb-2">
+                  <h3 class="mb-2 text-xs font-bold">
+                    {{ $t('Filtres') }}
+                  </h3>
+                  <div class="space-y-3">
+                    <template
+                      v-for="(group, groupIndex) in filterGroups.groups"
+                      :key="groupIndex"
+                    >
+                      <p
+                        v-if="groupIndex > 0"
+                        class="text-xs text-gray-600"
+                      >
+                        {{ filterGroups.rootCombinator === 'and' ? $t('et') : $t('ou') }}
+                      </p>
+                      <ChartFilterGroup
+                        :group="group"
+                        :combinator="innerCombinator"
+                        :can-remove-group="filterGroups.groups.length > 1"
+                        :bordered="totalRules > 1"
+                        :column-options="columnDetails"
+                        :condition-options="conditionOptions"
+                        @update:combinator="setInnerCombinator"
+                        @remove:filter="(i) => removeFilter(groupIndex, i)"
+                        @add-condition="addCondition(groupIndex)"
+                        @remove-group="removeGroup(groupIndex)"
+                      />
+                    </template>
+                  </div>
+                  <div class="flex flex-wrap gap-2">
+                    <BrandedButton
+                      v-if="totalRules === 0"
+                      size="sm"
+                      color="tertiary"
+                      :icon="RiAddLine"
+                      @click="addGroup"
+                    >
+                      {{ $t('Ajouter une règle') }}
+                    </BrandedButton>
+                    <BrandedButton
+                      v-if="totalRules > 1"
+                      size="sm"
+                      color="tertiary"
+                      :icon="RiAddLine"
+                      @click="addGroup"
+                    >
+                      {{ $t('Ajouter un groupe') }}
+                    </BrandedButton>
+                  </div>
+                </fieldset>
+
+                <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
+                  <h3 class="mb-2 text-xs font-bold">
                     {{ $t('Contenu') }}
-                  </p>
+                  </h3>
                   <div>
                     <label
                       for="chart-title"
@@ -276,7 +327,7 @@
                     class="m-0 min-w-0"
                     data-testid="chart-type"
                   >
-                    <legend class="font-bold mb-4">
+                    <legend class="mb-4 text-xs font-bold">
                       {{ $t('Type de graphique') }}
                     </legend>
                     <div class="grid grid-cols-2 gap-2">
@@ -307,9 +358,9 @@
                 </div>
 
                 <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-                  <p class="font-bold mb-2">
+                  <h3 class="mb-2 text-xs font-bold">
                     {{ $t('Axe X') }}
-                  </p>
+                  </h3>
                   <div>
                     <SearchableSelect
                       id="x-axis-column"
@@ -408,9 +459,9 @@
                 </fieldset>
 
                 <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-                  <p class="font-bold mb-2">
-                    {{ $t('Séries') }}
-                  </p>
+                  <h3 class="mb-2 text-xs font-bold">
+                    {{ $t('Axe Y') }}
+                  </h3>
                   <div
                     v-for="(serie, index) in form.series"
                     :key="index"
@@ -472,60 +523,9 @@
                 </fieldset>
 
                 <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-                  <p class="font-bold mb-2">
-                    {{ $t('Filtres') }}
-                  </p>
-                  <div class="space-y-3">
-                    <template
-                      v-for="(group, groupIndex) in filterGroups.groups"
-                      :key="groupIndex"
-                    >
-                      <p
-                        v-if="groupIndex > 0"
-                        class="text-xs text-gray-600"
-                      >
-                        {{ filterGroups.rootCombinator === 'and' ? $t('et') : $t('ou') }}
-                      </p>
-                      <ChartFilterGroup
-                        :group="group"
-                        :combinator="innerCombinator"
-                        :can-remove-group="filterGroups.groups.length > 1"
-                        :bordered="totalRules > 1"
-                        :column-options="columnDetails"
-                        :condition-options="conditionOptions"
-                        @update:combinator="setInnerCombinator"
-                        @remove:filter="(i) => removeFilter(groupIndex, i)"
-                        @add-condition="addCondition(groupIndex)"
-                        @remove-group="removeGroup(groupIndex)"
-                      />
-                    </template>
-                  </div>
-                  <div class="flex flex-wrap gap-2">
-                    <BrandedButton
-                      v-if="totalRules === 0"
-                      size="sm"
-                      color="tertiary"
-                      :icon="RiAddLine"
-                      @click="addGroup"
-                    >
-                      {{ $t('Ajouter une règle') }}
-                    </BrandedButton>
-                    <BrandedButton
-                      v-if="totalRules > 1"
-                      size="sm"
-                      color="tertiary"
-                      :icon="RiAddLine"
-                      @click="addGroup"
-                    >
-                      {{ $t('Ajouter un groupe') }}
-                    </BrandedButton>
-                  </div>
-                </fieldset>
-
-                <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-                  <p class="font-bold mb-2">
-                    {{ $t('Axe Y') }}
-                  </p>
+                  <h3 class="mb-2 text-xs font-bold">
+                    {{ $t('Styles') }}
+                  </h3>
                   <div class="space-y-4">
                     <div>
                       <label
