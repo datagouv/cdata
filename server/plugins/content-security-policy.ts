@@ -22,6 +22,11 @@ function hash(source: string): string {
  *
  * The inline scripts are allowed by their hash rather than a nonce: pages are cached by
  * nginx, a nonce would be served again to every visitor.
+ *
+ * Nuxt has no policy of its own: it only copies onto its streaming scripts a nonce some
+ * other module set on the head. And `nuxt-security` only hashes prerendered pages: on
+ * server rendered ones it uses a nonce, which it sets on every `<script>` of the rendered
+ * HTML whatever wrote it, so a script slipping into the page would be allowed to run.
  */
 export default defineNitroPlugin((nitroApp) => {
   const config = useRuntimeConfig()
