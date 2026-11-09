@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { sentrySecurityEndpoint } from '~/server/utils/sentry-security-endpoint'
+import { sentrySecurityEndpoint } from '~/utils/sentry-security-endpoint'
 
 describe('sentrySecurityEndpoint', () => {
   it('builds the endpoint of a self-hosted DSN with an empty path', () => {

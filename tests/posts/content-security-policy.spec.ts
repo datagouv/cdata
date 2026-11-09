@@ -34,4 +34,22 @@ test.describe('Content Security Policy', () => {
       return root?.__vue_app__?.config.globalProperties.$config?.public?.apiBase
     })).toBeTruthy()
   })
+
+  test('a script written in the head does not allow the same one in the body', async ({ page, request }) => {
+    // The headline ends up, unescaped, in the `content` of the description meta: the policy
+    // must not take this text for a script of the head and allow its hash.
+    const post = await createPost(request, {
+      name: `Actualité ${Date.now()}`,
+      kind: 'news',
+      headline: 'Une actualité <script>window.injected = true</script>',
+      body_type: 'html',
+      content: '<p>Du contenu.</p><script>window.injected = true</script>',
+    })
+    createdIds.push(post.id)
+
+    await page.goto(`/posts/${post.slug}`)
+    await expect(page.getByText('Du contenu.')).toBeVisible()
+
+    expect(await page.evaluate(() => 'injected' in window)).toBe(false)
+  })
 })
