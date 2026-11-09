@@ -22,6 +22,9 @@ const SCHEMA_HOST = 'https://schema.test.local'
 // Opening a file parses it, builds the whole table and only then validates it: on a busy
 // CPU, Firefox takes over 5 s to get there with the 228 columns of these files.
 const SPREADSHEET_OPENED = { timeout: 20_000 }
+// Publishing to an existing dataset uploads the file and updates the resource, then the
+// dataset page loads: on a busy CI runner, Firefox takes over 5 s for the whole of it
+const PUBLISHED = { timeout: 20_000 }
 
 // Column counts are measured against the fixture file, not assumed.
 // The names are the real ones: udata validates a resource's schema against its own
@@ -590,8 +593,8 @@ test.describe('navigation', () => {
 
     // Publishing empties the wizard form while leaving for the dataset page: the
     // step guard must not catch that emptied form and pull the user back to step 1
-    await expect(page).toHaveURL(new RegExp(`/datasets/${dataset.slug}/?$`))
-    await expect(page.getByRole('heading', { name: dataset.title })).toBeVisible()
+    await expect(page).toHaveURL(new RegExp(`/datasets/${dataset.slug}/?$`), PUBLISHED)
+    await expect(page.getByRole('heading', { name: dataset.title })).toBeVisible(PUBLISHED)
 
     const published = (await (await request.get(`${API_BASE}/api/1/datasets/${dataset.id}/`)).json()) as Dataset
     expect(published.resources.map(resource => resource.schema?.name)).toEqual([SCHEMAS.durabilite.name])
