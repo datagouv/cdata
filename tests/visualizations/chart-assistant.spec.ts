@@ -59,7 +59,7 @@ test('the assistant creates a chart then updates it without refetching the data'
   await expect(page.getByLabel('Titre')).toHaveValue('Logements par région')
   await expect(page.getByPlaceholder('Rechercher une colonne à afficher...')).toHaveValue(X_COLUMN)
   await expect(page.getByPlaceholder('Rechercher une colonne Y...')).toHaveValue(Y_COLUMN)
-  await expect(page.getByLabel('Agrégation')).toHaveValue('max')
+  await expect(page.getByLabel('Calcul')).toHaveValue('max')
   await expect(page.getByRole('radio', { name: 'Histogramme' })).toBeChecked()
   await expect(page.getByLabel('Nombre de valeurs')).toHaveValue('5')
   await expect(page.locator('#x-axis-sort-combined .input')).toContainText(`${Y_COLUMN} - Descendant`)

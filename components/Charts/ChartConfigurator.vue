@@ -468,70 +468,74 @@
                     class="space-y-4"
                   >
                     <div>
+                      <label
+                        :for="`calculation-${index}`"
+                        class="fr-label"
+                      >{{ $t('Calcul') }}</label>
+                      <select
+                        :id="`calculation-${index}`"
+                        :value="getSerieCalculation(serie)"
+                        class="w-full fr-select"
+                        @change="(event) => applySerieCalculation(serie, (event.target as HTMLSelectElement).value as SerieCalculation, form.x_axis.column_x, resourceColumns)"
+                      >
+                        <option
+                          v-for="option in calculationOptions"
+                          :key="option.value"
+                          :value="option.value"
+                          :disabled="option.numeric && !hasNumberColumn"
+                        >
+                          {{ option.label }}
+                        </option>
+                      </select>
+                    </div>
+
+                    <div v-if="getSerieCalculation(serie) !== 'count'">
                       <SearchableSelect
                         :id="`column-y-${index}`"
-                        :model-value="getSerieColumnYValue(serie)"
+                        :model-value="resourceColumns.find(column => column.name === serie.column_y) ?? null"
                         :label="$t('Colonne Y')"
                         :placeholder="$t('Rechercher une colonne Y...')"
-                        :options="yAxisColumnOptions"
-                        :display-value="(opt: YAxisColumnOption) => isCountOption(opt) ? t('Compter') : opt.name"
-                        :get-option-id="(opt: YAxisColumnOption) => opt.name"
-                        :group-by="(opt: YAxisColumnOption) => isCountOption(opt) ? '' : typeConfig[opt.type]?.label || opt.type"
+                        :options="getSerieColumnYOptions(getSerieCalculation(serie), resourceColumns)"
+                        :display-value="(opt: ColumnDefinition) => opt.name"
+                        :get-option-id="(opt: ColumnDefinition) => opt.name"
+                        :group-by="(opt: ColumnDefinition) => typeConfig[opt.type]?.label || opt.type"
                         :multiple="false"
                         class="w-full"
-                        @update:model-value="(val) => handleSerieColumnYChange(index, val)"
+                        @update:model-value="(val) => serie.column_y = val?.name ?? ''"
                       >
                         <template #option="{ option }">
                           <component
                             :is="getColumnTypeIcon(option.type)"
                             class="inline w-4 h-4 mr-2"
                           />
-                          {{ isCountOption(option) ? $t('Compter') : option.name }}
+                          {{ option.name }}
                         </template>
                       </SearchableSelect>
-                    </div>
-
-                    <div v-if="isNumberColumnOption(getSerieColumnYValue(serie))">
-                      <label
-                        :for="`aggregate-y-${index}`"
-                        class="fr-label"
-                      >{{ $t('Agrégation')
-                      }}</label>
-                      <select
-                        :id="`aggregate-y-${index}`"
-                        v-model="serie.aggregate_y"
-                        class="w-full fr-select"
-                      >
-                        <option :value="null">
-                          {{ $t('Non') }}
-                        </option>
-                        <option value="sum">
-                          {{ $t('Somme') }}
-                        </option>
-                        <option value="avg">
-                          {{ $t('Moyenne') }}
-                        </option>
-                        <option value="min">
-                          {{ $t('Minimum') }}
-                        </option>
-                        <option value="max">
-                          {{ $t('Maximum') }}
-                        </option>
-                      </select>
                     </div>
                   </div>
                 </fieldset>
 
-                <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-                  <h3 class="mb-2 text-xs font-bold">
+                <!-- cursor-auto: DSFR's core.css puts cursor: pointer on the whole
+                details element, so the fields would look clickable. -->
+                <details
+                  class="group min-w-0 cursor-auto border-t border-new-gray-light py-4"
+                  open
+                  data-testid="chart-styles"
+                >
+                  <summary class="flex cursor-pointer list-none items-center gap-1 text-xs font-bold [&::-webkit-details-marker]:hidden">
+                    <RiArrowDownSLine
+                      class="size-3.5 shrink-0 transition-transform -rotate-90 group-open:rotate-0 motion-reduce:transition-none"
+                      aria-hidden="true"
+                    />
                     {{ $t('Styles') }}
-                  </h3>
-                  <div class="space-y-4">
+                  </summary>
+                  <!-- box-border: the details content slot is content-box, which `* { box-sizing: inherit }` would pass on. -->
+                  <div class="mt-4 box-border space-y-4">
                     <div>
                       <label
                         for="y-axis-label"
                         class="fr-label"
-                      >{{ $t('Label') }}</label>
+                      >{{ $t('Label de l’axe Y') }}</label>
                       <input
                         id="y-axis-label"
                         v-model="form.y_axis.label"
@@ -544,7 +548,7 @@
                         <label
                           for="y-axis-min"
                           class="fr-label"
-                        >{{ $t('Min') }}</label>
+                        >{{ $t('Minimum') }}</label>
                         <input
                           id="y-axis-min"
                           v-model.number="form.y_axis.min"
@@ -556,7 +560,7 @@
                         <label
                           for="y-axis-max"
                           class="fr-label"
-                        >{{ $t('Max') }}</label>
+                        >{{ $t('Maximum') }}</label>
                         <input
                           id="y-axis-max"
                           v-model.number="form.y_axis.max"
@@ -583,8 +587,7 @@
                         <label
                           for="y-axis-unit-position"
                           class="fr-label"
-                        >{{ $t('Position unité')
-                        }}</label>
+                        >{{ $t('Position') }}</label>
                         <select
                           id="y-axis-unit-position"
                           v-model="form.y_axis.unit_position"
@@ -600,7 +603,7 @@
                       </div>
                     </div>
                   </div>
-                </fieldset>
+                </details>
               </template>
               <div
                 v-else
@@ -654,13 +657,14 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, DataSeriesForm, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
 import { buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, SearchableSelect, SegmentedControl, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, nextTick, reactive, ref, watch } from 'vue'
-import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartBoxLine, RiBarChartLine, RiCalculatorLine, RiCheckboxCircleLine, RiInformationLine, RiLineChartLine, RiLoader4Line, RiSettings3Line, RiText } from '@remixicon/vue'
+import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartBoxLine, RiBarChartLine, RiCheckboxCircleLine, RiInformationLine, RiLineChartLine, RiLoader4Line, RiSettings3Line, RiText } from '@remixicon/vue'
 import { isMeAdmin } from '~/utils/auth'
-import { keepValidSortCombined } from '~/utils/charts'
+import { applySerieCalculation, getSerieCalculation, getSerieColumnYOptions, keepValidSortCombined } from '~/utils/charts'
+import type { SerieCalculation } from '~/utils/charts'
 import { fromFilterGroups, toFilterGroups } from '~/utils/chartFilters'
 import type { FilterColumnOption, FilterGroupCombinator, FilterGroupsState } from '~/utils/chartFilters'
 import { toAssistantVisualization, type ChartToolResult } from '~/utils/assistant'
@@ -681,10 +685,6 @@ type SortOption = {
   label: string
   icon: Component | null
 }
-
-const COUNT_OPTION = { name: '__count__', type: 'count' } as const
-type CountColumnOption = typeof COUNT_OPTION
-type YAxisColumnOption = ColumnDefinition | CountColumnOption
 
 // The chart fetches at most 50 groups (CHART_PAGE_SIZE): a larger limit would show nothing more.
 const CHART_MAX_LIMIT = 50
@@ -787,28 +787,21 @@ const xAxisColumnOptions = computed<Array<XAxisColumnOption>>(() =>
   ),
 )
 
-const yAxisColumnOptions = computed<Array<YAxisColumnOption>>(() => {
-  if (selectedResource.value && columns.value[selectedResource.value]) {
-    return [
-      COUNT_OPTION,
-      ...columns.value[selectedResource.value].map(col => ({ name: col.name, type: col.type })),
-    ]
-  }
-  return [COUNT_OPTION]
-})
+const hasNumberColumn = computed(() => resourceColumns.value.some(column => column.type === 'number'))
 
-function isCountOption(option: YAxisColumnOption | null | undefined): option is CountColumnOption {
-  return option?.name === COUNT_OPTION.name
-}
-
-function isNumberColumnOption(option: YAxisColumnOption | null | undefined): boolean {
-  return option?.type === 'number'
-}
+const calculationOptions = computed(() => [
+  { value: 'count', label: t('Compter les lignes'), numeric: false },
+  { value: 'sum', label: t('Somme'), numeric: true },
+  { value: 'avg', label: t('Moyenne'), numeric: true },
+  { value: 'min', label: t('Minimum'), numeric: true },
+  { value: 'max', label: t('Maximum'), numeric: true },
+  { value: 'none', label: t('Aucun (valeurs brutes)'), numeric: false },
+] satisfies Array<{ value: SerieCalculation, label: string, numeric: boolean }>)
 
 const sortOptions = computed<SortOption[]>(() => {
   const xAxisColumn = form.value.x_axis.column_x
   const serie = form.value.series[0]
-  const isCount = !!serie && getSerieColumnYValue(serie) === COUNT_OPTION
+  const isCount = serie?.aggregate_y === 'count' && serie.column_y === xAxisColumn
   // A count series uses the X column by convention, yet sorting by its counts is meaningful.
   const yAxisColumn = isCount ? t('Compter') : serie?.column_y
   const sameColumnAsX = !isCount && xAxisColumn && yAxisColumn === xAxisColumn
@@ -890,10 +883,7 @@ function newEmptyFilter(): Filter {
   return { _cls: 'Filter', column: '', condition: 'exact', value: '' }
 }
 
-function getColumnTypeIcon(colType: ColumnType | 'count'): Component {
-  if (colType === 'count') {
-    return RiCalculatorLine
-  }
+function getColumnTypeIcon(colType: ColumnType): Component {
   return typeConfig[colType]?.icon ?? RiText
 }
 
@@ -902,36 +892,11 @@ function formatColumnLabel(opt: { column: string, label: string } | null): strin
   return `${opt.column}${opt.column ? ' - ' : ''}${opt.label}`
 }
 
-function getSerieColumnYValue(serie: DataSeriesForm): YAxisColumnOption | null {
-  if (serie.aggregate_y === 'count' && serie.column_y === form.value.x_axis.column_x) {
-    return COUNT_OPTION
-  }
-  const colName = serie.column_y
-  if (!colName) return null
-  return yAxisColumnOptions.value.find(opt => opt.name === colName) ?? null
-}
-
 function getDefaultXAxisType(columnType: ColumnType | undefined): XAxisType {
   if (columnType === 'number' || columnType === 'date') {
     return 'continuous'
   }
   return 'discrete'
-}
-
-function handleSerieColumnYChange(index: number, option: YAxisColumnOption | null | undefined) {
-  const serie = form.value.series[index]
-  if (!serie) return
-
-  if (isCountOption(option)) {
-    serie.column_y = form.value.x_axis.column_x
-    serie.aggregate_y = 'count'
-  }
-  else {
-    serie.column_y = option?.name ?? ''
-    if (serie.aggregate_y === 'count' || option?.type !== 'number') {
-      serie.aggregate_y = null
-    }
-  }
 }
 
 // Tool calls already applied: a result must never overwrite the user's later
