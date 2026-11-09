@@ -64,8 +64,8 @@ import { RiShieldCheckLine } from '@remixicon/vue'
 import { FetchError } from 'ofetch'
 
 defineProps<{
-  // udata refuses the switch until ProConnect asks every login for the second factor, and
-  // from a session that didn't present it.
+  // udata refuses the switch from a session that didn't present the second factor of the
+  // account's trusted ProConnect identity.
   disabled: boolean
 }>()
 
