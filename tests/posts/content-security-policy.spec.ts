@@ -37,8 +37,11 @@ test.describe('Content Security Policy', () => {
 
   test('a script of the Matomo host other than matomo.js does not run', async ({ page, request }) => {
     await page.goto('/')
-    const matomoHost = await page.evaluate(() => (window as { __NUXT__?: { config?: { public?: { matomo?: { host?: string } } } } }).__NUXT__?.config?.public?.matomo?.host)
-    expect(matomoHost, 'the server must run with NUXT_PUBLIC_MATOMO_HOST set').toBeTruthy()
+    let matomoHost: string | undefined
+    await expect.poll(async () => matomoHost = await page.evaluate(() => {
+      const root = document.querySelector('#__nuxt') as { __vue_app__?: { config: { globalProperties: { $config?: { public?: { matomo?: { host?: string } } } } } } } | null
+      return root?.__vue_app__?.config.globalProperties.$config?.public?.matomo?.host
+    }), { message: 'the server must run with NUXT_PUBLIC_MATOMO_HOST set' }).toBeTruthy()
     // The real Matomo serves a JSONP API, which answers JavaScript calling the callback it is given
     await page.route('**/index.php?*', route => route.fulfill({ contentType: 'application/javascript', body: 'window.injected = true' }))
 
