@@ -12,6 +12,7 @@
         size="xs"
         :icon="RiAddLine"
         :disabled="loading"
+        :loading="pending"
         v-bind="attrs"
         v-on="listeners"
       >
@@ -102,22 +103,24 @@ import InputGroup from '~/components/InputGroup/InputGroup.vue'
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
-const emit = defineEmits<{
-  created: [token: ApiTokenCreated]
-}>()
-
-const isOpen = useFreshSessionModal('api_token', 'create', async () => {
+const { isOpen: requestedOpen, pending } = useFreshSessionModal('api_token', 'create', async () => {
   await $api('/api/1/me/fresh/')
 })
 const loading = ref(false)
+// Closing the modal changes the URL, which remounts the profile page (keyed by
+// `fullPath`): this component, the form and the token go with it. Closing during the
+// creation would lose the token, shown once only, so the modal stays open until it ends.
+const isOpen = computed({
+  get: () => requestedOpen.value,
+  set: (open: boolean) => {
+    if (!open && loading.value) return
+    requestedOpen.value = open
+  },
+})
 const name = ref('')
 const expiresAt = ref('')
-// Shown in the modal rather than on the page: closing the modal changes the URL, which
-// remounts the profile page (keyed by `fullPath`) and would drop it before it is copied.
+// Shown in the modal rather than on the page, which the closing remounts.
 const createdToken = ref<string | null>(null)
-watch(isOpen, (open) => {
-  if (!open) createdToken.value = null
-})
 
 async function submit() {
   loading.value = true
@@ -130,14 +133,11 @@ async function submit() {
       },
     })
     toast.success(t('Token créé avec succès.'))
-    name.value = ''
-    expiresAt.value = ''
     createdToken.value = result.token
-    emit('created', result)
   }
   catch (e) {
     // The session may have gone stale since the modal opened: a 401 has already sent the
-    // user to /verify, with this page's URL as `next`.
+    // user to /verify or /login, with this page's URL as `next`.
     if (e instanceof FetchError && e.statusCode === 401) return
     toast.error(t('Impossible de créer le token.'))
   }

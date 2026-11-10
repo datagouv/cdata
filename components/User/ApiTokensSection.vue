@@ -75,7 +75,7 @@
     </div>
 
     <div class="mt-4">
-      <CreateApiTokenModal @created="fetchTokens" />
+      <CreateApiTokenModal />
     </div>
 
     <Modal
