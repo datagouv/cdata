@@ -12,6 +12,7 @@
         size="xs"
         :icon="RiShieldCheckLine"
         :disabled="loading"
+        :loading="pending"
         v-bind="attrs"
         v-on="listeners"
       >
@@ -109,12 +110,11 @@ const {
 } = useTwoFactorSetup()
 
 const { $api } = useNuxtApp()
-const isOpen = useFreshSessionModal('two_factor', 'setup', async () => {
+const { isOpen, pending } = useFreshSessionModal('two_factor', 'setup', async () => {
   const { response } = await $api<{ response: { tf_primary_method: string | null } | null }>('/tf-setup')
   isConfigured.value = !!response?.tf_primary_method
-})
-watch(isOpen, (open) => {
-  if (open) fetchQRCode()
+  // Not awaited: the modal opens while the QR code loads.
+  fetchQRCode()
 })
 
 const submit = async (close: () => void) => {
