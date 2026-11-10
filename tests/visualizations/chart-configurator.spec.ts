@@ -2,7 +2,7 @@ import type { Chart } from '@datagouv/components-next'
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
-import { ASSISTANT_CHAT_PATH, createChartOutput, createChartStream, routeAssistantStream } from '../assistantApi'
+import { ASSISTANT_CHAT_PATH, assistantChatStream, createChartOutput, createChartStream, routeAssistantStream } from '../assistantApi'
 import { createChart, deleteChart, mockTabular, RESOURCE_ID, setupChart } from './fixtures'
 import data from './data.json' with { type: 'json' }
 
@@ -24,7 +24,9 @@ async function sendAssistantMessage(page: Page, prompt: string) {
     await expect(page.getByLabel('Votre demande')).toHaveValue('', { timeout: 500 })
   }).toPass()
   const request = await requestPromise
-  expect(request.url()).toBe(`${ASSISTANT_API_BASE}${ASSISTANT_CHAT_PATH}`)
+  const url = new URL(request.url())
+  expect(`${url.origin}${url.pathname}`).toBe(`${ASSISTANT_API_BASE}${ASSISTANT_CHAT_PATH}`)
+  expect(url.searchParams.get('lang')).toBe('fr')
   return request
 }
 
@@ -329,6 +331,95 @@ test('y-axis unit position can be changed to prefix', async ({ page }) => {
   expect(unitPosition).toBe('prefix')
 })
 
+test.describe('when the API rejects the chart', () => {
+  test.use({ allowedConsoleMessages: ['the server responded with a status of 400'] })
+
+  test('saving shows the API error without an uncaught error', async ({ page }) => {
+    await setupChart(page)
+    // Matched on the path: the request carries `?lang=`, and a missed route would create a real chart.
+    await page.route(url => url.pathname === '/api/1/visualizations/', async (route) => {
+      if (route.request().method() !== 'POST') return route.fallback()
+      await route.fulfill({ status: 400, json: { message: 'Validation error', errors: { description: ['Field is required'] } } })
+    })
+    // Filled so that the request passes the form validation and reaches the API.
+    await page.getByLabel('Description').fill('Description')
+
+    await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+    await expect(page.getByText(/Le formulaire contient des erreurs/)).toBeVisible()
+  })
+})
+
+test('marks the title and the description as required', async ({ page }) => {
+  await setupChart(page)
+
+  await expect(page.getByLabel('Titre')).toHaveAttribute('aria-required', 'true')
+  await expect(page.getByLabel('Description')).toHaveAttribute('aria-required', 'true')
+})
+
+/** Counts the chart creations the page sends, and keeps the assistant chat off the network. */
+function trackChartCreations(page: Page) {
+  const posts: Array<string> = []
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && new URL(request.url()).pathname === '/api/1/visualizations/') posts.push(request.url())
+  })
+  return posts
+}
+
+test('saving from the assistant tab without a description warns in the footer and leads to the field', async ({ page }) => {
+  await page.route('**/assistant/chat/**', route => route.abort())
+  await setupChart(page)
+  const posts = trackChartCreations(page)
+
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+
+  const footer = page.getByTestId('chart-save-footer')
+  const warning = footer.getByRole('alert')
+  await expect(warning).toContainText('Le titre et la description sont obligatoires pour enregistrer le graphique.')
+  await expect(warning).toContainText('Description')
+  await expect(warning).not.toContainText('Titre')
+  expect(posts).toHaveLength(0)
+
+  await warning.getByRole('button', { name: 'Compléter' }).click()
+  await expect(page.getByRole('tab', { name: 'Édition manuelle' })).toHaveAttribute('aria-selected', 'true')
+  await expect(page.getByLabel('Description')).toBeFocused()
+
+  await page.getByLabel('Description').fill('Description complétée')
+  await expect(warning).toBeHidden()
+  await expect(page.getByLabel('Description')).not.toHaveAttribute('aria-invalid', 'true')
+
+  const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
+  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  const response = await responsePromise
+  const saved = (await response.json()) as Chart
+  try {
+    expect(response.status()).toBe(201)
+    expect(saved.description).toBe('Description complétée')
+  }
+  finally {
+    await deleteChart(page.request, saved.id)
+  }
+})
+
+test('saving from the manual tab with empty required fields shows their errors and focuses the first one', async ({ page }) => {
+  await setupChart(page)
+  const posts = trackChartCreations(page)
+
+  await page.getByLabel('Titre').fill('')
+  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+
+  for (const label of ['Titre', 'Description']) {
+    const field = page.getByLabel(label)
+    await expect(field).toHaveAttribute('aria-invalid', 'true')
+    const errorId = await field.getAttribute('aria-describedby')
+    expect(errorId).toBeTruthy()
+    await expect(page.locator(`#${errorId}`)).toHaveText('Le champ est requis.')
+    await expect(page.locator(`#${errorId}`)).toHaveClass(/fr-error-text/)
+  }
+  await expect(page.getByLabel('Titre')).toBeFocused()
+  expect(posts).toHaveLength(0)
+})
+
 test('saving chart sends correct data to API', async ({ page }) => {
   await setupChart(page)
 
@@ -473,6 +564,8 @@ test('changing x-axis updates count serie column_y to the new x-axis column', as
   await xAxisSelect.click()
   await page.getByRole('option', { name: 'nom_region', exact: true }).click()
   await clickOutside(page)
+  // Required by the API.
+  await page.getByLabel('Description').fill('Description')
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
@@ -501,6 +594,8 @@ for (const { label, column, sent } of CALCULATION_PAYLOADS) {
       await page.getByRole('option', { name: column, exact: true }).click()
       await clickOutside(page)
     }
+    // Required by the API.
+    await page.getByLabel('Description').fill('Description')
 
     const requestPromise = page.waitForRequest(request => request.url().includes('/api/1/visualizations/') && request.method() === 'POST')
     const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
@@ -677,10 +772,39 @@ test('filter groups are sent as or params to tabular-api with synced combinator 
   )
 })
 
-test('shows the form panel by default with its pickers and save action', async ({ page }) => {
+test('opens on the assistant panel with its suggestions and context once a resource is chosen', async ({ page }) => {
+  await mockTabular(page)
+  await page.goto('/admin/beta/chart')
+  await page.waitForLoadState('networkidle')
+
+  await expect(page.getByRole('tab', { name: 'Assistant' })).toHaveAttribute('aria-selected', 'true')
+  await expect(page.getByTestId('assistant-panel')).toBeVisible()
+  await expect(page.getByTestId('form-panel')).toBeHidden()
+
+  await setupChart(page)
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+  const suggestions = page.getByTestId('assistant-suggestion')
+  await expect(suggestions.first()).toBeVisible()
+  const context = page.getByRole('group', { name: 'Contexte utilisé par l’assistant' })
+  await expect(context).toContainText('Visualisation en cours')
+  await expect(page.getByText('L’assistant peut faire des erreurs.')).toBeVisible()
+
+  // A suggestion only fills the composer: nothing is sent before the user confirms.
+  let sent = false
+  page.on('request', (request) => {
+    if (request.url().includes(ASSISTANT_CHAT_PATH)) sent = true
+  })
+  const suggestion = await suggestions.last().innerText()
+  await suggestions.last().click()
+  await expect(page.getByLabel('Votre demande')).toHaveValue(suggestion)
+  await expect(page.getByLabel('Votre demande')).toBeFocused()
+  expect(sent).toBe(false)
+})
+
+test('shows the form panel with its pickers and save action', async ({ page }) => {
   await setupChart(page)
 
-  await expect(page.getByRole('button', { name: 'Formulaire', exact: true })).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByRole('tab', { name: 'Édition manuelle' })).toHaveAttribute('aria-selected', 'true')
   await expect(page.getByTestId('form-panel')).toBeVisible()
   await expect(page.getByTestId('assistant-panel')).toBeHidden()
   await expect(page.getByTestId('producer-select')).toBeVisible()
@@ -688,6 +812,53 @@ test('shows the form panel by default with its pickers and save action', async (
   await expect(page.locator('#resource-select')).toBeVisible()
   await expect(page.getByTestId('source-status')).toContainText('colonnes disponibles')
   await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeVisible()
+})
+
+test('opens an existing chart on the manual editing tab', async ({ page }) => {
+  const chart = await createChart(page.request, { title: `Chart configurator default tab ${Date.now()}` })
+  try {
+    await mockTabular(page)
+    await page.goto(`/admin/beta/charts/${chart.id}`)
+    await page.waitForLoadState('networkidle')
+
+    await expect(page.getByRole('tab', { name: 'Édition manuelle' })).toHaveAttribute('aria-selected', 'true')
+    await expect(page.getByRole('tab', { name: 'Assistant' })).toHaveAttribute('aria-selected', 'false')
+    await expect(page.getByTestId('form-panel')).toBeVisible()
+    await expect(page.getByTestId('assistant-panel')).toBeHidden()
+    await expect(page.getByRole('heading', { level: 2, name: 'Modifier la visualisation' })).toBeVisible()
+  }
+  finally {
+    await deleteChart(page.request, chart.id)
+  }
+})
+
+test('the editor tabs follow the arrow, Home and End keys with a roving tabindex', async ({ page }) => {
+  await mockTabular(page)
+  await page.goto('/admin/beta/chart')
+  await page.waitForLoadState('networkidle')
+
+  const assistantTab = page.getByRole('tab', { name: 'Assistant' })
+  const manualTab = page.getByRole('tab', { name: 'Édition manuelle' })
+  await expect(assistantTab).toHaveAttribute('tabindex', '0')
+  await expect(manualTab).toHaveAttribute('tabindex', '-1')
+  await expect(page.getByRole('tabpanel', { name: 'Assistant' })).toBeVisible()
+
+  await assistantTab.focus()
+  await page.keyboard.press('ArrowRight')
+  await expect(manualTab).toBeFocused()
+  await expect(manualTab).toHaveAttribute('aria-selected', 'true')
+  await expect(manualTab).toHaveAttribute('tabindex', '0')
+  await expect(page.getByRole('tabpanel', { name: 'Édition manuelle' })).toBeVisible()
+
+  await page.keyboard.press('Home')
+  await expect(assistantTab).toBeFocused()
+  await expect(assistantTab).toHaveAttribute('aria-selected', 'true')
+
+  await page.keyboard.press('End')
+  await expect(manualTab).toBeFocused()
+
+  await page.keyboard.press('ArrowLeft')
+  await expect(assistantTab).toBeFocused()
 })
 
 test('resource schema is collapsed and lists the profile columns', async ({ page }) => {
@@ -914,19 +1085,21 @@ test('assistant waits for a resource before accepting messages', async ({ page }
   await page.getByTestId('searchable-select-avec-qui-souhaitez-vous-publier').click()
   await page.getByRole('option', { name: 'Admin User', exact: true }).click()
 
-  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await page.getByRole('tab', { name: 'Assistant' }).click()
   await expect(page.locator('#assistant-waiting')).toBeVisible()
   await expect(page.getByLabel('Votre demande')).toBeDisabled()
 })
 
 test('chat message is sent with the selected resource and the conversation survives tab switches', async ({ page }) => {
+  // Same script as the fake services, routed in the page so a local run never reaches a real assistant.
+  await routeAssistantStream(page, assistantChatStream)
   await setupChart(page)
 
-  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await page.getByRole('tab', { name: 'Assistant' }).click()
   await expect(page.getByTestId('assistant-panel')).toBeVisible()
   await expect(page.getByTestId('form-panel')).toBeHidden()
   await expect(page.locator('#resource-select')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeHidden()
+  await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeVisible()
 
   const request = await sendAssistantMessage(page, 'Logements par région en histogramme')
   const body = request.postDataJSON() as { resource_id: string, visualization: Record<string, unknown>, messages: Array<{ role: string }> }
@@ -942,49 +1115,53 @@ test('chat message is sent with the selected resource and the conversation survi
   await expect(reply).toContainText('Graphique créé.')
   const replyText = await reply.innerText()
 
-  await page.getByRole('button', { name: 'Formulaire', exact: true }).click()
+  await page.getByRole('tab', { name: 'Édition manuelle' }).click()
   await expect(page.getByTestId('form-panel')).toBeVisible()
   await expect(page.getByTestId('assistant-panel')).toBeHidden()
   await expect(reply).toBeAttached()
-  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await page.getByRole('tab', { name: 'Assistant' }).click()
   expect(await reply.innerText()).toBe(replyText)
 })
 
 test('changing resource after a chat message sends the new resource_id', async ({ page }) => {
+  // Same script as the fake services, routed in the page so a local run never reaches a real assistant.
+  await routeAssistantStream(page, assistantChatStream)
   await withSecondTabularResource(page)
   await setupChart(page)
 
-  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await page.getByRole('tab', { name: 'Assistant' }).click()
   const firstRequest = await sendAssistantMessage(page, 'Logements par région')
   expect(firstRequest.postDataJSON()).toMatchObject({ resource_id: RESOURCE_ID })
   await expect(page.getByTestId('assistant-panel').locator('article').last()).toContainText('Graphique créé.')
 
-  await page.getByRole('button', { name: 'Formulaire', exact: true }).click()
+  await page.getByRole('tab', { name: 'Édition manuelle' }).click()
   const secondResourceId = await otherResourceId(page)
   await page.getByLabel('Choix de la ressource').selectOption(secondResourceId)
 
-  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await page.getByRole('tab', { name: 'Assistant' }).click()
   const secondRequest = await sendAssistantMessage(page, 'Logements par EPCI')
   expect(secondRequest.postDataJSON()).toMatchObject({ resource_id: secondResourceId })
 })
 
 test('test_a_tool_result_is_applied_only_once', async ({ page }) => {
+  // Same script as the fake services, routed in the page so a local run never reaches a real assistant.
+  await routeAssistantStream(page, assistantChatStream)
   await setupChart(page)
 
-  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await page.getByRole('tab', { name: 'Assistant' }).click()
   await sendAssistantMessage(page, 'Premières doses par département, top 5')
   await expect(page.getByTestId('assistant-panel').locator('article').last()).toContainText('Graphique créé.')
 
-  await page.getByRole('button', { name: 'Formulaire', exact: true }).click()
+  await page.getByRole('tab', { name: 'Édition manuelle' }).click()
   await expect(page.getByLabel('Titre')).toHaveValue(ASSISTANT_CHART_TITLE)
   await expect(page.getByLabel('Nombre de valeurs')).toHaveValue('5')
   await expect(page.locator('#x-axis-sort-combined .input')).toContainText('n_cum_dose1 - Descendant')
 
   await page.getByLabel('Titre').fill('Titre modifié à la main')
   for (let i = 0; i < 2; i++) {
-    await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+    await page.getByRole('tab', { name: 'Assistant' }).click()
     await expect(page.getByTestId('assistant-panel')).toBeVisible()
-    await page.getByRole('button', { name: 'Formulaire', exact: true }).click()
+    await page.getByRole('tab', { name: 'Édition manuelle' }).click()
     await expect(page.getByTestId('form-panel')).toBeVisible()
   }
   await expect(page.getByLabel('Titre')).toHaveValue('Titre modifié à la main')
@@ -996,11 +1173,11 @@ test('test_a_result_for_another_resource_is_ignored', async ({ page }) => {
   // A create_chart for a resource that is no longer the selected one.
   await routeAssistantStream(page, createChartStream('00000000-0000-4000-8000-000000000000'))
 
-  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await page.getByRole('tab', { name: 'Assistant' }).click()
   await sendAssistantMessage(page, 'Premières doses par département')
   await expect(page.getByTestId('assistant-panel').locator('article').last()).toContainText('Graphique créé.')
 
-  await page.getByRole('button', { name: 'Formulaire', exact: true }).click()
+  await page.getByRole('tab', { name: 'Édition manuelle' }).click()
   await expect(page.getByLabel('Titre')).toHaveValue('Mon graphique')
   await expect(page.getByLabel('Nombre de valeurs')).toHaveValue('')
   expect(await page.getByPlaceholder('Rechercher une colonne à afficher...').inputValue()).toBe('année_publication')
@@ -1015,11 +1192,11 @@ test('a count chart sorted by Y keeps its sort', async ({ page }) => {
   output.chart.series = [{ ...output.chart.series[0]!, column_y: 'nom_region', aggregate_y: 'count' }]
   await routeAssistantStream(page, createChartStream(RESOURCE_ID, output))
 
-  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await page.getByRole('tab', { name: 'Assistant' }).click()
   await sendAssistantMessage(page, 'Les 5 régions les plus représentées')
   await expect(page.getByTestId('assistant-panel').locator('article').last()).toContainText('Graphique créé.')
 
-  await page.getByRole('button', { name: 'Formulaire', exact: true }).click()
+  await page.getByRole('tab', { name: 'Édition manuelle' }).click()
   await expect(page.getByLabel('Nombre de valeurs')).toHaveValue('5')
   await expect(page.locator('#x-axis-sort-combined .input')).toContainText('Compter - Descendant')
 

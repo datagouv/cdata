@@ -58,6 +58,8 @@ export async function setupChart(page: Page) {
   await resourceProfilePromise
   await page.waitForTimeout(300) // necessary to wait for the watch, no real async to check
 
+  // The assistant is the default panel: most specs drive the form.
+  await page.getByRole('tab', { name: 'Édition manuelle' }).click()
   await expect(page.getByLabel('Titre')).toBeVisible()
   expect(await page.getByPlaceholder('Rechercher une colonne à afficher...').inputValue()).toBe('année_publication')
 }

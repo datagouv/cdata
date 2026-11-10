@@ -5,6 +5,8 @@ import type { AssistantChatBody } from '../assistantApi'
 import { RESOURCE_ID, setupChart } from './fixtures'
 
 const ASSISTANT_API_BASE = (process.env.NUXT_PUBLIC_ASSISTANT_API_BASE || process.env.FAKE_SERVICES_URL || 'http://localhost:3100').replace(/\/$/, '')
+// API calls go straight to the backend: the frontend (baseURL) does not proxy them
+const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 const X_COLUMN = 'nom_region'
 const Y_COLUMN = 'Nombre de logements'
 
@@ -34,7 +36,9 @@ async function sendMessage(page: Page, prompt: string) {
     await expect(page.getByLabel('Votre demande')).toHaveValue('', { timeout: 500 })
   }).toPass()
   const request = await requestPromise
-  expect(request.url()).toBe(`${ASSISTANT_API_BASE}${ASSISTANT_CHAT_PATH}`)
+  const url = new URL(request.url())
+  expect(`${url.origin}${url.pathname}`).toBe(`${ASSISTANT_API_BASE}${ASSISTANT_CHAT_PATH}`)
+  expect(url.searchParams.get('lang')).toBe('fr')
 }
 
 function lastReply(page: Page) {
@@ -50,12 +54,12 @@ test('the assistant creates a chart then updates it without refetching the data'
   await setupChart(page)
 
   // First turn: create_chart fills the form and the preview fetches the data.
-  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await page.getByRole('tab', { name: 'Assistant' }).click()
   const dataBeforeCreate = dataRequests.length
   await sendMessage(page, 'Logements par région, top 5')
   await expect(lastReply(page)).toContainText('Graphique créé.')
 
-  await page.getByRole('button', { name: 'Formulaire', exact: true }).click()
+  await page.getByRole('tab', { name: 'Édition manuelle' }).click()
   await expect(page.getByLabel('Titre')).toHaveValue('Logements par région')
   await expect(page.getByPlaceholder('Rechercher une colonne à afficher...')).toHaveValue(X_COLUMN)
   await expect(page.getByPlaceholder('Rechercher une colonne Y...')).toHaveValue(Y_COLUMN)
@@ -73,11 +77,11 @@ test('the assistant creates a chart then updates it without refetching the data'
   await page.waitForTimeout(1000)
   const dataBeforeUpdate = dataRequests.length
   await expect(page.getByLabel('Unité', { exact: true })).toHaveValue('')
-  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await page.getByRole('tab', { name: 'Assistant' }).click()
   await sendMessage(page, 'Ajoute l’unité « doses »')
   await expect(lastReply(page)).toContainText('Unité ajoutée.')
 
-  await page.getByRole('button', { name: 'Formulaire', exact: true }).click()
+  await page.getByRole('tab', { name: 'Édition manuelle' }).click()
   await expect(page.getByLabel('Unité', { exact: true })).toHaveValue('doses')
   await expect(page.getByLabel('Titre')).toHaveValue('Logements par région')
   await expect(page.getByLabel('Nombre de valeurs')).toHaveValue('5')
@@ -103,7 +107,7 @@ test('a chart with more than 50 groups shows the truncation warning', async ({ p
     }
   })
 
-  await page.getByRole('button', { name: 'Assistant', exact: true }).click()
+  await page.getByRole('tab', { name: 'Assistant' }).click()
   await sendMessage(page, 'Logements par région, top 5')
   await expect(lastReply(page)).toContainText('Graphique créé.')
 
@@ -111,4 +115,26 @@ test('a chart with more than 50 groups shows the truncation warning', async ({ p
   await expect(page.getByTestId('chart-truncation-warning')).toHaveText(
     `Seules les 50 premières valeurs de ${X_COLUMN} sont prises en compte : le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.`,
   )
+})
+
+test('a chart created by the assistant is saved without leaving the assistant tab', async ({ page }) => {
+  await routeAssistantStream(page, scriptedStream)
+  await setupChart(page)
+
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+  await sendMessage(page, 'Logements par région, top 5')
+  await expect(lastReply(page)).toContainText('Graphique créé.')
+
+  const saveResponsePromise = page.waitForResponse(response =>
+    response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST',
+  )
+  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  const saved = (await (await saveResponsePromise).json()) as { id: string, title: string }
+  try {
+    expect(saved.title).toBe('Logements par région')
+    await expect(page.getByRole('tab', { name: 'Assistant' })).toHaveAttribute('aria-selected', 'true')
+  }
+  finally {
+    await page.request.delete(`${API_BASE_URL}/api/1/visualizations/${saved.id}/`)
+  }
 })
