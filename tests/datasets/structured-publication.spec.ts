@@ -22,8 +22,8 @@ const SCHEMA_HOST = 'https://schema.test.local'
 // Opening a file parses it, builds the whole table and only then validates it: on a busy
 // CPU, Firefox takes over 5 s to get there with the 228 columns of these files.
 const SPREADSHEET_OPENED = { timeout: 20_000 }
-// Publishing to an existing dataset uploads the file and updates the resource, then the
-// dataset page loads: on a busy CI runner, Firefox takes over 5 s for the whole of it
+// Publishing uploads the file and updates its resource before moving on (to the last step,
+// or to the dataset page which then loads): on a busy CPU it takes over 5 s
 const PUBLISHED = { timeout: 20_000 }
 
 // Column counts are measured against the fixture file, not assumed.
@@ -617,7 +617,7 @@ test.describe('navigation', () => {
     // Publishing empties the wizard form on purpose. That must not send the user back
     // to the first step, which would make the last screen unreachable and wipe the
     // dataset just created.
-    await expect(page).toHaveURL(/step=4/)
+    await expect(page).toHaveURL(/step=4/, PUBLISHED)
     await expect(page.getByRole('button', { name: 'Publier le jeu de données' })).toBeVisible()
   })
 
