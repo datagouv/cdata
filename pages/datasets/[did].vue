@@ -348,9 +348,7 @@
                 </TranslationT>
               </SimpleBanner>
               <SimpleBanner
-                v-if="
-                  'ecospheres-indicateurs' in dataset.extras
-                "
+                v-if="ecologieUrl"
                 type="primary-frame"
               >
                 <TranslationT
@@ -359,7 +357,7 @@
                   class="!m-0 text-sm"
                 >
                   <template #link>
-                    <CdataLink :href="`https://${siteConfig.url.includes('demo') ? 'demo.': ''}ecologie.data.gouv.fr/indicators/${dataset.id}`">
+                    <CdataLink :href="ecologieUrl">
                       ecologie.data.gouv.fr
                     </CdataLink>
                   </template>
@@ -648,6 +646,16 @@ const exploreUrl = computed(() => {
 const exploreHref = computed(() => {
   if (!newExplorerEnabled.value) return exploreUrl.value
   return dataset.value?.resources.total ? `/explore/${dataset.value.slug}` : null
+})
+
+// ecologie.data.gouv.fr shows indicators and the datasets of its universe, both
+// flagged by an extra. Indicators win.
+const ecologieUrl = computed(() => {
+  if (!dataset.value) return null
+  const base = `https://${siteConfig.url.includes('demo') ? 'demo.' : ''}ecologie.data.gouv.fr`
+  if ('ecospheres-indicateurs' in dataset.value.extras) return `${base}/indicators/${dataset.value.slug}`
+  if (dataset.value.extras['ecologie:universe']) return `${base}/datasets/${dataset.value.slug}`
+  return null
 })
 
 // The badge labels are a reference list needed only to name the badges this
