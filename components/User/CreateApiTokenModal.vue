@@ -61,6 +61,7 @@
 <script setup lang="ts">
 import { BrandedButton, toast } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
+import { FetchError } from 'ofetch'
 import type { ApiTokenCreated } from '~/types/api-tokens'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
 
@@ -71,7 +72,9 @@ const emit = defineEmits<{
   created: [token: ApiTokenCreated]
 }>()
 
-const isOpen = ref(false)
+const isOpen = useFreshSessionModal('api_token', 'create', async () => {
+  await $api('/api/1/me/fresh/')
+})
 const loading = ref(false)
 const name = ref('')
 const expiresAt = ref('')
@@ -92,7 +95,10 @@ async function submit(close: () => void) {
     close()
     emit('created', result)
   }
-  catch {
+  catch (e) {
+    // The session may have gone stale since the modal opened: a 401 has already sent the
+    // user to /verify, with this page's URL as `next`.
+    if (e instanceof FetchError && e.statusCode === 401) return
     toast.error(t('Impossible de créer le token.'))
   }
   finally {
