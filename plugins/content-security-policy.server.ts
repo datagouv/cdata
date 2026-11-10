@@ -46,9 +46,12 @@ export default defineNuxtPlugin(() => {
 
   const policy = useResponseHeader(header)
   const reportingEndpoints = useResponseHeader('Reporting-Endpoints')
-  const hosts = [config.app.cdnURL, config.public.matomo.host]
-    .filter(Boolean)
-    .map(url => new URL(url).origin)
+  // Only matomo.js on the Matomo host: its other URLs include a JSONP API, which would run as
+  // a script any callback an injected `<script src>` passes it.
+  const sources = [
+    config.app.cdnURL && new URL(config.app.cdnURL).origin,
+    config.public.matomo.host && new URL('/matomo.js', config.public.matomo.host).href,
+  ].filter(Boolean)
   const reportUri = config.public.sentry.dsn
     ? sentrySecurityEndpoint(config.public.sentry.dsn, config.public.apiBase)
     : undefined
@@ -58,7 +61,7 @@ export default defineNuxtPlugin(() => {
   injectHead().hooks!.hook('ssr:rendered', ({ tags }) => {
     const hashes = tags.filter(isNuxtInlineScript).map(hash)
     policy.value = [
-      ['script-src', '\'self\'', ...hosts, ...hashes].join(' '),
+      ['script-src', '\'self\'', ...sources, ...hashes].join(' '),
       'object-src \'none\'',
       'base-uri \'self\'',
       ...reporting,

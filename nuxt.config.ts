@@ -78,7 +78,7 @@ export default defineNuxtConfig({
     crispWebsiteId: '',
     albertApiBaseUrl: 'https://albert.api.etalab.gouv.fr/',
     albertApiKey: '',
-    // Content Security Policy of the pages (server/plugins/content-security-policy.ts):
+    // Content Security Policy of the pages (plugins/content-security-policy.server.ts):
     // `disabled`, `report-only` (the browser reports the violations without blocking
     // anything) or `enforce`. Set through NUXT_CONTENT_SECURITY_POLICY, read at startup.
     contentSecurityPolicy: 'disabled',
