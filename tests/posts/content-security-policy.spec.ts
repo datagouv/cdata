@@ -9,8 +9,9 @@ test.describe('Content Security Policy', () => {
     await deletePosts(request, createdIds)
   })
 
-  // The browser reports each script it refuses: those are the point of the test.
-  test.use({ allowedConsoleMessages: ['Content Security Policy', 'Content-Security-Policy'] })
+  // The browser reports each script it refuses: those are the point of the test. Firefox also
+  // warns that a refused `<script src>` failed to load.
+  test.use({ allowedConsoleMessages: ['Content Security Policy', 'Content-Security-Policy', 'Loading failed for the <script>'] })
 
   test('the scripts of an HTML post do not run', async ({ page, request }) => {
     // The body of an HTML post is rendered as is, by the server: its scripts reach the page.
