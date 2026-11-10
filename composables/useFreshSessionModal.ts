@@ -8,6 +8,7 @@ import { FetchError } from 'ofetch'
  *
  * `check` asks udata, before the modal shows, for something answered with a 401 when the
  * session must be reauthenticated: nothing typed in the modal is lost to the round-trip.
+ * `pending` is true while udata answers, for the button to show it is working on it.
  */
 export function useFreshSessionModal(query: string, value: string, check: () => Promise<void>) {
   const route = useRoute()
@@ -16,8 +17,10 @@ export function useFreshSessionModal(query: string, value: string, check: () => 
   const setRequested = (open: boolean) => router.replace({ query: { ...route.query, [query]: open ? value : undefined } })
   // Shown only once udata accepts the request, so that it does not flash before /verify.
   const shown = ref(false)
+  const pending = ref(false)
 
   const show = async () => {
+    pending.value = true
     try {
       await check()
     }
@@ -27,6 +30,9 @@ export function useFreshSessionModal(query: string, value: string, check: () => 
       // leaves them here, so the request is dropped for the button to ask again.
       if (!(e instanceof FetchError) || e.statusCode !== 401) setRequested(false)
       return
+    }
+    finally {
+      pending.value = false
     }
     shown.value = true
   }
@@ -39,11 +45,13 @@ export function useFreshSessionModal(query: string, value: string, check: () => 
     if (requested.value) show()
   })
 
-  return computed({
+  const isOpen = computed({
     get: () => shown.value,
     set: (open: boolean) => {
       if (!open) shown.value = false
       setRequested(open)
     },
   })
+
+  return { isOpen, pending: readonly(pending) }
 }

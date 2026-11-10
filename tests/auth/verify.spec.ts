@@ -41,6 +41,39 @@ test.describe('when the two-factor setup requires a fresh session', () => {
   })
 })
 
+test.describe('when the email change requires a fresh session', () => {
+  // The 401 below is the point of the test: the browser logs it.
+  test.use({ allowedConsoleMessages: ['the server responded with a status of 401'] })
+
+  test('the reauthentication goes back to the email change', async ({ page }) => {
+    // udata asks for a fresh session until the identity is confirmed.
+    await page.route('**/change-email?*', route => route.fulfill({ status: 401, json: { response: { reauth_required: true } } }))
+    await gotoHydrated(page, '/admin/me/profile')
+    await page.getByRole('button', { name: 'Modifier l\'adresse email' }).click()
+    await expect(page.getByRole('heading', { level: 1, name: 'Confirmer votre identité' })).toBeVisible()
+
+    await page.unroute('**/change-email?*')
+    await page.goto('/verify?flash=proconnect_reauth_success')
+
+    const dialog = page.getByRole('dialog', { name: 'Modifier l\'adresse email' })
+    await expect(dialog).toBeVisible()
+    await expect(dialog.getByLabel('Nouvelle adresse email')).toBeVisible()
+  })
+
+  test('going back from the reauthentication does not send to it again', async ({ page }) => {
+    await page.route('**/change-email?*', route => route.fulfill({ status: 401, json: { response: { reauth_required: true } } }))
+    await gotoHydrated(page, '/')
+    await gotoHydrated(page, '/admin/me/profile')
+    await page.getByRole('button', { name: 'Modifier l\'adresse email' }).click()
+    await expect(page.getByRole('heading', { level: 1, name: 'Confirmer votre identité' })).toBeVisible()
+
+    await page.goBack()
+
+    await expect(page).not.toHaveURL(/\/verify/)
+    await expect(page).not.toHaveURL(/change_email=/)
+  })
+})
+
 test('the ProConnect button asks udata for a reauthentication, not a login', async ({ page }) => {
   let requested: URL | undefined
   // Stop at udata: the round-trip itself goes through ProConnect.

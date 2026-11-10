@@ -12,6 +12,7 @@
         size="xs"
         :icon="RiEditLine"
         :disabled="loading"
+        :loading="pending"
         v-bind="attrs"
         v-on="listeners"
       >
@@ -82,7 +83,7 @@ const config = useRuntimeConfig()
 const { $api } = useNuxtApp()
 
 // The form itself answers with a 401 when the session must be reauthenticated.
-const isOpen = useFreshSessionModal('change_email', 'open', async () => {
+const { isOpen, pending } = useFreshSessionModal('change_email', 'open', async () => {
   await $api('/change-email')
 })
 
