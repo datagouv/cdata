@@ -388,18 +388,37 @@ export function useFormatTabular() {
 const TRUTHY_VALUES = ['true', '1', 'oui', 'yes']
 const FALSY_VALUES = ['false', '0', 'non', 'no']
 
-// `encodeURIComponent` leaves `.`, `(` and `)` as-is, but they are the operator
-// separator and the delimiters of the API's `or(...)` grammar: a search value
-// containing one makes the parser reject the whole query with a 400.
-// The API percent-decodes the query string once before running the grammar
-// parser, then percent-decodes the parsed value: grammar-significant characters
-// must therefore be sent double-encoded (`%252E`) so the first decode leaves
-// them escaped (`%2E`) for the parser to unquote after parsing.
+// api-tabular percent-decodes the query string, parses its `or(...)` grammar
+// (`,` `(` `)` `.` `"`), then PostgREST decodes it again and parses its own
+// (`,` `)` `"` `\`). A value wrapped in quotes, with `\` and `"` escaped, is read
+// whole by PostgREST; the characters api-tabular would parse, `#` which would end
+// the PostgREST URL and `%` which PostgREST would decode are encoded twice so that
+// they survive the first decode.
+// udata builds the same conditions for the assistant: both must stay identical.
 export function encodeConditionValue(value: string): string {
-  return encodeURIComponent(value)
-    .replace(/\./g, '%252E')
+  const escaped = encodeURIComponent(value)
+    .replace(/%25/g, '%2525')
+    .replace(/%5C/g, '%5C%5C')
+    .replace(/%22/g, '%5C%2522')
+    .replace(/%2C/g, '%252C')
     .replace(/\(/g, '%2528')
     .replace(/\)/g, '%2529')
+    .replace(/\./g, '%252E')
+    .replace(/%23/g, '%2523')
+  return `%22${escaped}%22`
+}
+
+// The explorer search sends its `or(...)` through ufo, which encodes it once more:
+// the value only carries the first layer. It cannot be quoted, since api-tabular
+// wraps a `__contains` value in `*…*`, and an unquoted value cannot hold a `,` or
+// a `)` for PostgREST: the LIKE wildcard `_` stands in for them.
+function encodeSearchValue(value: string): string {
+  return encodeURIComponent(value)
+    .replace(/%5C/g, '%5C%5C')
+    .replace(/%22/g, '%5C%22')
+    .replace(/\./g, '%2E')
+    .replace(/\(/g, '%28')
+    .replace(/%2C|\)/g, '_')
 }
 
 // A decimal literal, not `Number()`: the API compares against a number column,
@@ -422,10 +441,10 @@ export function buildGlobalSearchConditions(
   for (const col of allColumns) {
     const type = getColumnType(col)
     if (type === 'text' || type === 'categorical') {
-      conditions.push(col + '__contains.' + encodeConditionValue(searchValue))
+      conditions.push(col + '__contains.' + encodeSearchValue(searchValue))
     }
     else if (type === 'number' && NUMBER_LITERAL_RE.test(searchValue)) {
-      conditions.push(col + '__exact.' + encodeConditionValue(searchValue))
+      conditions.push(col + '__exact.' + encodeSearchValue(searchValue))
     }
   }
   return conditions

@@ -13,6 +13,7 @@ export type TabularDataResponse = {
     swagger: string
     next: string
   }
+  // absent from the answer to an aggregate
   meta: { total: number }
 }
 
@@ -59,12 +60,20 @@ export async function fetchTabularData(config: PluginConfig, options: FetchTabul
 
 /**
  * Whether a group exists past the page of `options`: same query, one row per page.
+ * PostgREST answers 416 rather than an empty page when the offset passes the rows
+ * left by the filters.
  */
 export async function hasMoreGroups(config: PluginConfig, options: FetchTabularDataOptions): Promise<boolean> {
   const pageSize = options.pageSize ?? config.tabularApiPageSize ?? 15
   const nextRow = (options.page ?? 1) * pageSize + 1
-  const response = await fetchTabularData(config, { ...options, page: nextRow, pageSize: 1 })
-  return response.data.length > 0
+  try {
+    const response = await fetchTabularData(config, { ...options, page: nextRow, pageSize: 1 })
+    return response.data.length > 0
+  }
+  catch (error) {
+    if ((error as { statusCode?: unknown } | null)?.statusCode === 416) return false
+    throw error
+  }
 }
 
 /**
@@ -100,13 +109,24 @@ export function buildFilterQuery(filters: GenericFilter): string {
   return params.join('&')
 }
 
-/** `column__condition=value` param for a top-level (ANDed) filter, null when empty */
+// The second pass also encodes the `!'()*` that `encodeURIComponent` leaves as-is,
+// like the `quote` of udata, which sends the same filters for the assistant.
+function encodeTwice(value: string): string {
+  return encodeURIComponent(encodeURIComponent(value))
+    .replace(/[!'()*]/g, char => `%${char.charCodeAt(0).toString(16).toUpperCase()}`)
+}
+
+/**
+ * `column__condition=value` param for a top-level (ANDed) filter, null when empty.
+ * The value is encoded twice: api-tabular decodes the query string, then PostgREST
+ * decodes it again.
+ */
 function serializeParam(filter: Filter): string | null {
   const column = encodeURIComponent(filter.column)
   if (filter.condition === 'is_null') return `${column}__isnull`
   if (filter.condition === 'is_not_null') return `${column}__isnotnull`
   if (filter.value === null || filter.value === undefined || filter.value === '') return null
-  return `${column}__${encodeURIComponent(filter.condition)}=${encodeURIComponent(filter.value)}`
+  return `${column}__${encodeURIComponent(filter.condition)}=${encodeTwice(filter.value)}`
 }
 
 /** `column__condition.value` condition for the `or(...)` / `and(...)` grammar, null when empty */
