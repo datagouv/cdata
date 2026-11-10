@@ -46,6 +46,7 @@
 <script setup lang="ts">
 import { useTranslation } from '../../composables/useTranslation'
 import { useComponentsConfig } from '../../config'
+import type { RouteLocationRaw } from 'vue-router'
 import type { DatasetV2WithFullObject } from '../../types/datasets'
 import DescriptionList from '../DescriptionList.vue'
 import DescriptionListTerm from '../DescriptionListTerm.vue'
@@ -57,13 +58,13 @@ import Tag from '../Tag.vue'
 
 const props = defineProps<{
   dataset: DatasetV2WithFullObject
-  tagUrl?: (tag: string) => string
+  tagUrl?: (tag: string) => string | RouteLocationRaw
 }>()
 
 const { t } = useTranslation()
 const config = useComponentsConfig()
 
-function getTagUrl(tag: string): string {
+function getTagUrl(tag: string): string | RouteLocationRaw {
   if (props.tagUrl) {
     return props.tagUrl(tag)
   }

@@ -130,7 +130,7 @@ const props = withDefaults(defineProps<{
   exitTo?: RouteLocationRaw
   // Inline mode only: link builder for the "Explorer" button in the viewer header
   // that opens the fullscreen explorer on the current resource.
-  exploreTo?: (resource: Resource) => string
+  exploreTo?: (resource: Resource) => string | RouteLocationRaw
   // Overrides the "Copier le lien" target.
   resourceExternalUrl?: (resource: Resource) => string
   canEdit?: boolean
