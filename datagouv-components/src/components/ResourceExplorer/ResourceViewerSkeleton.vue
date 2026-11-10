@@ -80,7 +80,7 @@ const props = defineProps<{
   dataset: Dataset | DatasetV2
   resources?: Resource[]
   resourceTo?: (resource: Resource) => RouteLocationRaw
-  exploreTo?: (resource: Resource) => string
+  exploreTo?: (resource: Resource) => string | RouteLocationRaw
   resourceExternalUrl?: (resource: Resource) => string
   replace?: boolean
   fullscreen?: boolean
