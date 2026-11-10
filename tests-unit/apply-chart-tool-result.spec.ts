@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { toChartApi } from '~/datagouv-components/src/functions/charts'
 import type { ChartForm, GenericFilter } from '@datagouv/components-next'
-import { applyChartToolResult } from '~/components/Charts/applyChartToolResult'
+import { applyChartToolResult, createChartResultHandler } from '~/components/Charts/applyChartToolResult'
 import type { ChartToolChart, ChartToolResult } from '~/utils/assistant'
 
 const filter = { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Bretagne' } as unknown as GenericFilter
@@ -113,5 +113,25 @@ describe('applyChartToolResult', () => {
       expect(serie.type).toBe('histogram')
       expect(serie.filters).toEqual(filter)
     }
+  })
+})
+
+describe('createChartResultHandler', () => {
+  it('applies a tool call once: a re-emitted result never overwrites later manual edits', () => {
+    const form = makeForm()
+    const handle = createChartResultHandler(() => form, () => 'res-1')
+    handle(create())
+    expect(form.title).toBe('New')
+
+    form.title = 'Edited by hand'
+    handle(create())
+    expect(form.title).toBe('Edited by hand')
+  })
+
+  it('ignores a created chart for another resource than the selected one', () => {
+    const form = makeForm()
+    const handle = createChartResultHandler(() => form, () => 'other-res')
+    handle(create())
+    expect(form.title).toBe('Old')
   })
 })

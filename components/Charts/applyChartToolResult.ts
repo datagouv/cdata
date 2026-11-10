@@ -56,3 +56,18 @@ export function applyChartToolResult(form: ChartForm, result: ChartToolResult): 
     }
   }
 }
+
+/**
+ * Handler of the assistant's chart results: the only guard against applying a
+ * tool call twice, so a result re-emitted later never overwrites manual edits.
+ */
+export function createChartResultHandler(form: () => ChartForm, selectedResource: () => string) {
+  const appliedToolCalls = new Set<string>()
+  return (result: ChartToolResult) => {
+    if (appliedToolCalls.has(result.toolCallId)) return
+    // The resource changed while the assistant was answering: the chart is for another one.
+    if (result.kind === 'create' && result.chart.series[0]?.resource_id !== selectedResource()) return
+    applyChartToolResult(form(), result)
+    appliedToolCalls.add(result.toolCallId)
+  }
+}
