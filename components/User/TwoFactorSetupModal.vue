@@ -88,29 +88,11 @@
 <script setup lang="ts">
 import { BrandedButton, SimpleBanner, toast } from '@datagouv/components-next'
 import { RiShieldCheckLine } from '@remixicon/vue'
-import { FetchError } from 'ofetch'
 import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplanation.vue'
 
 const { t } = useTranslation()
 const me = useMe()
 const isConfigured = ref(false)
-
-// The request for the setup lives in the URL, unlike other modals: when the setup requires
-// a fresh session, the agent is sent to /verify with this URL as `next`, and comes back to
-// the setup itself rather than to a page where they would have to start it again.
-const route = useRoute()
-const router = useRouter()
-const requested = computed(() => route.query.two_factor === 'setup')
-const setRequested = (value: boolean) => router.replace({ query: { ...route.query, two_factor: value ? 'setup' : undefined } })
-// Shown only once udata accepts the setup, so that it does not flash before /verify.
-const shown = ref(false)
-const isOpen = computed({
-  get: () => shown.value,
-  set: (open) => {
-    if (!open) shown.value = false
-    setRequested(open)
-  },
-})
 
 const emit = defineEmits<{
   setupComplete: []
@@ -127,29 +109,12 @@ const {
 } = useTwoFactorSetup()
 
 const { $api } = useNuxtApp()
-const fetchStatusAndQRCode = async () => {
-  // fetch two factor status. If freshness is required, a 401 is returned with automatic handling and redirection to /verify
-  try {
-    const { response } = await $api<{ response: { tf_primary_method: string | null } | null }>('/tf-setup')
-    isConfigured.value = !!response?.tf_primary_method
-  }
-  catch (e) {
-    // A 401 has already sent the agent to /verify or /login, with this page's URL as
-    // `next`: rewriting the query now would strip it from the new page. Any other error
-    // leaves them here, so the request is dropped for the button to ask again.
-    if (!(e instanceof FetchError) || e.statusCode !== 401) setRequested(false)
-    return
-  }
-  shown.value = true
-  await fetchQRCode()
-}
-
-watch(requested, (value) => {
-  if (value) fetchStatusAndQRCode()
-  else shown.value = false
+const isOpen = useFreshSessionModal('two_factor', 'setup', async () => {
+  const { response } = await $api<{ response: { tf_primary_method: string | null } | null }>('/tf-setup')
+  isConfigured.value = !!response?.tf_primary_method
 })
-onMounted(() => {
-  if (requested.value) fetchStatusAndQRCode()
+watch(isOpen, (open) => {
+  if (open) fetchQRCode()
 })
 
 const submit = async (close: () => void) => {

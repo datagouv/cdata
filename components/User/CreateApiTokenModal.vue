@@ -61,6 +61,7 @@
 <script setup lang="ts">
 import { BrandedButton, toast } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
+import { FetchError } from 'ofetch'
 import type { ApiTokenCreated } from '~/types/api-tokens'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
 
@@ -71,14 +72,29 @@ const emit = defineEmits<{
   created: [token: ApiTokenCreated]
 }>()
 
-const isOpen = ref(false)
+// The request lives in the URL, as for the switch to ProConnect only, along with what was
+// typed: when the creation requires a fresh session, the user is sent to /verify with this
+// URL as `next`, and comes back to the form as they left it.
+const route = useRoute()
+const router = useRouter()
+const isOpen = computed({
+  get: () => route.query.api_token === 'create',
+  set: open => router.replace({
+    query: { ...route.query, api_token: open ? 'create' : undefined, api_token_name: undefined, api_token_expires_at: undefined },
+  }),
+})
+const fromQuery = (value: unknown) => typeof value === 'string' ? value : ''
+
 const loading = ref(false)
-const name = ref('')
-const expiresAt = ref('')
+const name = ref(fromQuery(route.query.api_token_name))
+const expiresAt = ref(fromQuery(route.query.api_token_expires_at))
 
 async function submit(close: () => void) {
   loading.value = true
   try {
+    await router.replace({
+      query: { ...route.query, api_token_name: name.value.trim() || undefined, api_token_expires_at: expiresAt.value || undefined },
+    })
     const result = await $api<ApiTokenCreated>('/api/1/me/api_tokens/', {
       method: 'POST',
       body: {
@@ -92,7 +108,9 @@ async function submit(close: () => void) {
     close()
     emit('created', result)
   }
-  catch {
+  catch (e) {
+    // A 401 has already sent the user to /verify, with this page's URL as `next`.
+    if (e instanceof FetchError && e.statusCode === 401) return
     toast.error(t('Impossible de créer le token.'))
   }
   finally {
