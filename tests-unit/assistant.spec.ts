@@ -2,14 +2,22 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ChartForApi } from '@datagouv/components-next'
+import type { ChartForApi, ColumnDefinition } from '@datagouv/components-next'
 import ChatPanel from '~/components/Assistant/ChatPanel.vue'
+import AssistantSpinner from '~/components/Assistant/AssistantSpinner.vue'
 import ToolTrace from '~/components/Assistant/ToolTrace.vue'
-import { buildChatBody, buildChatDisplayItems, chartToolResults, isNearChatBottom, mapAssistantError, toAssistantVisualization } from '~/utils/assistant'
+import { buildChatBody, buildChatDisplayItems, chartToolResults, getStarterQuestions, isNearChatBottom, mapAssistantError, toAssistantVisualization } from '~/utils/assistant'
 import type { AssistantVisualization, ToolTrace as ToolTraceModel } from '~/utils/assistant'
 
 const sendMessageMock = vi.hoisted(() => vi.fn())
 const stopMock = vi.hoisted(() => vi.fn())
+const newConversationMock = vi.hoisted(() => vi.fn())
+
+// The real builder, spied on to check which messages are rebuilt on each chunk.
+vi.mock('~/utils/assistant', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('~/utils/assistant')>()
+  return { ...actual, buildChatDisplayItems: vi.fn(actual.buildChatDisplayItems) }
+})
 
 // State shared with the mocked useAssistantChat. The mock factory (which runs
 // after imports) fills it with real Vue refs; tests set state before mounting.
@@ -20,12 +28,13 @@ const chatState = vi.hoisted(() => ({} as {
 }))
 
 vi.mock('~/components/Assistant/useAssistantChat', async () => {
-  const { ref } = await import('vue')
-  chatState.messages = ref([])
+  const { ref, shallowRef } = await import('vue')
+  // useChat publishes a new array, and a new object for each changed message.
+  chatState.messages = shallowRef([])
   chatState.status = ref('ready')
   chatState.error = ref(null)
   return {
-    useAssistantChat: () => ({ ...chatState, sendMessage: sendMessageMock, stop: stopMock }),
+    useAssistantChat: () => ({ ...chatState, sendMessage: sendMessageMock, stop: stopMock, newConversation: newConversationMock }),
   }
 })
 
@@ -37,9 +46,15 @@ function assistantTextMessage(text: string) {
   }
 }
 
-function mountPanel(resourceId: string | null, visualization: AssistantVisualization | null = null) {
+type PanelResource = { title: string, format: string | null }
+
+function mountPanel(
+  resourceId: string | null,
+  visualization: AssistantVisualization | null = null,
+  { columns = [], resource = resourceId ? { title: 'Table parquet A', format: 'parquet' } : null }: { columns?: Array<ColumnDefinition>, resource?: PanelResource | null } = {},
+) {
   return mount(ChatPanel, {
-    props: { resourceId, visualization },
+    props: { resourceId, visualization, columns, resource },
     attachTo: document.body,
     global: {
       mocks: { $t: (key: string) => key },
@@ -262,6 +277,121 @@ describe('summarizes chart tool traces', () => {
   })
 })
 
+describe('getStarterQuestions', () => {
+  const t = (key: string, options?: Record<string, string | number> | number) =>
+    typeof options === 'object' ? key.replace(/\{(\w+)\}/g, (_, name) => String(options[name])) : key
+  const OPENER = 'Quel graphique peut-on faire avec ces données ?'
+
+  it('suggests charts crossing the first useful dimension and measure', () => {
+    const questions = getStarterQuestions([
+      { name: '__id', type: 'number' },
+      { name: 'departement', type: 'categorical' },
+      { name: 'population', type: 'number' },
+    ], t)
+
+    expect(questions).toEqual([
+      OPENER,
+      'Fais un histogramme de la somme de « population » par « departement »',
+      'Compte les lignes par « departement »',
+      'Montre la moyenne de « population » par « departement »',
+    ])
+  })
+
+  it('suggests a line chart over a date column', () => {
+    const questions = getStarterQuestions([
+      { name: 'date_mesure', type: 'date' },
+      { name: 'temperature', type: 'number' },
+    ], t)
+
+    expect(questions).toContain('Trace l’évolution de « temperature » selon « date_mesure »')
+  })
+
+  it('skips identifier, code and year columns as dimensions but uses a year as time axis', () => {
+    const questions = getStarterQuestions([
+      { name: 'code_insee', type: 'number' },
+      { name: 'annee', type: 'year' },
+      { name: 'url', type: 'text' },
+      { name: 'region_id', type: 'categorical' },
+    ], t)
+
+    expect(questions).toEqual([
+      OPENER,
+      'Trace l’évolution du nombre de lignes selon « annee »',
+      'Propose-moi un graphique pertinent pour cette ressource',
+    ])
+  })
+
+  it('suggests charts on the vote counts of « Table parquet A », not on its reference or free-text title', () => {
+    // Column names and types as api-tabular profiles that parquet resource.
+    const questions = getStarterQuestions([
+      { name: 'id', type: 'text' },
+      { name: 'url', type: 'text' },
+      { name: 'date', type: 'date' },
+      { name: 'pour', type: 'number' },
+      { name: 'title', type: 'text' },
+      { name: 'contre', type: 'number' },
+      { name: 'votants', type: 'number' },
+      { name: 'dossier_ref', type: 'number' },
+      { name: 'suffrages_exprimes', type: 'number' },
+    ], t)
+
+    expect(questions).toEqual([
+      OPENER,
+      'Trace l’évolution de « pour » selon « date »',
+      'Propose-moi un graphique pertinent pour cette ressource',
+    ])
+  })
+
+  it('skips reference and number identifiers as measures, but not measures sharing their letters', () => {
+    for (const name of ['dossier_ref', 'ref_dossier', 'reference', 'num_dossier', 'numero', 'numéro_ligne']) {
+      const questions = getStarterQuestions([{ name, type: 'number' }, { name: 'date', type: 'date' }], t)
+      expect(questions, name).toContain('Trace l’évolution du nombre de lignes selon « date »')
+    }
+    for (const name of ['montant_numeraire', 'nombre_refus', 'preference']) {
+      const questions = getStarterQuestions([{ name, type: 'number' }, { name: 'date', type: 'date' }], t)
+      expect(questions, name).toContain(`Trace l’évolution de « ${name} » selon « date »`)
+    }
+  })
+
+  it('skips free-text columns as dimensions', () => {
+    for (const name of ['title', 'titre', 'description', 'libelle_long', 'commentaire', 'url']) {
+      expect(getStarterQuestions([{ name, type: 'text' }], t), name).toEqual([
+        OPENER,
+        'Propose-moi un graphique pertinent pour cette ressource',
+      ])
+    }
+  })
+
+  it('prefers a categorical column over a text column as dimension', () => {
+    const questions = getStarterQuestions([
+      { name: 'nom', type: 'text' },
+      { name: 'region', type: 'categorical' },
+    ], t)
+
+    expect(questions).toContain('Compte les lignes par « region »')
+  })
+
+  it('compares two dimensions when there is no measure nor date', () => {
+    const questions = getStarterQuestions([
+      { name: 'commune', type: 'text' },
+      { name: 'ouvert', type: 'boolean' },
+    ], t)
+
+    expect(questions).toEqual([
+      OPENER,
+      'Compte les lignes par « commune »',
+      'Compare le nombre de lignes par « ouvert »',
+    ])
+  })
+
+  it('falls back to generic chart prompts without columns', () => {
+    expect(getStarterQuestions([], t)).toEqual([
+      OPENER,
+      'Propose-moi un graphique pertinent pour cette ressource',
+    ])
+  })
+})
+
 describe('isNearChatBottom', () => {
   function scrolledTo(scrollTop: number, scrollHeight = 1000, clientHeight = 200) {
     return { scrollTop, scrollHeight, clientHeight }
@@ -282,6 +412,47 @@ describe('mapAssistantError', () => {
     expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 429 }))).toContain('Quota journalier dépassé')
     expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 503 }))).toContain('Assistant non configuré')
     expect(mapAssistantError(new TypeError('fetch failed'))).toContain('Une erreur est survenue')
+  })
+})
+
+describe('AssistantSpinner', () => {
+  function stubReducedMotion(matches: boolean) {
+    vi.stubGlobal('matchMedia', vi.fn(() => ({ matches, addEventListener: vi.fn(), removeEventListener: vi.fn() })))
+  }
+
+  beforeEach(() => {
+    vi.useFakeTimers()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+    vi.unstubAllGlobals()
+  })
+
+  it('cycles its frames, then clears its timer on unmount', async () => {
+    stubReducedMotion(false)
+    const wrapper = mount(AssistantSpinner)
+    const first = wrapper.text()
+
+    await vi.advanceTimersByTimeAsync(80)
+    expect(wrapper.text()).not.toBe(first)
+    expect(wrapper.attributes('aria-hidden')).toBe('true')
+
+    // Mounting itself leaves an unrelated timer: compare counts around the unmount.
+    const timersWhileMounted = vi.getTimerCount()
+    wrapper.unmount()
+    expect(vi.getTimerCount()).toBe(timersWhileMounted - 1)
+  })
+
+  it('holds a still frame without any timer under reduced motion', async () => {
+    stubReducedMotion(true)
+    const setIntervalSpy = vi.spyOn(globalThis, 'setInterval')
+    const wrapper = mount(AssistantSpinner)
+    const still = wrapper.text()
+
+    await vi.advanceTimersByTimeAsync(500)
+    expect(wrapper.text()).toBe(still)
+    expect(setIntervalSpy).not.toHaveBeenCalled()
   })
 })
 
@@ -370,7 +541,102 @@ describe('ChatPanel', () => {
     const textarea = wrapper.find('textarea#assistant-input')
     expect(textarea.attributes('disabled')).toBeDefined()
     expect(wrapper.find('#assistant-waiting').exists()).toBe(true)
-    expect(wrapper.find('#assistant-waiting').text()).toContain('Sélectionnez une ressource')
+    expect(wrapper.find('#assistant-waiting').text()).toBe('Chargez une ressource pour permettre à l’assistant de comprendre sa structure.')
+  })
+
+  it('welcomes with the animated mark and the exploration title before a resource is chosen', () => {
+    const wrapper = mountPanel(null)
+
+    const emptyState = wrapper.find('[data-testid="assistant-empty-state"]')
+    expect(emptyState.exists()).toBe(true)
+    expect(emptyState.find('h3').text()).toBe('Assistant d’exploration de données')
+    expect(emptyState.find('picture source').attributes('media')).toBe('(prefers-reduced-motion: reduce)')
+    expect(emptyState.find('picture img').exists()).toBe(true)
+  })
+
+  it('has no heading repeating the Assistant tab', () => {
+    const wrapper = mountPanel('resource-1')
+
+    expect(wrapper.findAll('h3').map(h => h.text())).not.toContain('Assistant')
+  })
+
+  it('welcomes the user with suggestion buttons built from the schema', () => {
+    const wrapper = mountPanel('resource-1', null, { columns: [{ name: 'departement', type: 'categorical' }] })
+
+    expect(wrapper.find('[data-testid="assistant-empty-state"]').exists()).toBe(true)
+    const suggestions = wrapper.findAll('[data-testid="assistant-suggestion"]')
+    expect(suggestions.length).toBe(3)
+    expect(suggestions.every(button => button.element.tagName === 'BUTTON' && button.attributes('type') === 'button')).toBe(true)
+    expect(suggestions.map(button => button.text())).toContain('Compte les lignes par « departement »')
+  })
+
+  it('titles the welcome and shows the animated mark, swapped for the still logo under reduced motion', () => {
+    const wrapper = mountPanel('resource-1')
+
+    const emptyState = wrapper.find('[data-testid="assistant-empty-state"]')
+    expect(emptyState.find('h3').text()).toBe('Assistant de visualisation')
+    const picture = emptyState.find('picture')
+    expect(picture.attributes('aria-hidden')).toBe('true')
+    const source = picture.find('source')
+    expect(source.attributes('media')).toBe('(prefers-reduced-motion: reduce)')
+    expect(source.attributes('srcset')).toBe('/nuxt_images/assistant/assistant-logo.svg')
+    const img = picture.find('img')
+    expect(img.attributes('src')).toBe('/nuxt_images/assistant/assistant-signature.webp')
+    expect(img.attributes('alt')).toBe('')
+  })
+
+  it('fills the composer with a clicked suggestion without sending it', async () => {
+    const wrapper = mountPanel('resource-1')
+
+    const suggestion = wrapper.find('[data-testid="assistant-suggestion"]')
+    await suggestion.trigger('click')
+
+    const textarea = wrapper.find('textarea#assistant-input')
+    expect((textarea.element as HTMLTextAreaElement).value).toBe(suggestion.text())
+    expect(document.activeElement).toBe(textarea.element)
+    expect(sendMessageMock).not.toHaveBeenCalled()
+  })
+
+  it('hides the welcome once the conversation has started', () => {
+    chatState.messages.value = [assistantTextMessage('Bonjour')]
+    const wrapper = mountPanel('resource-1')
+
+    expect(wrapper.find('[data-testid="assistant-empty-state"]').exists()).toBe(false)
+  })
+
+  it('offers no suggestion without a resource', () => {
+    const wrapper = mountPanel(null)
+
+    expect(wrapper.findAll('[data-testid="assistant-suggestion"]')).toHaveLength(0)
+  })
+
+  it('lists the active resource and its format in a labelled context block', () => {
+    const wrapper = mountPanel('resource-1')
+
+    const context = wrapper.find('[aria-label="Contexte utilisé par l’assistant"]')
+    expect(context.exists()).toBe(true)
+    expect(context.text()).toContain('Table parquet A')
+    expect(context.text()).toContain('parquet')
+    expect(context.text()).not.toContain('Visualisation en cours')
+  })
+
+  it('mentions the current visualization when one is sent', () => {
+    const visualization = toAssistantVisualization(CHART as unknown as ChartForApi, { filter: null, chart_type: 'line' }, false)
+    const wrapper = mountPanel('resource-1', visualization)
+
+    expect(wrapper.find('[aria-label="Contexte utilisé par l’assistant"]').text()).toContain('Visualisation en cours')
+  })
+
+  it('shows no context block without a resource', () => {
+    const wrapper = mountPanel(null)
+
+    expect(wrapper.find('[aria-label="Contexte utilisé par l’assistant"]').exists()).toBe(false)
+  })
+
+  it('warns that the assistant can make mistakes', () => {
+    const wrapper = mountPanel('resource-1')
+
+    expect(wrapper.text()).toContain('L’assistant peut faire des erreurs.')
   })
 
   it('announces new messages politely in a log', () => {
@@ -404,7 +670,7 @@ describe('ChatPanel', () => {
   it('renders no nested form inside an enclosing form (e.g. the chart-save form)', async () => {
     const onParentSubmit = vi.fn()
     const wrapper = mount(defineComponent({
-      setup: () => () => h('form', { onSubmit: onParentSubmit }, [h(ChatPanel, { resourceId: 'resource-1', visualization: null })]),
+      setup: () => () => h('form', { onSubmit: onParentSubmit }, [h(ChatPanel, { resourceId: 'resource-1', visualization: null, columns: [], resource: null })]),
     }), {
       global: { mocks: { $t: (key: string) => key } },
     })
@@ -465,6 +731,50 @@ describe('ChatPanel', () => {
     const counter = wrapper.findAll('footer span').find(span => span.text().includes('/'))
     expect(counter).toBeDefined()
     expect(counter!.classes()).toContain('text-new-error')
+  })
+
+  describe('thinking indicator', () => {
+    const question = { id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Question' }] }
+
+    it('appears once the message is sent, before the reply starts', () => {
+      chatState.status.value = 'submitted'
+      chatState.messages.value = [question]
+      const wrapper = mountPanel('resource-1')
+
+      const thinking = wrapper.find('[data-testid="assistant-thinking"]')
+      expect(thinking.exists()).toBe(true)
+      expect(thinking.find('.sr-only').text()).toBe('L’assistant réfléchit…')
+      expect(wrapper.find('[data-testid="assistant-responding"]').exists()).toBe(false)
+    })
+
+    it('stays while the streamed reply has nothing to show yet', () => {
+      chatState.status.value = 'streaming'
+      chatState.messages.value = [question, { id: 'a1', role: 'assistant', parts: [{ type: 'step-start' }] }]
+      const wrapper = mountPanel('resource-1')
+
+      expect(wrapper.find('[data-testid="assistant-thinking"]').exists()).toBe(true)
+    })
+
+    it('gives way to a discreet progress line from the first reply content', async () => {
+      chatState.status.value = 'submitted'
+      chatState.messages.value = [question]
+      const wrapper = mountPanel('resource-1')
+
+      chatState.status.value = 'streaming'
+      chatState.messages.value = [question, assistantTextMessage('Voici')]
+      await nextTick()
+
+      expect(wrapper.find('[data-testid="assistant-thinking"]').exists()).toBe(false)
+      expect(wrapper.find('[data-testid="assistant-responding"]').attributes('aria-hidden')).toBe('true')
+    })
+
+    it('disappears once the reply is complete', () => {
+      chatState.messages.value = [question, assistantTextMessage('Voici')]
+      const wrapper = mountPanel('resource-1')
+
+      expect(wrapper.find('[data-testid="assistant-thinking"]').exists()).toBe(false)
+      expect(wrapper.find('[data-testid="assistant-responding"]').exists()).toBe(false)
+    })
   })
 
   it('shows a stop button while responding that stops the stream', async () => {
@@ -768,6 +1078,62 @@ describe('ChatPanel', () => {
     expect(alert.text()).toContain('Quota journalier dépassé')
   })
 
+  it('offers a new conversation only once the conversation has started', async () => {
+    const empty = mountPanel('resource-1')
+    expect(empty.find('[data-testid="assistant-new-conversation"]').exists()).toBe(false)
+    empty.unmount()
+
+    chatState.messages.value = [assistantTextMessage('Bonjour')]
+    const wrapper = mountPanel('resource-1')
+    const button = wrapper.find('[data-testid="assistant-new-conversation"]')
+    expect(button.attributes('type')).toBe('button')
+    expect(button.text()).toBe('Nouvelle conversation')
+    await button.trigger('click')
+    expect(newConversationMock).toHaveBeenCalledOnce()
+  })
+
+  it('invites to start a new conversation after a 413', async () => {
+    chatState.messages.value = [assistantTextMessage('Bonjour')]
+    chatState.error.value = Object.assign(new Error('Payload Too Large'), { statusCode: 413 })
+    const wrapper = mountPanel('resource-1')
+    await flushPromises()
+
+    const alert = wrapper.find('[role="alert"]')
+    expect(alert.text()).toContain('La conversation est trop volumineuse.')
+    const restart = alert.find('button')
+    expect(restart.text()).toBe('Commencer une nouvelle conversation')
+    await restart.trigger('click')
+    expect(newConversationMock).toHaveBeenCalledOnce()
+  })
+
+  it('does not offer a new conversation in other errors', async () => {
+    chatState.error.value = Object.assign(new Error('Too Many Requests'), { statusCode: 429 })
+    const wrapper = mountPanel('resource-1')
+    await flushPromises()
+
+    expect(wrapper.find('[role="alert"] button').exists()).toBe(false)
+  })
+
+  it('rebuilds only the streaming message on each chunk', async () => {
+    const finished = [
+      { id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Question' }] },
+      assistantTextMessage('Première réponse'),
+      { id: 'u2', role: 'user', parts: [{ type: 'text', text: 'Suite' }] },
+    ]
+    chatState.status.value = 'streaming'
+    chatState.messages.value = [...finished, assistantTextMessage('Déb')]
+    mountPanel('resource-1')
+    await nextTick()
+    const build = vi.mocked(buildChatDisplayItems)
+    build.mockClear()
+
+    chatState.messages.value = [...finished, assistantTextMessage('Début de la réponse')]
+    await nextTick()
+
+    expect(build.mock.calls.map(([parts]) => parts)).not.toContain(finished[1]!.parts)
+    expect(build).toHaveBeenCalled()
+  })
+
   it('restores the sent text in the composer when the request fails', async () => {
     const wrapper = mountPanel('resource-1')
     const textarea = wrapper.find('textarea#assistant-input')
@@ -868,7 +1234,7 @@ describe('ChatPanel', () => {
       ...(state === 'output-available' ? { output: { status: 'ok', chart, more_groups: false } } : {}),
     })
 
-    it('emits chart-result once per tool call', async () => {
+    it('emits chart-result when the tool output arrives', async () => {
       chatState.messages.value = [{ id: 'a1', role: 'assistant', parts: [createPart('input-available')] }]
       const wrapper = mountPanel('resource-1')
       expect(wrapper.emitted('chart-result')).toBeUndefined()
@@ -877,13 +1243,16 @@ describe('ChatPanel', () => {
       await nextTick()
       expect(wrapper.emitted('chart-result')).toHaveLength(1)
       expect(wrapper.emitted('chart-result')![0]![0]).toMatchObject({ toolCallId: 'call-1', kind: 'create' })
+    })
 
-      chatState.messages.value = [
-        { id: 'a1', role: 'assistant', parts: [createPart('output-available'), { type: 'text', text: 'Voilà' }] },
-      ]
+    it('does not emit again for a message that did not change', async () => {
+      const wrapper = mountPanel('resource-1')
+      const answered = { id: 'a1', role: 'assistant', parts: [createPart('output-available')] }
+      chatState.messages.value = [answered]
       await nextTick()
-      await wrapper.setProps({ visualization: null })
-      await flushPromises()
+      chatState.messages.value = [answered, { id: 'u2', role: 'user', parts: [{ type: 'text', text: 'Et ensuite ?' }] }]
+      await nextTick()
+
       expect(wrapper.emitted('chart-result')).toHaveLength(1)
     })
 
@@ -901,36 +1270,7 @@ describe('ChatPanel', () => {
       }]
       await nextTick()
 
-      expect(wrapper.emitted('chart-result')).toHaveLength(2)
-      expect(wrapper.emitted('chart-result')![1]![0]).toMatchObject({ toolCallId: 'c2', kind: 'update' })
-    })
-
-    it('does not emit for results already in the history at mount', async () => {
-      chatState.messages.value = [{ id: 'a1', role: 'assistant', parts: [createPart('output-available')] }]
-      const wrapper = mountPanel('resource-1')
-      await nextTick()
-      expect(wrapper.emitted('chart-result')).toBeUndefined()
-
-      chatState.messages.value = [
-        { id: 'a1', role: 'assistant', parts: [createPart('output-available')] },
-        { id: 'a2', role: 'assistant', parts: [createPart('output-available', 'call-2')] },
-      ]
-      await nextTick()
-      expect(wrapper.emitted('chart-result')).toHaveLength(1)
-      expect(wrapper.emitted('chart-result')![0]![0]).toMatchObject({ toolCallId: 'call-2' })
-    })
-
-    it('does not re-emit seen results when the resource changes', async () => {
-      const wrapper = mountPanel('resource-1')
-      chatState.messages.value = [{ id: 'a1', role: 'assistant', parts: [createPart('output-available')] }]
-      await nextTick()
-      await wrapper.setProps({ resourceId: 'resource-2' })
-      chatState.messages.value = []
-      await nextTick()
-      chatState.messages.value = [{ id: 'a1', role: 'assistant', parts: [createPart('output-available')] }]
-      await nextTick()
-
-      expect(wrapper.emitted('chart-result')).toHaveLength(1)
+      expect(wrapper.emitted('chart-result')!.at(-1)![0]).toMatchObject({ toolCallId: 'c2', kind: 'update' })
     })
   })
 })

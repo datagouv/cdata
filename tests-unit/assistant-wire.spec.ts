@@ -86,6 +86,17 @@ describe('useAssistantChat wire contract', () => {
     expect(capturedTransport().api).toBe('https://assistant.example/api/1/assistant/chat/?lang=fr')
   })
 
+  it('starts a new conversation by stopping the stream and clearing the history and the error', () => {
+    const chat = useAssistantChat(ref('resource-1'), () => null)
+
+    chat.messages.value = [...MESSAGES] as typeof chat.messages.value
+    chat.newConversation()
+
+    expect(chat.messages.value).toEqual([])
+    expect(chat.stop).toHaveBeenCalled()
+    expect(chat.clearError).toHaveBeenCalled()
+  })
+
   it('clears the message history when the selected resource changes', async () => {
     const resourceId = ref<string | null>('resource-1')
     const chat = useAssistantChat(resourceId, () => null)

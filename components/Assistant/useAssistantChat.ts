@@ -26,15 +26,17 @@ export function useAssistantChat(resourceId: Ref<string | null>, visualization: 
     }),
   })
 
-  // History belongs to the selected resource: without a reset, switching
-  // resources would resend the previous conversation with the new resource_id.
-  // stop() aborts a still-running stream of the previous resource and
-  // clearError() drops its error so it cannot be shown on the new history.
-  watch(resourceId, () => {
+  // stop() aborts a still-running stream and clearError() drops its error so it
+  // cannot be shown on the new, empty history.
+  function newConversation() {
     chat.stop()
     chat.messages.value = []
     chat.clearError()
-  })
+  }
 
-  return chat
+  // History belongs to the selected resource: without a reset, switching
+  // resources would resend the previous conversation with the new resource_id.
+  watch(resourceId, newConversation)
+
+  return { ...chat, newConversation }
 }

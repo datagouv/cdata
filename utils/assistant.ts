@@ -1,4 +1,4 @@
-import type { ChartForApi, ChartForm, DataSeries, DataSeriesType, GenericFilter, SortDirection, XAxis, XAxisSortBy, XAxisType, YAxis } from '@datagouv/components-next'
+import type { ChartForApi, ChartForm, ColumnDefinition, DataSeries, DataSeriesType, GenericFilter, SortDirection, XAxis, TranslationFunction, XAxisSortBy, XAxisType, YAxis } from '@datagouv/components-next'
 
 /**
  * Auto-scroll guard for the chat panel: happy-dom cannot model scroll
@@ -6,6 +6,60 @@ import type { ChartForApi, ChartForm, DataSeries, DataSeriesType, GenericFilter,
  */
 export function isNearChatBottom(element: { scrollTop: number, clientHeight: number, scrollHeight: number }, threshold = 80): boolean {
   return element.scrollHeight - element.scrollTop - element.clientHeight <= threshold
+}
+
+// Whole words of the name only: `nombre_refus` or `montant_numeraire` are measures.
+const IDENTIFIER_NAME = /(?:^|[._\s-])(?:id|ref|reference|référence|num|numero|numéro)(?:$|[._\s-])/i
+// The parquet profile has no distinct-value count: free text is told by its name.
+const FREE_TEXT_NAME = /(?:url|uri|description|comment|adresse|address|geometry|geojson|wkt|libell?e_long|libellé_long|(?:^|[._\s-])(?:title|titre)(?:$|[._\s-]))/i
+
+function isUsefulDimension(column: ColumnDefinition) {
+  return ['categorical', 'text', 'boolean'].includes(column.type)
+    && !IDENTIFIER_NAME.test(column.name)
+    && !FREE_TEXT_NAME.test(column.name)
+}
+
+function isUsefulMeasure(column: ColumnDefinition) {
+  return column.type === 'number'
+    && !IDENTIFIER_NAME.test(column.name)
+    && !/(?:code|year|annee|année|latitude|longitude|\blat\b|\blon\b|\blng\b)/i.test(column.name)
+}
+
+/**
+ * Suggestions of the empty assistant, built from the resource schema. They ask
+ * for charts the assistant can build (histogram or line, count or aggregate,
+ * top N), not for data exploration: the assistant only creates charts.
+ */
+export function getStarterQuestions(columns: Array<ColumnDefinition>, t: TranslationFunction): Array<string> {
+  // csv-detective marks the columns with few distinct values as categorical.
+  const [dimension, secondDimension] = columns.filter(isUsefulDimension)
+    .sort((a, b) => Number(b.type === 'categorical') - Number(a.type === 'categorical'))
+  const measure = columns.find(isUsefulMeasure)
+  const date = columns.find(column => column.type === 'date' || column.type === 'year')
+  const suggestions = [t('Quel graphique peut-on faire avec ces données ?')]
+
+  if (dimension && measure) {
+    suggestions.push(t('Fais un histogramme de la somme de « {measure} » par « {dimension} »', { measure: measure.name, dimension: dimension.name }))
+  }
+  if (dimension) {
+    // No « top 10 »: the chart ranks only the first CHART_PAGE_SIZE groups in X order.
+    suggestions.push(t('Compte les lignes par « {column} »', { column: dimension.name }))
+  }
+  if (date) {
+    suggestions.push(measure
+      ? t('Trace l’évolution de « {measure} » selon « {date} »', { measure: measure.name, date: date.name })
+      : t('Trace l’évolution du nombre de lignes selon « {date} »', { date: date.name }))
+  }
+  else if (dimension && measure) {
+    suggestions.push(t('Montre la moyenne de « {measure} » par « {dimension} »', { dimension: dimension.name, measure: measure.name }))
+  }
+  else if (secondDimension) {
+    suggestions.push(t('Compare le nombre de lignes par « {column} »', { column: secondDimension.name }))
+  }
+  if (suggestions.length < 3) {
+    suggestions.push(t('Propose-moi un graphique pertinent pour cette ressource'))
+  }
+  return suggestions
 }
 
 /**
@@ -181,9 +235,10 @@ export type ChatDisplayItem
 
 // Fixed French copy of the assistant UI, used as i18n keys by the components
 // ($t returns the key when no catalog entry exists): ToolTrace renders
-// $t(trace.label), $t(trace.summary) and $t(detail.label), ChatPanel renders
+// $t(trace.label) and $t(detail.label), ChatPanel renders
 // $t(mapAssistantError(error)). The literals stay here so an extraction tool
-// can find them; dynamic values (column names, errors) are never translated.
+// can find them. trace.summary is shown as is: it mixes this copy with dynamic
+// values (row counts, server errors), which are never translated.
 const TOOL_LABELS: Record<string, { label: string, summary: string }> = {
   'tool-get_dataset_metadata': { label: 'Lecture des métadonnées', summary: 'Je consulte la fiche du jeu de données' },
   'tool-inspect_schema': { label: 'Inspection du schéma', summary: 'Je vérifie les colonnes et les types disponibles' },
