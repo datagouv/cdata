@@ -15,8 +15,12 @@ export type ActivityKey = 'dataset:created' | 'dataset:updated' | 'dataset:delet
  */
 export type ActivityActor
   = | UserReference
-    /** `name` is null once the source has been purged. */
-    | { class: 'HarvestSource', id: string, name: string | null }
+    | {
+      class: 'HarvestSource'
+      id: string
+      /** Null once the source has been purged. */
+      name: string | null
+    }
     | {
       class: 'ApiToken'
       id: string
