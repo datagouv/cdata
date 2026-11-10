@@ -101,7 +101,7 @@
           :has-error="!!urlError"
           :error-text="urlError"
           class="w-full !mb-0"
-          @keydown.enter.prevent="loadByLinkOnEnter"
+          @keydown.enter="loadByLinkOnEnter"
         />
         <BrandedButton
           type="button"
@@ -179,9 +179,12 @@ const selected = computed<Array<T | TSuggest>>(() => {
   }).filter(object => object)
 })
 
-// The field commits its value on change, which Enter only fires inside a form
+// The field commits its value on change, which Enter only fires inside a form. Enter also
+// confirms an input method composition, which is not a request to add the link.
 const loadByLinkOnEnter = (event: KeyboardEvent) => {
-  if (event.target instanceof HTMLInputElement) datasetUrl.value = event.target.value
+  if (event.isComposing || !(event.target instanceof HTMLInputElement)) return
+  event.preventDefault()
+  datasetUrl.value = event.target.value
   loadByLink()
 }
 

@@ -158,12 +158,18 @@ async function startWizard(page: Page, schema: SchemaKey) {
 }
 
 // Up to the last "Publier" of a file added to an existing dataset, validated against its schema
-async function openValidatedSheetOnExistingDataset(page: Page, dataset: ApiDataset) {
+async function openValidatedSheetOnExistingDataset(page: Page, dataset: ApiDataset, { addWith = 'click' }: { addWith?: 'click' | 'enter' } = {}) {
   await gotoHydrated(page, '/admin/datasets/structured?step=1')
   await selectProducer(page)
   await page.getByText('Ajouter à un jeu de données existant').click()
-  await page.getByLabel('Lien vers le jeu de données').fill(`/datasets/${dataset.id}`)
-  await page.getByRole('button', { name: 'Ajouter le jeu de données' }).click()
+  const link = page.getByLabel('Lien vers le jeu de données')
+  await link.fill(`/datasets/${dataset.id}`)
+  if (addWith === 'enter') {
+    await link.press('Enter')
+  }
+  else {
+    await page.getByRole('button', { name: 'Ajouter le jeu de données' }).click()
+  }
   await expect(page.getByText(dataset.title)).toBeVisible()
   await selectSchema(page, 'durabilite')
   await page.getByRole('button', { name: 'Suivant' }).click()
@@ -171,6 +177,38 @@ async function openValidatedSheetOnExistingDataset(page: Page, dataset: ApiDatas
   await page.locator('input[type="file"]').setInputFiles(fixture('lave-linge-virgule.csv'))
   await page.getByRole('button', { name: 'Publier', exact: true }).click()
   await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible(SPREADSHEET_OPENED)
+}
+
+// Holds the dataset page while it loads, so the wizard can be watched in between
+async function holdDatasetPage(page: Page, dataset: ApiDataset) {
+  let holding = true
+  let release = () => {}
+  const released = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  await page.route(new RegExp(`/api/[12]/datasets/${dataset.slug}/`), async (route) => {
+    if (holding && route.request().method() === 'GET') await released
+    await route.continue()
+  })
+  return () => {
+    holding = false
+    release()
+  }
+}
+
+function countUploads(page: Page, dataset: ApiDataset) {
+  let uploads = 0
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && new URL(request.url()).pathname === `/api/1/datasets/${dataset.id}/upload/`) uploads++
+  })
+  return () => uploads
+}
+
+// Publishes the open sheet, up to the dataset page starting to load
+async function publishToExistingDataset(page: Page, dataset: ApiDataset) {
+  const leaving = page.waitForRequest(request => request.method() === 'GET' && request.url().includes(`/datasets/${dataset.slug}/`))
+  await page.getByRole('button', { name: 'Publier', exact: true }).click()
+  await leaving
 }
 
 async function uploadAndOpenSpreadsheet(page: Page, fileName: string) {
@@ -611,42 +649,70 @@ test.describe('navigation', () => {
     const dataset = await createDataset(request, `Jeu existant ${Date.now()}`, 'Reçoit un fichier chaque année', { organization: organization.id })
     createdDatasets.push(dataset.id)
 
-    await openValidatedSheetOnExistingDataset(page, dataset)
+    await openValidatedSheetOnExistingDataset(page, dataset, { addWith: 'enter' })
+    const release = await holdDatasetPage(page, dataset)
+    const uploads = countUploads(page, dataset)
+    await publishToExistingDataset(page, dataset)
 
-    // The dataset page is held while loading, so the wizard can be watched in between
-    let holding = true
-    let release = () => {}
-    const released = new Promise<void>((resolve) => {
-      release = resolve
-    })
-    await page.route(new RegExp(`/api/[12]/datasets/${dataset.slug}/`), async (route) => {
-      if (holding && route.request().method() === 'GET') await released
-      await route.continue()
-    })
-    let uploads = 0
-    page.on('request', (request) => {
-      if (request.method() === 'POST' && new URL(request.url()).pathname === `/api/1/datasets/${dataset.id}/upload/`) uploads++
-    })
-
-    const leaving = page.waitForRequest(request => request.method() === 'GET' && request.url().includes(`/datasets/${dataset.slug}/`))
-    await page.getByRole('button', { name: 'Publier', exact: true }).click()
-    await leaving
-
-    // Emptied on leaving, the form redrew this step without its schema and in "new" mode
-    await expect(page.getByText('Aucun schéma n\'a été sélectionné')).toBeHidden()
+    // Emptied on leaving, the form would redraw this step without its schema and in "new"
+    // mode ("Suivant" instead of "Publier"). Once published this step is no longer valid
+    // either: a step guard reacting to it, not only to arriving, would pull the user back
+    // to the first step.
+    await expect(page.getByText('Schéma utilisé :')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Publier', exact: true })).toBeVisible()
 
     // Still on screen, the button must not send the file a second time
     await page.getByRole('button', { name: 'Publier', exact: true }).click()
+    await expect(page.getByText('Schéma utilisé :')).toBeVisible()
 
-    holding = false
     release()
-    await expect(page).toHaveURL(new RegExp(`/datasets/${dataset.slug}/?$`))
-    await expect(page.getByRole('heading', { name: dataset.title })).toBeVisible()
+    await expect(page).toHaveURL(new RegExp(`/datasets/${dataset.slug}/?$`), PUBLISHED)
+    await expect(page.getByRole('heading', { name: dataset.title })).toBeVisible(PUBLISHED)
 
-    expect(uploads).toBe(1)
+    expect(uploads()).toBe(1)
     const published = (await (await request.get(`${API_BASE}/api/1/datasets/${dataset.id}/`)).json()) as Dataset
     expect(published.resources).toHaveLength(1)
+  })
+
+  // The file is already on the dataset: going back into the wizard must not offer to send
+  // it a second time, nor show a step emptied under the user's eyes
+  test('revenir dans le wizard pendant le chargement du jeu de données existant le recommence', async ({ page, request }) => {
+    await stubPublicationApis(page)
+    const dataset = await createDataset(request, `Jeu existant ${Date.now()}`, 'Reçoit un fichier chaque année', { organization: organization.id })
+    createdDatasets.push(dataset.id)
+
+    await openValidatedSheetOnExistingDataset(page, dataset)
+    const release = await holdDatasetPage(page, dataset)
+    const uploads = countUploads(page, dataset)
+    await publishToExistingDataset(page, dataset)
+
+    await page.getByRole('button', { name: 'Retour', exact: true }).click()
+
+    await expect(page).toHaveURL(/step=1/)
+    await expect(page.getByRole('heading', { name: /Associez un schéma/ })).toBeVisible()
+    await expect(page.getByText(dataset.title)).toBeHidden()
+    release()
+    expect(uploads()).toBe(1)
+  })
+
+  test('le retour du navigateur pendant le chargement du jeu de données existant recommence le wizard', async ({ page, request }) => {
+    await stubPublicationApis(page)
+    const dataset = await createDataset(request, `Jeu existant ${Date.now()}`, 'Reçoit un fichier chaque année', { organization: organization.id })
+    createdDatasets.push(dataset.id)
+
+    await openValidatedSheetOnExistingDataset(page, dataset)
+    const release = await holdDatasetPage(page, dataset)
+    const uploads = countUploads(page, dataset)
+    await publishToExistingDataset(page, dataset)
+
+    // Same address as the page still on screen, so the wizard is shown again as it was
+    await page.goBack()
+
+    await expect(page).toHaveURL(/step=1/)
+    await expect(page.getByRole('heading', { name: /Associez un schéma/ })).toBeVisible()
+    await expect(page.getByText(dataset.title)).toBeHidden()
+    release()
+    expect(uploads()).toBe(1)
   })
 
   test('recharger une étape avancée renvoie au début plutôt qu’à un écran amputé', async ({ page }) => {
