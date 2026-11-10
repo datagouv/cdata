@@ -357,9 +357,8 @@
                   class="!m-0 text-sm"
                 >
                   <template #link>
-                    <CdataLink :href="ecologieUrl">
-                      ecologie.data.gouv.fr
-                    </CdataLink>
+                    <!-- eslint-disable-next-line vue/singleline-html-element-content-newline -->
+                    <CdataLink :href="ecologieUrl">ecologie.data.gouv.fr</CdataLink>
                   </template>
                 </TranslationT>
               </SimpleBanner>
