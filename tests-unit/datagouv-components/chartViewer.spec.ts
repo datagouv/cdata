@@ -167,6 +167,44 @@ describe('ChartViewer rendering', () => {
     expect(option.series.map((s: { name: string }) => s.name)).toEqual(['nb', 'rate'])
   })
 
+  it('names aggregated series with the calculation and the column', async () => {
+    const chart = chartConfig([{ column_y: 'nb', type: 'line' }, { column_y: 'nb', type: 'line' }, { column_y: 'year', type: 'line' }])
+    chart.series[0]!.aggregate_y = 'sum'
+    chart.series[1]!.aggregate_y = 'avg'
+    chart.series[2]!.aggregate_y = 'count'
+    const data = { 0: [{ year: 2020, nb__sum: 3 }], 1: [{ year: 2020, nb__avg: 1.5 }], 2: [{ year: 2020, year__count: 2 }] }
+    const wrapper = mount(ChartViewer, { props: { chart, series: { data, columns: COLUMNS } } })
+    await flushPromises()
+    const option = setOptionMock.mock.calls.at(-1)![0]
+    wrapper.unmount()
+
+    expect(option.series.map((s: { name: string }) => s.name)).toEqual(['Somme de nb', 'Moyenne de nb', 'Nombre de lignes'])
+  })
+
+  it('keeps two series with the same label apart in the legend', async () => {
+    const option = await capture([{ column_y: 'nb', type: 'line' }, { column_y: 'nb', type: 'histogram' }])
+
+    expect(option.series.map((s: { name: string }) => s.name)).toEqual(['nb', 'nb (2)'])
+  })
+
+  it('shows the series label and the value of its Y column in the tooltip', async () => {
+    const chart = chartConfig([{ column_y: 'nb', type: 'line' }, { column_y: 'nb', type: 'line' }])
+    chart.series[0]!.aggregate_y = 'sum'
+    chart.series[1]!.aggregate_y = 'max'
+    const data = { 0: [{ year: 2020, nb__sum: 3 }], 1: [{ year: 2020, nb__max: 2 }] }
+    const wrapper = mount(ChartViewer, { props: { chart, series: { data, columns: COLUMNS } } })
+    await flushPromises()
+    const option = setOptionMock.mock.calls.at(-1)![0]
+    wrapper.unmount()
+
+    const html = option.tooltip.formatter([
+      { value: { year: 2020, nb__sum: 3 }, axisValueLabel: '2020', seriesName: 'Somme de nb', seriesIndex: 0 },
+      { value: { year: 2020, nb__max: 2 }, axisValueLabel: '2020', seriesName: 'Maximum de nb', seriesIndex: 1 },
+    ]) as string
+
+    expect(html).toBe('<strong>2020</strong><br>Somme de nb: <strong>3</strong><br>Maximum de nb: <strong>2</strong><br>')
+  })
+
   it('gives the chart one color per series', async () => {
     const option = await capture([{ column_y: 'nb', type: 'line' }, { column_y: 'rate', type: 'line' }])
 
@@ -186,8 +224,8 @@ describe('ChartViewer rendering', () => {
     const option = await capture([{ column_y: 'nb', type: 'line' }, { column_y: 'rate', type: 'line' }])
 
     const html = option.tooltip.formatter([
-      { value: { year: 2021, nb: 5, rate: 2.5 }, axisValueLabel: '2021', seriesName: 'nb' },
-      { value: { year: 2021, nb: 5, rate: 2.5 }, axisValueLabel: '2021', seriesName: 'rate' },
+      { value: { year: 2021, nb: 5, rate: 2.5 }, axisValueLabel: '2021', seriesName: 'nb', seriesIndex: 0 },
+      { value: { year: 2021, nb: 5, rate: 2.5 }, axisValueLabel: '2021', seriesName: 'rate', seriesIndex: 1 },
     ]) as string
 
     expect(html).toBe(`<strong>2021</strong><br>nb: <strong>${(5).toLocaleString()}</strong><br>rate: <strong>${(2.5).toLocaleString()}</strong><br>`)
@@ -197,9 +235,9 @@ describe('ChartViewer rendering', () => {
     const option = await capture([{ column_y: 'nb', type: 'line' }, { column_y: 'rate', type: 'line' }])
 
     const html = option.tooltip.formatter([
-      { value: { year: 2021, nb: 5 }, axisValueLabel: '2021', seriesName: 'nb' },
-      { value: { year: 2021, rate: null }, axisValueLabel: '2021', seriesName: 'rate' },
-      { value: { year: 2021 }, axisValueLabel: '2021', seriesName: 'rate' },
+      { value: { year: 2021, nb: 5 }, axisValueLabel: '2021', seriesName: 'nb', seriesIndex: 0 },
+      { value: { year: 2021, rate: null }, axisValueLabel: '2021', seriesName: 'rate', seriesIndex: 1 },
+      { value: { year: 2021 }, axisValueLabel: '2021', seriesName: 'rate', seriesIndex: 1 },
     ]) as string
 
     expect(html).toBe(`<strong>2021</strong><br>nb: <strong>${(5).toLocaleString()}</strong><br>rate: <strong>–</strong><br>rate: <strong>–</strong><br>`)
@@ -220,6 +258,8 @@ describe('ChartViewer rendering', () => {
 
     expect(option.dataset.map((d: { source: Array<Record<string, unknown>> }) => d.source)).toEqual([data[0], data[1]])
     expect(option.series.map((s: { encode: { y: string } }) => s.encode.y)).toEqual(['nb__max', 'rate__max'])
+    // Without it, ECharts draws every series from the first dataset.
+    expect(option.series.map((s: { datasetIndex: number }) => s.datasetIndex)).toEqual([0, 1])
   })
 
   it('returns an empty tooltip when the formatter receives no series', async () => {
@@ -243,6 +283,37 @@ describe('ChartViewer rendering', () => {
     expect(option.xAxis.type).toBe('time')
     expect(option.xAxis.axisLabel.hideOverlap).toBe(true)
     expect(typeof option.xAxis.axisLabel.formatter).toBe('function')
+  })
+
+  it('keeps the raw dates of a discrete date axis, shared by every series, and formats their labels', async () => {
+    const data = { [RESOURCE_ID]: [{ year: '2021-01-01', nb: 5, rate: 1 }, { year: '2020-01-01', nb: 3, rate: 2 }] }
+    const columns: ColumnsDefinition = { [RESOURCE_ID]: [{ name: 'year', type: 'date' }, { name: 'nb', type: 'number' }, { name: 'rate', type: 'number' }] }
+    const option = await capture([{ column_y: 'nb', type: 'histogram' }, { column_y: 'rate', type: 'histogram' }], { type: 'discrete' }, data, columns)
+
+    // Date objects would be distinct categories for each series.
+    expect(option.dataset.map((d: { source: Array<{ year: unknown }> }) => d.source.map(r => r.year))).toEqual([['2020-01-01', '2021-01-01'], ['2020-01-01', '2021-01-01']])
+    const label = option.xAxis.axisLabel.formatter('2020-01-01')
+    expect(label).toMatch(/20/)
+    expect(label).not.toContain('GMT')
+  })
+
+  it('labels fractional y ticks distinctly instead of rounding them to integers', async () => {
+    const option = await capture([{ column_y: 'rate', type: 'line' }])
+    const labels = [0, 0.2, 0.4, 0.6].map(v => option.yAxis.axisLabel.formatter(v))
+
+    expect(new Set(labels).size).toBe(4)
+  })
+
+  it('keeps integer y ticks for integer data', async () => {
+    const option = await capture([{ column_y: 'nb', type: 'histogram' }])
+
+    expect(option.yAxis.minInterval).toBe(1)
+  })
+
+  it('allows fractional y ticks when a value is fractional', async () => {
+    const option = await capture([{ column_y: 'nb', type: 'histogram' }, { column_y: 'rate', type: 'histogram' }])
+
+    expect(option.yAxis.minInterval).toBeUndefined()
   })
 
   it('hides overlapping labels on the value y axis', async () => {
@@ -269,5 +340,54 @@ describe('ChartViewer rendering', () => {
 
     expect(option.series[0].type).toBe('bar')
     expect(option.series[0].smooth).toBeUndefined()
+  })
+})
+
+describe('ChartViewer continuous X bounds', () => {
+  beforeEach(() => setOptionMock.mockClear())
+
+  const PROFILED: ColumnsDefinition = {
+    [RESOURCE_ID]: [
+      { name: 'year', type: 'number', min: 1900, max: 2100 },
+      { name: 'nb', type: 'number' },
+      { name: 'rate', type: 'number' },
+    ],
+  }
+
+  it('keeps the profile bounds when every value is shown', async () => {
+    const option = await capture([{ column_y: 'nb', type: 'line' }], { type: 'continuous' }, manyRows(10), PROFILED)
+
+    expect([option.xAxis.min, option.xAxis.max]).toEqual([1900, 2100])
+  })
+
+  it('bounds the axis to the values kept by the limit', async () => {
+    const option = await capture([{ column_y: 'nb', type: 'line' }], { type: 'continuous', sort_x_by: 'axis_x', sort_x_direction: 'asc', limit: 3 }, manyRows(10), PROFILED)
+
+    expect([option.xAxis.min, option.xAxis.max]).toEqual([2000, 2002])
+  })
+
+  it('bounds the axis to the fetched values when the groups are truncated', async () => {
+    const option = await capture([{ column_y: 'nb', type: 'line' }], { type: 'continuous' }, manyRows(50), PROFILED)
+
+    expect([option.xAxis.min, option.xAxis.max]).toEqual([2000, 2049])
+  })
+})
+
+describe('ChartViewer numeric X labels', () => {
+  beforeEach(() => setOptionMock.mockClear())
+
+  it('shows years on a continuous axis without a thousands separator', async () => {
+    const option = await capture([{ column_y: 'nb', type: 'line' }], { type: 'continuous' })
+
+    expect([2018, 2019, 2020].map(v => option.xAxis.axisLabel.formatter(v))).toEqual(['2018', '2019', '2020'])
+  })
+
+  // The test locale is not French: only check grouping and decimals are kept.
+  it('keeps thousands separators and decimals for other numbers on a continuous axis', async () => {
+    const data = { [RESOURCE_ID]: [{ year: 1500, nb: 1, rate: 1 }, { year: 250000, nb: 2, rate: 2 }] }
+    const option = await capture([{ column_y: 'nb', type: 'line' }], { type: 'continuous' }, data)
+
+    expect(option.xAxis.axisLabel.formatter(250000)).toMatch(/^250\D000$/)
+    expect(option.xAxis.axisLabel.formatter(2.5)).toMatch(/^2\D5$/)
   })
 })

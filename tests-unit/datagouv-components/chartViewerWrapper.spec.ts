@@ -4,8 +4,9 @@ import { defineComponent, h } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import LoadingBlock from '~/datagouv-components/src/components/LoadingBlock.vue'
 import ChartViewerWrapper from '~/datagouv-components/src/components/Chart/ChartViewerWrapper.vue'
-import { configKey } from '~/datagouv-components/src/config'
+import { configKey, type PluginConfig } from '~/datagouv-components/src/config'
 import type { ChartForApi } from '~/datagouv-components/src/types/visualizations'
+import { hasMoreGroups } from '~/datagouv-components/src/functions/tabularApi'
 
 const { ofetchMock } = vi.hoisted(() => ({ ofetchMock: vi.fn() }))
 vi.mock('ofetch', () => ({ ofetch: ofetchMock }))
@@ -48,12 +49,12 @@ function mockApi(firstPage: number, hasFiftyFirst: boolean) {
   })
 }
 
-function mountWrapper(chart: ChartForApi) {
+function mountWrapper(chart: ChartForApi, searchDebounce = 0) {
   return mount(ChartViewerWrapper, {
     props: { chart },
     global: {
       stubs: { ChartViewer: ChartViewerStub },
-      provide: { [configKey as symbol]: { tabularApiUrl: 'https://tabular.example.com', searchDebounce: 0 } },
+      provide: { [configKey as symbol]: { tabularApiUrl: 'https://tabular.example.com', searchDebounce } },
     },
   })
 }
@@ -76,6 +77,79 @@ describe('ChartViewerWrapper data fetching', () => {
 
   afterEach(() => {
     vi.useRealTimers()
+  })
+
+  it('shows the chart loader while the data loads, then the chart', async () => {
+    let resolveData: (v: unknown) => void = () => {}
+    ofetchMock.mockImplementation((url: string) => {
+      if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
+      return new Promise((resolve) => {
+        resolveData = resolve
+      })
+    })
+    const wrapper = mountWrapper(chartFixture())
+    await settle()
+    const loader = wrapper.find('[data-testid="chart-loader"]')
+    expect(loader.exists()).toBe(true)
+    expect(loader.text()).toContain('Préparation du graphique')
+    expect(loader.find('canvas').attributes('aria-hidden')).toBe('true')
+
+    resolveData(rows(3))
+    await settle()
+    expect(wrapper.find('[data-testid="chart-loader"]').exists()).toBe(false)
+  })
+
+  it('keeps the first-load loader, without veil, until the debounced data request answers', async () => {
+    let resolveData: (v: unknown) => void = () => {}
+    ofetchMock.mockImplementation((url: string) => {
+      if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
+      return new Promise((resolve) => {
+        resolveData = resolve
+      })
+    })
+    const wrapper = mountWrapper(chartFixture(), 300)
+    for (let elapsed = 0; elapsed < 1000; elapsed += 100) {
+      await vi.advanceTimersByTimeAsync(100)
+      expect(wrapper.find('[data-testid="chart-loader"]').exists()).toBe(true)
+      expect(wrapper.find('[data-testid="chart-reloading"]').exists()).toBe(false)
+    }
+    expect(dataCalls()).toHaveLength(1)
+
+    resolveData(rows(3))
+    await settle()
+    expect(wrapper.find('[data-testid="chart-loader"]').exists()).toBe(false)
+    expect(wrapper.find('.chart-viewer-stub').exists()).toBe(true)
+  })
+
+  it('keeps the chart on screen while it reloads, veiled only when the reload is slow', async () => {
+    let resolveData: (v: unknown) => void = () => {}
+    let firstLoad = true
+    ofetchMock.mockImplementation((url: string) => {
+      if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
+      if (firstLoad) return Promise.resolve(rows(3))
+      return new Promise((resolve) => {
+        resolveData = resolve
+      })
+    })
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart)
+    await settle()
+    expect(wrapper.find('.chart-viewer-stub').exists()).toBe(true)
+
+    firstLoad = false
+    await wrapper.setProps({ chart: { ...chart, x_axis: { ...chart.x_axis, column_x: 'reg' } } })
+    await settle()
+    expect(wrapper.find('[data-testid="chart-loader"]').exists()).toBe(false)
+    expect(wrapper.find('.chart-viewer-stub').exists()).toBe(true)
+    expect(wrapper.find('[data-testid="chart-reloading"]').exists()).toBe(false)
+
+    await vi.advanceTimersByTimeAsync(300)
+    expect(wrapper.find('[data-testid="chart-reloading"]').attributes('aria-busy')).toBe('true')
+    expect(wrapper.find('[data-testid="chart-loader"]').exists()).toBe(false)
+
+    resolveData(rows(3))
+    await settle()
+    expect(wrapper.find('[data-testid="chart-reloading"]').exists()).toBe(false)
   })
 
   it('requests 50 groups sorted on the X column', async () => {
@@ -118,6 +192,15 @@ describe('ChartViewerWrapper data fetching', () => {
     const wrapper = mountWrapper(chart)
     await settle()
     expect(wrapper.find('[data-testid="chart-truncation-warning"]').text()).toBe('Seules les 50 premières valeurs de dep sont affichées.')
+  })
+
+  it('renders the warning as a note whose icon is hidden from screen readers', async () => {
+    mockApi(50, true)
+    const wrapper = mountWrapper(chartFixture())
+    await settle()
+    const note = wrapper.find('[data-testid="chart-truncation-warning"]')
+    expect(note.attributes('role')).toBe('note')
+    expect(note.find('svg').attributes('aria-hidden')).toBe('true')
   })
 
   it('shows no warning when the 51st group is absent', async () => {
@@ -307,5 +390,115 @@ describe('ChartViewerWrapper data fetching', () => {
     await wrapper.setProps({ chart: next })
     await settle()
     expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
+  })
+
+  it('shows the error message when tabular-api rejects the data request', async () => {
+    ofetchMock.mockImplementation(async (url: string) => {
+      if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
+      throw Object.assign(new Error('[GET] /data/: 400 Bad Request'), { statusCode: 400 })
+    })
+    const wrapper = mountWrapper(chartFixture())
+    await settle()
+    expect(loaderStatus(wrapper)).toBe('error')
+    expect(wrapper.text()).toContain('Une erreur est survenue lors du chargement des données du graphique.')
+  })
+
+  it('shows the series that loaded and a note when another series fails', async () => {
+    ofetchMock.mockImplementation(async (url: string) => {
+      if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
+      if (url.includes('m__max')) throw new Error('400 Bad Request')
+      return { data: [{ dep: 'a', n__max: 1 }] }
+    })
+    const chart = chartFixture()
+    chart.series.push({ ...chart.series[0]!, column_y: 'm' })
+    const wrapper = mountWrapper(chart)
+    await settle()
+    expect(loaderStatus(wrapper)).toBe('success')
+    expect(wrapper.findComponent(ChartViewerStub).props('series').data).toEqual({ 0: [{ dep: 'a', n__max: 1 }] })
+    expect(wrapper.find('[data-testid="chart-series-error"]').text()).toBe('Une série n’a pas pu être chargée.')
+  })
+
+  it('keeps the previous chart with its data while the data of a new aggregate loads', async () => {
+    let resolveData: (v: unknown) => void = () => {}
+    ofetchMock.mockImplementation((url: string) => {
+      if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
+      if (url.includes('n__max')) return Promise.resolve({ data: [{ dep: 'a', n__max: 1 }] })
+      return new Promise((resolve) => {
+        resolveData = resolve
+      })
+    })
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart)
+    await settle()
+    const next = structuredClone(chart)
+    next.series[0]!.aggregate_y = 'sum'
+    await wrapper.setProps({ chart: next })
+    await settle()
+    const viewer = () => wrapper.findComponent(ChartViewerStub)
+    expect(viewer().props('chart').series[0].aggregate_y).toBe('max')
+    expect(viewer().props('series').data[0]).toEqual([{ dep: 'a', n__max: 1 }])
+
+    resolveData({ data: [{ dep: 'a', n__sum: 5 }] })
+    await settle()
+    expect(viewer().props('chart').series[0].aggregate_y).toBe('sum')
+    expect(viewer().props('series').data[0]).toEqual([{ dep: 'a', n__sum: 5 }])
+  })
+
+  it('passes a presentation-only change to the viewer right away', async () => {
+    mockApi(3, false)
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart)
+    await settle()
+    const next = structuredClone(chart)
+    next.title = 'Other'
+    await wrapper.setProps({ chart: next })
+    expect(wrapper.findComponent(ChartViewerStub).props('chart').title).toBe('Other')
+  })
+
+  it('keeps the truncation warning during a reload until the new probe answers', async () => {
+    let resolveProbe: (v: unknown) => void = () => {}
+    let probes = 0
+    ofetchMock.mockImplementation((url: string) => {
+      if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
+      if (url.includes('page=51')) {
+        probes++
+        if (probes === 1) return Promise.resolve(rows(1))
+        return new Promise((resolve) => {
+          resolveProbe = resolve
+        })
+      }
+      return Promise.resolve(rows(50))
+    })
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart)
+    await settle()
+    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(true)
+    const next = structuredClone(chart)
+    next.series[0]!.aggregate_y = 'sum'
+    await wrapper.setProps({ chart: next })
+    await settle()
+    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(true)
+    resolveProbe(rows(0))
+    await settle()
+    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
+  })
+
+  it('hides the X-sort truncation warning when the limit keeps fewer values than fetched', async () => {
+    mockApi(50, true)
+    const chart = chartFixture()
+    chart.x_axis.sort_x_by = 'axis_x'
+    chart.x_axis.limit = 5
+    const wrapper = mountWrapper(chart)
+    await settle()
+    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
+  })
+})
+
+describe('hasMoreGroups', () => {
+  it('probes the first group past the page the chart fetched', async () => {
+    ofetchMock.mockReset()
+    ofetchMock.mockResolvedValue({ data: [] })
+    await hasMoreGroups({ tabularApiUrl: 'https://tabular.example.com' } as PluginConfig, { resourceId: RESOURCE_ID, page: 1, pageSize: 20 })
+    expect(String(ofetchMock.mock.calls[0]![0])).toContain('page=21&page_size=1')
   })
 })

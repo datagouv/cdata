@@ -1,8 +1,10 @@
-import type { Chart, ChartForm, ChartForApi, GenericFilter, ColumnDefinition } from '../types/visualizations'
+import type { Chart, ChartForm, ChartForApi, DataSeries, GenericFilter, ColumnDefinition, YAxis } from '../types/visualizations'
 import type { ColumnType, TabularProfile } from '../components/TabularExplorer/types'
+import type { TranslationFunction } from '../composables/useTranslation'
 import { resolveColumnType } from './tabular'
 
 export function toChartForm(chart: Chart) {
+  // The form has one filter shared by every series: `filter` is its only source.
   const seriesFilter: GenericFilter | null = chart.series[0]?.filters ?? null
 
   return {
@@ -28,6 +30,7 @@ export function toChartForm(chart: Chart) {
     series: chart.series.map(serie => ({
       ...serie,
       aggregate_y: serie.aggregate_y || '',
+      filters: null,
     })),
     extras: chart.extras,
     chart_type: chart.series[0] ? chart.series[0].type : null,
@@ -65,7 +68,7 @@ export function toChartApi(chartForm: ChartForm): ChartForApi {
       ...serie,
       type: chartForm.chart_type ?? serie.type,
       aggregate_y: serie.aggregate_y || null,
-      filters: serie.filters || chartForm.filter || null,
+      filters: chartForm.filter ?? null,
     })),
     extras: chartForm.extras,
   }
@@ -98,4 +101,28 @@ function normalizeProfileNumber(value: number | string | undefined, type: Column
   }
   const parsed = Number(value)
   return Number.isNaN(parsed) ? undefined : parsed
+}
+
+/** Y axis tick label: full number in the locale (no rounding), with the chart unit. */
+export function formatYAxisValue(value: number, locale: string, yAxis: Pick<YAxis, 'unit' | 'unit_position'>): string {
+  // Two compact fraction digits keep close ticks (1,22 M / 1,24 M) apart.
+  const options: Intl.NumberFormatOptions = Math.abs(value) >= 1000
+    ? { notation: 'compact', maximumFractionDigits: 2 }
+    : { maximumFractionDigits: 10 }
+  const formatted = new Intl.NumberFormat(locale, options).format(value)
+  if (!yAxis.unit) return formatted
+  return yAxis.unit_position === 'prefix' ? `${yAxis.unit} ${formatted}` : `${formatted} ${yAxis.unit}`
+}
+
+/** Legend and tooltip name of a series: the calculation spelled out, not the `column__sum` key. */
+export function seriesLabel(serie: Pick<DataSeries, 'column_y' | 'aggregate_y'>, t: TranslationFunction): string {
+  switch (serie.aggregate_y) {
+    case 'sum': return t('Somme de {column}', { column: serie.column_y })
+    case 'avg': return t('Moyenne de {column}', { column: serie.column_y })
+    case 'min': return t('Minimum de {column}', { column: serie.column_y })
+    case 'max': return t('Maximum de {column}', { column: serie.column_y })
+    // A count series counts the rows of each X value: its column is the X column.
+    case 'count': return t('Nombre de lignes')
+    default: return serie.column_y
+  }
 }

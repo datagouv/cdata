@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildColumnsFromProfile, toChartApi, toChartForm } from '~/datagouv-components/src/functions/charts'
+import { buildColumnsFromProfile, formatYAxisValue, toChartApi, toChartForm } from '~/datagouv-components/src/functions/charts'
 import type { Chart } from '~/datagouv-components/src/types/visualizations'
 import type { TabularProfile } from '~/datagouv-components/src/components/TabularExplorer/types'
 
@@ -120,7 +120,29 @@ describe('toChartForm / toChartApi', () => {
     expect(toChartApi(form).x_axis.limit).toBeNull()
   })
 
-  it('applies the chart type and filter to every series', () => {
+  it('sends no filter once the filter of a filtered chart is removed in the form', () => {
+    const filter = { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Bretagne' } as const
+    const chart = {
+      ...baseChart,
+      series: [{ type: 'bar', column_y: 'montant', aggregate_y: 'sum', filters: filter }],
+    } as unknown as Chart
+    const form = toChartForm(chart)
+    form.filter = null
+    expect(toChartApi(form).series[0].filters).toBeNull()
+  })
+
+  it('sends the edited form filter instead of the filter the chart was loaded with', () => {
+    const chart = {
+      ...baseChart,
+      series: [{ type: 'bar', column_y: 'montant', aggregate_y: 'sum', filters: { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Bretagne' } }],
+    } as unknown as Chart
+    const form = toChartForm(chart)
+    const edited = { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Normandie' } as const
+    form.filter = edited
+    expect(toChartApi(form).series[0].filters).toEqual(edited)
+  })
+
+  it('applies the chart type and the form filter to every series', () => {
     const own = { _cls: 'Filter', column: 'a', condition: 'exact', value: '1' } as const
     const shared = { _cls: 'Filter', column: 'b', condition: 'exact', value: '2' } as const
     const chart = {
@@ -137,7 +159,7 @@ describe('toChartForm / toChartApi', () => {
     expect(api.series.map(s => s.type)).toEqual(['line', 'line', 'line'])
     expect(api.series[0].filters).toEqual(shared)
     expect(api.series[1].filters).toEqual(shared)
-    expect(api.series[2].filters).toEqual(own)
+    expect(api.series[2].filters).toEqual(shared)
   })
 })
 
@@ -242,5 +264,42 @@ describe('buildColumnsFromProfile', () => {
       { name: 'label', type: 'text', min: undefined, max: undefined },
       { name: 'created_at', type: 'date', min: undefined, max: undefined },
     ])
+  })
+})
+
+describe('formatYAxisValue', () => {
+  // Intl puts a no-break space between the number and the compact suffix.
+  const NBSP = '\u00A0'
+
+  it('gives distinct fractional ticks distinct labels with a decimal comma', () => {
+    const labels = [0, 0.2, 0.4, 0.6, 0.8, 1].map(v => formatYAxisValue(v, 'fr', { unit: null, unit_position: null }))
+
+    expect(labels).toEqual(['0', '0,2', '0,4', '0,6', '0,8', '1'])
+  })
+
+  it('abbreviates thousands and millions the French way', () => {
+    const format = (v: number) => formatYAxisValue(v, 'fr', { unit: null, unit_position: null })
+
+    expect(format(12000)).toBe(`12${NBSP}k`)
+    expect(format(1250000)).toBe(`1,25${NBSP}M`)
+    expect(format(-3500000)).toBe(`-3,5${NBSP}M`)
+  })
+
+  it('keeps distinct close ticks distinct once abbreviated', () => {
+    const labels = [1200000, 1220000, 1240000].map(v => formatYAxisValue(v, 'fr', { unit: null, unit_position: null }))
+
+    expect(new Set(labels).size).toBe(3)
+  })
+
+  it('does not abbreviate values below a thousand', () => {
+    expect(formatYAxisValue(999, 'fr', { unit: null, unit_position: null })).toBe('999')
+  })
+
+  it('puts the unit after the value by default', () => {
+    expect(formatYAxisValue(2.5, 'fr', { unit: 'kg', unit_position: null })).toBe('2,5 kg')
+  })
+
+  it('puts a prefix unit before the value', () => {
+    expect(formatYAxisValue(1500, 'fr', { unit: '€', unit_position: 'prefix' })).toBe(`€ 1,5${NBSP}k`)
   })
 })

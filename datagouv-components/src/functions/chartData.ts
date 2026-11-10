@@ -5,7 +5,7 @@ import type { Chart, ChartForApi, SortDirection, XAxisSortBy } from '../types/vi
 export const CHART_PAGE_SIZE = 50
 
 /**
- * Order of the X values requested from tabular-api: it decides which 50 groups
+ * Order of the X values requested from tabular-api: it decides which groups
  * are fetched. A descending X sort asks for the last X values; a Y sort is
  * applied by the viewer on the fetched groups, so it does not change it.
  */
@@ -35,7 +35,7 @@ export function chartDataKey(chart: Chart | ChartForApi): string {
 
 export function truncationWarning(xColumn: string, sortBy: XAxisSortBy | null, t: TranslationFunction): string {
   if (sortBy === 'axis_y') {
-    return t('Seules les 50 premières valeurs de {x} sont prises en compte : le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.', { x: xColumn })
+    return t('Seules les {n} premières valeurs de {x} sont prises en compte : le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.', { n: CHART_PAGE_SIZE, x: xColumn })
   }
-  return t('Seules les 50 premières valeurs de {x} sont affichées.', { x: xColumn })
+  return t('Seules les {n} premières valeurs de {x} sont affichées.', { n: CHART_PAGE_SIZE, x: xColumn })
 }

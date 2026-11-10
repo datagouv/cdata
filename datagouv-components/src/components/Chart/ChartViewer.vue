@@ -12,9 +12,10 @@ import { LineChart, BarChart, type BarSeriesOption, type LineSeriesOption } from
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent } from 'echarts/components'
 import { init, type ECharts as EChartsType } from 'echarts'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { summarize } from '../../functions/helpers'
+import { formatYAxisValue, seriesLabel } from '../../functions/charts'
+import { CHART_PAGE_SIZE } from '../../functions/chartData'
 import { useFormatDate } from '../../functions/dates'
-import type { Chart, ColumnDefinition, ColumnsDefinition, XAxis, YAxis, XAxisForm, ChartForApi } from '../../types/visualizations'
+import type { Chart, ColumnDefinition, ColumnsDefinition, XAxis, XAxisForm, ChartForApi } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
 
 use([CanvasRenderer, LineChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent])
@@ -29,7 +30,7 @@ const props = defineProps<{
   }
 }>()
 
-const { locale } = useTranslation()
+const { locale, t } = useTranslation()
 const { formatDate } = useFormatDate()
 const chartContainer = ref<HTMLElement | null>(null)
 let echartsInstance: EChartsType | null = null
@@ -64,13 +65,11 @@ function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' | 'time' {
   return isDateAxis.value ? 'time' : 'value'
 }
 
-function buildYAxisFormatter(yAxis: YAxis): ((value: number) => string) | undefined {
-  return (value: number) => {
-    const v = summarize(value)
-    if (!yAxis.unit) return v
-    if (yAxis.unit_position === 'prefix') return `${yAxis.unit} ${v}`
-    return `${v} ${yAxis.unit}`
-  }
+function allYValuesAreIntegers(plotted: Array<PlottedSeries>): boolean {
+  return plotted.every(({ yColumn, rows }) => rows.every((row) => {
+    const value = row[yColumn]
+    return value === null || value === undefined || Number.isInteger(Number(value))
+  }))
 }
 
 function buildXAxisFormatter(column: ColumnDefinition | null, options?: Intl.DateTimeFormatOptions): ((value: string | number | Date) => string) | undefined {
@@ -81,6 +80,15 @@ function buildXAxisFormatter(column: ColumnDefinition | null, options?: Intl.Dat
     if (Number.isNaN(date.getTime())) return String(value)
     return formatDate(date, options ?? { dateStyle: 'short' })
   }
+}
+
+// Years (whole numbers from 1000 to 2999) read without a thousands separator:
+// "2018", not "2 018" nor ECharts' default "2,018".
+function buildXNumberFormatter(plotted: Array<PlottedSeries>): (value: number) => string {
+  const values = plotted.flatMap(p => p.rows.map(row => row[p.xColumn]))
+  const years = values.length > 0 && values.every(v => typeof v === 'number' && Number.isInteger(v) && v >= 1000 && v <= 2999)
+  const formatter = new Intl.NumberFormat(locale, { maximumFractionDigits: 10, useGrouping: !years })
+  return (value: number) => formatter.format(value)
 }
 
 function parseXValueAsDate(row: Record<string, unknown>, xColumn: string): Record<string, unknown> {
@@ -107,42 +115,25 @@ const xAxisColumn = computed(() => {
 
 const isDateAxis = computed(() => xAxisColumn.value?.type === 'date')
 
-const xAxisBounds = computed(() => {
-  const columnName = props.chart.x_axis.column_x
-  if (!columnName) return { min: undefined, max: undefined }
+type PlottedSeries = { xColumn: string, yColumn: string, rows: Array<Record<string, unknown>> }
 
+function xAxisBounds(plotted: Array<PlottedSeries>): { min: number | undefined, max: number | undefined } {
   let min: number | undefined
   let max: number | undefined
-
-  for (const [seriesIndex, s] of props.chart.series.entries()) {
-    const xColumn = s.column_x_name_override ?? columnName
-    const data = props.series.data[String(seriesIndex)]
-    if (!data) continue
-
-    for (const row of data) {
+  for (const { xColumn, rows } of plotted) {
+    for (const row of rows) {
       const value = row[xColumn]
       if (value === null || value === undefined) continue
-
-      let numericValue: number | undefined
-      if (value instanceof Date) {
-        numericValue = value.getTime()
-      }
-      else if (isDateAxis.value && typeof value === 'string') {
-        numericValue = new Date(value).getTime()
-      }
-      else {
-        numericValue = Number(value)
-      }
-
-      if (numericValue === undefined || Number.isNaN(numericValue)) continue
-
+      const numericValue = value instanceof Date
+        ? value.getTime()
+        : isDateAxis.value && typeof value === 'string' ? new Date(value).getTime() : Number(value)
+      if (Number.isNaN(numericValue)) continue
       if (min === undefined || numericValue < min) min = numericValue
       if (max === undefined || numericValue > max) max = numericValue
     }
   }
-
   return { min, max }
-})
+}
 
 const echartsOption = computed(() => {
   const seriesCount = props.chart.series.length
@@ -150,6 +141,12 @@ const echartsOption = computed(() => {
 
   let referenceXs: Array<unknown> | null = null
   const xKey = (x: unknown) => x instanceof Date ? x.getTime() : String(x)
+  // The profile bounds span the whole column: once values are left out, they
+  // would stretch the axis over values that are not drawn.
+  let valuesLeftOut = false
+
+  const xAxisType = mapXAxisType(props.chart.x_axis)
+  const isTimeAxis = xAxisType === 'time'
 
   const seriesArray = props.chart.series.map((s, seriesIndex) => {
     const xColumn = s.column_x_name_override ?? props.chart.x_axis.column_x
@@ -162,7 +159,9 @@ const echartsOption = computed(() => {
       return null
     }
 
-    const sortedData = isDateAxis.value
+    // Only a time axis needs Date values: on a category axis each Date object
+    // would be a distinct category, so the series would not share their X values.
+    const sortedData = isTimeAxis
       ? rawData.map(row => parseXValueAsDate(row, xColumn))
       : [...rawData]
     const sortBy = props.chart.x_axis.sort_x_by ?? (isDateAxis.value ? 'axis_x' : null)
@@ -219,6 +218,7 @@ const echartsOption = computed(() => {
     // column: the other series are reordered and cut to the first series' X
     // values (a missing X gives an empty point) so they stay aligned.
     const limit = props.chart.x_axis.limit
+    if (rawData.length >= CHART_PAGE_SIZE || (limit != null && limit < sortedData.length)) valuesLeftOut = true
     let limitedData: Array<Record<string, unknown>>
     if (!referenceXs) {
       limitedData = limit != null && limit < sortedData.length
@@ -247,11 +247,13 @@ const echartsOption = computed(() => {
         }
 
     return {
+      xColumn,
+      yColumn,
+      label: seriesLabel(s, t),
       series: {
         type: s.type === 'histogram' ? 'bar' : 'line',
         ...lineOptions,
         dimensions: s.aggregate_y ? [xColumn, yColumn] : resourceColumns.map(c => c.name),
-        name: yColumn,
         encode: {
           x: xColumn,
           y: yColumn,
@@ -268,14 +270,23 @@ const echartsOption = computed(() => {
     series: [] as Array<LineSeriesOption | BarSeriesOption>,
     data: [] as Array<Record<string, unknown>>,
   }
+  const plotted: Array<PlottedSeries> = []
+  const labelCounts = new Map<string, number>()
 
   for (const curr of seriesArray) {
     if (!curr) continue
-    seriesData.series.push(curr.series)
+    // ECharts merges the legend entries of series sharing a name.
+    const count = (labelCounts.get(curr.label) ?? 0) + 1
+    labelCounts.set(curr.label, count)
+    seriesData.series.push({ ...curr.series, name: count > 1 ? `${curr.label} (${count})` : curr.label, datasetIndex: seriesData.data.length })
     seriesData.data.push(curr.data)
+    plotted.push({ xColumn: curr.xColumn, yColumn: curr.yColumn, rows: curr.data.source })
   }
 
-  const xAxisType = mapXAxisType(props.chart.x_axis)
+  const shownBounds = xAxisBounds(plotted)
+  const xNumberFormatter = buildXNumberFormatter(plotted)
+  const xMin = valuesLeftOut ? shownBounds.min : xAxisColumn.value?.min ?? shownBounds.min
+  const xMax = valuesLeftOut ? shownBounds.max : xAxisColumn.value?.max ?? shownBounds.max
 
   return {
     dataset: [...seriesData.data],
@@ -285,7 +296,7 @@ const echartsOption = computed(() => {
     color: CHART_COLORS,
     tooltip: {
       trigger: 'axis' as const,
-      formatter: (params: Array<{ value: Record<string, unknown>, axisValueLabel: string, seriesName: string }>) => {
+      formatter: (params: Array<{ value: Record<string, unknown>, axisValueLabel: string, seriesName: string, seriesIndex: number }>) => {
         const valueFormatter = new Intl.NumberFormat(locale)
         const xAxisFormatter = buildXAxisFormatter(xAxisColumn.value, { dateStyle: 'medium' })
         const first = params[0]
@@ -293,7 +304,8 @@ const echartsOption = computed(() => {
         const axisLabel = xAxisFormatter ? xAxisFormatter(first.axisValueLabel) : first.axisValueLabel
         let tooltip = `<strong>${format.encodeHTML(String(axisLabel))}</strong><br>`
         for (const param of params) {
-          const value = param.value[param.seriesName]
+          const yColumn = plotted[param.seriesIndex]?.yColumn
+          const value = yColumn === undefined ? undefined : param.value[yColumn]
           const formatted = value === null || value === undefined ? '–' : valueFormatter.format(Number(value))
           tooltip += `${format.encodeHTML(param.seriesName)}: <strong>${formatted}</strong><br>`
         }
@@ -321,14 +333,15 @@ const echartsOption = computed(() => {
       nameLocation: 'middle' as const,
       // Clears the axis labels between the axis line and the name.
       nameGap: 30,
-      min: xAxisType !== 'category' ? xAxisColumn.value?.min ?? xAxisBounds.value.min ?? undefined : undefined,
-      max: xAxisType !== 'category' ? xAxisColumn.value?.max ?? xAxisBounds.value.max ?? undefined : undefined,
+      min: xAxisType !== 'category' ? xMin : undefined,
+      max: xAxisType !== 'category' ? xMax : undefined,
       // 'auto' + hideOverlap: ECharts skips labels that don't fit instead of
-      // overlapping them; merged with the time-axis formatter.
+      // overlapping them; merged with the date formatter.
       axisLabel: {
         interval: xAxisType === 'category' ? 'auto' as const : undefined,
         hideOverlap: true,
-        ...(xAxisType === 'time' ? { formatter: buildXAxisFormatter(xAxisColumn.value) } : {}),
+        ...(isDateAxis.value ? { formatter: buildXAxisFormatter(xAxisColumn.value) } : {}),
+        ...(xAxisType === 'value' ? { formatter: xNumberFormatter } : {}),
       },
     },
     yAxis: {
@@ -336,9 +349,11 @@ const echartsOption = computed(() => {
       name: props.chart.y_axis.label ?? undefined,
       min: props.chart.y_axis.min ?? undefined,
       max: props.chart.y_axis.max ?? undefined,
+      // Integer data (counts…) must not get fractional ticks like 0,2 or 0,4.
+      minInterval: allYValuesAreIntegers(plotted) ? 1 : undefined,
       axisLabel: {
         hideOverlap: true,
-        formatter: buildYAxisFormatter(props.chart.y_axis),
+        formatter: (value: number) => formatYAxisValue(value, locale, props.chart.y_axis),
       },
     },
     series: seriesData.series,

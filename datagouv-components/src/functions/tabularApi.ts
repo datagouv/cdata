@@ -58,10 +58,12 @@ export async function fetchTabularData(config: PluginConfig, options: FetchTabul
 }
 
 /**
- * Whether a 51st group exists: same query as the chart's, one row at page 51.
+ * Whether a group exists past the page of `options`: same query, one row per page.
  */
 export async function hasMoreGroups(config: PluginConfig, options: FetchTabularDataOptions): Promise<boolean> {
-  const response = await fetchTabularData(config, { ...options, page: 51, pageSize: 1 })
+  const pageSize = options.pageSize ?? config.tabularApiPageSize ?? 15
+  const nextRow = (options.page ?? 1) * pageSize + 1
+  const response = await fetchTabularData(config, { ...options, page: nextRow, pageSize: 1 })
   return response.data.length > 0
 }
 

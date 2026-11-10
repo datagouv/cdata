@@ -155,6 +155,7 @@ export * from './functions/tabular'
 export * from './functions/users'
 export * from './functions/tabularApi'
 export * from './functions/charts'
+export { CHART_PAGE_SIZE } from './functions/chartData'
 export * from './types/access_types'
 
 export type {
