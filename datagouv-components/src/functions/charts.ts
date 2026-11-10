@@ -1,5 +1,5 @@
 import type { Chart, ChartForm, ChartForApi, DataSeries, GenericFilter, ColumnDefinition, YAxis } from '../types/visualizations'
-import type { ColumnType, TabularProfile } from '../components/TabularExplorer/types'
+import type { ColumnType, TabularColumnProfile, TabularProfile } from '../components/TabularExplorer/types'
 import type { TranslationFunction } from '../composables/useTranslation'
 import { resolveColumnType } from './tabular'
 
@@ -89,8 +89,15 @@ export function buildColumnsFromProfile(profile: { profile: TabularProfile }): A
       type: colType,
       min: normalizeProfileNumber(colProfile?.min, colType),
       max: normalizeProfileNumber(colProfile?.max, colType),
+      distinctValues: distinctValues(colProfile),
     }
   })
+}
+
+// The profile leaves nb_distinct at 0 for the columns it does not count, free text among them.
+function distinctValues(colProfile: TabularColumnProfile | undefined): number | undefined {
+  if (!colProfile?.nb_distinct) return undefined
+  return colProfile.nb_distinct + (colProfile.nb_missing_values > 0 ? 1 : 0)
 }
 
 function normalizeProfileNumber(value: number | string | undefined, type: ColumnType): number | undefined {

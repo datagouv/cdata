@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { chartDataKey, chartRequestSortDirection, truncationWarning } from '~/datagouv-components/src/functions/chartData'
+import { CHART_PAGE_SIZE, chartDataKey, chartRequestSortDirection, groupsBeyondPage, truncationWarning } from '~/datagouv-components/src/functions/chartData'
 import type { ChartForApi } from '~/datagouv-components/src/types/visualizations'
 
 const chart = {
@@ -76,5 +76,32 @@ describe('truncationWarning', () => {
   it('returns the X-sort copy otherwise', () => {
     expect(truncationWarning('dep', 'axis_x', t)).toBe('Seules les 50 premières valeurs de dep sont affichées.')
     expect(truncationWarning('dep', null, t)).toBe('Seules les 50 premières valeurs de dep sont affichées.')
+  })
+})
+
+describe('groupsBeyondPage', () => {
+  const full = CHART_PAGE_SIZE
+
+  it('knows a page that is not full holds every group', () => {
+    expect(groupsBeyondPage({ rowCount: full - 1, aggregated: true, filtered: true })).toBe(false)
+    expect(groupsBeyondPage({ rowCount: full - 1, aggregated: false, filtered: false })).toBe(false)
+  })
+
+  it('reads the row count of a raw series from the total of its response', () => {
+    expect(groupsBeyondPage({ rowCount: full, aggregated: false, filtered: true, total: full + 1 })).toBe(true)
+    expect(groupsBeyondPage({ rowCount: full, aggregated: false, filtered: false, total: full })).toBe(false)
+  })
+
+  it('reads the group count of an unfiltered aggregated series from the profile', () => {
+    expect(groupsBeyondPage({ rowCount: full, aggregated: true, filtered: false, distinctValues: 926 })).toBe(true)
+    expect(groupsBeyondPage({ rowCount: full, aggregated: true, filtered: false, distinctValues: full })).toBe(false)
+  })
+
+  it('probes when only the next group can tell', () => {
+    // a filter changes the groups, and api-tabular sends no total for an aggregate
+    expect(groupsBeyondPage({ rowCount: full, aggregated: true, filtered: true, distinctValues: 926 })).toBe('probe')
+    // the profile did not count the column
+    expect(groupsBeyondPage({ rowCount: full, aggregated: true, filtered: false })).toBe('probe')
+    expect(groupsBeyondPage({ rowCount: full, aggregated: false, filtered: false })).toBe('probe')
   })
 })

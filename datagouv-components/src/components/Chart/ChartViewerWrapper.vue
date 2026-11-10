@@ -60,12 +60,12 @@ import ChartLoader from './ChartLoader.vue'
 import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
 import { useComponentsConfig } from '../../config'
-import { fetchTabularData, hasMoreGroups, useGetProfile, type FetchTabularDataOptions } from '../../functions/tabularApi'
+import { buildFilterQuery, fetchTabularData, hasMoreGroups, useGetProfile, type FetchTabularDataOptions } from '../../functions/tabularApi'
 import type { Chart, ChartForApi, ColumnsDefinition } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
 import { watchDebounced } from '@vueuse/shared'
 import { buildColumnsFromProfile } from '../../functions/charts'
-import { CHART_PAGE_SIZE, chartDataKey, chartRequestSortDirection, truncationWarning } from '../../functions/chartData'
+import { CHART_PAGE_SIZE, chartDataKey, chartRequestSortDirection, groupsBeyondPage, truncationWarning } from '../../functions/chartData'
 
 const props = defineProps<{
   chart: Chart | ChartForApi
@@ -185,6 +185,24 @@ async function fetchSeriesProfile() {
 }
 
 let latestRequest = 0
+// The profile and the data load side by side; the truncation note waits for both.
+let profileLoaded: Promise<void> = Promise.resolve()
+
+type LoadedSeries = { rows: Array<Record<string, unknown>>, total: number | undefined, xColumn: string, options: FetchTabularDataOptions }
+
+async function hasGroupsBeyondPage({ rows, total, xColumn, options }: LoadedSeries): Promise<boolean> {
+  await profileLoaded
+  const known = groupsBeyondPage({
+    rowCount: rows.length,
+    aggregated: !!options.aggregation,
+    filtered: !!options.filters && buildFilterQuery(options.filters) !== '',
+    total,
+    distinctValues: series.columns[options.resourceId]?.find(column => column.name === xColumn)?.distinctValues,
+  })
+  if (known !== 'probe') return known
+  // The probe only adds the note: a failure leaves it out.
+  return hasMoreGroups(config, options).catch(() => false)
+}
 
 async function fetchSeriesData() {
   const request = ++latestRequest
@@ -193,7 +211,7 @@ async function fetchSeriesData() {
   pendingOperations.value++
   status.value = 'pending'
   error.value = null
-  let fullPages: Array<FetchTabularDataOptions> = []
+  let fullPages: Array<LoadedSeries> = []
 
   try {
     if (props.chart.series.length === 0 || !props.chart.x_axis.column_x) {
@@ -234,6 +252,8 @@ async function fetchSeriesData() {
         return {
           key: String(index),
           rows: response.data,
+          total: response.meta?.total,
+          xColumn,
           options,
         }
       })
@@ -250,8 +270,8 @@ async function fetchSeriesData() {
       result.rows,
     ]))
     someSeriesFailed.value = failures.length > 0
-    fullPages = results.filter(result => result.rows.length === CHART_PAGE_SIZE).map(result => result.options)
-    // The previous warning stays until the probe answers, so it does not blink.
+    fullPages = results.filter(result => result.rows.length === CHART_PAGE_SIZE)
+    // The previous warning stays until the new answer, so it does not blink.
     if (fullPages.length === 0) moreGroups.value = false
   }
   catch (err) {
@@ -266,10 +286,9 @@ async function fetchSeriesData() {
     pendingOperations.value--
   }
 
-  // The next-group probe only adds the truncation warning: the chart is shown
-  // without waiting for it.
+  // The truncation warning is only a note: the chart is shown without waiting for it.
   if (fullPages.length === 0) return
-  const more = await Promise.all(fullPages.map(options => hasMoreGroups(config, options).catch(() => false)))
+  const more = await Promise.all(fullPages.map(hasGroupsBeyondPage))
   if (isStale()) return
   moreGroups.value = more.some(Boolean)
 }
@@ -277,7 +296,8 @@ async function fetchSeriesData() {
 // A string key: the computed array is new on every chart change, and the
 // profile only depends on the resources.
 watch(() => resourceIds.value.join(','), async () => {
-  await fetchSeriesProfile()
+  profileLoaded = fetchSeriesProfile()
+  await profileLoaded
 }, { immediate: true })
 
 watchDebounced([

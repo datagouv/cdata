@@ -494,11 +494,138 @@ describe('ChartViewerWrapper data fetching', () => {
   })
 })
 
+describe('ChartViewerWrapper truncation note without probe', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    ofetchMock.mockReset()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  function profile(nbDistinct: number, nbMissing = 0) {
+    return {
+      profile: {
+        header: ['dep', 'n'],
+        columns: { dep: { format: 'string', python_type: 'string' }, n: { format: 'int', python_type: 'int' } },
+        profile: { dep: { tops: [], nb_distinct: nbDistinct, nb_missing_values: nbMissing } },
+      },
+    }
+  }
+
+  function mockResponses({ profileResponse = profile(0), page, probe }: { profileResponse?: unknown, page: unknown, probe?: () => unknown }) {
+    ofetchMock.mockImplementation(async (url: string) => {
+      if (url.includes('/profile/')) return profileResponse
+      if (url.includes('page=51')) return probe ? probe() : rows(0)
+      return page
+    })
+  }
+
+  const warning = (wrapper: ReturnType<typeof mountWrapper>) => wrapper.find('[data-testid="chart-truncation-warning"]').exists()
+
+  function rawChart() {
+    const chart = chartFixture()
+    chart.series[0]!.aggregate_y = null
+    return chart
+  }
+
+  function filteredChart() {
+    const chart = chartFixture()
+    chart.series[0]!.filters = { _cls: 'Filter', column: 'n', condition: 'less', value: '10' }
+    return chart
+  }
+
+  it('reads the total of a raw series instead of probing', async () => {
+    mockResponses({ page: { ...rows(50), meta: { total: 926 } } })
+    const wrapper = mountWrapper(rawChart())
+    await settle()
+    expect(warning(wrapper)).toBe(true)
+    expect(dataCalls()).toHaveLength(1)
+  })
+
+  it('shows no note for a raw series of exactly 50 rows, without probing', async () => {
+    mockResponses({ page: { ...rows(50), meta: { total: 50 } } })
+    const wrapper = mountWrapper(rawChart())
+    await settle()
+    expect(warning(wrapper)).toBe(false)
+    expect(dataCalls()).toHaveLength(1)
+  })
+
+  it('reads the distinct X values of an unfiltered aggregate from the profile instead of probing', async () => {
+    mockResponses({ profileResponse: profile(926), page: rows(50) })
+    const wrapper = mountWrapper(chartFixture())
+    await settle()
+    expect(warning(wrapper)).toBe(true)
+    expect(dataCalls()).toHaveLength(1)
+  })
+
+  it('shows no note when the profile counts 50 X values, empty cells included', async () => {
+    mockResponses({ profileResponse: profile(49, 3), page: rows(50) })
+    const wrapper = mountWrapper(chartFixture())
+    await settle()
+    expect(warning(wrapper)).toBe(false)
+    expect(dataCalls()).toHaveLength(1)
+  })
+
+  it('waits for a profile that answers after the data', async () => {
+    let resolveProfile: (v: unknown) => void = () => {}
+    ofetchMock.mockImplementation((url: string) => {
+      if (url.includes('/profile/')) return new Promise((resolve) => {
+        resolveProfile = resolve
+      })
+      return Promise.resolve(rows(50))
+    })
+    const wrapper = mountWrapper(chartFixture())
+    await settle()
+    expect(dataCalls()).toHaveLength(1)
+    resolveProfile(profile(926))
+    await settle()
+    expect(warning(wrapper)).toBe(true)
+    expect(dataCalls()).toHaveLength(1)
+  })
+
+  it('probes a filtered aggregate, and reads a 416 as no further group', async () => {
+    mockResponses({
+      profileResponse: profile(926),
+      page: rows(50),
+      probe: () => {
+        throw Object.assign(new Error('[GET] /data/: 416 Range Not Satisfiable'), { statusCode: 416 })
+      },
+    })
+    const wrapper = mountWrapper(filteredChart())
+    await settle()
+    expect(dataCalls()).toHaveLength(2)
+    expect(warning(wrapper)).toBe(false)
+  })
+
+  it('does not probe a filtered aggregate whose page is not full', async () => {
+    mockResponses({ page: rows(12) })
+    const wrapper = mountWrapper(filteredChart())
+    await settle()
+    expect(dataCalls()).toHaveLength(1)
+    expect(warning(wrapper)).toBe(false)
+  })
+})
+
 describe('hasMoreGroups', () => {
   it('probes the first group past the page the chart fetched', async () => {
     ofetchMock.mockReset()
     ofetchMock.mockResolvedValue({ data: [] })
     await hasMoreGroups({ tabularApiUrl: 'https://tabular.example.com' } as PluginConfig, { resourceId: RESOURCE_ID, page: 1, pageSize: 20 })
     expect(String(ofetchMock.mock.calls[0]![0])).toContain('page=21&page_size=1')
+  })
+
+  // PostgREST answers 416 for an offset past the filtered rows, instead of an empty page.
+  it('reads a 416 as no further group', async () => {
+    ofetchMock.mockReset()
+    ofetchMock.mockRejectedValue(Object.assign(new Error('416 Range Not Satisfiable'), { statusCode: 416 }))
+    await expect(hasMoreGroups({ tabularApiUrl: 'https://tabular.example.com' } as PluginConfig, { resourceId: RESOURCE_ID, page: 1, pageSize: 50 })).resolves.toBe(false)
+  })
+
+  it('lets any other failure through', async () => {
+    ofetchMock.mockReset()
+    ofetchMock.mockRejectedValue(Object.assign(new Error('500 Internal Server Error'), { statusCode: 500 }))
+    await expect(hasMoreGroups({ tabularApiUrl: 'https://tabular.example.com' } as PluginConfig, { resourceId: RESOURCE_ID, page: 1, pageSize: 50 })).rejects.toThrow('500')
   })
 })
