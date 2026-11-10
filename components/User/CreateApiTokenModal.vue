@@ -4,7 +4,7 @@
     :title="$t('Créer un token API')"
     size="lg"
     form
-    @submit.prevent="(_$el, _close) => submit(_close)"
+    @submit.prevent="submit"
   >
     <template #button="{ attrs, listeners }">
       <BrandedButton
@@ -20,21 +20,55 @@
     </template>
 
     <template #default>
-      <InputGroup
-        v-model="name"
-        :label="$t('Nom (optionnel)')"
-        :hint-text="$t('Un nom pour identifier ce token, par exemple « CI/CD » ou « Mon script »')"
-      />
-      <InputGroup
-        v-model="expiresAt"
-        type="date"
-        class="mt-4"
-        :label="$t('Date d\'expiration (optionnel)')"
-      />
+      <SimpleBanner
+        v-if="createdToken"
+        type="warning"
+      >
+        <div class="font-bold mb-1">
+          {{ $t("Copiez ce token maintenant, il ne sera plus affiché.") }}
+        </div>
+        <div class="flex items-center gap-2">
+          <code class="text-sm break-all">{{ createdToken }}</code>
+          <CopyButton
+            :label="$t('Copier le token')"
+            :copied-label="$t('Token copié')"
+            :text="createdToken"
+          />
+        </div>
+      </SimpleBanner>
+      <template v-else>
+        <InputGroup
+          v-model="name"
+          :label="$t('Nom (optionnel)')"
+          :hint-text="$t('Un nom pour identifier ce token, par exemple « CI/CD » ou « Mon script »')"
+        />
+        <InputGroup
+          v-model="expiresAt"
+          type="date"
+          class="mt-4"
+          :label="$t('Date d\'expiration (optionnel)')"
+        />
+      </template>
     </template>
 
     <template #footer="{ close: _close }">
-      <div class="fr-grid-row fr-grid-row--gutters fr-grid-row--right">
+      <div
+        v-if="createdToken"
+        class="fr-grid-row fr-grid-row--right"
+      >
+        <div class="fr-col-auto">
+          <BrandedButton
+            color="primary"
+            @click="_close"
+          >
+            {{ $t('Fermer') }}
+          </BrandedButton>
+        </div>
+      </div>
+      <div
+        v-else
+        class="fr-grid-row fr-grid-row--gutters fr-grid-row--right"
+      >
         <div class="fr-col-auto">
           <BrandedButton
             color="secondary"
@@ -59,7 +93,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, toast } from '@datagouv/components-next'
+import { BrandedButton, CopyButton, SimpleBanner, toast } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import { FetchError } from 'ofetch'
 import type { ApiTokenCreated } from '~/types/api-tokens'
@@ -78,8 +112,14 @@ const isOpen = useFreshSessionModal('api_token', 'create', async () => {
 const loading = ref(false)
 const name = ref('')
 const expiresAt = ref('')
+// Shown in the modal rather than on the page: closing the modal changes the URL, which
+// remounts the profile page (keyed by `fullPath`) and would drop it before it is copied.
+const createdToken = ref<string | null>(null)
+watch(isOpen, (open) => {
+  if (!open) createdToken.value = null
+})
 
-async function submit(close: () => void) {
+async function submit() {
   loading.value = true
   try {
     const result = await $api<ApiTokenCreated>('/api/1/me/api_tokens/', {
@@ -92,7 +132,7 @@ async function submit(close: () => void) {
     toast.success(t('Token créé avec succès.'))
     name.value = ''
     expiresAt.value = ''
-    close()
+    createdToken.value = result.token
     emit('created', result)
   }
   catch (e) {
