@@ -52,7 +52,7 @@ export function groupsBeyondPage({ rowCount, aggregated, total, next }: {
 
 export function truncationWarning(xColumn: string, sortBy: XAxisSortBy | null, t: TranslationFunction): string {
   if (sortBy === 'axis_y') {
-    return t('Seules les {n} premières valeurs de {x} sont prises en compte : le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.', { n: CHART_PAGE_SIZE, x: xColumn })
+    return t('Graphique tronqué : seules les {n} premières valeurs de {x} sont prises en compte, le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.', { n: CHART_PAGE_SIZE, x: xColumn })
   }
-  return t('Seules les {n} premières valeurs de {x} sont affichées.', { n: CHART_PAGE_SIZE, x: xColumn })
+  return t('Graphique tronqué : seules les {n} premières valeurs de {x} sont affichées. Ajoutez un filtre pour voir les autres valeurs.', { n: CHART_PAGE_SIZE, x: xColumn })
 }

@@ -185,7 +185,7 @@ describe('ChartViewerWrapper data fetching', () => {
     const wrapper = mountWrapper(chartFixture())
     await settle()
     expect(wrapper.find('[data-testid="chart-truncation-warning"]').text()).toBe(
-      'Seules les 50 premières valeurs de dep sont prises en compte : le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.',
+      'Graphique tronqué : seules les 50 premières valeurs de dep sont prises en compte, le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.',
     )
   })
 
@@ -195,7 +195,9 @@ describe('ChartViewerWrapper data fetching', () => {
     chart.x_axis.sort_x_by = 'axis_x'
     const wrapper = mountWrapper(chart)
     await settle()
-    expect(wrapper.find('[data-testid="chart-truncation-warning"]').text()).toBe('Seules les 50 premières valeurs de dep sont affichées.')
+    expect(wrapper.find('[data-testid="chart-truncation-warning"]').text()).toBe('Graphique tronqué : seules les 50 premières valeurs de dep sont affichées. Ajoutez un filtre pour voir les autres valeurs.')
+    // A warning banner, not a muted note: the chart itself is incomplete.
+    expect(wrapper.find('[data-testid="chart-truncation-warning"]').classes()).toContain('bg-new-warning-light')
   })
 
   // RGAA 7.5: a live region announces what is added to it, so it is there before the note.

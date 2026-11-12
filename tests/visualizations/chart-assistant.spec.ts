@@ -110,7 +110,7 @@ test('a chart with more than 50 groups shows the truncation warning', async ({ p
 
   await expect(page.getByTestId('chart-truncation-warning')).toBeVisible()
   await expect(page.getByTestId('chart-truncation-warning')).toHaveText(
-    `Seules les 50 premières valeurs de ${X_COLUMN} sont prises en compte : le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.`,
+    `Graphique tronqué : seules les 50 premières valeurs de ${X_COLUMN} sont prises en compte, le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.`,
   )
   expect(dataPages).toContain('51')
 })

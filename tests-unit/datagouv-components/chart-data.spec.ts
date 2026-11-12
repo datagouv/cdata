@@ -70,12 +70,12 @@ describe('chartRequestSortDirection', () => {
 
 describe('truncationWarning', () => {
   it('returns the Y-sort copy', () => {
-    expect(truncationWarning('dep', 'axis_y', t)).toBe('Seules les 50 premières valeurs de dep sont prises en compte : le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.')
+    expect(truncationWarning('dep', 'axis_y', t)).toBe('Graphique tronqué : seules les 50 premières valeurs de dep sont prises en compte, le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.')
   })
 
   it('returns the X-sort copy otherwise', () => {
-    expect(truncationWarning('dep', 'axis_x', t)).toBe('Seules les 50 premières valeurs de dep sont affichées.')
-    expect(truncationWarning('dep', null, t)).toBe('Seules les 50 premières valeurs de dep sont affichées.')
+    expect(truncationWarning('dep', 'axis_x', t)).toBe('Graphique tronqué : seules les 50 premières valeurs de dep sont affichées. Ajoutez un filtre pour voir les autres valeurs.')
+    expect(truncationWarning('dep', null, t)).toBe('Graphique tronqué : seules les 50 premières valeurs de dep sont affichées. Ajoutez un filtre pour voir les autres valeurs.')
   })
 })
 

@@ -37,17 +37,22 @@
       data-testid="chart-notes"
     >
       <template v-if="blockStatus === 'success'">
-        <p
+        <div
           v-if="showTruncationWarning"
-          class="flex items-start gap-1.5 px-4 pb-3 mt-1 mb-0 text-xs text-gray-medium"
-          data-testid="chart-truncation-warning"
+          class="px-4 pb-3 mt-1"
         >
-          <RiInformationLine
-            class="size-4 shrink-0"
-            aria-hidden="true"
-          />
-          <span>{{ truncationWarning(displayedChart.x_axis.column_x, displayedChart.x_axis.sort_x_by, t) }}</span>
-        </p>
+          <SimpleBanner
+            type="warning"
+            class="flex items-start gap-2 text-sm"
+            data-testid="chart-truncation-warning"
+          >
+            <RiAlertLine
+              class="size-4 shrink-0 mt-0.5"
+              aria-hidden="true"
+            />
+            <span>{{ truncationWarning(displayedChart.x_axis.column_x, displayedChart.x_axis.sort_x_by, t) }}</span>
+          </SimpleBanner>
+        </div>
         <p
           v-if="someSeriesFailed"
           class="flex items-start gap-1.5 px-4 pb-3 mt-1 mb-0 text-xs text-gray-medium"
@@ -66,10 +71,11 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue'
-import { RiErrorWarningLine, RiInformationLine } from '@remixicon/vue'
+import { RiAlertLine, RiErrorWarningLine } from '@remixicon/vue'
 import ChartLoader from './ChartLoader.vue'
 import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
+import SimpleBanner from '../../components/SimpleBanner.vue'
 import { useComponentsConfig } from '../../config'
 import { fetchTabularData, hasMoreGroups, useGetProfile, type FetchTabularDataOptions } from '../../functions/tabularApi'
 import type { Chart, ChartForApi, ColumnsDefinition } from '../../types/visualizations'
