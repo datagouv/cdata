@@ -91,10 +91,9 @@
         </template>
       </SearchableSelect>
       <Divider>{{ $t('ou') }}</Divider>
-      <form
-        class="flex items-end space-x-4"
-        @submit.prevent="loadByLink"
-      >
+      <!-- Not a <form>: this select often sits inside one, and a nested form is dropped
+           from the server HTML, breaking hydration -->
+      <div class="flex items-end space-x-4">
         <InputGroup
           v-model="datasetUrl"
           :label="t('Lien vers {objectType}', { objectType: theLabel })"
@@ -102,14 +101,16 @@
           :has-error="!!urlError"
           :error-text="urlError"
           class="w-full !mb-0"
+          @keydown.enter="loadByLinkOnEnter"
         />
         <BrandedButton
-          type="submit"
+          type="button"
           :icon="RiAddLine"
           size="sm"
           :title="t('Ajouter {objectType}', { objectType: theLabel })"
+          @click="loadByLink"
         />
-      </form>
+      </div>
     </div>
   </fieldset>
 </template>
@@ -177,6 +178,15 @@ const selected = computed<Array<T | TSuggest>>(() => {
     return objectsByIds.value[datasetSuggest.id] || null
   }).filter(object => object)
 })
+
+// The field commits its value on change, which Enter only fires inside a form. Enter also
+// confirms an input method composition, which is not a request to add the link.
+const loadByLinkOnEnter = (event: KeyboardEvent) => {
+  if (event.isComposing || !(event.target instanceof HTMLInputElement)) return
+  event.preventDefault()
+  datasetUrl.value = event.target.value
+  loadByLink()
+}
 
 const loadByLink = async () => {
   try {

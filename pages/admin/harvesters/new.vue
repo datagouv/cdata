@@ -137,9 +137,5 @@ async function save() {
   }
 }
 
-watchEffect(() => {
-  if (!isCurrentStepValid.value) {
-    moveToStep(1)
-  }
-})
+useStepGuard(currentStep, isCurrentStepValid, () => moveToStep(1))
 </script>

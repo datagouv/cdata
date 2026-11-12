@@ -84,6 +84,7 @@ const USE_SPREADSHEET_STATE = 'structured-use-spreadsheet'
 const NEW_DATASET_STATE = 'structured-new-dataset'
 const PUBLICATION_MODE_STATE = 'structured-publication-mode'
 const UPLOADED_FILE_STATE = 'strutured-uploaded-file'
+const PUBLISHED_STATE = 'structured-published'
 
 const steps = computed(() => ([
   t('Associez un schéma'),
@@ -121,6 +122,12 @@ const file = useState<File | null>(UPLOADED_FILE_STATE, () => null)
 const resources = useState<Array<ResourceForm>>(DATASET_FILES_STATE, () => [])
 const newDataset = useState<Dataset | null>(NEW_DATASET_STATE, () => null)
 const publicationMode = useState<SchemaPublicationMode>(PUBLICATION_MODE_STATE, () => 'new')
+// Files sent to an existing dataset: the form still holds them, publishing it again would
+// send them twice
+const published = useState(PUBLISHED_STATE, () => false)
+
+// A second click on "Publier" while the files upload would send them again
+let saving = false
 
 const currentStep = computed(() => {
   const step = route.query.step as string
@@ -152,6 +159,7 @@ const isCurrentStepValid = computed(() => {
   // left out: `save()` empties the form once published, and that screen only reads
   // `newDataset`.
   if (step > 1 && step < 4 && !(associateSchemaForm.value.selectedSchema && associateSchemaForm.value.owned)) return false
+  if (step > 1 && step < 4 && published.value) return false
 
   return true
 })
@@ -195,6 +203,8 @@ function openSheet(fileToOpen?: File) {
 }
 
 async function save() {
+  if (saving || published.value) return
+  saving = true
   try {
     start()
 
@@ -229,27 +239,33 @@ async function save() {
 
     if (results.every(f => f.status !== 'rejected')) {
       if (publicationMode.value === 'existing') {
+        published.value = true
         await navigateTo(`/datasets/${dataset.slug}`)
-        clearNuxtState(NEW_DATASET_STATE)
       }
       else {
         await moveToStep(4)
+        clearForm()
       }
-      associateSchemaForm.value = {
-        owned: null,
-        existingDataset: null,
-        selectedSchema: null,
-      }
-      clearNuxtState(USE_SPREADSHEET_STATE)
-      clearNuxtState(DATASET_FORM_STATE)
-      clearNuxtState(DATASET_FILES_STATE)
-      clearNuxtState(PUBLICATION_MODE_STATE)
-      clearNuxtState(UPLOADED_FILE_STATE)
     }
   }
   finally {
     finish()
+    saving = false
   }
+}
+
+// `reset` puts back each initial value: deleting the keys would leave the screen still
+// displayed reading `undefined`
+function clearForm() {
+  clearNuxtState([
+    ASSOCIATE_SCHEMA_FORM_STATE,
+    USE_SPREADSHEET_STATE,
+    DATASET_FORM_STATE,
+    DATASET_FILES_STATE,
+    PUBLICATION_MODE_STATE,
+    UPLOADED_FILE_STATE,
+    PUBLISHED_STATE,
+  ], { reset: true })
 }
 
 async function updateDataset(asPrivate: boolean) {
@@ -281,16 +297,30 @@ async function updateDataset(asPrivate: boolean) {
 // avoid wiping the dataset created for the current flow on later steps.
 onMounted(() => {
   if (currentStep.value === 1) {
+    if (published.value) clearForm()
     clearNuxtState(NEW_DATASET_STATE)
   }
 })
 
-// Checked on arriving at a step only: `save()` empties the form on purpose once
-// published, and reacting to that would pull the user back to the first step while
-// they are being sent to the dataset page
-watch(currentStep, () => {
-  if (!isCurrentStepValid.value) {
+// Once published, the form is emptied when the page is gone rather than right away: the
+// dataset page loads first, and the form would empty itself on screen in the meantime.
+// Coming back to the wizard instead (a step, a cancelled navigation) starts it over:
+// the step guard sends later steps to the first one, which empties the form.
+onUnmounted(() => {
+  if (published.value) {
+    clearForm()
+    clearNuxtState(NEW_DATASET_STATE)
+  }
+})
+
+// Back in the history while the dataset page loads, the same page is shown again
+// without remounting
+const router = useRouter()
+watch(() => router.currentRoute.value.fullPath, (fullPath) => {
+  if (published.value && fullPath === route.fullPath) {
     moveToStep(1)
   }
-}, { immediate: true })
+})
+
+useStepGuard(currentStep, isCurrentStepValid, () => moveToStep(1))
 </script>
