@@ -1,7 +1,7 @@
 import type { Owned, OwnedWithId } from './owned'
 import type { Dataset, Rel } from './datasets'
 import type { Badges } from './badges'
-import type { Dataservice } from './dataservices'
+import type { DataserviceReference } from './dataservices'
 
 export type ReuseReference = {
   class: 'Reuse'
@@ -29,7 +29,7 @@ export type Reuse = BaseReuse & {
   badges: Badges
   created_at: string
   datasets: Array<Dataset>
-  dataservices: Array<Dataservice>
+  dataservices: Array<DataserviceReference>
   archived: string | null
   deleted: string | null
   extras: Record<string, unknown>
