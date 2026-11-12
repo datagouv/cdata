@@ -883,16 +883,60 @@ test('the editor tabs follow the arrow, Home and End keys with a roving tabindex
   await expect(assistantTab).toBeFocused()
 })
 
-test('resource schema is collapsed and lists the profile columns', async ({ page }) => {
+test('the content section has no resource schema block', async ({ page }) => {
   await setupChart(page)
 
-  const schema = page.getByTestId('resource-schema')
-  await expect(schema).not.toHaveAttribute('open')
-  await expect(schema.getByText('nom_region', { exact: true })).toBeHidden()
+  await expect(page.getByTestId('resource-schema')).toHaveCount(0)
+  await expect(page.getByText('Schéma de la ressource')).toHaveCount(0)
+  // The columns stay offered by the pickers.
+  await page.getByTestId('searchable-select-choisir-quoi-afficher').click()
+  await expect(page.getByRole('option', { name: 'nom_region', exact: true })).toBeVisible()
+})
 
-  await schema.locator('summary').click()
-  await expect(schema.getByText('nom_region', { exact: true })).toBeVisible()
-  await expect(schema.getByText('Nombre de logements', { exact: true })).toBeVisible()
+// The chart form keeps the DSFR look of every other form: nothing in it may restyle
+// a field, so each one renders like a field with the same classes outside the form.
+test('the form fields keep their DSFR look', async ({ page }) => {
+  await setupChart(page)
+
+  const formPanel = page.getByTestId('form-panel')
+  const fields = [
+    formPanel.locator('#chart-title'),
+    formPanel.locator('#chart-description'),
+    formPanel.locator('#x-axis-type'),
+    formPanel.locator('#x-axis-limit'),
+    formPanel.locator('#y-axis-label'),
+    formPanel.getByPlaceholder('Rechercher une colonne à afficher...'),
+    formPanel.locator('#x-axis-sort-combined').getByRole('button').first(),
+    formPanel.locator('label[for="chart-title"]'),
+    formPanel.locator('label[for="x-axis-type"]'),
+    page.locator('#resource-select'),
+    page.locator('label[for="resource-select"]'),
+  ]
+  await expect(formPanel.locator('#chart-title')).toHaveClass(/\bfr-input\b/)
+  await expect(formPanel.locator('#chart-description')).toHaveClass(/\bfr-input\b/)
+  await expect(formPanel.locator('#x-axis-type')).toHaveClass(/\bfr-select\b/)
+  await expect(page.locator('#resource-select')).toHaveClass(/\bfr-select\b/)
+
+  for (const field of fields) {
+    const styles = await field.evaluate((element) => {
+      const properties = ['font-size', 'background-color', 'box-shadow', 'border-top-width', 'border-bottom-width', 'border-radius', 'padding-left']
+      const reference = document.createElement(element.tagName)
+      reference.className = element.className
+      document.body.appendChild(reference)
+      const read = (el: Element) => Object.fromEntries(properties.map(property => [property, getComputedStyle(el).getPropertyValue(property)]))
+      const result = { field: read(element), reference: read(reference) }
+      reference.remove()
+      return result
+    })
+    expect(styles.field, await field.evaluate(element => element.outerHTML.slice(0, 120))).toEqual(styles.reference)
+  }
+
+  // The DSFR error state: a red underline instead of the default one.
+  const title = formPanel.locator('#chart-title')
+  await title.fill('')
+  await title.blur()
+  await expect(title).toHaveClass(/\bfr-input--error\b/)
+  await expect(title).toHaveCSS('box-shadow', /rgb\(206, 5, 0\)/)
 })
 
 test('value limit input is bounded to 50', async ({ page }) => {
@@ -994,7 +1038,7 @@ test('changing the x column moves every count series to it', async ({ page }) =>
   }
 })
 
-test('switching datasets clears the selected resource and its schema', async ({ page }) => {
+test('switching datasets clears the selected resource and its form', async ({ page }) => {
   await setupChart(page)
 
   const datasetSelect = page.getByTestId('searchable-select-jeu-de-donn-es')
@@ -1003,7 +1047,6 @@ test('switching datasets clears the selected resource and its schema', async ({ 
   await page.getByRole('option', { name: /Base SIRENE/i }).first().click()
 
   await expect(page.locator('#resource-select')).toHaveValue('')
-  await expect(page.getByText('Schéma de la ressource')).toHaveCount(0)
   await expect(page.getByTestId('form-panel-empty')).toBeVisible()
 })
 
@@ -1054,9 +1097,11 @@ test('ignores a late profile response after changing resources', async ({ page }
     await route.fulfill({ json: profileB })
   })
 
-  const schema = page.getByTestId('resource-schema')
-  await schema.locator('summary').click()
-  await expect(schema.getByText('nom_region', { exact: true })).toBeVisible()
+  // The source status counts the columns of the resource the form uses.
+  const sourceStatus = page.getByTestId('source-status')
+  const firstResourceStatus = (await sourceStatus.textContent())!.trim()
+  expect(firstResourceStatus).toMatch(/^\d+ colonnes disponibles$/)
+  expect(firstResourceStatus).not.toBe('2 colonnes disponibles')
   const resourceSelect = page.locator('#resource-select')
 
   try {
@@ -1064,7 +1109,7 @@ test('ignores a late profile response after changing resources', async ({ page }
     await profileRequestStarted
     // The first resource's columns are already loaded: selecting it back needs no request.
     await resourceSelect.selectOption(RESOURCE_ID)
-    await expect(schema.getByText('nom_region', { exact: true })).toBeVisible()
+    await expect(sourceStatus).toHaveText(firstResourceStatus)
 
     const lateProfileResponse = page.waitForResponse(response =>
       response.url().includes(`/api/resources/${secondResourceId}/profile/`),
@@ -1073,8 +1118,7 @@ test('ignores a late profile response after changing resources', async ({ page }
     await (await lateProfileResponse).finished()
     await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => resolve())))
 
-    await expect(schema.getByText('nom_region', { exact: true })).toBeVisible()
-    await expect(schema.getByText('epci', { exact: true })).toHaveCount(0)
+    await expect(sourceStatus).toHaveText(firstResourceStatus)
     expect(await page.getByPlaceholder('Rechercher une colonne à afficher...').inputValue()).toBe('année_publication')
   }
   finally {

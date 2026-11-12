@@ -1,7 +1,7 @@
 <template>
   <form
     id="chart-form"
-    class="chart-form block"
+    class="block"
     @submit.prevent="saveChart"
   >
     <!-- Desktop: bounded to the window like the prototype, each panel scrolls inside.
@@ -389,36 +389,6 @@
                             {{ getFirstError('description') }}
                           </p>
                         </div>
-
-                        <!-- cursor-auto: DSFR's core.css puts cursor: pointer on the whole
-                    details element, so the column list would look clickable. -->
-                        <details
-                          class="group min-w-0 cursor-auto"
-                          data-testid="resource-schema"
-                        >
-                          <summary class="flex cursor-pointer list-none items-center gap-1 text-[11px] font-medium leading-4 [&::-webkit-details-marker]:hidden">
-                            <RiArrowDownSLine
-                              class="size-3.5 shrink-0 transition-transform -rotate-90 group-open:rotate-0 motion-reduce:transition-none"
-                              aria-hidden="true"
-                            />
-                            {{ $t('Schéma de la ressource') }}
-                            <span class="text-new-gray-medium">· {{ $t('{n} colonnes | {n} colonne | {n} colonnes', { n: resourceColumns.length }) }}</span>
-                          </summary>
-                          <ul class="mt-3 space-y-1 m-0 p-0 list-none">
-                            <li
-                              v-for="column in resourceColumns"
-                              :key="column.name"
-                              class="flex items-center gap-2 text-sm"
-                            >
-                              <component
-                                :is="getColumnTypeIcon(column.type)"
-                                class="size-4 text-new-gray-medium shrink-0"
-                              />
-                              <span class="font-mono">{{ column.name }}</span>
-                              <span class="text-new-gray-medium">{{ typeConfig[column.type]?.label || column.type }}</span>
-                            </li>
-                          </ul>
-                        </details>
                       </fieldset>
                     </div>
 
@@ -1349,92 +1319,3 @@ if (props.initialChart) {
   await initializeFromChart(props.initialChart)
 }
 </script>
-
-<style scoped>
-/*
- * Form controls of the chart creation screen only, matching the prototype
- * (.form-control / .form-select). Scoped to `.chart-form`, so the shared
- * SearchableSelect / ProducerSelect and DSFR fields look unchanged elsewhere.
- * Tailwind runs with `important` and `.input` uses `!` utilities, so these rules
- * sit in the `base` layer with `!important`: for important declarations the
- * earlier layer wins over the utilities / components layers.
- */
-@layer base {
-  .chart-form :deep(.fr-label) {
-    font-size: 11px !important;
-    font-weight: 500 !important;
-    line-height: 1rem !important;
-    margin-bottom: 0.25rem !important;
-  }
-
-  .chart-form :deep(.fr-input),
-  .chart-form :deep(.fr-select),
-  .chart-form :deep(.input) {
-    display: block !important;
-    min-height: 36px !important;
-    border: 1px solid var(--color-gray-default) !important;
-    border-radius: 6px !important;
-    background-color: #fff !important;
-    padding-top: 7px !important;
-    padding-bottom: 7px !important;
-    padding-left: 10px !important;
-    color: var(--color-new-gray-dark) !important;
-    font-size: 11px !important;
-    line-height: 1.25rem !important;
-    box-shadow: none !important;
-    outline: none !important;
-    transition: border-color 120ms ease, box-shadow 120ms ease;
-  }
-
-  .chart-form :deep(.fr-input),
-  .chart-form :deep(.fr-select) {
-    padding-right: 10px !important;
-  }
-
-  .chart-form :deep(.fr-input--error) {
-    border-color: var(--color-new-error) !important;
-  }
-
-  .chart-form :deep(textarea.fr-input) {
-    min-height: 0 !important;
-  }
-
-  .chart-form :deep(.fr-input::placeholder),
-  .chart-form :deep(.input::placeholder) {
-    color: var(--color-gray-medium) !important;
-    font-style: normal !important;
-  }
-
-  .chart-form :deep(.fr-input:focus),
-  .chart-form :deep(.fr-select:focus),
-  .chart-form :deep(.input:focus) {
-    border-color: var(--color-new-primary) !important;
-    box-shadow: 0 0 0 2px var(--color-blue-light) !important;
-    outline: none !important;
-  }
-
-  .chart-form :deep(.fr-input:disabled),
-  .chart-form :deep(.fr-select:disabled),
-  .chart-form :deep(.input:disabled) {
-    cursor: not-allowed !important;
-    background-color: var(--color-gray-some) !important;
-    color: var(--color-new-gray-medium-clic) !important;
-  }
-
-  .chart-form :deep(.fr-select) {
-    appearance: none !important;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24'%3E%3Cpath fill='%23161616' d='m7 10l5 5l5-5z'/%3E%3C/svg%3E") !important;
-    background-position: right 9px center !important;
-    background-repeat: no-repeat !important;
-    background-size: 16px !important;
-    padding-right: 34px !important;
-  }
-
-  /* SearchableSelect: drop the wrapper shadow/clipping so the input carries the look. */
-  .chart-form :deep(.fr-input-group .overflow-hidden.shadow-md) {
-    overflow: visible !important;
-    background: transparent !important;
-    box-shadow: none !important;
-  }
-}
-</style>
