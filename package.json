@@ -63,7 +63,7 @@
     "@vueuse/router": "^14.4.0",
     "bowser": "^2.14.1",
     "culori": "^4.0.2",
-    "dompurify": "^3.4.16",
+    "dompurify": "^3.4.17",
     "hast-util-from-html": "^2.0.3",
     "hast-util-to-html": "^9.0.5",
     "hast-util-to-string": "^3.0.1",
@@ -107,7 +107,7 @@
     "sass-embedded": "^1.105.1",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3",
-    "vitest": "^4.1.11",
+    "vitest": "^4.1.12",
     "vue-component-type-helpers": "^3.3.12",
     "vue-tsc": "3.3.11"
   }
