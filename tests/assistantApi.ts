@@ -81,10 +81,10 @@ export function assistantChatStream(body: AssistantChatBody): string {
  * returns for the request body) instead of the fake services' script.
  */
 export async function routeAssistantStream(page: Page, stream: string | ((body: AssistantChatBody) => string)) {
-  const base = (process.env.NUXT_PUBLIC_ASSISTANT_API_BASE || process.env.FAKE_SERVICES_URL || 'http://localhost:3100').replace(/\/$/, '')
-  // Matched without the query string: the transport adds `?lang=`, and a missed
-  // route would reach the real assistant.
-  await page.route(url => `${url.origin}${url.pathname}` === `${base}${ASSISTANT_CHAT_PATH}`, async (route) => {
+  // Matched on the path alone, whatever the origin and the query string (`?lang=`):
+  // a server started without NUXT_PUBLIC_ASSISTANT_API_BASE sends the chat to the
+  // real assistant, which a missed route would reach.
+  await page.route(url => url.pathname === ASSISTANT_CHAT_PATH, async (route) => {
     const origin = route.request().headers()['origin'] ?? '*'
     const cors = {
       'Access-Control-Allow-Origin': origin,

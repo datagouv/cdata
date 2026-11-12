@@ -387,6 +387,10 @@ test('saving from the assistant tab without a description warns in the footer an
   await page.getByLabel('Description').fill('Description complétée')
   await expect(warning).toBeHidden()
   await expect(page.getByLabel('Description')).not.toHaveAttribute('aria-invalid', 'true')
+  // Once complete, emptying a field again does not bring the warning back before a new save
+  await page.getByLabel('Description').fill('')
+  await expect(footer.getByRole('alert')).toBeHidden()
+  await page.getByLabel('Description').fill('Description complétée')
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
@@ -753,8 +757,9 @@ test('filter groups are sent as or params to tabular-api with synced combinator 
   // The two groups are combined with "ou" (or root): a label sits between them.
   await expect(filters.getByText('ou', { exact: true })).toBeVisible()
 
+  // Column names and values reach api-tabular encoded twice: decoded twice to be read.
   // Default is ET inside groups, OU between groups: OrFilters[AndFilters, Filter].
-  await expect.poll(() => decodeURIComponent(dataRequests[dataRequests.length - 1] ?? '')).toContain(
+  await expect.poll(() => decodeURIComponent(decodeURIComponent(dataRequests[dataRequests.length - 1] ?? ''))).toContain(
     'or=(and(nom_region__exact."Bretagne",année_publication__exact."2020"),année_publication__exact."2021")',
   )
 
@@ -767,7 +772,7 @@ test('filter groups are sent as or params to tabular-api with synced combinator 
   await expect(secondGroup.getByText('Quand', { exact: true })).toBeVisible()
   // The between-groups label follows the root flip: "et" (and root).
   await expect(filters.getByText('et', { exact: true })).toBeVisible()
-  await expect.poll(() => decodeURIComponent(dataRequests[dataRequests.length - 1] ?? '')).toContain(
+  await expect.poll(() => decodeURIComponent(decodeURIComponent(dataRequests[dataRequests.length - 1] ?? ''))).toContain(
     'or=(nom_region__exact."Bretagne",année_publication__exact."2020")&année_publication__exact=2021',
   )
 })
@@ -812,6 +817,23 @@ test('shows the form panel with its pickers and save action', async ({ page }) =
   await expect(page.locator('#resource-select')).toBeVisible()
   await expect(page.getByTestId('source-status')).toContainText('colonnes disponibles')
   await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeVisible()
+})
+
+// RGAA 7.5, 11.5, 11.10
+test('announces the source status, titles its groups by a legend and explains the required star', async ({ page }) => {
+  await setupChart(page)
+
+  await expect(page.getByTestId('source-status')).toHaveAttribute('role', 'status')
+  for (const name of ['Filtres', 'Contenu', 'Type de graphique', 'Axe X', 'Axe Y']) {
+    await expect(page.getByRole('group', { name, exact: true })).toBeVisible()
+  }
+  await expect(page.getByTestId('form-panel')).toContainText('Les champs précédés d\'une étoile (*) sont obligatoires.')
+  // RGAA 3.2: the placeholders reach 4.5:1 against the white field
+  const placeholderColor = await page.getByLabel('Unité', { exact: true }).evaluate(input => getComputedStyle(input, '::placeholder').color)
+  expect(placeholderColor).toBe('rgb(102, 102, 102)')
+  // RGAA 11.9: the icon-only filter buttons are named
+  await page.getByRole('button', { name: 'Ajouter une règle' }).click()
+  await expect(page.getByRole('button', { name: 'Supprimer la règle' })).toBeVisible()
 })
 
 test('opens an existing chart on the manual editing tab', async ({ page }) => {

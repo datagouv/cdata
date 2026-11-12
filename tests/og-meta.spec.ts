@@ -80,7 +80,8 @@ test.describe('OG meta tags', () => {
     await page.goto('/explore/cada')
     await expect(page.getByTestId('row-count')).toBeVisible({ timeout: 30000 })
 
-    const readable = (url: string) => decodeURIComponent(url.replace(/\+/g, ' '))
+    // The column name reaches api-tabular encoded twice
+    const readable = (url: string) => decodeURIComponent(decodeURIComponent(url.replace(/\+/g, ' ')))
     await page.route(url => readable(url.href).includes('Numéro de dossier__exact='), async (route) => {
       const dossier = readable(route.request().url()).match(/Numéro de dossier__exact=(\d+)/)?.[1] ?? '1'
       await route.fulfill({

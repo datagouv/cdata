@@ -3,7 +3,6 @@ import { test, expect } from '../base'
 import { ASSISTANT_CHAT_PATH, createChartOutput, createChartStream, routeAssistantStream, updateChartStream } from '../assistantApi'
 import type { AssistantChatBody } from '../assistantApi'
 import { RESOURCE_ID, setupChart } from './fixtures'
-import profile from './profile.json' with { type: 'json' }
 
 const ASSISTANT_API_BASE = (process.env.NUXT_PUBLIC_ASSISTANT_API_BASE || process.env.FAKE_SERVICES_URL || 'http://localhost:3100').replace(/\/$/, '')
 // API calls go straight to the backend: the frontend (baseURL) does not proxy them
@@ -92,16 +91,17 @@ test('the assistant creates a chart then updates it without refetching the data'
 
 test('a chart with more than 50 groups shows the truncation warning', async ({ page }) => {
   const rows = Array.from({ length: 50 }, (_, i) => ({ [X_COLUMN]: `Région ${String(i).padStart(2, '0')}`, [`${Y_COLUMN}__max`]: 1000 - i }))
-  // The profile counts the groups of an unfiltered aggregate: no request for the 51st.
-  const manyRegions = structuredClone(profile)
-  manyRegions.profile.profile[X_COLUMN].nb_distinct = 75
+  // A full page of an aggregate with a next link: only the 51st group can tell.
   const dataPages: Array<string | null> = []
   await routeAssistantStream(page, scriptedStream)
-  await setupChart(page, manyRegions)
+  await setupChart(page)
   // setupChart installs its own /data/ mock: ours must come after it to win.
   await page.route('**/api/resources/*/data/*', async (route) => {
-    dataPages.push(new URL(route.request().url()).searchParams.get('page'))
-    await route.fulfill({ json: { data: rows } })
+    const pageParam = new URL(route.request().url()).searchParams.get('page')
+    dataPages.push(pageParam)
+    await route.fulfill({ json: pageParam === '51'
+      ? { data: rows.slice(0, 1), links: { next: null } }
+      : { data: rows, links: { next: `${route.request().url()}&page=2` } } })
   })
 
   await page.getByRole('tab', { name: 'Assistant' }).click()
@@ -112,7 +112,7 @@ test('a chart with more than 50 groups shows the truncation warning', async ({ p
   await expect(page.getByTestId('chart-truncation-warning')).toHaveText(
     `Seules les 50 premières valeurs de ${X_COLUMN} sont prises en compte : le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.`,
   )
-  expect(dataPages).not.toContain('51')
+  expect(dataPages).toContain('51')
 })
 
 test('a chart created by the assistant is saved without leaving the assistant tab', async ({ page }) => {

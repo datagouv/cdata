@@ -10,11 +10,25 @@ async function readRowCount(page: Page): Promise<{ shown: number, total: number 
   return { shown, total }
 }
 
+/**
+ * A Tabular API URL as text. `+` before `decodeURIComponent`: the query serializer
+ * writes spaces as `+`, which percent-decoding alone leaves as-is. Column names and
+ * values are encoded twice, like api-tabular reads them: decoded twice too.
+ */
+function readable(url: string): string {
+  const decode = (text: string) => {
+    try {
+      return decodeURIComponent(text)
+    }
+    catch {
+      return text
+    }
+  }
+  return decode(decode(url.replace(/\+/g, ' ')))
+}
+
 /** Resolves once the table asked the Tabular API for `query`. */
 function dataResponse(page: Page, query: string): Promise<Response> {
-  // `+` before `decodeURIComponent`: the query serializer writes spaces as `+`,
-  // which percent-decoding alone leaves as-is.
-  const readable = (url: string) => decodeURIComponent(url.replace(/\+/g, ' '))
   return page.waitForResponse(
     response => response.url().includes('/data/') && readable(response.url()).includes(query),
     { timeout: 30000 },
@@ -130,7 +144,6 @@ test('going back before the advice is loaded shows the list again, not a 404', a
 
   // The advice request never answers: the back navigation always happens while
   // the advice page is still loading, and the list is still the one displayed.
-  const readable = (url: string) => decodeURIComponent(url.replace(/\+/g, ' '))
   let releaseAdvice = () => {}
   await page.route(url => readable(url.href).includes('Numéro de dossier__exact='), async (route) => {
     await new Promise<void>((resolve) => {
@@ -340,7 +353,7 @@ test.describe('column filter', () => {
     // column holds plain dates or timestamps
     const response = dataResponse(page, 'Séance__greater=2015-06-18')
     await panel.getByRole('button', { name: 'Appliquer' }).click()
-    const url = decodeURIComponent((await response).url())
+    const url = readable((await response).url())
     expect(url).toContain('Séance__strictly_less=2015-06-19')
 
     await expect(page.getByTestId('active-filter-Séance')).toContainText('= 18/06/2015')
@@ -430,7 +443,7 @@ test.describe('column filter', () => {
 
     const response = dataResponse(page, 'Séance__greater=2015-06-11')
     await panel.getByRole('button', { name: 'Appliquer' }).click()
-    const url = decodeURIComponent((await response).url())
+    const url = readable((await response).url())
     expect(url).toContain('Séance__strictly_less=2015-06-19')
 
     await expect(page.getByTestId('active-filter-Séance')).toContainText('11/06/2015 – 18/06/2015')
