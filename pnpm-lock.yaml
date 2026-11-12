@@ -40,7 +40,8 @@ overrides:
   undici@6: ^6.29.1
   glob@10: ^14.0.2
   glob@13: ^14.0.2
-  maplibre-gl: ^6.13.0
+
+packageExtensionsChecksum: sha256-KNmVRoQJR5X3oH9/KKVYIU5FhtjXXNJ+gofifPXMAyw=
 
 patchedDependencies:
   geopf-extensions-openlayers@1.0.0-beta.15:
@@ -321,7 +322,7 @@ importers:
         version: 6.1.0
       geopf-extensions-openlayers:
         specifier: 1.0.0-beta.15
-        version: 1.0.0-beta.15(patch_hash=6187a52a7ab3801da317ae6c18e213419dc95b78fe60500f78f6ca35c7408a08)(@panoramax/web-viewer@4.4.0)
+        version: 1.0.0-beta.15(patch_hash=6187a52a7ab3801da317ae6c18e213419dc95b78fe60500f78f6ca35c7408a08)
       leaflet:
         specifier: ^1.9.4
         version: 1.9.4
@@ -1065,25 +1066,6 @@ packages:
     peerDependencies:
       vue: ^3.5.43
 
-  '@fontsource/atkinson-hyperlegible-next@5.3.0':
-    resolution: {integrity: sha512-8p1tHVoPDo6oYwSO3sMw5snGwFwSf3TmeSF9Gcj792GXdsg6oqvhoItbj6Hj/XZIk0Xs+Cwu6pkLBAl3Q5HrwA==}
-
-  '@fortawesome/fontawesome-common-types@6.7.2':
-    resolution: {integrity: sha512-Zs+YeHUC5fkt7Mg1l6XTniei3k4bwG/yo3iFUtZWd/pMx9g3fdvkSK9E0FOC+++phXOka78uJcYb8JaFkW52Xg==}
-    engines: {node: '>=6'}
-
-  '@fortawesome/fontawesome-svg-core@6.7.2':
-    resolution: {integrity: sha512-yxtOBWDrdi5DD5o1pmVdq3WMCvnobT0LU6R8RyyVXPvFRd2o79/0NCuQoCjNTeZz9EzA9xS3JxNWfv54RIHFEA==}
-    engines: {node: '>=6'}
-
-  '@fortawesome/free-regular-svg-icons@6.7.2':
-    resolution: {integrity: sha512-7Z/ur0gvCMW8G93dXIQOkQqHo2M5HLhYrRVC0//fakJXxcF1VmMPsxnG6Ee8qEylA8b8Q3peQXWMNZ62lYF28g==}
-    engines: {node: '>=6'}
-
-  '@fortawesome/free-solid-svg-icons@6.7.2':
-    resolution: {integrity: sha512-GsBrnOzU8uj0LECDfD5zomZJIjrPhIlWU82AHwa2s40FKH+kcxQaBvBo3Z4TxyZHIyX8XTDxsyA33/Vx9eFuQA==}
-    engines: {node: '>=6'}
-
   '@gouvfr/dsfr@1.14.4':
     resolution: {integrity: sha512-Ca17apmTyAF2tMFwMcLwQN7fTlbfMFeyYSLUIUmjoSg1XVF4vDDkbvvKBpWJWaoTLDSFZBbvvHzcDyxw9wSkLA==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=24.0.0}
@@ -1117,9 +1099,6 @@ packages:
   '@humanwhocodes/retry@0.4.3':
     resolution: {integrity: sha512-bV0Tgo9K4hfPCek+aMAn81RppFKv2ySDQeMoSZuvTASywNTnVJCArCZE2FWqpvIatKu7VMRLWlR1EazvVhDyhQ==}
     engines: {node: '>=18.18'}
-
-  '@iconify/types@2.0.0':
-    resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -2164,9 +2143,6 @@ packages:
   '@oxc-project/types@0.156.0':
     resolution: {integrity: sha512-1Duyg48TdJNdyhEB8Xn1L36bT9Pv6GUtlKjHxOys8xkaF/rQq3XJE+bAurSK/AgIz5mGFsb77cn9Pb20+WCScw==}
 
-  '@panoramax/web-viewer@4.4.0':
-    resolution: {integrity: sha512-6tgxINkdbb8rRC70sTMcyc5gjsVXjca+4EEa03F3ecPc5b36krnkmoEJqC5KIBa+CxIRuZ+UkTucVVG4AENHNA==}
-
   '@parcel/watcher-android-arm64@2.5.1':
     resolution: {integrity: sha512-KF8+j9nNbUN8vzOFDpRMsaKBHZ/mcjEjMToVMJOhTozkDonQFFrRcfdLWn6yWKCmJKmdVxSgHiYvTCef4/qcBA==}
     engines: {node: '>= 10.0.0'}
@@ -2345,29 +2321,6 @@ packages:
 
   '@petamoriken/float16@3.9.3':
     resolution: {integrity: sha512-8awtpHXCx/bNpFt4mt2xdkgtgVvKqty8VbjHI/WWWQuEw+KLzFot3f4+LkQY9YmOtq7A5GdOnqoIC8Pdygjk2g==}
-
-  '@photo-sphere-viewer/core@5.14.1':
-    resolution: {integrity: sha512-qrwUudrX9YZms4c2shlY/H3jUP0oh9FyGEqIDr/95ulNZgKbhQ6C/i8zDQ4j8ooFR4+z5FDORQtGvLgPyX8VCA==}
-
-  '@photo-sphere-viewer/equirectangular-tiles-adapter@5.14.1':
-    resolution: {integrity: sha512-QHd9y5cIFXAAZInbKbh+nUz5uzSRTiR8HYApm+ONlDu8JHAp410xNhB1vNm2Q1mVgg8IigQpD9Za5mPq10fESA==}
-    peerDependencies:
-      '@photo-sphere-viewer/core': 5.14.1
-
-  '@photo-sphere-viewer/gallery-plugin@5.14.1':
-    resolution: {integrity: sha512-MzIB4Kc652yfdgPkh3xh/Kvu3XY84VkmshqZhXxa9UV4E2uNMop+vttkWeKogsaNSDT5/aEkMaFgwL/Bs/ZmRw==}
-    peerDependencies:
-      '@photo-sphere-viewer/core': 5.14.1
-
-  '@photo-sphere-viewer/markers-plugin@5.14.1':
-    resolution: {integrity: sha512-tKMrVem19sZFVQwH6IlubEIucDD2EtwxzmWClHCEojM/+ajucuTDvO2N+I6HEqJClBcNsdHAUwA/zyY6MGOu2Q==}
-    peerDependencies:
-      '@photo-sphere-viewer/core': 5.14.1
-
-  '@photo-sphere-viewer/virtual-tour-plugin@5.14.1':
-    resolution: {integrity: sha512-PRRQXoViKAg8g1TfagKJnvLMuuOXnGN9rvWOAs7W7J+knhcAuAenPFUax1Z5FgKli45mo21NspsPf1RV9lJHkQ==}
-    peerDependencies:
-      '@photo-sphere-viewer/core': 5.14.1
 
   '@pkgr/core@0.3.6':
     resolution: {integrity: sha512-SEeaJLb3qBNF/OaXnaR1NmmBbFYk1zC0ZH/52fATcRPLFg/p791YrcyFFy44Bo9sLaGuSuLp5Q6axbb/O+v/RA==}
@@ -4884,14 +4837,14 @@ packages:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
 
-  geojson-vt@4.0.3:
-    resolution: {integrity: sha512-jR1MwkLaZGa8Zftct9ZFruyWFrdl9ZyD2OliXNy9Qq5bBPeg5wHVpBQF9p5GjnicSDQqvBVpysxTPKmWdsfWMA==}
-
   geopf-extensions-openlayers@1.0.0-beta.15:
     resolution: {integrity: sha512-b7RtsPnVDTEztrY7k0bbz8J7ShJwIyrjooQ+JeEk4ZJaQPT9MegHU6WgRfjokT5TePHZK8VkKUrdx6OmR6Hujw==}
     engines: {node: '>=20'}
     peerDependencies:
       '@panoramax/web-viewer': ^4.4.0
+    peerDependenciesMeta:
+      '@panoramax/web-viewer':
+        optional: true
 
   geoportal-access-lib@3.4.7:
     resolution: {integrity: sha512-r5Y+74iILMbcCcV3GCvxZYiwZjIt4ZJoA+CgiHVakLRXtVJvYCQQ28tA7pcbO2Z+ubgB7x1cjuMQbVUfSg+vgw==}
@@ -5093,9 +5046,6 @@ packages:
     resolution: {integrity: sha512-5gs5ytaNjBrh5Ow3zrvdUUY+0VxIuWVL4i9irt6friV+BqdCfmV11CQTWMiBYWHbXhco+J1kHfTOUkePhCDvMA==}
     engines: {node: '>=18'}
     hasBin: true
-
-  iconify-icon@3.0.3:
-    resolution: {integrity: sha512-n4ZIChz3N75KqFSWLt9hHGzbrqGQeeoFxCE+nND4WFFa88x8AW8GvmnVZaVNYErhhiZkxJhBfVKMIGrF1wt3hg==}
 
   identifier-regex@1.1.0:
     resolution: {integrity: sha512-SLX4H/vtcYlYnL7XqnuJKHU7Z8517TgsW9nmQiGOgMCjQ8V/deLYu6bEmbGoXe7WMMhc9+EUGyFFneHja8KabA==}
@@ -6510,9 +6460,6 @@ packages:
   quansync@0.2.11:
     resolution: {integrity: sha512-AifT7QEbW9Nri4tAwR5M/uzpBuqfZf+zwaEM/QkzEjj7NBuFD2rBuy0K3dE+8wltbezDV7JMA0WfnCPYRSYbXA==}
 
-  query-selector-shadow-dom@1.0.1:
-    resolution: {integrity: sha512-lT5yCqEBgfoMYpf3F2xQRK7zEr1rhIIZuceDK6+xRkJQ4NMbHTwXqk4NkwDwQMNqXgG9r9fyHnzwNVs6zV5KRw==}
-
   queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
 
@@ -7192,9 +7139,6 @@ packages:
 
   text-decoder@1.2.7:
     resolution: {integrity: sha512-vlLytXkeP4xvEq2otHeJfSQIRyWxo/oZGEbXrtEEF9Hnmrdly59sUbzZ/QgyWuLYHctCHxFF4tRQZNQ9k60ExQ==}
-
-  three@0.179.1:
-    resolution: {integrity: sha512-5y/elSIQbrvKOISxpwXCR4sQqHtGiOI+MKLc3SsBdDXA2hz3Mdp3X59aUp8DyybMa34aeBwbFTpdoLJaUDEWSw==}
 
   time-span@5.1.0:
     resolution: {integrity: sha512-75voc/9G4rDIJleOo4jPvN4/YC4GRZrY8yy1uU4lwrB3XEQbWve8zXoO5No4eFrGcTAMYyoY67p8jRQdtA1HbA==}
@@ -8866,22 +8810,6 @@ snapshots:
       '@floating-ui/utils': 0.2.12
       vue: 3.5.43(typescript@5.9.3)
 
-  '@fontsource/atkinson-hyperlegible-next@5.3.0': {}
-
-  '@fortawesome/fontawesome-common-types@6.7.2': {}
-
-  '@fortawesome/fontawesome-svg-core@6.7.2':
-    dependencies:
-      '@fortawesome/fontawesome-common-types': 6.7.2
-
-  '@fortawesome/free-regular-svg-icons@6.7.2':
-    dependencies:
-      '@fortawesome/fontawesome-common-types': 6.7.2
-
-  '@fortawesome/free-solid-svg-icons@6.7.2':
-    dependencies:
-      '@fortawesome/fontawesome-common-types': 6.7.2
-
   '@gouvfr/dsfr@1.14.4': {}
 
   '@gouvfr/dsfr@1.15.3': {}
@@ -8906,8 +8834,6 @@ snapshots:
   '@humanwhocodes/module-importer@1.0.1': {}
 
   '@humanwhocodes/retry@0.4.3': {}
-
-  '@iconify/types@2.0.0': {}
 
   '@img/colour@1.1.0':
     optional: true
@@ -10902,26 +10828,6 @@ snapshots:
 
   '@oxc-project/types@0.156.0': {}
 
-  '@panoramax/web-viewer@4.4.0':
-    dependencies:
-      '@fontsource/atkinson-hyperlegible-next': 5.3.0
-      '@fortawesome/fontawesome-svg-core': 6.7.2
-      '@fortawesome/free-regular-svg-icons': 6.7.2
-      '@fortawesome/free-solid-svg-icons': 6.7.2
-      '@maplibre/vt-pbf': 4.3.2
-      '@photo-sphere-viewer/core': 5.14.1
-      '@photo-sphere-viewer/equirectangular-tiles-adapter': 5.14.1(@photo-sphere-viewer/core@5.14.1)
-      '@photo-sphere-viewer/gallery-plugin': 5.14.1(@photo-sphere-viewer/core@5.14.1)
-      '@photo-sphere-viewer/markers-plugin': 5.14.1(@photo-sphere-viewer/core@5.14.1)
-      '@photo-sphere-viewer/virtual-tour-plugin': 5.14.1(@photo-sphere-viewer/core@5.14.1)
-      geojson-vt: 4.0.3
-      iconify-icon: 3.0.3
-      json5: 2.2.3
-      lit: 3.3.3
-      maplibre-gl: 6.13.0
-      pmtiles: 4.5.0
-      query-selector-shadow-dom: 1.0.1
-
   '@parcel/watcher-android-arm64@2.5.1':
     optional: true
 
@@ -11044,26 +10950,6 @@ snapshots:
       '@parcel/watcher-win32-x64': 2.6.0
 
   '@petamoriken/float16@3.9.3': {}
-
-  '@photo-sphere-viewer/core@5.14.1':
-    dependencies:
-      three: 0.179.1
-
-  '@photo-sphere-viewer/equirectangular-tiles-adapter@5.14.1(@photo-sphere-viewer/core@5.14.1)':
-    dependencies:
-      '@photo-sphere-viewer/core': 5.14.1
-
-  '@photo-sphere-viewer/gallery-plugin@5.14.1(@photo-sphere-viewer/core@5.14.1)':
-    dependencies:
-      '@photo-sphere-viewer/core': 5.14.1
-
-  '@photo-sphere-viewer/markers-plugin@5.14.1(@photo-sphere-viewer/core@5.14.1)':
-    dependencies:
-      '@photo-sphere-viewer/core': 5.14.1
-
-  '@photo-sphere-viewer/virtual-tour-plugin@5.14.1(@photo-sphere-viewer/core@5.14.1)':
-    dependencies:
-      '@photo-sphere-viewer/core': 5.14.1
 
   '@pkgr/core@0.3.6': {}
 
@@ -13580,13 +13466,10 @@ snapshots:
 
   gensync@1.0.0-beta.2: {}
 
-  geojson-vt@4.0.3: {}
-
-  geopf-extensions-openlayers@1.0.0-beta.15(patch_hash=6187a52a7ab3801da317ae6c18e213419dc95b78fe60500f78f6ca35c7408a08)(@panoramax/web-viewer@4.4.0):
+  geopf-extensions-openlayers@1.0.0-beta.15(patch_hash=6187a52a7ab3801da317ae6c18e213419dc95b78fe60500f78f6ca35c7408a08):
     dependencies:
       '@gouvfr/dsfr': 1.14.4
       '@mapbox/mapbox-gl-style-spec': 14.8.0
-      '@panoramax/web-viewer': 4.4.0
       '@xmldom/xmldom': 0.9.12
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
@@ -13871,10 +13754,6 @@ snapshots:
   human-signals@5.0.0: {}
 
   husky@9.1.7: {}
-
-  iconify-icon@3.0.3:
-    dependencies:
-      '@iconify/types': 2.0.0
 
   identifier-regex@1.1.0:
     dependencies:
@@ -16130,8 +16009,6 @@ snapshots:
 
   quansync@0.2.11: {}
 
-  query-selector-shadow-dom@1.0.1: {}
-
   queue-microtask@1.2.3: {}
 
   quick-lru@6.1.2: {}
@@ -16920,8 +16797,6 @@ snapshots:
       b4a: 1.9.0
     transitivePeerDependencies:
       - react-native-b4a
-
-  three@0.179.1: {}
 
   time-span@5.1.0:
     dependencies:

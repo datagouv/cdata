@@ -55,9 +55,15 @@ overrides:
   undici@6: ^6.29.1
   glob@10: ^14.0.2
   glob@13: ^14.0.2
-  # Only pulled as the auto-installed peer of geopf-extensions-openlayers (its
-  # Panoramax control, never imported here): keep a single, patched maplibre.
-  maplibre-gl: ^6.13.0
+
+# The Panoramax control of geopf only renders <pnx-viewer> and leaves loading the viewer
+# to the app, which never uses that control: without this, pnpm installs the viewer and
+# its own maplibre, three and photo-sphere-viewer.
+packageExtensions:
+  geopf-extensions-openlayers@1.0.0-beta.15:
+    peerDependenciesMeta:
+      "@panoramax/web-viewer":
+        optional: true
 
 # GetCapabilities strings (layer title, abstract, attribution, metadata/legend URLs)
 # are rendered as HTML by the library: render them as text and only link http(s) URLs.
