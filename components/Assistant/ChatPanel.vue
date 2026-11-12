@@ -5,7 +5,7 @@
       class="flex min-h-0 flex-1 flex-col overflow-y-auto"
       data-testid="assistant-empty-state"
     >
-      <!-- The media source keeps the animation from even downloading under reduced motion. -->
+      <!-- The animation plays once, in under 5 s (RGAA 13.8); the media source keeps it from even downloading under reduced motion. -->
       <picture
         class="mb-3 block size-20 shrink-0 max-sm:size-16"
         aria-hidden="true"
@@ -67,7 +67,7 @@
         type="button"
         class="inline-flex items-center gap-1 rounded-md px-1.5 py-1 text-xs text-new-gray-medium hover:bg-gray-some hover:text-new-gray-dark"
         data-testid="assistant-new-conversation"
-        @click="newConversation"
+        @click="startNewConversation"
       >
         <RiAddLine
           class="size-3.5"
@@ -137,7 +137,7 @@
         v-if="conversationTooLarge"
         type="button"
         class="ml-1 underline hover:no-underline"
-        @click="newConversation"
+        @click="startNewConversation"
       >
         {{ $t('Commencer une nouvelle conversation') }}
       </button>
@@ -195,7 +195,7 @@
             v-model="input"
             rows="3"
             :maxlength="MAX_INPUT_LENGTH"
-            class="min-h-0 w-full flex-1 resize-none border-0 bg-transparent text-[11px] leading-5 text-new-gray-dark outline-none placeholder:text-new-gray-medium-clic"
+            class="min-h-0 w-full flex-1 resize-none border-0 bg-transparent text-[11px] leading-5 text-new-gray-dark outline-none placeholder:text-gray-medium"
             :aria-label="$t('Votre demande')"
             :disabled="waiting || busy"
             :placeholder="$t('Décrivez le graphique souhaité…')"
@@ -345,6 +345,13 @@ function userMessageText(parts: Array<{ type: string, text?: unknown }>): string
 
 const { t } = useTranslation()
 const suggestions = computed(() => getStarterQuestions(props.columns, t))
+
+// The button that started it leaves the DOM with the conversation (RGAA 12.8).
+async function startNewConversation() {
+  newConversation()
+  await nextTick()
+  textareaRef.value?.focus()
+}
 
 // A suggestion only fills the composer: the user reviews it before sending.
 function applySuggestion(suggestion: string) {

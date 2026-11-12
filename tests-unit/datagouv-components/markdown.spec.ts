@@ -43,6 +43,14 @@ describe('formatMarkdown', () => {
     expect(html).toContain('brut')
   })
 
+  // An assistant reply sits next to an unsaved chart: its links must not replace the page.
+  it('opens the external links of untrusted generated content in a new tab, without referrer', () => {
+    const html = formatMarkdown('[source](https://example.com/data)', { minDepth: 3, noHeadings: false, noImages: true })
+    expect(html).toContain('target="_blank"')
+    expect(html).toContain('rel="ugc nofollow noopener noreferrer"')
+    expect(formatMarkdown('[source](https://example.com/data)')).not.toContain('target=')
+  })
+
   it('adds lazy loading to images', () => {
     const html = formatMarkdown('![alt](https://example.com/image.png)')
     expect(html).toContain('loading="lazy"')

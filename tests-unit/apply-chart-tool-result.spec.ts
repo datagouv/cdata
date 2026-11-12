@@ -32,7 +32,7 @@ function makeChart(overrides: Partial<ChartToolChart> = {}): ChartToolChart {
   } as ChartToolChart
 }
 
-const create = (chart = makeChart()): ChartToolResult => ({ toolCallId: 't', kind: 'create', chart, moreGroups: false })
+const create = (chart = makeChart()): ChartToolResult => ({ toolCallId: 't', kind: 'create', chart })
 const update = (patch: Extract<ChartToolResult, { kind: 'update' }>['patch']): ChartToolResult => ({ toolCallId: 't', kind: 'update', patch })
 
 describe('applyChartToolResult', () => {

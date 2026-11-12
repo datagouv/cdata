@@ -76,6 +76,7 @@
           <p
             class="mb-0 flex shrink-0 items-center gap-1.5 text-[10px]"
             :class="sourceLoading ? '' : selectedResource ? 'text-new-success' : 'text-new-gray-medium'"
+            role="status"
             data-testid="source-status"
           >
             <template v-if="sourceLoading">
@@ -273,10 +274,11 @@
               >
                 <div class="space-y-6 py-6 px-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
                   <template v-if="selectedResource">
+                    <RequiredExplanation />
                     <fieldset class="min-w-0 space-y-4">
-                      <h3 class="mb-2 text-xs font-bold">
+                      <legend class="mb-2 text-xs font-bold">
                         {{ $t('Filtres') }}
-                      </h3>
+                      </legend>
                       <div class="space-y-3">
                         <template
                           v-for="(group, groupIndex) in filterGroups.groups"
@@ -324,99 +326,101 @@
                       </div>
                     </fieldset>
 
-                    <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-                      <h3 class="mb-2 text-xs font-bold">
-                        {{ $t('Contenu') }}
-                      </h3>
-                      <div
-                        class="fr-input-group"
-                        :class="{ 'fr-input-group--error': getFirstError('title') }"
-                      >
-                        <label
-                          for="chart-title"
-                          class="font-bold fr-label"
-                        >{{ $t('Titre') }} <Required :required="true" /></label>
-                        <!-- aria-required, not required: the browser cannot focus an invalid field of the hidden tab. -->
-                        <input
-                          id="chart-title"
-                          ref="titleInput"
-                          v-model="form.title"
-                          type="text"
-                          class="w-full fr-input"
-                          :class="{ 'fr-input--error': getFirstError('title') }"
-                          aria-required="true"
-                          :aria-invalid="getFirstError('title') ? 'true' : undefined"
-                          :aria-describedby="getFirstError('title') ? 'chart-title-error' : undefined"
-                          @blur="touch('title')"
+                    <div class="min-w-0 border-t border-new-gray-light py-4">
+                      <fieldset class="m-0 min-w-0 space-y-4">
+                        <legend class="mb-2 text-xs font-bold">
+                          {{ $t('Contenu') }}
+                        </legend>
+                        <div
+                          class="fr-input-group"
+                          :class="{ 'fr-input-group--error': getFirstError('title') }"
                         >
-                        <p
-                          v-if="getFirstError('title')"
-                          id="chart-title-error"
-                          class="fr-error-text"
-                        >
-                          {{ getFirstError('title') }}
-                        </p>
-                      </div>
-
-                      <div
-                        class="fr-input-group"
-                        :class="{ 'fr-input-group--error': getFirstError('description') }"
-                      >
-                        <label
-                          for="chart-description"
-                          class="font-bold fr-label"
-                        >{{ $t('Description') }} <Required :required="true" /></label>
-                        <textarea
-                          id="chart-description"
-                          ref="descriptionInput"
-                          v-model="form.description"
-                          class="w-full fr-input"
-                          :class="{ 'fr-input--error': getFirstError('description') }"
-                          rows="2"
-                          aria-required="true"
-                          :aria-invalid="getFirstError('description') ? 'true' : undefined"
-                          :aria-describedby="getFirstError('description') ? 'chart-description-error' : undefined"
-                          @blur="touch('description')"
-                        />
-                        <p
-                          v-if="getFirstError('description')"
-                          id="chart-description-error"
-                          class="fr-error-text"
-                        >
-                          {{ getFirstError('description') }}
-                        </p>
-                      </div>
-
-                      <!-- cursor-auto: DSFR's core.css puts cursor: pointer on the whole
-                    details element, so the column list would look clickable. -->
-                      <details
-                        class="group min-w-0 cursor-auto"
-                        data-testid="resource-schema"
-                      >
-                        <summary class="flex cursor-pointer list-none items-center gap-1 text-[11px] font-medium leading-4 [&::-webkit-details-marker]:hidden">
-                          <RiArrowDownSLine
-                            class="size-3.5 shrink-0 transition-transform -rotate-90 group-open:rotate-0 motion-reduce:transition-none"
-                            aria-hidden="true"
-                          />
-                          {{ $t('Schéma de la ressource') }}
-                          <span class="text-new-gray-medium">· {{ $t('{n} colonnes | {n} colonne | {n} colonnes', { n: resourceColumns.length }) }}</span>
-                        </summary>
-                        <ul class="mt-3 space-y-1 m-0 p-0 list-none">
-                          <li
-                            v-for="column in resourceColumns"
-                            :key="column.name"
-                            class="flex items-center gap-2 text-sm"
+                          <label
+                            for="chart-title"
+                            class="font-bold fr-label"
+                          >{{ $t('Titre') }} <Required :required="true" /></label>
+                          <!-- aria-required, not required: the browser cannot focus an invalid field of the hidden tab. -->
+                          <input
+                            id="chart-title"
+                            ref="titleInput"
+                            v-model="form.title"
+                            type="text"
+                            class="w-full fr-input"
+                            :class="{ 'fr-input--error': getFirstError('title') }"
+                            aria-required="true"
+                            :aria-invalid="getFirstError('title') ? 'true' : undefined"
+                            :aria-describedby="getFirstError('title') ? 'chart-title-error' : undefined"
+                            @blur="touch('title')"
                           >
-                            <component
-                              :is="getColumnTypeIcon(column.type)"
-                              class="size-4 text-new-gray-medium shrink-0"
+                          <p
+                            v-if="getFirstError('title')"
+                            id="chart-title-error"
+                            class="fr-error-text"
+                          >
+                            {{ getFirstError('title') }}
+                          </p>
+                        </div>
+
+                        <div
+                          class="fr-input-group"
+                          :class="{ 'fr-input-group--error': getFirstError('description') }"
+                        >
+                          <label
+                            for="chart-description"
+                            class="font-bold fr-label"
+                          >{{ $t('Description') }} <Required :required="true" /></label>
+                          <textarea
+                            id="chart-description"
+                            ref="descriptionInput"
+                            v-model="form.description"
+                            class="w-full fr-input"
+                            :class="{ 'fr-input--error': getFirstError('description') }"
+                            rows="2"
+                            aria-required="true"
+                            :aria-invalid="getFirstError('description') ? 'true' : undefined"
+                            :aria-describedby="getFirstError('description') ? 'chart-description-error' : undefined"
+                            @blur="touch('description')"
+                          />
+                          <p
+                            v-if="getFirstError('description')"
+                            id="chart-description-error"
+                            class="fr-error-text"
+                          >
+                            {{ getFirstError('description') }}
+                          </p>
+                        </div>
+
+                        <!-- cursor-auto: DSFR's core.css puts cursor: pointer on the whole
+                    details element, so the column list would look clickable. -->
+                        <details
+                          class="group min-w-0 cursor-auto"
+                          data-testid="resource-schema"
+                        >
+                          <summary class="flex cursor-pointer list-none items-center gap-1 text-[11px] font-medium leading-4 [&::-webkit-details-marker]:hidden">
+                            <RiArrowDownSLine
+                              class="size-3.5 shrink-0 transition-transform -rotate-90 group-open:rotate-0 motion-reduce:transition-none"
+                              aria-hidden="true"
                             />
-                            <span class="font-mono">{{ column.name }}</span>
-                            <span class="text-new-gray-medium">{{ typeConfig[column.type]?.label || column.type }}</span>
-                          </li>
-                        </ul>
-                      </details>
-                    </fieldset>
+                            {{ $t('Schéma de la ressource') }}
+                            <span class="text-new-gray-medium">· {{ $t('{n} colonnes | {n} colonne | {n} colonnes', { n: resourceColumns.length }) }}</span>
+                          </summary>
+                          <ul class="mt-3 space-y-1 m-0 p-0 list-none">
+                            <li
+                              v-for="column in resourceColumns"
+                              :key="column.name"
+                              class="flex items-center gap-2 text-sm"
+                            >
+                              <component
+                                :is="getColumnTypeIcon(column.type)"
+                                class="size-4 text-new-gray-medium shrink-0"
+                              />
+                              <span class="font-mono">{{ column.name }}</span>
+                              <span class="text-new-gray-medium">{{ typeConfig[column.type]?.label || column.type }}</span>
+                            </li>
+                          </ul>
+                        </details>
+                      </fieldset>
+                    </div>
 
                     <div class="min-w-0 border-t border-new-gray-light py-4">
                       <fieldset
@@ -453,151 +457,23 @@
                       </fieldset>
                     </div>
 
-                    <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-                      <h3 class="mb-2 text-xs font-bold">
-                        {{ $t('Axe X') }}
-                      </h3>
-                      <div>
-                        <SearchableSelect
-                          id="x-axis-column"
-                          v-model="xAxisColumnProxy"
-                          :label="$t('Choisir quoi afficher')"
-                          :placeholder="$t('Rechercher une colonne à afficher...')"
-                          :options="xAxisColumnOptions"
-                          :display-value="(opt: XAxisColumnOption) => opt.name"
-                          :get-option-id="(opt: XAxisColumnOption) => opt.name"
-                          :group-by="(opt: XAxisColumnOption) => typeConfig[opt.type]?.label || opt.type"
-                          :multiple="false"
-                          class="w-full"
-                        >
-                          <template #option="{ option }">
-                            <component
-                              :is="getColumnTypeIcon(option.type)"
-                              class="inline w-4 h-4 mr-2"
-                            />
-                            {{ option.name }}
-                          </template>
-                        </SearchableSelect>
-                      </div>
-                      <div>
-                        <label
-                          for="x-axis-type"
-                          class="fr-label"
-                        >{{ $t('Type') }}</label>
-                        <select
-                          id="x-axis-type"
-                          v-model="form.x_axis.type"
-                          class="w-full fr-select"
-                        >
-                          <option value="discrete">
-                            {{ $t('Discret (catégories)') }}
-                          </option>
-                          <option value="continuous">
-                            {{ $t('Continu (valeurs)') }}
-                          </option>
-                        </select>
-                      </div>
-                      <div class="min-w-0">
-                        <label
-                          for="x-axis-sort-combined"
-                          class="fr-label"
-                        >{{ $t('Trier par') }}</label>
-                        <Listbox
-                          id="x-axis-sort-combined"
-                          v-model="sortProxy"
-                          class="w-full"
-                          :options="sortOptions"
-                          :display-value="(opt) => formatColumnLabel(opt) || $t('Sélectionnez une option')"
-                          :get-option-id="(opt) => opt.value"
-                        >
-                          <template #button>
-                            <div class="w-full flex items-center justify-between gap-2 min-w-0">
-                              <div
-                                class="truncate"
-                                :class="{ 'text-new-disabled-text': !sortProxy }"
-                              >
-                                {{ formatColumnLabel(sortProxy) || $t('Sélectionnez une option') }}
-                              </div>
-                              <RiArrowDownSLine class="flex-none size-4 justify-self-end" />
-                            </div>
-                          </template>
-                          <template #option="{ option }">
-                            <div class="w-full flex items-center justify-between gap-2">
-                              <span class="truncate">{{ formatColumnLabel(option) }}</span>
-                              <component
-                                :is="option.icon"
-                                v-if="option.icon"
-                                class="size-4 text-new-gray-medium"
-                              />
-                            </div>
-                          </template>
-                        </Listbox>
-                      </div>
-                      <div>
-                        <label
-                          for="x-axis-limit"
-                          class="fr-label"
-                        >
-                          {{ $t('Nombre de valeurs') }}
-                          <span class="fr-hint-text">{{ $t('{n} valeurs maximum', { n: CHART_MAX_LIMIT }) }}</span>
-                        </label>
-                        <input
-                          id="x-axis-limit"
-                          :value="form.x_axis.limit ?? ''"
-                          type="number"
-                          :min="1"
-                          :max="CHART_MAX_LIMIT"
-                          step="1"
-                          class="w-full fr-input"
-                          @input="onLimitInput"
-                        >
-                      </div>
-                    </fieldset>
-
-                    <fieldset class="min-w-0 border-t border-new-gray-light py-4 space-y-4">
-                      <h3 class="mb-2 text-xs font-bold">
-                        {{ $t('Axe Y') }}
-                      </h3>
-                      <div
-                        v-for="(serie, index) in form.series"
-                        :key="index"
-                        class="space-y-4"
-                      >
+                    <div class="min-w-0 border-t border-new-gray-light py-4">
+                      <fieldset class="m-0 min-w-0 space-y-4">
+                        <legend class="mb-2 text-xs font-bold">
+                          {{ $t('Axe X') }}
+                        </legend>
                         <div>
-                          <label
-                            :for="`calculation-${index}`"
-                            class="fr-label"
-                          >{{ $t('Calcul') }}</label>
-                          <select
-                            :id="`calculation-${index}`"
-                            :value="getSerieCalculation(serie)"
-                            class="w-full fr-select"
-                            @change="(event) => applySerieCalculation(serie, (event.target as HTMLSelectElement).value as SerieCalculation, form.x_axis.column_x, resourceColumns)"
-                          >
-                            <option
-                              v-for="option in calculationOptions"
-                              :key="option.value"
-                              :value="option.value"
-                              :disabled="option.numeric && !hasNumberColumn"
-                            >
-                              {{ option.label }}
-                            </option>
-                          </select>
-                        </div>
-
-                        <div v-if="getSerieCalculation(serie) !== 'count'">
                           <SearchableSelect
-                            :id="`column-y-${index}`"
-                            :model-value="resourceColumns.find(column => column.name === serie.column_y) ?? null"
-                            :label="$t('Colonne Y')"
-                            :placeholder="$t('Rechercher une colonne Y...')"
-                            :options="getSerieColumnYOptions(getSerieCalculation(serie), resourceColumns)"
-                            :display-value="(opt: ColumnDefinition) => opt.name"
-                            :get-option-id="(opt: ColumnDefinition) => opt.name"
-                            :group-by="(opt: ColumnDefinition) => typeConfig[opt.type]?.label || opt.type"
+                            id="x-axis-column"
+                            v-model="xAxisColumnProxy"
+                            :label="$t('Choisir quoi afficher')"
+                            :placeholder="$t('Rechercher une colonne à afficher...')"
+                            :options="xAxisColumnOptions"
+                            :display-value="(opt: XAxisColumnOption) => opt.name"
+                            :get-option-id="(opt: XAxisColumnOption) => opt.name"
+                            :group-by="(opt: XAxisColumnOption) => typeConfig[opt.type]?.label || opt.type"
                             :multiple="false"
                             class="w-full"
-                            @update:model-value="(val) => serie.column_y = val?.name ?? ''"
                           >
                             <template #option="{ option }">
                               <component
@@ -608,8 +484,140 @@
                             </template>
                           </SearchableSelect>
                         </div>
-                      </div>
-                    </fieldset>
+                        <div>
+                          <label
+                            for="x-axis-type"
+                            class="fr-label"
+                          >{{ $t('Type') }}</label>
+                          <select
+                            id="x-axis-type"
+                            v-model="form.x_axis.type"
+                            class="w-full fr-select"
+                          >
+                            <option value="discrete">
+                              {{ $t('Discret (catégories)') }}
+                            </option>
+                            <option value="continuous">
+                              {{ $t('Continu (valeurs)') }}
+                            </option>
+                          </select>
+                        </div>
+                        <div class="min-w-0">
+                          <label
+                            for="x-axis-sort-combined"
+                            class="fr-label"
+                          >{{ $t('Trier par') }}</label>
+                          <Listbox
+                            id="x-axis-sort-combined"
+                            v-model="sortProxy"
+                            class="w-full"
+                            :options="sortOptions"
+                            :display-value="(opt) => formatColumnLabel(opt) || $t('Sélectionnez une option')"
+                            :get-option-id="(opt) => opt.value"
+                          >
+                            <template #button>
+                              <div class="w-full flex items-center justify-between gap-2 min-w-0">
+                                <div
+                                  class="truncate"
+                                  :class="{ 'text-new-disabled-text': !sortProxy }"
+                                >
+                                  {{ formatColumnLabel(sortProxy) || $t('Sélectionnez une option') }}
+                                </div>
+                                <RiArrowDownSLine class="flex-none size-4 justify-self-end" />
+                              </div>
+                            </template>
+                            <template #option="{ option }">
+                              <div class="w-full flex items-center justify-between gap-2">
+                                <span class="truncate">{{ formatColumnLabel(option) }}</span>
+                                <component
+                                  :is="option.icon"
+                                  v-if="option.icon"
+                                  class="size-4 text-new-gray-medium"
+                                />
+                              </div>
+                            </template>
+                          </Listbox>
+                        </div>
+                        <div>
+                          <label
+                            for="x-axis-limit"
+                            class="fr-label"
+                          >
+                            {{ $t('Nombre de valeurs') }}
+                            <span class="fr-hint-text">{{ $t('{n} valeurs maximum', { n: CHART_MAX_LIMIT }) }}</span>
+                          </label>
+                          <input
+                            id="x-axis-limit"
+                            :value="form.x_axis.limit ?? ''"
+                            type="number"
+                            :min="1"
+                            :max="CHART_MAX_LIMIT"
+                            step="1"
+                            class="w-full fr-input"
+                            @input="onLimitInput"
+                          >
+                        </div>
+                      </fieldset>
+                    </div>
+
+                    <div class="min-w-0 border-t border-new-gray-light py-4">
+                      <fieldset class="m-0 min-w-0 space-y-4">
+                        <legend class="mb-2 text-xs font-bold">
+                          {{ $t('Axe Y') }}
+                        </legend>
+                        <div
+                          v-for="(serie, index) in form.series"
+                          :key="index"
+                          class="space-y-4"
+                        >
+                          <div>
+                            <label
+                              :for="`calculation-${index}`"
+                              class="fr-label"
+                            >{{ $t('Calcul') }}</label>
+                            <select
+                              :id="`calculation-${index}`"
+                              :value="getSerieCalculation(serie)"
+                              class="w-full fr-select"
+                              @change="(event) => applySerieCalculation(serie, (event.target as HTMLSelectElement).value as SerieCalculation, form.x_axis.column_x, resourceColumns)"
+                            >
+                              <option
+                                v-for="option in calculationOptions"
+                                :key="option.value"
+                                :value="option.value"
+                                :disabled="option.numeric && !hasNumberColumn"
+                              >
+                                {{ option.label }}
+                              </option>
+                            </select>
+                          </div>
+
+                          <div v-if="getSerieCalculation(serie) !== 'count'">
+                            <SearchableSelect
+                              :id="`column-y-${index}`"
+                              :model-value="resourceColumns.find(column => column.name === serie.column_y) ?? null"
+                              :label="$t('Colonne Y')"
+                              :placeholder="$t('Rechercher une colonne Y...')"
+                              :options="getSerieColumnYOptions(getSerieCalculation(serie), resourceColumns)"
+                              :display-value="(opt: ColumnDefinition) => opt.name"
+                              :get-option-id="(opt: ColumnDefinition) => opt.name"
+                              :group-by="(opt: ColumnDefinition) => typeConfig[opt.type]?.label || opt.type"
+                              :multiple="false"
+                              class="w-full"
+                              @update:model-value="(val) => serie.column_y = val?.name ?? ''"
+                            >
+                              <template #option="{ option }">
+                                <component
+                                  :is="getColumnTypeIcon(option.type)"
+                                  class="inline w-4 h-4 mr-2"
+                                />
+                                {{ option.name }}
+                              </template>
+                            </SearchableSelect>
+                          </div>
+                        </div>
+                      </fieldset>
+                    </div>
 
                     <!-- cursor-auto: DSFR's core.css puts cursor: pointer on the whole
                   details element, so the fields would look clickable. -->
@@ -855,6 +863,9 @@ const requiredFields = computed(() => [
 const missingFields = computed(() => requiredFields.value.filter(field => getFirstError(field.key)))
 // The footer warning only follows a refused save, not the inline errors of a blurred field.
 const saveBlocked = ref(false)
+watch(() => missingFields.value.length, (count) => {
+  if (count === 0) saveBlocked.value = false
+})
 
 for (const field of ['title', 'description'] as const) {
   watch(() => form.value[field], () => {
@@ -1390,7 +1401,7 @@ if (props.initialChart) {
 
   .chart-form :deep(.fr-input::placeholder),
   .chart-form :deep(.input::placeholder) {
-    color: var(--color-new-gray-medium-clic) !important;
+    color: var(--color-gray-medium) !important;
     font-style: normal !important;
   }
 

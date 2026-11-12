@@ -156,7 +156,7 @@ export type ChartUpdatePatch = {
 }
 
 export type ChartToolResult
-  = | { toolCallId: string, kind: 'create', chart: ChartToolChart, moreGroups: boolean }
+  = | { toolCallId: string, kind: 'create', chart: ChartToolChart }
     | { toolCallId: string, kind: 'update', patch: ChartUpdatePatch }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -186,7 +186,6 @@ export function chartToolResults(messages: unknown[]): ChartToolResult[] {
           toolCallId: part.toolCallId,
           kind: 'create',
           chart: output.chart as unknown as ChartToolChart,
-          moreGroups: output.more_groups === true,
         })
       }
       else if (part.type === 'tool-update_chart') {
@@ -210,7 +209,7 @@ export function mapAssistantError(error: unknown): string {
   if (statusCode === 401) return 'Veuillez vous reconnecter pour utiliser l’assistant.'
   // The composer caps input at the server limit: a 413 means the history grew too large.
   if (statusCode === 413) return 'La conversation est trop volumineuse.'
-  if (statusCode === 429) return 'Quota journalier dépassé, réessayez demain.'
+  if (statusCode === 429) return 'Trop de demandes, réessayez dans un instant.'
   if (statusCode === 503) return 'Assistant non configuré pour le moment.'
   return 'Une erreur est survenue, veuillez réessayer.'
 }

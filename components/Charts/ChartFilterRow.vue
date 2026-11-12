@@ -41,6 +41,7 @@
       size="xs"
       :icon="RiDeleteBinLine"
       icon-only
+      :aria-label="t('Supprimer la règle')"
       @click="$emit('remove')"
     />
   </div>

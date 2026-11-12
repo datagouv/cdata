@@ -26,6 +26,7 @@
         color="tertiary"
         :icon="RiDeleteBinLine"
         icon-only
+        :aria-label="t('Supprimer le groupe')"
         @click="$emit('remove-group')"
       />
     </div>

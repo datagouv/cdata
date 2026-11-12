@@ -106,8 +106,10 @@ export function formatMarkdown(md: string, config: number | { minDepth: number, 
     .use(noImages ? [rehypeNoImages] : [])
     // Markdown mostly comes from users: links leaving the site must not pass on its search
     // ranking, or they become worth spamming for. `followLinks` is for content written by the team.
+    // Generated content (noImages) also opens its links aside: it sits next to unsaved work.
     .use(rehypeExternalLinks, {
-      rel: followLinks ? [] : ['ugc', 'nofollow', 'noopener'],
+      rel: followLinks ? [] : ['ugc', 'nofollow', 'noopener', ...(noImages ? ['noreferrer'] : [])],
+      target: noImages ? '_blank' : undefined,
       protocols: ['http', 'https', 'mailto'],
     })
     // Serialize syntax tree to HTML

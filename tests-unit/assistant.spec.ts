@@ -148,16 +148,18 @@ describe('chartToolResults', () => {
     ])
 
     expect(results).toEqual([
-      { toolCallId: 'c1', kind: 'create', chart: CHART, moreGroups: true },
+      { toolCallId: 'c1', kind: 'create', chart: CHART },
       { toolCallId: 'c2', kind: 'update', patch: { title: 'Nouveau' } },
     ])
   })
 
-  it('defaults moreGroups to false', () => {
-    const [result] = chartToolResults([
-      { role: 'assistant', parts: [{ type: 'tool-create_chart', toolCallId: 'c1', state: 'output-available', output: { status: 'ok', chart: CHART } }] },
+  // The chart's own wrapper tells whether groups were left out: udata's more_groups,
+  // null when it could not check, is not carried.
+  it('keeps a created chart whose group count udata could not check', () => {
+    const results = chartToolResults([
+      { role: 'assistant', parts: [{ type: 'tool-create_chart', toolCallId: 'c1', state: 'output-available', output: { status: 'ok', chart: CHART, more_groups: null } }] },
     ])
-    expect(result).toMatchObject({ kind: 'create', moreGroups: false })
+    expect(results).toEqual([{ toolCallId: 'c1', kind: 'create', chart: CHART }])
   })
 
   it('skips error results and incomplete calls', () => {
@@ -409,7 +411,7 @@ describe('mapAssistantError', () => {
   it('maps status codes and falls back', () => {
     expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 401 }))).toContain('Veuillez vous reconnecter')
     expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 413 }))).toBe('La conversation est trop volumineuse.')
-    expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 429 }))).toContain('Quota journalier dépassé')
+    expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 429 }))).toContain('Trop de demandes, réessayez dans un instant.')
     expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 503 }))).toContain('Assistant non configuré')
     expect(mapAssistantError(new TypeError('fetch failed'))).toContain('Une erreur est survenue')
   })
@@ -1075,7 +1077,7 @@ describe('ChatPanel', () => {
 
     const alert = wrapper.find('[role="alert"]')
     expect(alert.exists()).toBe(true)
-    expect(alert.text()).toContain('Quota journalier dépassé')
+    expect(alert.text()).toContain('Trop de demandes, réessayez dans un instant.')
   })
 
   it('offers a new conversation only once the conversation has started', async () => {
@@ -1090,6 +1092,21 @@ describe('ChatPanel', () => {
     expect(button.text()).toBe('Nouvelle conversation')
     await button.trigger('click')
     expect(newConversationMock).toHaveBeenCalledOnce()
+  })
+
+  // RGAA 12.8: the button leaves the DOM with the conversation, the focus must not fall to the body.
+  it('moves the focus to the composer once a new conversation starts', async () => {
+    chatState.messages.value = [assistantTextMessage('Bonjour')]
+    newConversationMock.mockImplementationOnce(() => {
+      chatState.messages.value = []
+    })
+    const wrapper = mountPanel('resource-1')
+    const button = wrapper.find<HTMLButtonElement>('[data-testid="assistant-new-conversation"]')
+    button.element.focus()
+    await button.trigger('click')
+    await flushPromises()
+    expect(wrapper.find('[data-testid="assistant-new-conversation"]').exists()).toBe(false)
+    expect(document.activeElement).toBe(wrapper.find('textarea').element)
   })
 
   it('invites to start a new conversation after a 413', async () => {
