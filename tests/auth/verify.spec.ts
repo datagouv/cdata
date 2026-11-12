@@ -57,7 +57,7 @@ test.describe('when the email change requires a fresh session', () => {
 
     const dialog = page.getByRole('dialog', { name: 'Modifier l\'adresse email' })
     await expect(dialog).toBeVisible()
-    await expect(dialog.getByLabel('Nouvelle adresse email')).toBeVisible()
+    await expect(dialog.getByLabel('Nouvelle adresse email *', { exact: true })).toBeVisible()
   })
 
   test('going back from the reauthentication does not send to it again', async ({ page }) => {
