@@ -34,22 +34,20 @@ export function chartDataKey(chart: Chart | ChartForApi): string {
 }
 
 /**
- * Whether a series has more X values than the CHART_PAGE_SIZE fetched, from what is
- * already known: api-tabular sends the total of a raw query but not of an aggregate,
- * whose groups the profile counts as long as no filter drops some. 'probe' when only
- * a request for the next group can tell.
+ * Whether a series has more X values than the CHART_PAGE_SIZE fetched, from its first
+ * page: api-tabular sends the total of a raw query but not of an aggregate, whose next
+ * link is exact from the exact-next-link version on and sent for any full page before.
+ * 'probe' when only a request for the next group can tell.
  */
-export function groupsBeyondPage({ rowCount, aggregated, filtered, total, distinctValues }: {
+export function groupsBeyondPage({ rowCount, aggregated, total, next }: {
   rowCount: number
   aggregated: boolean
-  filtered: boolean
   total?: number | undefined
-  distinctValues?: number | undefined
+  next?: string | null | undefined
 }): boolean | 'probe' {
   if (rowCount < CHART_PAGE_SIZE) return false
-  if (!aggregated) return total === undefined ? 'probe' : total > CHART_PAGE_SIZE
-  if (!filtered && distinctValues !== undefined) return distinctValues > CHART_PAGE_SIZE
-  return 'probe'
+  if (!aggregated && total !== undefined) return total > CHART_PAGE_SIZE
+  return next ? 'probe' : false
 }
 
 export function truncationWarning(xColumn: string, sortBy: XAxisSortBy | null, t: TranslationFunction): string {

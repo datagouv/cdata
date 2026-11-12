@@ -101,7 +101,5 @@ export type ColumnDefinition = {
   type: ColumnType
   min?: number
   max?: number
-  // Groups a group-by on the column yields (empty cells make one), when the profile counts them
-  distinctValues?: number
 }
 export type ColumnsDefinition = Record<string, Array<ColumnDefinition>>

@@ -1,6 +1,6 @@
 import { ofetch } from 'ofetch'
 import { useComponentsConfig, type PluginConfig } from '../config'
-import { encodeConditionValue } from './tabular'
+import { encodeConditionColumn, encodeConditionValue, encodeTabularParam } from './tabular'
 import type { AndFilters, Filter, GenericFilter, OrFilters } from '../types/visualizations'
 import type { SortConfig, TabularProfileResponse } from '../components/TabularExplorer/types'
 
@@ -11,10 +11,15 @@ export type TabularDataResponse = {
   links: {
     profile: string
     swagger: string
-    next: string
+    next: string | null
+    prev: string | null
   }
-  // absent from the answer to an aggregate
-  meta: { total: number }
+  meta: {
+    page: number
+    page_size: number
+    /** Absent from the answer to an aggregate */
+    total?: number
+  }
 }
 
 export type TabularAggregateType = 'avg' | 'sum' | 'count' | 'min' | 'max'
@@ -41,13 +46,13 @@ export async function fetchTabularData(config: PluginConfig, options: FetchTabul
   const pageSize = options.pageSize ?? config.tabularApiPageSize ?? 15
   let url = `${config.tabularApiUrl}/api/resources/${options.resourceId}/data/?page=${page}&page_size=${pageSize}`
   if (options.columns) {
-    url += `&columns=${options.columns.map(col => encodeURIComponent(col)).join(',')}`
+    url += `&columns=${options.columns.map(encodeTabularParam).join(',')}`
   }
   if (options.sort) {
-    url += `&${encodeURIComponent(options.sort.column)}__sort=${encodeURIComponent(options.sort.direction)}`
+    url += `&${encodeTabularParam(options.sort.column)}__sort=${options.sort.direction}`
   }
   if (options.groupBy && options.aggregation?.type) {
-    url += `&${encodeURIComponent(options.groupBy)}__groupby&${encodeURIComponent(options.aggregation.column)}__${encodeURIComponent(options.aggregation.type)}`
+    url += `&${encodeTabularParam(options.groupBy)}__groupby&${encodeTabularParam(options.aggregation.column)}__${options.aggregation.type}`
   }
   if (options.filters) {
     const filterQuery = buildFilterQuery(options.filters)
@@ -60,8 +65,8 @@ export async function fetchTabularData(config: PluginConfig, options: FetchTabul
 
 /**
  * Whether a group exists past the page of `options`: same query, one row per page.
- * PostgREST answers 416 rather than an empty page when the offset passes the rows
- * left by the filters.
+ * Past the last group PostgREST answers an empty page, or a 416 when the offset also
+ * passes the rows the filters leave.
  */
 export async function hasMoreGroups(config: PluginConfig, options: FetchTabularDataOptions): Promise<boolean> {
   const pageSize = options.pageSize ?? config.tabularApiPageSize ?? 15
@@ -109,33 +114,22 @@ export function buildFilterQuery(filters: GenericFilter): string {
   return params.join('&')
 }
 
-// The second pass also encodes the `!'()*` that `encodeURIComponent` leaves as-is,
-// like the `quote` of udata, which sends the same filters for the assistant.
-function encodeTwice(value: string): string {
-  return encodeURIComponent(encodeURIComponent(value))
-    .replace(/[!'()*]/g, char => `%${char.charCodeAt(0).toString(16).toUpperCase()}`)
-}
-
-/**
- * `column__condition=value` param for a top-level (ANDed) filter, null when empty.
- * The value is encoded twice: api-tabular decodes the query string, then PostgREST
- * decodes it again.
- */
+/** `column__condition=value` param for a top-level (ANDed) filter, null when empty */
 function serializeParam(filter: Filter): string | null {
-  const column = encodeURIComponent(filter.column)
+  const column = encodeTabularParam(filter.column)
   if (filter.condition === 'is_null') return `${column}__isnull`
   if (filter.condition === 'is_not_null') return `${column}__isnotnull`
   if (filter.value === null || filter.value === undefined || filter.value === '') return null
-  return `${column}__${encodeURIComponent(filter.condition)}=${encodeTwice(filter.value)}`
+  return `${column}__${filter.condition}=${encodeTabularParam(filter.value)}`
 }
 
 /** `column__condition.value` condition for the `or(...)` / `and(...)` grammar, null when empty */
 function serializeCondition(filter: Filter): string | null {
-  const column = encodeURIComponent(filter.column)
+  const column = encodeConditionColumn(filter.column)
   if (filter.condition === 'is_null') return `${column}__isnull`
   if (filter.condition === 'is_not_null') return `${column}__isnotnull`
   if (filter.value === null || filter.value === undefined || filter.value === '') return null
-  return `${column}__${encodeURIComponent(filter.condition)}.${encodeConditionValue(filter.value)}`
+  return `${column}__${filter.condition}.${encodeConditionValue(filter.value)}`
 }
 
 /** `or(a,b,...)` / `and(a,b,...)` for the nested-condition grammar, null when empty */

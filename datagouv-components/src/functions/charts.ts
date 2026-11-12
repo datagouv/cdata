@@ -1,5 +1,5 @@
 import type { Chart, ChartForm, ChartForApi, DataSeries, GenericFilter, ColumnDefinition, YAxis } from '../types/visualizations'
-import type { ColumnType, TabularColumnProfile, TabularProfile } from '../components/TabularExplorer/types'
+import type { ColumnType, TabularProfile } from '../components/TabularExplorer/types'
 import type { TranslationFunction } from '../composables/useTranslation'
 import { resolveColumnType } from './tabular'
 
@@ -89,15 +89,8 @@ export function buildColumnsFromProfile(profile: { profile: TabularProfile }): A
       type: colType,
       min: normalizeProfileNumber(colProfile?.min, colType),
       max: normalizeProfileNumber(colProfile?.max, colType),
-      distinctValues: distinctValues(colProfile),
     }
   })
-}
-
-// The profile leaves nb_distinct at 0 for the columns it does not count, free text among them.
-function distinctValues(colProfile: TabularColumnProfile | undefined): number | undefined {
-  if (!colProfile?.nb_distinct) return undefined
-  return colProfile.nb_distinct + (colProfile.nb_missing_values > 0 ? 1 : 0)
 }
 
 function normalizeProfileNumber(value: number | string | undefined, type: ColumnType): number | undefined {
@@ -110,7 +103,7 @@ function normalizeProfileNumber(value: number | string | undefined, type: Column
   return Number.isNaN(parsed) ? undefined : parsed
 }
 
-/** Y axis tick label: full number in the locale (no rounding), with the chart unit. */
+/** Y axis tick label in the locale, with the chart unit: abbreviated from a thousand on (1,2 k, 3,45 M). */
 export function formatYAxisValue(value: number, locale: string, yAxis: Pick<YAxis, 'unit' | 'unit_position'>): string {
   // Two compact fraction digits keep close ticks (1,22 M / 1,24 M) apart.
   const options: Intl.NumberFormatOptions = Math.abs(value) >= 1000

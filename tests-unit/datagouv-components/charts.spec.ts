@@ -193,32 +193,13 @@ describe('buildColumnsFromProfile', () => {
     },
   }
 
-  // A group-by yields one group per distinct value, plus one for the empty cells.
-  // The profile leaves nb_distinct at 0 for the columns it does not count (free text).
-  it('counts the groups a group-by on the column yields, when the profile counts them', () => {
-    const counted: { profile: TabularProfile } = {
-      profile: {
-        ...profile.profile,
-        profile: {
-          ...profile.profile.profile,
-          year: { tops: [], nb_distinct: 6, nb_missing_values: 4 },
-          label: { tops: [], nb_distinct: 0, nb_missing_values: 0 },
-        },
-      },
-    }
-    const columns = buildColumnsFromProfile(counted)
-    expect(columns.find(c => c.name === 'year')?.distinctValues).toBe(7)
-    expect(columns.find(c => c.name === 'rate')?.distinctValues).toBe(10)
-    expect(columns.find(c => c.name === 'label')?.distinctValues).toBeUndefined()
-  })
-
   it('includes normalized min/max from the profile', () => {
     const columns = buildColumnsFromProfile(profile)
     expect(columns).toEqual([
-      { name: 'year', type: 'number', min: 2018, max: 2023, distinctValues: 6 },
-      { name: 'rate', type: 'number', min: 0, max: 49.5, distinctValues: 10 },
-      { name: 'label', type: 'categorical', distinctValues: 3 },
-      { name: 'created_at', type: 'date', min: new Date('2018-01-01T00:00:00.000Z').getTime(), max: new Date('2023-12-31T23:59:59.000Z').getTime(), distinctValues: 5 },
+      { name: 'year', type: 'number', min: 2018, max: 2023 },
+      { name: 'rate', type: 'number', min: 0, max: 49.5 },
+      { name: 'label', type: 'categorical' },
+      { name: 'created_at', type: 'date', min: new Date('2018-01-01T00:00:00.000Z').getTime(), max: new Date('2023-12-31T23:59:59.000Z').getTime() },
     ])
   })
 
@@ -233,7 +214,7 @@ describe('buildColumnsFromProfile', () => {
       },
     }
     const columns = buildColumnsFromProfile(yearFormatProfile)
-    expect(columns.find(c => c.name === 'year')).toEqual({ name: 'year', type: 'number', min: 2018, max: 2023, distinctValues: 6 })
+    expect(columns.find(c => c.name === 'year')).toEqual({ name: 'year', type: 'number', min: 2018, max: 2023 })
   })
 
   it('drops non-numeric min/max values', () => {
@@ -248,7 +229,7 @@ describe('buildColumnsFromProfile', () => {
     }
     const columns = buildColumnsFromProfile(invalidProfile)
     const yearColumn = columns.find(c => c.name === 'year')
-    expect(yearColumn).toEqual({ name: 'year', type: 'number', min: undefined, max: 2023, distinctValues: 6 })
+    expect(yearColumn).toEqual({ name: 'year', type: 'number', min: undefined, max: 2023 })
   })
 
   it('returns undefined min/max for date columns when the profile does not provide them', () => {
@@ -263,7 +244,7 @@ describe('buildColumnsFromProfile', () => {
     }
     const columns = buildColumnsFromProfile(profileWithoutDateBounds)
     const createdAtColumn = columns.find(c => c.name === 'created_at')
-    expect(createdAtColumn).toEqual({ name: 'created_at', type: 'date', min: undefined, max: undefined, distinctValues: 5 })
+    expect(createdAtColumn).toEqual({ name: 'created_at', type: 'date', min: undefined, max: undefined })
   })
 
   // Non-CSV resources (parquet…) are indexed without csv-detective: the profile

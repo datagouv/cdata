@@ -81,27 +81,26 @@ describe('truncationWarning', () => {
 
 describe('groupsBeyondPage', () => {
   const full = CHART_PAGE_SIZE
+  const next = 'https://tabular.example.com/api/resources/r/data/?page=2&page_size=50'
 
   it('knows a page that is not full holds every group', () => {
-    expect(groupsBeyondPage({ rowCount: full - 1, aggregated: true, filtered: true })).toBe(false)
-    expect(groupsBeyondPage({ rowCount: full - 1, aggregated: false, filtered: false })).toBe(false)
+    expect(groupsBeyondPage({ rowCount: full - 1, aggregated: true, next })).toBe(false)
+    expect(groupsBeyondPage({ rowCount: full - 1, aggregated: false, total: 926, next })).toBe(false)
   })
 
   it('reads the row count of a raw series from the total of its response', () => {
-    expect(groupsBeyondPage({ rowCount: full, aggregated: false, filtered: true, total: full + 1 })).toBe(true)
-    expect(groupsBeyondPage({ rowCount: full, aggregated: false, filtered: false, total: full })).toBe(false)
+    expect(groupsBeyondPage({ rowCount: full, aggregated: false, total: full + 1, next })).toBe(true)
+    expect(groupsBeyondPage({ rowCount: full, aggregated: false, total: full, next })).toBe(false)
   })
 
-  it('reads the group count of an unfiltered aggregated series from the profile', () => {
-    expect(groupsBeyondPage({ rowCount: full, aggregated: true, filtered: false, distinctValues: 926 })).toBe(true)
-    expect(groupsBeyondPage({ rowCount: full, aggregated: true, filtered: false, distinctValues: full })).toBe(false)
+  // api-tabular sends no total for an aggregate; from the exact-next-link version on,
+  // its next link is only there when a group is left
+  it('knows a full aggregated page without a next link holds every group', () => {
+    expect(groupsBeyondPage({ rowCount: full, aggregated: true, next: null })).toBe(false)
+    expect(groupsBeyondPage({ rowCount: full, aggregated: true })).toBe(false)
   })
 
-  it('probes when only the next group can tell', () => {
-    // a filter changes the groups, and api-tabular sends no total for an aggregate
-    expect(groupsBeyondPage({ rowCount: full, aggregated: true, filtered: true, distinctValues: 926 })).toBe('probe')
-    // the profile did not count the column
-    expect(groupsBeyondPage({ rowCount: full, aggregated: true, filtered: false })).toBe('probe')
-    expect(groupsBeyondPage({ rowCount: full, aggregated: false, filtered: false })).toBe('probe')
+  it('probes a full aggregated page with a next link, which older versions send for any full page', () => {
+    expect(groupsBeyondPage({ rowCount: full, aggregated: true, next })).toBe('probe')
   })
 })
