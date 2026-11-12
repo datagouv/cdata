@@ -5,29 +5,27 @@
     :size
     :with-link
   />
-  <span
-    v-else-if="actor.class === 'ApiToken'"
-    class="inline-flex items-center space-x-1"
-  >
+  <!-- What follows the owner is plain text rather than part of a flex box, so that a
+       long key or application name wraps with the sentence it belongs to. -->
+  <span v-else-if="actor.class === 'ApiToken'">
     <AvatarWithName
       :user="actor.owner"
       :size
       :with-link
+      class="mr-1 align-middle"
     />
-    <span class="truncate text-gray-medium">
+    <span class="text-gray-medium">
       {{ actor.name ? t('via la clé d\'API « {name} »', { name: actor.name }) : t('via une clé d\'API') }}
     </span>
   </span>
-  <span
-    v-else-if="actor.class === 'OAuth2Token'"
-    class="inline-flex items-center space-x-1"
-  >
+  <span v-else-if="actor.class === 'OAuth2Token'">
     <AvatarWithName
       :user="actor.owner"
       :size
       :with-link
+      class="mr-1 align-middle"
     />
-    <span class="truncate text-gray-medium">{{ t('via {name}', { name: actor.client.name }) }}</span>
+    <span class="text-gray-medium">{{ t('via {name}', { name: actor.client.name }) }}</span>
   </span>
   <span
     v-else
