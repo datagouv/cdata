@@ -847,6 +847,25 @@ test('announces the source status, titles its groups by a legend and explains th
   await expect(page.getByRole('button', { name: 'Supprimer la règle' })).toBeVisible()
 })
 
+test('the filter add buttons are blue and the fields of a new rule share one height', async ({ page }) => {
+  await setupChart(page)
+  const filters = page.locator('fieldset', { hasText: 'Filtres' })
+
+  const addRule = page.getByRole('button', { name: 'Ajouter une règle' })
+  await expect(addRule).toHaveCSS('color', 'rgb(0, 0, 145)')
+  await addRule.click()
+  await addRule.click()
+  await expect(page.getByRole('button', { name: 'Ajouter un groupe' })).toHaveCSS('color', 'rgb(0, 0, 145)')
+
+  // The new rule's column listbox is empty: it must not shrink, and the value input matches the listboxes.
+  const row = page.getByRole('button', { name: 'Supprimer la règle' }).last().locator('..')
+  const fields = row.locator('button.input, input.fr-input')
+  await expect(fields).toHaveCount(4)
+  const heights = await fields.evaluateAll(elements => elements.map(element => element.getBoundingClientRect().height))
+  expect(new Set(heights).size).toBe(1)
+  await expect(filters.getByRole('button', { name: 'Ajouter une règle' })).toBeVisible()
+})
+
 test('opens an existing chart on the manual editing tab', async ({ page }) => {
   const chart = await createChart(page.request, { title: `Chart configurator default tab ${Date.now()}` })
   try {

@@ -33,7 +33,7 @@
       v-if="showValueInput"
       v-model="filter.value"
       type="text"
-      class="fr-input text-sm w-32 min-w-0 max-w-1/3"
+      class="fr-input text-sm h-10 w-32 min-w-0 max-w-1/3"
       :placeholder="$t('Valeur')"
     >
 

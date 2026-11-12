@@ -8,8 +8,9 @@
         <ListboxButton class="input shadow-input text-sm flex items-center gap-2">
           <slot name="button">
             <div class="w-full flex items-center justify-between gap-2">
+              <!-- min-h-lh: an empty value keeps the button at its usual height. -->
               <div
-                class="truncate"
+                class="truncate min-h-lh"
                 :class="{ 'text-new-disabled-text': isDisabled(model) }"
               >
                 {{ displayValue(model) }}

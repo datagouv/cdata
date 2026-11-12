@@ -15,6 +15,7 @@
       <BrandedButton
         size="xs"
         color="tertiary"
+        class="[&&]:text-new-primary"
         :icon="RiAddLine"
         @click="$emit('add-condition')"
       >

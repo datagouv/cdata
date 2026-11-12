@@ -309,6 +309,7 @@
                           v-if="totalRules === 0"
                           size="sm"
                           color="tertiary"
+                          class="[&&]:text-new-primary"
                           :icon="RiAddLine"
                           @click="addGroup"
                         >
@@ -318,6 +319,7 @@
                           v-if="totalRules > 1"
                           size="sm"
                           color="tertiary"
+                          class="[&&]:text-new-primary"
                           :icon="RiAddLine"
                           @click="addGroup"
                         >
