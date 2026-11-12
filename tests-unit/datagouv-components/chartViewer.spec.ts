@@ -2,19 +2,26 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ChartViewer from '~/datagouv-components/src/components/Chart/ChartViewer.vue'
+import { CHART_IMAGE_HEIGHT, CHART_IMAGE_WIDTH } from '~/datagouv-components/src/functions/charts'
 import type { ChartForApi, ColumnsDefinition, DataSeriesType } from '~/datagouv-components/src/types/visualizations'
 
 const setOptionMock = vi.hoisted(() => vi.fn())
+const initMock = vi.hoisted(() => vi.fn())
 
 // Never touch a real canvas under happy-dom: capture the option instead.
 vi.mock('echarts', () => ({
-  init: () => ({
+  init: initMock,
+}))
+
+function fakeInstance() {
+  return {
     setOption: setOptionMock,
     dispose: vi.fn(),
     resize: vi.fn(),
-    getDataURL: vi.fn(),
-  }),
-}))
+    getDataURL: vi.fn(() => 'data:image/png;base64,AAAA'),
+  }
+}
+initMock.mockImplementation(fakeInstance)
 
 const RESOURCE_ID = '847057e0-4c03-4099-85aa-9796fb6003bf'
 
@@ -460,5 +467,36 @@ describe('ChartViewer numeric X labels', () => {
 
     expect(option.xAxis.axisLabel.formatter(250000)).toMatch(/^250\D000$/)
     expect(option.xAxis.axisLabel.formatter(2.5)).toMatch(/^2\D5$/)
+  })
+})
+
+describe('ChartViewer capture', () => {
+  beforeEach(() => {
+    setOptionMock.mockClear()
+    initMock.mockClear()
+  })
+
+  // The saved image fills the 250×190 media box of ChartCard (the API keeps it within
+  // 250px): its size must not follow the preview, wide on desktop and tall on mobile.
+  it('renders the image off screen at a fixed size with the card ratio', async () => {
+    const { wrapper } = await mountViewer([{ column_y: 'nb', type: 'histogram' }])
+    const [previewContainer] = initMock.mock.calls[0]!
+    const previewOption = setOptionMock.mock.calls.at(-1)![0]
+
+    const url = (wrapper.vm as unknown as { capture: () => string | null }).capture()
+
+    expect(url).toBe('data:image/png;base64,AAAA')
+    expect(initMock).toHaveBeenCalledTimes(2)
+    const [container, , options] = initMock.mock.calls[1]!
+    expect(container).not.toBe(previewContainer)
+    expect(container.isConnected).toBe(false)
+    expect(options).toMatchObject({ width: CHART_IMAGE_WIDTH, height: CHART_IMAGE_HEIGHT })
+    expect(CHART_IMAGE_WIDTH / CHART_IMAGE_HEIGHT).toBeCloseTo(250 / 190)
+    // No animation: the image is taken right after the option is set.
+    expect(setOptionMock.mock.calls.at(-1)![0]).toEqual({ ...previewOption, animation: false })
+    const offscreen = initMock.mock.results[1]!.value as ReturnType<typeof fakeInstance>
+    expect(offscreen.getDataURL).toHaveBeenCalledWith(expect.objectContaining({ pixelRatio: 1, backgroundColor: '#fff' }))
+    expect(offscreen.dispose).toHaveBeenCalled()
+    wrapper.unmount()
   })
 })

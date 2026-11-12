@@ -14,7 +14,7 @@ import { LineChart, BarChart, type BarSeriesOption, type LineSeriesOption } from
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent } from 'echarts/components'
 import { init, type ECharts as EChartsType } from 'echarts'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { formatYAxisValue, seriesLabel } from '../../functions/charts'
+import { CHART_IMAGE_HEIGHT, CHART_IMAGE_WIDTH, formatYAxisValue, seriesLabel } from '../../functions/charts'
 import { CHART_PAGE_SIZE } from '../../functions/chartData'
 import { useFormatDate } from '../../functions/dates'
 import type { Chart, ColumnDefinition, ColumnsDefinition, XAxis, XAxisForm, ChartForApi } from '../../types/visualizations'
@@ -66,8 +66,18 @@ function lineSymbolSize(pointCount: number, seriesIndex: number, seriesCount: nu
     params.dataIndex % step === offset ? LINE_SYMBOL_SIZE : 0
 }
 
+// Rendered off screen: the preview is wide on desktop and tall on mobile.
 function capture(): string | null {
-  return echartsInstance?.getDataURL() ?? null
+  const option = echartsOption.value
+  if (!echartsInstance || !option) return null
+  const offscreen = init(document.createElement('div'), null, { width: CHART_IMAGE_WIDTH, height: CHART_IMAGE_HEIGHT })
+  try {
+    offscreen.setOption({ ...option, animation: false })
+    return offscreen.getDataURL({ type: 'png', pixelRatio: 1, backgroundColor: '#fff' })
+  }
+  finally {
+    offscreen.dispose()
+  }
 }
 
 defineExpose({ capture })

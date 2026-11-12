@@ -19,7 +19,7 @@
       <img
         v-if="chart.image"
         :src="chart.image"
-        class="w-full h-full object-cover"
+        class="w-full h-full object-contain"
         :alt="chart.title"
       >
       <Placeholder
