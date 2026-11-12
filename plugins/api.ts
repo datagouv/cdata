@@ -71,8 +71,10 @@ export default defineNuxtPlugin({
             // answer to wrong credentials rather than a sign they must authenticate.
             // Redirecting would nest `next` into itself on every attempt
             // (/login?next=/login?next=…) and lose the actual destination.
+            // Replacing the current entry keeps the back button from returning to a page
+            // that asks udata again, and gets sent straight back here.
             if (route.path !== path) {
-              await nuxtApp.runWithContext(() => navigateTo({ path, query: { next: route.fullPath } }))
+              await nuxtApp.runWithContext(() => navigateTo({ path, query: { next: route.fullPath } }, { replace: true }))
             }
           }
 
