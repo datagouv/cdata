@@ -365,12 +365,22 @@ function trackChartCreations(page: Page) {
   return posts
 }
 
-test('saving from the assistant tab without a description warns in the footer and leads to the field', async ({ page }) => {
+test('the save action is only offered in the manual tab', async ({ page }) => {
   await page.route('**/assistant/chat/**', route => route.abort())
+  await setupChart(page)
+
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+  await expect(page.getByTestId('assistant-panel')).toBeVisible()
+  await expect(page.getByTestId('chart-save-footer')).toBeHidden()
+
+  await page.getByRole('tab', { name: 'Édition manuelle' }).click()
+  await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeVisible()
+})
+
+test('saving without a description warns in the footer and leads to the field', async ({ page }) => {
   await setupChart(page)
   const posts = trackChartCreations(page)
 
-  await page.getByRole('tab', { name: 'Assistant' }).click()
   await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
 
   const footer = page.getByTestId('chart-save-footer')
@@ -380,8 +390,9 @@ test('saving from the assistant tab without a description warns in the footer an
   await expect(warning).not.toContainText('Titre')
   expect(posts).toHaveLength(0)
 
+  await expect(page.getByLabel('Description')).toBeFocused()
+  await page.getByLabel('Titre').focus()
   await warning.getByRole('button', { name: 'Compléter' }).click()
-  await expect(page.getByRole('tab', { name: 'Édition manuelle' })).toHaveAttribute('aria-selected', 'true')
   await expect(page.getByLabel('Description')).toBeFocused()
 
   await page.getByLabel('Description').fill('Description complétée')
@@ -1165,7 +1176,7 @@ test('chat message is sent with the selected resource and the conversation survi
   await expect(page.getByTestId('assistant-panel')).toBeVisible()
   await expect(page.getByTestId('form-panel')).toBeHidden()
   await expect(page.locator('#resource-select')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeHidden()
 
   const request = await sendAssistantMessage(page, 'Logements par région en histogramme')
   const body = request.postDataJSON() as { resource_id: string, visualization: Record<string, unknown>, messages: Array<{ role: string }> }

@@ -703,9 +703,9 @@
               </TabPanel>
             </TabPanels>
 
-            <!-- Shared by both tabs and kept out of the scroll areas: a chart made by the assistant is saved from where it was made. -->
+            <!-- Only in the manual tab, where the title and description are filled; kept out of its scroll area. -->
             <div
-              v-if="selectedResource && isAdmin"
+              v-if="selectedResource && isAdmin && selectedTab === MANUAL_TAB"
               class="shrink-0 border-t border-gray-default bg-white py-3 px-6"
               data-testid="chart-save-footer"
             >
@@ -833,8 +833,9 @@ const requiredFields = computed(() => [
 const missingFields = computed(() => requiredFields.value.filter(field => getFirstError(field.key)))
 // The footer warning only follows a refused save, not the inline errors of a blurred field.
 const saveBlocked = ref(false)
-watch(() => missingFields.value.length, (count) => {
-  if (count === 0) saveBlocked.value = false
+// Cleared on the values, not on the errors: touch() empties a field's errors while it revalidates.
+watch(() => requiredFields.value.map(field => form.value[field.key]), async () => {
+  if (saveBlocked.value && await validate()) saveBlocked.value = false
 })
 
 for (const field of ['title', 'description'] as const) {
@@ -1138,7 +1139,6 @@ async function initializeFromChart(data: Chart) {
 }
 
 async function focusFirstMissingField() {
-  selectedTab.value = MANUAL_TAB
   await nextTick()
   missingFields.value[0]?.input?.focus()
 }
@@ -1146,7 +1146,7 @@ async function focusFirstMissingField() {
 async function saveChart() {
   if (!await validate()) {
     saveBlocked.value = true
-    if (selectedTab.value === MANUAL_TAB) await focusFirstMissingField()
+    await focusFirstMissingField()
     return
   }
   saveBlocked.value = false

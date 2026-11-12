@@ -115,14 +115,17 @@ test('a chart with more than 50 groups shows the truncation warning', async ({ p
   expect(dataPages).toContain('51')
 })
 
-test('a chart created by the assistant is saved without leaving the assistant tab', async ({ page }) => {
+test('a chart created by the assistant is saved from the manual tab', async ({ page }) => {
   await routeAssistantStream(page, scriptedStream)
   await setupChart(page)
 
   await page.getByRole('tab', { name: 'Assistant' }).click()
   await sendMessage(page, 'Logements par région, top 5')
   await expect(lastReply(page)).toContainText('Graphique créé.')
+  await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeHidden()
 
+  await page.getByRole('tab', { name: 'Édition manuelle' }).click()
+  await expect(page.getByLabel('Titre')).toHaveValue('Logements par région')
   const saveResponsePromise = page.waitForResponse(response =>
     response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST',
   )
@@ -130,7 +133,6 @@ test('a chart created by the assistant is saved without leaving the assistant ta
   const saved = (await (await saveResponsePromise).json()) as { id: string, title: string }
   try {
     expect(saved.title).toBe('Logements par région')
-    await expect(page.getByRole('tab', { name: 'Assistant' })).toHaveAttribute('aria-selected', 'true')
   }
   finally {
     await page.request.delete(`${API_BASE_URL}/api/1/visualizations/${saved.id}/`)
