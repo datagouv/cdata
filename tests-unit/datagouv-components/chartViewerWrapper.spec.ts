@@ -196,8 +196,8 @@ describe('ChartViewerWrapper data fetching', () => {
     const wrapper = mountWrapper(chart)
     await settle()
     expect(wrapper.find('[data-testid="chart-truncation-warning"]').text()).toBe('Graphique tronqué : seules les 50 premières valeurs de dep sont affichées. Ajoutez un filtre pour voir les autres valeurs.')
-    // A warning banner, not a muted note: the chart itself is incomplete.
-    expect(wrapper.find('[data-testid="chart-truncation-warning"]').classes()).toContain('bg-new-warning-light')
+    // Over the chart, which is dimmed: a truncated chart must not read as the whole data.
+    expect(wrapper.find('[data-testid="chart-notes"]').classes()).toEqual(expect.arrayContaining(['absolute', 'inset-0', 'bg-white/85']))
   })
 
   // RGAA 7.5: a live region announces what is added to it, so it is there before the note.
@@ -245,6 +245,7 @@ describe('ChartViewerWrapper data fetching', () => {
     const wrapper = mountWrapper(chartFixture())
     await settle()
     expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
+    expect(wrapper.find('[data-testid="chart-notes"]').classes()).not.toContain('bg-white/85')
   })
 
   it('does not refetch when only presentation fields change', async () => {
@@ -455,6 +456,20 @@ describe('ChartViewerWrapper data fetching', () => {
     expect(wrapper.find('[data-testid="chart-series-error"]').text()).toBe('Une série n’a pas pu être chargée.')
   })
 
+  it('adds the readable reason of the failed series to its note', async () => {
+    ofetchMock.mockImplementation(async (url: string) => {
+      if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
+      if (url.includes('m__max')) throw tabularError(404, databaseError('42883', 'function max(boolean) does not exist'))
+      return { data: [{ dep: 'a', n__max: 1 }] }
+    })
+    const chart = chartFixture()
+    chart.series.push({ ...chart.series[0]!, column_y: 'm' })
+    const wrapper = mountWrapper(chart)
+    await settle()
+    expect(wrapper.find('[data-testid="chart-series-error"]').text())
+      .toBe('Une série n’a pas pu être chargée. Ce calcul n’est pas possible sur cette colonne.')
+  })
+
   it('keeps the previous chart with its data while the data of a new aggregate loads', async () => {
     let resolveData: (v: unknown) => void = () => {}
     ofetchMock.mockImplementation((url: string) => {
@@ -528,6 +543,78 @@ describe('ChartViewerWrapper data fetching', () => {
     const wrapper = mountWrapper(chart)
     await settle()
     expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
+  })
+})
+
+// Shaped like the FetchError ofetch throws: `data` is the parsed body.
+function tabularError(statusCode: number | undefined, data?: unknown) {
+  return Object.assign(new Error(`[GET] /data/: ${statusCode}`), { statusCode, data })
+}
+
+function databaseError(code: string, message: string) {
+  return { errors: [{ code: null, title: 'Database error', detail: { code, details: null, hint: null, message } }] }
+}
+
+describe('ChartViewerWrapper load errors', () => {
+  beforeEach(() => {
+    vi.useFakeTimers()
+    ofetchMock.mockReset()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  function failDataWith(error: unknown) {
+    ofetchMock.mockImplementation(async (url: string) => {
+      if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
+      throw error
+    })
+  }
+
+  it('shows the readable reason of a refused query, without a retry button', async () => {
+    failDataWith(tabularError(400, databaseError('22P02', 'invalid input syntax for type bigint: "abc"')))
+    const wrapper = mountWrapper(chartFixture())
+    await settle()
+    expect(wrapper.find('[role="alert"]').text()).toBe('Une valeur de filtre n’a pas le bon type : « abc » n’est pas un nombre entier.')
+    expect(wrapper.find('[data-testid="chart-retry"]').exists()).toBe(false)
+  })
+
+  it('shows the unavailable-data message with a retry button for an unknown resource', async () => {
+    failDataWith(tabularError(404, '404: Not Found'))
+    const wrapper = mountWrapper(chartFixture())
+    await settle()
+    expect(wrapper.find('[role="alert"]').text()).toBe('Les données de cette ressource ne sont pas disponibles.')
+    expect(wrapper.find('[data-testid="chart-retry"]').text()).toBe('Réessayer')
+  })
+
+  it('keeps the generic message, with a retry button, for a network or CORS failure', async () => {
+    failDataWith(tabularError(undefined))
+    const wrapper = mountWrapper(chartFixture())
+    await settle()
+    expect(wrapper.find('[role="alert"]').text()).toBe('Une erreur est survenue lors du chargement des données du graphique.')
+    expect(wrapper.find('[data-testid="chart-retry"]').exists()).toBe(true)
+  })
+
+  it('reloads the data on retry and shows the chart once it answers', async () => {
+    let failing = true
+    ofetchMock.mockImplementation(async (url: string) => {
+      if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
+      if (failing) throw tabularError(undefined)
+      return rows(3)
+    })
+    const wrapper = mountWrapper(chartFixture())
+    await settle()
+    expect(loaderStatus(wrapper)).toBe('error')
+    const callsBefore = dataCalls().length
+
+    failing = false
+    await wrapper.find('[data-testid="chart-retry"]').trigger('click')
+    await settle()
+    expect(dataCalls()).toHaveLength(callsBefore + 1)
+    expect(loaderStatus(wrapper)).toBe('success')
+    expect(wrapper.find('.chart-viewer-stub').exists()).toBe(true)
+    expect(wrapper.find('[role="alert"]').exists()).toBe(false)
   })
 })
 

@@ -1,58 +1,75 @@
 <template>
   <div>
-    <LoadingBlock
-      :status="blockStatus"
-      :data="series"
-    >
-      <template #default="{ data }">
-        <!-- Reloads keep the chart on screen; only a slow one veils it. -->
-        <div
-          :class="veiled ? 'opacity-50' : ''"
-          class="transition-opacity motion-reduce:transition-none"
-          :aria-busy="veiled || undefined"
-          :data-testid="veiled ? 'chart-reloading' : undefined"
+    <div class="relative">
+      <LoadingBlock
+        :status="blockStatus"
+        :data="series"
+      >
+        <template #default="{ data }">
+          <!-- Reloads keep the chart on screen; only a slow one veils it. -->
+          <div
+            :class="veiled ? 'opacity-50' : ''"
+            class="transition-opacity motion-reduce:transition-none"
+            :aria-busy="veiled || undefined"
+            :data-testid="veiled ? 'chart-reloading' : undefined"
+          >
+            <ChartViewer
+              ref="chartViewerRef"
+              :chart="displayedChart"
+              :series="data"
+            />
+          </div>
+        </template>
+        <template #loader>
+          <ChartLoader />
+        </template>
+        <template #error>
+          <div class="flex flex-col items-center gap-3 px-4 py-8 text-center text-gray-500">
+            <p
+              role="alert"
+              class="m-0"
+            >
+              {{ errorMessage ?? t('Une erreur est survenue lors du chargement des données du graphique.') }}
+            </p>
+            <BrandedButton
+              v-if="canRetry"
+              color="tertiary"
+              size="xs"
+              :icon="RiRefreshLine"
+              data-testid="chart-retry"
+              @click="retry"
+            >
+              {{ t('Réessayer') }}
+            </BrandedButton>
+          </div>
+        </template>
+      </LoadingBlock>
+      <!-- Out of LoadingBlock: a live region only announces what is added once it exists.
+      A truncated chart gets a white veil over its whole area, so it is not read as the whole data. -->
+      <div
+        role="status"
+        data-testid="chart-notes"
+        class="pointer-events-none absolute inset-0 flex items-center justify-center p-6"
+        :class="truncated ? 'bg-white/85' : ''"
+      >
+        <p
+          v-if="truncated"
+          class="m-0 flex max-w-md items-start gap-2 text-sm font-medium text-new-gray-dark"
+          data-testid="chart-truncation-warning"
         >
-          <ChartViewer
-            ref="chartViewerRef"
-            :chart="displayedChart"
-            :series="data"
+          <RiAlertLine
+            class="size-4 shrink-0 mt-0.5"
+            aria-hidden="true"
           />
-        </div>
-      </template>
-      <template #loader>
-        <ChartLoader />
-      </template>
-      <template #error>
-        <div
-          role="alert"
-          class="text-center py-8 text-gray-500"
-        >
-          {{ t('Une erreur est survenue lors du chargement des données du graphique.') }}
-        </div>
-      </template>
-    </LoadingBlock>
-    <!-- Out of LoadingBlock: a live region only announces what is added once it exists. -->
+          <span>{{ truncationWarning(displayedChart.x_axis.column_x, displayedChart.x_axis.sort_x_by, t) }}</span>
+        </p>
+      </div>
+    </div>
     <div
       role="status"
-      data-testid="chart-notes"
+      data-testid="chart-series-notes"
     >
       <template v-if="blockStatus === 'success'">
-        <div
-          v-if="showTruncationWarning"
-          class="px-4 pb-3 mt-1"
-        >
-          <SimpleBanner
-            type="warning"
-            class="flex items-start gap-2 text-sm"
-            data-testid="chart-truncation-warning"
-          >
-            <RiAlertLine
-              class="size-4 shrink-0 mt-0.5"
-              aria-hidden="true"
-            />
-            <span>{{ truncationWarning(displayedChart.x_axis.column_x, displayedChart.x_axis.sort_x_by, t) }}</span>
-          </SimpleBanner>
-        </div>
         <p
           v-if="someSeriesFailed"
           class="flex items-start gap-1.5 px-4 pb-3 mt-1 mb-0 text-xs text-gray-medium"
@@ -62,7 +79,7 @@
             class="size-4 shrink-0"
             aria-hidden="true"
           />
-          <span>{{ t('Une série n’a pas pu être chargée.') }}</span>
+          <span>{{ seriesFailureNote }}</span>
         </p>
       </template>
     </div>
@@ -71,13 +88,13 @@
 
 <script setup lang="ts">
 import { computed, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue'
-import { RiAlertLine, RiErrorWarningLine } from '@remixicon/vue'
+import { RiAlertLine, RiErrorWarningLine, RiRefreshLine } from '@remixicon/vue'
+import BrandedButton from '../BrandedButton.vue'
 import ChartLoader from './ChartLoader.vue'
 import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
-import SimpleBanner from '../../components/SimpleBanner.vue'
 import { useComponentsConfig } from '../../config'
-import { fetchTabularData, hasMoreGroups, useGetProfile, type FetchTabularDataOptions } from '../../functions/tabularApi'
+import { fetchTabularData, hasMoreGroups, TabularApiError, tabularErrorMessage, useGetProfile, type FetchTabularDataOptions } from '../../functions/tabularApi'
 import type { Chart, ChartForApi, ColumnsDefinition } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
 import { watchDebounced } from '@vueuse/shared'
@@ -101,6 +118,9 @@ const getProfile = useGetProfile()
 
 const status = ref<'idle' | 'pending' | 'success' | 'error'>('idle')
 const error = ref<Error | null>(null)
+const errorMessage = computed(() => tabularErrorMessage(error.value, t))
+// Retrying a query tabular-api refused would only get the same refusal.
+const canRetry = computed(() => !(error.value instanceof TabularApiError) || error.value.retryable)
 
 // The full loader only covers the first load: reloads are short (debounced
 // form edits), so hiding the chart each time would flicker. A reload slower
@@ -130,6 +150,8 @@ onBeforeUnmount(() => clearTimeout(veilTimer))
 const pendingOperations = ref(0)
 const moreGroups = ref(false)
 const someSeriesFailed = ref(false)
+const seriesFailureMessage = ref<string | null>(null)
+const seriesFailureNote = computed(() => [t('Une série n’a pas pu être chargée.'), seriesFailureMessage.value].filter(Boolean).join(' '))
 
 // The viewer gets a new chart only with its data: a new Y column or aggregate
 // would otherwise be looked up in the previous rows and draw empty axes.
@@ -138,6 +160,7 @@ const displayedChart = computed(() => chartDataKey(props.chart) === chartDataKey
 
 // With an X order the limit keeps the first values of the fetched extract,
 // which are right; a Y order ranks only that extract, so it still warns.
+const truncated = computed(() => blockStatus.value === 'success' && showTruncationWarning.value)
 const showTruncationWarning = computed(() => {
   const { limit, sort_x_by } = displayedChart.value.x_axis
   if (sort_x_by !== 'axis_y' && limit != null && limit <= CHART_PAGE_SIZE) return false
@@ -229,6 +252,7 @@ async function fetchSeriesData() {
       series.data = {}
       moreGroups.value = false
       someSeriesFailed.value = false
+      seriesFailureMessage.value = null
       return
     }
 
@@ -278,6 +302,7 @@ async function fetchSeriesData() {
       result.rows,
     ]))
     someSeriesFailed.value = failures.length > 0
+    seriesFailureMessage.value = failures.length > 0 ? tabularErrorMessage(failures[0]!.reason, t) : null
     loaded = results
   }
   catch (err) {
@@ -287,6 +312,7 @@ async function fetchSeriesData() {
     series.data = {}
     moreGroups.value = false
     someSeriesFailed.value = false
+    seriesFailureMessage.value = null
   }
   finally {
     pendingOperations.value--
@@ -298,6 +324,11 @@ async function fetchSeriesData() {
   const more = await Promise.all(loaded.map(hasGroupsBeyondPage))
   if (isStale()) return
   moreGroups.value = more.some(Boolean)
+}
+
+function retry() {
+  fetchSeriesProfile()
+  fetchSeriesData()
 }
 
 // A string key: the computed array is new on every chart change, and the
