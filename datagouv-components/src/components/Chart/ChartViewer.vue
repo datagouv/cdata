@@ -1,6 +1,8 @@
 <template>
   <div
     ref="chartContainer"
+    role="img"
+    :aria-label="description"
     class="w-full min-h-96"
   />
 </template>
@@ -35,8 +37,20 @@ const { formatDate } = useFormatDate()
 const chartContainer = ref<HTMLElement | null>(null)
 let echartsInstance: EChartsType | null = null
 
-// One color per series, cycled by ECharts.
-const CHART_COLORS = ['#000091', '#82B5F2', '#29598F', '#31A7AE', '#81EEF5', '#B478F1', '#CFB1F5', '#CECECE']
+// One color per series, cycled by ECharts: DSFR illustrative colors that reach 3:1 on white (RGAA 3.3).
+const CHART_COLORS = ['#000091', '#CE614A', '#009081', '#A558A0', '#417DC4', '#695240', '#447049', '#B34000']
+// The color is not the only cue (RGAA 3.1): each line series has its own marker and dash, each bar series its own pattern.
+const LINE_SYMBOLS = ['circle', 'rect', 'triangle', 'diamond', 'emptyCircle', 'emptyRect', 'emptyTriangle', 'emptyDiamond']
+const LINE_TYPES = ['solid', 'dashed', 'dotted'] as const
+const BAR_DECALS = [
+  undefined,
+  { symbol: 'rect', symbolSize: 1, dashArrayX: [1, 0], dashArrayY: [2, 4], rotation: -Math.PI / 4, color: 'rgba(255, 255, 255, 0.6)' },
+  { symbol: 'circle', symbolSize: 0.6, dashArrayX: [[4, 4], [0, 4, 4, 0]], dashArrayY: [4, 0], color: 'rgba(255, 255, 255, 0.6)' },
+  { symbol: 'rect', symbolSize: 1, dashArrayX: [1, 0], dashArrayY: [2, 4], rotation: Math.PI / 4, color: 'rgba(255, 255, 255, 0.6)' },
+  { symbol: 'rect', symbolSize: 1, dashArrayX: [1, 0], dashArrayY: [2, 4], rotation: 0, color: 'rgba(255, 255, 255, 0.6)' },
+]
+// Long category labels end with an ellipsis; the axis tooltip shows them whole.
+const CATEGORY_LABEL_WIDTH = 80
 
 // Dense line series turn into a solid bead of markers: keep at most this many
 // evenly spaced ones (size 0 hides the rest; the axis tooltip still covers
@@ -84,9 +98,12 @@ function buildXAxisFormatter(column: ColumnDefinition | null, options?: Intl.Dat
 
 // Years (whole numbers from 1000 to 2999) read without a thousands separator:
 // "2018", not "2 018" nor ECharts' default "2,018".
-function buildXNumberFormatter(plotted: Array<PlottedSeries>): (value: number) => string {
-  const values = plotted.flatMap(p => p.rows.map(row => row[p.xColumn]))
-  const years = values.length > 0 && values.every(v => typeof v === 'number' && Number.isInteger(v) && v >= 1000 && v <= 2999)
+function xValuesAreYears(plotted: Array<PlottedSeries>): boolean {
+  const values = plotted.flatMap(p => p.rows.map(row => row[p.xColumn])).filter(v => v !== null && v !== undefined)
+  return values.length > 0 && values.every(v => typeof v === 'number' && Number.isInteger(v) && v >= 1000 && v <= 2999)
+}
+
+function buildXNumberFormatter(years: boolean): (value: number) => string {
   const formatter = new Intl.NumberFormat(locale, { maximumFractionDigits: 10, useGrouping: !years })
   return (value: number) => formatter.format(value)
 }
@@ -141,8 +158,8 @@ const echartsOption = computed(() => {
 
   let referenceXs: Array<unknown> | null = null
   const xKey = (x: unknown) => x instanceof Date ? x.getTime() : String(x)
-  // The profile bounds span the whole column: once values are left out, they
-  // would stretch the axis over values that are not drawn.
+  // The profile bounds span the whole column: once values are left out (filter,
+  // limit, truncation), they would stretch the axis over values that are not drawn.
   let valuesLeftOut = false
 
   const xAxisType = mapXAxisType(props.chart.x_axis)
@@ -218,7 +235,7 @@ const echartsOption = computed(() => {
     // column: the other series are reordered and cut to the first series' X
     // values (a missing X gives an empty point) so they stay aligned.
     const limit = props.chart.x_axis.limit
-    if (rawData.length >= CHART_PAGE_SIZE || (limit != null && limit < sortedData.length)) valuesLeftOut = true
+    if (s.filters || rawData.length >= CHART_PAGE_SIZE || (limit != null && limit < sortedData.length)) valuesLeftOut = true
     let limitedData: Array<Record<string, unknown>>
     if (!referenceXs) {
       limitedData = limit != null && limit < sortedData.length
@@ -243,8 +260,13 @@ const echartsOption = computed(() => {
       : {
           smooth: true,
           showAllSymbol: true,
+          symbol: LINE_SYMBOLS[seriesIndex % LINE_SYMBOLS.length],
           symbolSize: lineSymbolSize(limitedData.length, seriesIndex, seriesCount),
+          lineStyle: { type: LINE_TYPES[seriesIndex % LINE_TYPES.length] },
         }
+    const barOptions = s.type === 'histogram' && BAR_DECALS[seriesIndex % BAR_DECALS.length]
+      ? { itemStyle: { decal: BAR_DECALS[seriesIndex % BAR_DECALS.length] } }
+      : {}
 
     return {
       xColumn,
@@ -253,6 +275,7 @@ const echartsOption = computed(() => {
       series: {
         type: s.type === 'histogram' ? 'bar' : 'line',
         ...lineOptions,
+        ...barOptions,
         dimensions: s.aggregate_y ? [xColumn, yColumn] : resourceColumns.map(c => c.name),
         encode: {
           x: xColumn,
@@ -284,7 +307,8 @@ const echartsOption = computed(() => {
   }
 
   const shownBounds = xAxisBounds(plotted)
-  const xNumberFormatter = buildXNumberFormatter(plotted)
+  const yearAxis = xAxisType === 'value' && xValuesAreYears(plotted)
+  const xNumberFormatter = buildXNumberFormatter(yearAxis)
   const xMin = valuesLeftOut ? shownBounds.min : xAxisColumn.value?.min ?? shownBounds.min
   const xMax = valuesLeftOut ? shownBounds.max : xAxisColumn.value?.max ?? shownBounds.max
 
@@ -296,12 +320,14 @@ const echartsOption = computed(() => {
     color: CHART_COLORS,
     tooltip: {
       trigger: 'axis' as const,
-      formatter: (params: Array<{ value: Record<string, unknown>, axisValueLabel: string, seriesName: string, seriesIndex: number }>) => {
+      formatter: (params: Array<{ value: Record<string, unknown>, axisValue: unknown, axisValueLabel: string, seriesName: string, seriesIndex: number }>) => {
         const valueFormatter = new Intl.NumberFormat(locale)
         const xAxisFormatter = buildXAxisFormatter(xAxisColumn.value, { dateStyle: 'medium' })
         const first = params[0]
         if (!first) return ''
-        const axisLabel = xAxisFormatter ? xAxisFormatter(first.axisValueLabel) : first.axisValueLabel
+        const axisLabel = xAxisFormatter
+          ? xAxisFormatter(first.axisValueLabel)
+          : xAxisType === 'value' && typeof first.axisValue === 'number' ? xNumberFormatter(first.axisValue) : first.axisValueLabel
         let tooltip = `<strong>${format.encodeHTML(String(axisLabel))}</strong><br>`
         for (const param of params) {
           const yColumn = plotted[param.seriesIndex]?.yColumn
@@ -335,11 +361,15 @@ const echartsOption = computed(() => {
       nameGap: 30,
       min: xAxisType !== 'category' ? xMin : undefined,
       max: xAxisType !== 'category' ? xMax : undefined,
+      minInterval: yearAxis ? 1 : undefined,
+      ...(xAxisType === 'value' ? { axisPointer: { label: { formatter: ({ value }: { value: unknown }) => xNumberFormatter(Number(value)) } } } : {}),
       // 'auto' + hideOverlap: ECharts skips labels that don't fit instead of
       // overlapping them; merged with the date formatter.
       axisLabel: {
         interval: xAxisType === 'category' ? 'auto' as const : undefined,
         hideOverlap: true,
+        width: CATEGORY_LABEL_WIDTH,
+        overflow: 'truncate' as const,
         ...(isDateAxis.value ? { formatter: buildXAxisFormatter(xAxisColumn.value) } : {}),
         ...(xAxisType === 'value' ? { formatter: xNumberFormatter } : {}),
       },
@@ -361,6 +391,25 @@ const echartsOption = computed(() => {
     | BarSeriesOption
     | LineSeriesOption
   >
+})
+
+function listOf(items: Array<string>): string {
+  if (items.length <= 1) return items.join('')
+  return `${items.slice(0, -1).join(', ')} ${t('et')} ${items.at(-1)}`
+}
+
+const description = computed(() => {
+  const series = props.chart.series.filter(s => s.type)
+  const types = [...new Set(series.map(s => s.type === 'histogram' ? t('en barres') : t('en courbes')))]
+  const firstRows = props.series.data['0'] ?? []
+  const limit = props.chart.x_axis.limit
+  const valueCount = limit != null ? Math.min(limit, firstRows.length) : firstRows.length
+  return t('Graphique {types} : {x} en abscisse, {y} en ordonnée, aucune valeur. | Graphique {types} : {x} en abscisse, {y} en ordonnée, {n} valeur. | Graphique {types} : {x} en abscisse, {y} en ordonnée, {n} valeurs.', {
+    types: listOf(types),
+    x: props.chart.x_axis.column_x ?? '',
+    y: listOf(series.map(s => seriesLabel(s, t))),
+    n: valueCount,
+  })
 })
 
 onMounted(() => {

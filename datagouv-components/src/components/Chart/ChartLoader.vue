@@ -4,7 +4,10 @@
     data-testid="chart-loader"
   >
     <GameOfLifeLoader class="absolute inset-0" />
-    <p class="absolute inset-x-3 bottom-3 z-10 m-0 text-center text-xs leading-4 text-gray-medium">
+    <p
+      role="status"
+      class="absolute inset-x-3 bottom-3 z-10 m-0 text-center text-xs leading-4 text-gray-medium"
+    >
       <span class="block font-medium text-new-gray-dark">{{ t('Préparation du graphique') }}</span>
       <span aria-hidden="true">{{ t('Mise en forme des données…') }}</span>
     </p>

@@ -1,56 +1,67 @@
 <template>
-  <LoadingBlock
-    :status="blockStatus"
-    :data="series"
-  >
-    <template #default="{ data }">
-      <!-- Reloads keep the chart on screen; only a slow one veils it. -->
-      <div
-        :class="veiled ? 'opacity-50' : ''"
-        class="transition-opacity motion-reduce:transition-none"
-        :aria-busy="veiled || undefined"
-        :data-testid="veiled ? 'chart-reloading' : undefined"
-      >
-        <ChartViewer
-          ref="chartViewerRef"
-          :chart="displayedChart"
-          :series="data"
-        />
-      </div>
-      <p
-        v-if="showTruncationWarning"
-        role="note"
-        class="flex items-start gap-1.5 px-4 pb-3 mt-1 mb-0 text-xs text-gray-medium"
-        data-testid="chart-truncation-warning"
-      >
-        <RiInformationLine
-          class="size-4 shrink-0"
-          aria-hidden="true"
-        />
-        <span>{{ truncationWarning(displayedChart.x_axis.column_x, displayedChart.x_axis.sort_x_by, t) }}</span>
-      </p>
-      <p
-        v-if="someSeriesFailed"
-        role="note"
-        class="flex items-start gap-1.5 px-4 pb-3 mt-1 mb-0 text-xs text-gray-medium"
-        data-testid="chart-series-error"
-      >
-        <RiErrorWarningLine
-          class="size-4 shrink-0"
-          aria-hidden="true"
-        />
-        <span>{{ t('Une série n’a pas pu être chargée.') }}</span>
-      </p>
-    </template>
-    <template #loader>
-      <ChartLoader />
-    </template>
-    <template #error>
-      <div class="text-center py-8 text-gray-500">
-        {{ t('Une erreur est survenue lors du chargement des données du graphique.') }}
-      </div>
-    </template>
-  </LoadingBlock>
+  <div>
+    <LoadingBlock
+      :status="blockStatus"
+      :data="series"
+    >
+      <template #default="{ data }">
+        <!-- Reloads keep the chart on screen; only a slow one veils it. -->
+        <div
+          :class="veiled ? 'opacity-50' : ''"
+          class="transition-opacity motion-reduce:transition-none"
+          :aria-busy="veiled || undefined"
+          :data-testid="veiled ? 'chart-reloading' : undefined"
+        >
+          <ChartViewer
+            ref="chartViewerRef"
+            :chart="displayedChart"
+            :series="data"
+          />
+        </div>
+      </template>
+      <template #loader>
+        <ChartLoader />
+      </template>
+      <template #error>
+        <div
+          role="alert"
+          class="text-center py-8 text-gray-500"
+        >
+          {{ t('Une erreur est survenue lors du chargement des données du graphique.') }}
+        </div>
+      </template>
+    </LoadingBlock>
+    <!-- Out of LoadingBlock: a live region only announces what is added once it exists. -->
+    <div
+      role="status"
+      data-testid="chart-notes"
+    >
+      <template v-if="blockStatus === 'success'">
+        <p
+          v-if="showTruncationWarning"
+          class="flex items-start gap-1.5 px-4 pb-3 mt-1 mb-0 text-xs text-gray-medium"
+          data-testid="chart-truncation-warning"
+        >
+          <RiInformationLine
+            class="size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <span>{{ truncationWarning(displayedChart.x_axis.column_x, displayedChart.x_axis.sort_x_by, t) }}</span>
+        </p>
+        <p
+          v-if="someSeriesFailed"
+          class="flex items-start gap-1.5 px-4 pb-3 mt-1 mb-0 text-xs text-gray-medium"
+          data-testid="chart-series-error"
+        >
+          <RiErrorWarningLine
+            class="size-4 shrink-0"
+            aria-hidden="true"
+          />
+          <span>{{ t('Une série n’a pas pu être chargée.') }}</span>
+        </p>
+      </template>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -60,7 +71,7 @@ import ChartLoader from './ChartLoader.vue'
 import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
 import { useComponentsConfig } from '../../config'
-import { buildFilterQuery, fetchTabularData, hasMoreGroups, useGetProfile, type FetchTabularDataOptions } from '../../functions/tabularApi'
+import { fetchTabularData, hasMoreGroups, useGetProfile, type FetchTabularDataOptions } from '../../functions/tabularApi'
 import type { Chart, ChartForApi, ColumnsDefinition } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
 import { watchDebounced } from '@vueuse/shared'
@@ -185,20 +196,11 @@ async function fetchSeriesProfile() {
 }
 
 let latestRequest = 0
-// The profile and the data load side by side; the truncation note waits for both.
-let profileLoaded: Promise<void> = Promise.resolve()
 
-type LoadedSeries = { rows: Array<Record<string, unknown>>, total: number | undefined, xColumn: string, options: FetchTabularDataOptions }
+type LoadedSeries = { rows: Array<Record<string, unknown>>, total: number | undefined, next: string | null | undefined, options: FetchTabularDataOptions }
 
-async function hasGroupsBeyondPage({ rows, total, xColumn, options }: LoadedSeries): Promise<boolean> {
-  await profileLoaded
-  const known = groupsBeyondPage({
-    rowCount: rows.length,
-    aggregated: !!options.aggregation,
-    filtered: !!options.filters && buildFilterQuery(options.filters) !== '',
-    total,
-    distinctValues: series.columns[options.resourceId]?.find(column => column.name === xColumn)?.distinctValues,
-  })
+async function hasGroupsBeyondPage({ rows, total, next, options }: LoadedSeries): Promise<boolean> {
+  const known = groupsBeyondPage({ rowCount: rows.length, aggregated: !!options.aggregation, total, next })
   if (known !== 'probe') return known
   // The probe only adds the note: a failure leaves it out.
   return hasMoreGroups(config, options).catch(() => false)
@@ -211,7 +213,7 @@ async function fetchSeriesData() {
   pendingOperations.value++
   status.value = 'pending'
   error.value = null
-  let fullPages: Array<LoadedSeries> = []
+  let loaded: Array<LoadedSeries> = []
 
   try {
     if (props.chart.series.length === 0 || !props.chart.x_axis.column_x) {
@@ -253,7 +255,7 @@ async function fetchSeriesData() {
           key: String(index),
           rows: response.data,
           total: response.meta?.total,
-          xColumn,
+          next: response.links?.next,
           options,
         }
       })
@@ -270,9 +272,7 @@ async function fetchSeriesData() {
       result.rows,
     ]))
     someSeriesFailed.value = failures.length > 0
-    fullPages = results.filter(result => result.rows.length === CHART_PAGE_SIZE)
-    // The previous warning stays until the new answer, so it does not blink.
-    if (fullPages.length === 0) moreGroups.value = false
+    loaded = results
   }
   catch (err) {
     if (isStale()) return
@@ -287,18 +287,16 @@ async function fetchSeriesData() {
   }
 
   // The truncation warning is only a note: the chart is shown without waiting for it.
-  if (fullPages.length === 0) return
-  const more = await Promise.all(fullPages.map(hasGroupsBeyondPage))
+  // The previous one stays until the new answer, so it does not blink.
+  if (loaded.length === 0) return
+  const more = await Promise.all(loaded.map(hasGroupsBeyondPage))
   if (isStale()) return
   moreGroups.value = more.some(Boolean)
 }
 
 // A string key: the computed array is new on every chart change, and the
 // profile only depends on the resources.
-watch(() => resourceIds.value.join(','), async () => {
-  profileLoaded = fetchSeriesProfile()
-  await profileLoaded
-}, { immediate: true })
+watch(() => resourceIds.value.join(','), fetchSeriesProfile, { immediate: true })
 
 watchDebounced([
   () => chartDataKey(props.chart),

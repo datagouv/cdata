@@ -56,18 +56,25 @@ function perSeries(count: number, data: Record<string, Array<Record<string, unkn
   return Object.fromEntries(Array.from({ length: count }, (_, i) => [String(i), data[RESOURCE_ID]!]))
 }
 
-async function capture(
+async function mountViewer(
   series: Array<SerieSpec>,
   xAxis: XAxisOverrides = {},
   data: Record<string, Array<Record<string, unknown>>> = DATA,
   columns: ColumnsDefinition = COLUMNS,
+  filtered = false,
 ) {
+  const chart = chartConfig(series, xAxis)
+  if (filtered) chart.series.forEach(serie => serie.filters = { _cls: 'Filter', column: 'nb', condition: 'greater', value: '0' })
   const wrapper = mount(ChartViewer, {
-    props: { chart: chartConfig(series, xAxis), series: { data: perSeries(series.length, data), columns } },
+    props: { chart, series: { data: perSeries(series.length, data), columns } },
   })
   await flushPromises()
   expect(setOptionMock).toHaveBeenCalled()
-  const option = setOptionMock.mock.calls.at(-1)![0]
+  return { wrapper, option: setOptionMock.mock.calls.at(-1)![0] }
+}
+
+async function capture(...args: Parameters<typeof mountViewer>) {
+  const { wrapper, option } = await mountViewer(...args)
   wrapper.unmount()
   return option
 }
@@ -210,6 +217,48 @@ describe('ChartViewer rendering', () => {
 
     expect(option.color.length).toBeGreaterThanOrEqual(2)
     expect(new Set(option.color).size).toBe(option.color.length)
+  })
+
+  // RGAA 3.3: a series color reaches 3:1 against the white background
+  it('only uses series colors that reach a 3:1 contrast on white', async () => {
+    const option = await capture([{ column_y: 'nb', type: 'line' }])
+    const luminance = (hex: string) => {
+      const [r, g, b] = [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16) / 255)
+        .map(c => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)
+      return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!
+    }
+    for (const color of option.color as Array<string>) {
+      expect(1.05 / (luminance(color) + 0.05), color).toBeGreaterThanOrEqual(3)
+    }
+  })
+
+  // RGAA 3.1: the color is not the only cue that tells the series apart
+  it('gives each line series its own marker symbol and each bar series its own pattern', async () => {
+    const lines = await capture([{ column_y: 'nb', type: 'line' }, { column_y: 'rate', type: 'line' }, { column_y: 'nb', type: 'line' }])
+    expect(new Set(lines.series.map((serie: { symbol: string }) => serie.symbol)).size).toBe(3)
+    expect(new Set(lines.series.map((serie: { lineStyle: { type: string } }) => serie.lineStyle.type)).size).toBe(3)
+
+    const bars = await capture([{ column_y: 'nb', type: 'histogram' }, { column_y: 'rate', type: 'histogram' }, { column_y: 'nb', type: 'histogram' }])
+    const decals = bars.series.map((serie: { itemStyle?: { decal?: unknown } }) => JSON.stringify(serie.itemStyle?.decal ?? null))
+    expect(new Set(decals).size).toBe(3)
+  })
+
+  // RGAA 1.1: the canvas gets a text alternative summing up the chart
+  it('describes the chart type, its axes and its number of values to assistive technologies', async () => {
+    const { wrapper } = await mountViewer([{ column_y: 'nb', type: 'histogram' }, { column_y: 'rate', type: 'line' }])
+    const container = wrapper.find('[role="img"]')
+    expect(container.attributes('aria-label')).toBe('Graphique en barres et en courbes : year en abscisse, nb et rate en ordonnée, 2 valeurs.')
+    wrapper.unmount()
+
+    const single = await mountViewer([{ column_y: 'nb', type: 'line' }], {}, { [RESOURCE_ID]: [{ year: 2020, nb: 3, rate: 1 }] })
+    expect(single.wrapper.find('[role="img"]').attributes('aria-label')).toBe('Graphique en courbes : year en abscisse, nb en ordonnée, 1 valeur.')
+    single.wrapper.unmount()
+  })
+
+  it('truncates long category labels with an ellipsis', async () => {
+    const option = await capture([{ column_y: 'nb', type: 'line' }])
+    expect(option.xAxis.axisLabel.overflow).toBe('truncate')
+    expect(option.xAxis.axisLabel.width).toBeGreaterThan(0)
   })
 
   it('centers the x axis name under the axis and clears the labels with a gap', async () => {
@@ -366,6 +415,12 @@ describe('ChartViewer continuous X bounds', () => {
     expect([option.xAxis.min, option.xAxis.max]).toEqual([2000, 2002])
   })
 
+  it('bounds the axis to the drawn values when a filter is set', async () => {
+    const option = await capture([{ column_y: 'nb', type: 'line' }], { type: 'continuous' }, manyRows(10), PROFILED, true)
+
+    expect([option.xAxis.min, option.xAxis.max]).toEqual([2000, 2009])
+  })
+
   it('bounds the axis to the fetched values when the groups are truncated', async () => {
     const option = await capture([{ column_y: 'nb', type: 'line' }], { type: 'continuous' }, manyRows(50), PROFILED)
 
@@ -380,6 +435,22 @@ describe('ChartViewer numeric X labels', () => {
     const option = await capture([{ column_y: 'nb', type: 'line' }], { type: 'continuous' })
 
     expect([2018, 2019, 2020].map(v => option.xAxis.axisLabel.formatter(v))).toEqual(['2018', '2019', '2020'])
+  })
+
+  it('still reads years as years when some X values are empty', async () => {
+    const data = { [RESOURCE_ID]: [{ year: null, nb: 1, rate: 1 }, { year: 2018, nb: 2, rate: 2 }, { year: undefined, nb: 2, rate: 2 }] }
+    const option = await capture([{ column_y: 'nb', type: 'line' }], { type: 'continuous' }, data)
+
+    expect(option.xAxis.axisLabel.formatter(2018)).toBe('2018')
+    expect(option.xAxis.minInterval).toBe(1)
+  })
+
+  it('formats the year of the tooltip title and of the axis pointer like the axis labels', async () => {
+    const option = await capture([{ column_y: 'nb', type: 'line' }], { type: 'continuous' })
+
+    const html = option.tooltip.formatter([{ value: { year: 2018, nb: 3 }, axisValue: 2018, axisValueLabel: '2,018', seriesName: 'nb', seriesIndex: 0 }]) as string
+    expect(html.startsWith('<strong>2018</strong>')).toBe(true)
+    expect(option.xAxis.axisPointer.label.formatter({ value: 2018 })).toBe('2018')
   })
 
   // The test locale is not French: only check grouping and decimals are kept.
