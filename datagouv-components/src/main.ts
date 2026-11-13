@@ -69,7 +69,6 @@ import LabelTag from './components/DatasetLabelTag.vue'
 import LoadingBlock from './components/LoadingBlock.vue'
 import MarkdownViewer from './components/MarkdownViewer.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
-import OrganizationHorizontalCard from './components/OrganizationHorizontalCard.vue'
 import ObjectCardOwner from './components/ObjectCardOwner.vue'
 import OrganizationLogo from './components/OrganizationLogo.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
@@ -90,7 +89,6 @@ import ResourceExplorerSidebar from './components/ResourceExplorer/ResourceExplo
 import ResourceExplorerViewer from './components/ResourceExplorer/ResourceExplorerViewer.vue'
 import OpenApiViewer from './components/OpenApiViewer/OpenApiViewer.vue'
 import ReuseCard from './components/ReuseCard.vue'
-import ReuseHorizontalCard from './components/ReuseHorizontalCard.vue'
 import ReuseDetails from './components/ReuseDetails.vue'
 import SchemaCard from './components/SchemaCard.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
@@ -400,7 +398,6 @@ export {
   Tag,
   MarkdownViewer,
   OrganizationCard,
-  OrganizationHorizontalCard,
   OrganizationLogo,
   OrganizationNameWithCertificate,
   OwnerType,
@@ -422,7 +419,6 @@ export {
   ResourceSelector,
   ReuseCard,
   ReuseDetails,
-  ReuseHorizontalCard,
   SchemaCard,
   SimpleBanner,
   StatBox,
