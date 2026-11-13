@@ -69,19 +69,17 @@
       role="status"
       data-testid="chart-series-notes"
     >
-      <template v-if="blockStatus === 'success'">
-        <p
-          v-if="someSeriesFailed"
-          class="flex items-start gap-1.5 px-4 pb-3 mt-1 mb-0 text-xs text-gray-medium"
-          data-testid="chart-series-error"
-        >
-          <RiErrorWarningLine
-            class="size-4 shrink-0"
-            aria-hidden="true"
-          />
-          <span>{{ seriesFailureNote }}</span>
-        </p>
-      </template>
+      <p
+        v-if="blockStatus === 'success' && someSeriesFailed"
+        class="flex items-start gap-1.5 px-4 pb-3 mt-1 mb-0 text-xs text-gray-medium"
+        data-testid="chart-series-error"
+      >
+        <RiErrorWarningLine
+          class="size-4 shrink-0"
+          aria-hidden="true"
+        />
+        <span>{{ seriesFailureNote }}</span>
+      </p>
     </div>
   </div>
 </template>
@@ -153,6 +151,12 @@ const someSeriesFailed = ref(false)
 const seriesFailureMessage = ref<string | null>(null)
 const seriesFailureNote = computed(() => [t('Une série n’a pas pu être chargée.'), seriesFailureMessage.value].filter(Boolean).join(' '))
 
+function resetNotes() {
+  moreGroups.value = false
+  someSeriesFailed.value = false
+  seriesFailureMessage.value = null
+}
+
 // The viewer gets a new chart only with its data: a new Y column or aggregate
 // would otherwise be looked up in the previous rows and draw empty axes.
 const loadedChart = shallowRef<Chart | ChartForApi>(props.chart)
@@ -160,8 +164,8 @@ const displayedChart = computed(() => chartDataKey(props.chart) === chartDataKey
 
 // With an X order the limit keeps the first values of the fetched extract,
 // which are right; a Y order ranks only that extract, so it still warns.
-const truncated = computed(() => blockStatus.value === 'success' && showTruncationWarning.value)
-const showTruncationWarning = computed(() => {
+const truncated = computed(() => {
+  if (blockStatus.value !== 'success') return false
   const { limit, sort_x_by } = displayedChart.value.x_axis
   if (sort_x_by !== 'axis_y' && limit != null && limit <= CHART_PAGE_SIZE) return false
   return moreGroups.value
@@ -226,7 +230,8 @@ async function fetchSeriesProfile() {
 
 let latestRequest = 0
 
-type LoadedSeries = { rows: Array<Record<string, unknown>>, total: number | undefined, next: string | null | undefined, options: FetchTabularDataOptions }
+type SeriesQuery = FetchTabularDataOptions & { pageSize: number }
+type LoadedSeries = { rows: Array<Record<string, unknown>>, total: number | undefined, next: string | null, options: SeriesQuery }
 
 async function hasGroupsBeyondPage({ rows, total, next, options }: LoadedSeries): Promise<boolean> {
   const known = groupsBeyondPage({ rowCount: rows.length, aggregated: !!options.aggregation, total, next })
@@ -250,9 +255,7 @@ async function fetchSeriesData() {
       loadedChart.value = requestedChart
       status.value = 'success'
       series.data = {}
-      moreGroups.value = false
-      someSeriesFailed.value = false
-      seriesFailureMessage.value = null
+      resetNotes()
       return
     }
 
@@ -265,7 +268,7 @@ async function fetchSeriesData() {
       })
       .map(async ({ serie, index }) => {
         const xColumn = serie.column_x_name_override ?? props.chart.x_axis.column_x
-        const options: FetchTabularDataOptions = {
+        const options: SeriesQuery = {
           columns: serie.aggregate_y ? undefined : [xColumn, serie.column_y],
           resourceId: serie.resource_id,
           page: 1,
@@ -284,8 +287,8 @@ async function fetchSeriesData() {
         return {
           key: String(index),
           rows: response.data,
-          total: response.meta?.total,
-          next: response.links?.next,
+          total: response.meta.total,
+          next: response.links.next,
           options,
         }
       })
@@ -310,9 +313,7 @@ async function fetchSeriesData() {
     error.value = err instanceof Error ? err : new Error('Failed to fetch series data')
     status.value = 'error'
     series.data = {}
-    moreGroups.value = false
-    someSeriesFailed.value = false
-    seriesFailureMessage.value = null
+    resetNotes()
   }
   finally {
     pendingOperations.value--

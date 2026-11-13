@@ -132,7 +132,7 @@ export const TABULAR_FILTERS_PARAM = 'filters'
 export const TABULAR_SORT_PARAM = 'sort'
 export const TABULAR_SEARCH_PARAM = 'q'
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 

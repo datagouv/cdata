@@ -78,6 +78,9 @@ test('chart type button group defaults to histogram', async ({ page }) => {
 
   await expect(page.getByRole('radio', { name: 'Histogramme' })).toBeChecked()
   await expect(page.getByRole('radio', { name: 'Courbe' })).not.toBeChecked()
+  // The selected option is tinted with the DSFR blue-france contrast (#ececfe).
+  const selected = page.getByTestId('chart-type').locator('label').filter({ has: page.getByRole('radio', { name: 'Histogramme' }) })
+  await expect(selected).toHaveCSS('background-color', 'rgb(236, 236, 254)')
 })
 
 test('chart type button group can switch to line chart', async ({ page }) => {
@@ -416,7 +419,7 @@ test('saving without a description warns in the footer and leads to the field', 
   }
 })
 
-test('saving from the manual tab with empty required fields shows their errors and focuses the first one', async ({ page }) => {
+test('saving with empty required fields shows their errors and focuses the first one', async ({ page }) => {
   await setupChart(page)
   const posts = trackChartCreations(page)
 
@@ -1310,4 +1313,24 @@ test('styles section is open by default and can be collapsed', async ({ page }) 
 
   await styles.locator('summary').click()
   await expect(page.getByLabel('Label de l’axe Y')).toBeHidden()
+})
+
+// The details content slot is content-box: without box-border on the section content,
+// DSFR's `* { box-sizing: inherit }` makes the padded fields wider than the panel.
+test('styles fields stay within the panel and only the summary looks clickable', async ({ page }) => {
+  await page.route('**/assistant/chat/**', route => route.abort())
+  await setupChart(page)
+
+  const styles = page.getByTestId('chart-styles')
+  await expect(page.getByLabel('Label de l’axe Y')).toBeVisible()
+  const overflowing = await styles.evaluate((details) => {
+    const right = details.getBoundingClientRect().right
+    return [...details.querySelectorAll('input, select')]
+      .filter(field => field.getBoundingClientRect().right > right + 0.5)
+      .map(field => field.id || field.getAttribute('name') || field.tagName)
+  })
+  expect(overflowing).toEqual([])
+
+  await expect(styles).toHaveCSS('cursor', 'auto')
+  await expect(styles.locator('summary')).toHaveCSS('cursor', 'pointer')
 })

@@ -1,7 +1,7 @@
 // @vitest-environment happy-dom
 import { flushPromises, mount } from '@vue/test-utils'
-import { defineComponent, h, nextTick } from 'vue'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick } from 'vue'
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import type { ChartForApi, ColumnDefinition } from '@datagouv/components-next'
 import ChatPanel from '~/components/Assistant/ChatPanel.vue'
 import AssistantSpinner from '~/components/Assistant/AssistantSpinner.vue'
@@ -191,19 +191,24 @@ describe('chartToolResults', () => {
       ] },
     ])).toEqual([])
   })
+
+  // The chart is turned into form fields right away: a missing axis must not throw there.
+  it.each([
+    ['no x axis', { ...CHART, x_axis: undefined }],
+    ['an x axis array', { ...CHART, x_axis: [] }],
+    ['no y axis', { ...CHART, y_axis: null }],
+    ['a y axis array', { ...CHART, y_axis: [] }],
+    ['a series that is not an object', { ...CHART, series: [null] }],
+    ['a series array entry', { ...CHART, series: [[]] }],
+    ['a chart array', [CHART]],
+  ])('skips a created chart with %s', (_case, chart) => {
+    expect(chartToolResults([
+      { role: 'assistant', parts: [{ type: 'tool-create_chart', toolCallId: 'c1', state: 'output-available', output: { status: 'ok', chart } }] },
+    ])).toEqual([])
+  })
 })
 
 describe('buildChatDisplayItems', () => {
-  it('keeps alternating tool calls as separate per-call traces in arrival order', () => {
-    const items = buildChatDisplayItems([
-      { type: 'tool-query_data', state: 'output-available', input: {}, output: 'a\n1' },
-      { type: 'tool-inspect_schema', state: 'output-available', input: {}, output: { columns: ['year'], rowCount: 1 } },
-      { type: 'tool-create_chart', state: 'output-available', input: {}, output: { status: 'ok', chart: CHART } },
-    ])
-    const traces = items.map(item => (item.kind === 'trace' ? item.trace.type : null))
-    expect(traces).toEqual(['tool-query_data', 'tool-inspect_schema', 'tool-create_chart'])
-  })
-
   it('groups consecutive reasoning parts and keeps text', () => {
     expect(buildChatDisplayItems([
       { type: 'reasoning', text: 'a' },
@@ -274,6 +279,13 @@ describe('summarizes chart tool traces', () => {
     expect(traceOf({ type: 'tool-update_chart', state: 'output-available', output: { status: 'ok', patch } })?.summary).toBe(summary)
   })
 
+  // The summary is French: an English browser must not turn its « et » into "and".
+  it('update_chart joins the fields in French whatever the browser language', () => {
+    const language = vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US')
+    onTestFinished(() => language.mockRestore())
+    expect(summaryOf({ type: 'tool-update_chart', output: { status: 'ok', patch: { title: 'T', description: 'd', y_axis: { unit: '€' } } } })).toBe('Titre, description et unité modifiés')
+  })
+
   it('update_chart reports errors', () => {
     expect(summaryOf({ type: 'tool-update_chart', output: { status: 'error', errors: ['Nope'] } })).toBe('Nope')
   })
@@ -308,17 +320,17 @@ describe('getStarterQuestions', () => {
     expect(questions).toContain('Trace l’évolution de « temperature » selon « date_mesure »')
   })
 
-  it('skips identifier, code and year columns as dimensions but uses a year as time axis', () => {
+  // buildColumnsFromProfile types a year column as a number.
+  it('skips identifier, code, year and free-text columns', () => {
     const questions = getStarterQuestions([
       { name: 'code_insee', type: 'number' },
-      { name: 'annee', type: 'year' },
+      { name: 'annee', type: 'number' },
       { name: 'url', type: 'text' },
       { name: 'region_id', type: 'categorical' },
     ], t)
 
     expect(questions).toEqual([
       OPENER,
-      'Trace l’évolution du nombre de lignes selon « annee »',
       'Propose-moi un graphique pertinent pour cette ressource',
     ])
   })
@@ -458,10 +470,13 @@ describe('AssistantSpinner', () => {
   })
 })
 
+/** The collapsible panel of a trace or reasoning block, found through its toggle button. */
+function panelOf(block: Pick<ReturnType<typeof mount>, 'find'>) {
+  return block.find(`[id="${block.find('button').attributes('aria-controls')}"]`)
+}
+
 describe('ToolTrace', () => {
   const trace: ToolTraceModel = {
-    type: 'tool-query_data',
-    state: 'output-available',
     label: 'Interrogation des données',
     summary: 'Je calcule la réponse à partir des données',
     error: false,
@@ -479,11 +494,10 @@ describe('ToolTrace', () => {
 
   it('links the toggle button to the panel with aria-controls', () => {
     const wrapper = mountTrace()
-    const panel = wrapper.find('.tool-trace-panel')
     const button = wrapper.find('button')
 
     expect(button.attributes('aria-expanded')).toBe('false')
-    expect(button.attributes('aria-controls')).toBe(panel.attributes('id'))
+    expect(panelOf(wrapper).exists()).toBe(true)
   })
 
   it('names the toggle button with the label and the summary', () => {
@@ -497,13 +511,12 @@ describe('ToolTrace', () => {
 
   it('keeps the collapsed panel inert and removes inert when expanded', async () => {
     const wrapper = mountTrace()
-    const panel = wrapper.find('.tool-trace-panel')
 
-    expect(panel.attributes('inert')).toBeDefined()
+    expect(panelOf(wrapper).attributes('inert')).toBeDefined()
 
     await wrapper.find('button').trigger('click')
     expect(wrapper.find('button').attributes('aria-expanded')).toBe('true')
-    expect(wrapper.find('.tool-trace-panel').attributes('inert')).toBeUndefined()
+    expect(panelOf(wrapper).attributes('inert')).toBeUndefined()
   })
 
   it('renders the string output in a pre block when expanded', async () => {
@@ -669,21 +682,13 @@ describe('ChatPanel', () => {
     expect((wrapper.find('textarea#assistant-input').element as HTMLTextAreaElement).value).toBe('')
   })
 
-  it('renders no nested form inside an enclosing form (e.g. the chart-save form)', async () => {
-    const onParentSubmit = vi.fn()
-    const wrapper = mount(defineComponent({
-      setup: () => () => h('form', { onSubmit: onParentSubmit }, [h(ChatPanel, { resourceId: 'resource-1', visualization: null, columns: [], resource: null })]),
-    }), {
-      global: { mocks: { $t: (key: string) => key } },
-    })
-
-    expect(wrapper.findAll('form')).toHaveLength(1)
+  it('sends the composer through its form submission', async () => {
+    const wrapper = mountPanel('resource-1')
 
     await wrapper.find('textarea#assistant-input').setValue('Bonjour')
-    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
+    await wrapper.find('form').trigger('submit')
 
     expect(sendMessageMock).toHaveBeenCalledWith({ text: 'Bonjour' })
-    expect(onParentSubmit).not.toHaveBeenCalled()
   })
 
   it('sends on Enter but inserts a newline on Shift+Enter', async () => {
@@ -893,7 +898,9 @@ describe('ChatPanel', () => {
     expect(blocks).toHaveLength(1)
     expect(blocks[0].text()).toContain('Je réfléchis à la requête.')
     expect(blocks[0].find('button').attributes('aria-expanded')).toBe('false')
-    expect(blocks[0].find('.thinking-block-panel').attributes('inert')).toBeDefined()
+    // No aria-label: the accessible name is the visible « Raisonnement ».
+    expect(blocks[0].find('button').attributes('aria-label')).toBeUndefined()
+    expect(panelOf(blocks[0]).attributes('inert')).toBeDefined()
   })
 
   it('expands the reasoning block on click', async () => {
@@ -908,7 +915,7 @@ describe('ChatPanel', () => {
     await block.find('button').trigger('click')
 
     expect(block.find('button').attributes('aria-expanded')).toBe('true')
-    expect(block.find('.thinking-block-panel').attributes('inert')).toBeUndefined()
+    expect(panelOf(block).attributes('inert')).toBeUndefined()
   })
 
   it('separates reasoning blocks interrupted by other parts', () => {
@@ -982,51 +989,13 @@ describe('ChatPanel', () => {
     expect(text).toContain('Je précise ce qui est ambigu')
   })
 
-  it('renders consecutive calls to the same tool as separate cards, one per call', () => {
-    chatState.messages.value = [{
-      id: 'a1',
-      role: 'assistant',
-      parts: [
-        { type: 'tool-query_data', state: 'output-available', input: {}, output: 'n\n1' },
-        { type: 'tool-query_data', state: 'output-available', input: {}, output: 'n\n2' },
-        { type: 'text', text: 'ok' },
-      ],
-    }]
-    const wrapper = mountPanel('resource-1')
-
-    const traces = wrapper.findAll('.tool-trace')
-    expect(traces).toHaveLength(2)
-    expect(traces[0].find('pre').text()).toContain('1')
-    expect(traces[1].find('pre').text()).toContain('2')
-  })
-
-  it('renders alternating tools as separate per-call cards in arrival order', () => {
-    chatState.messages.value = [{
-      id: 'a1',
-      role: 'assistant',
-      parts: [
-        { type: 'tool-query_data', state: 'output-available', input: {}, output: 'n\n1' },
-        { type: 'tool-inspect_schema', state: 'output-available', input: {}, output: { columns: ['year'], rowCount: 1 } },
-        { type: 'tool-query_data', state: 'output-available', input: {}, output: 'n\n2' },
-      ],
-    }]
-    const wrapper = mountPanel('resource-1')
-
-    const traces = wrapper.findAll('.tool-trace')
-    expect(traces).toHaveLength(3)
-    expect(traces[0].text()).toContain('Interrogation des données')
-    expect(traces[1].text()).toContain('Inspection du schéma')
-    expect(traces[2].text()).toContain('Interrogation des données')
-    expect(traces[0].find('pre').text()).toContain('1')
-    expect(traces[2].find('pre').text()).toContain('2')
-  })
-
-  it('keeps separate cards per state even when the tool alternates', () => {
+  it('renders one card per tool call, in arrival order, without merging calls to the same tool', () => {
     chatState.messages.value = [{
       id: 'a1',
       role: 'assistant',
       parts: [
         { type: 'tool-query_data', state: 'output-error', input: {}, errorText: 'boom' },
+        { type: 'tool-query_data', state: 'output-available', input: {}, output: 'n\n1' },
         { type: 'tool-inspect_schema', state: 'output-available', input: {}, output: { columns: ['year'], rowCount: 1 } },
         { type: 'tool-query_data', state: 'output-available', input: {}, output: 'n\n2' },
       ],
@@ -1034,24 +1003,11 @@ describe('ChatPanel', () => {
     const wrapper = mountPanel('resource-1')
 
     const traces = wrapper.findAll('.tool-trace')
-    expect(traces).toHaveLength(3)
+    expect(traces).toHaveLength(4)
     expect(traces[0].text()).toContain('boom')
-    expect(traces[1].text()).toContain('Inspection du schéma')
-    expect(traces[2].find('pre').text()).toContain('2')
-  })
-
-  it('keeps consecutive calls in separate cards when their states differ', () => {
-    chatState.messages.value = [{
-      id: 'a1',
-      role: 'assistant',
-      parts: [
-        { type: 'tool-query_data', state: 'output-error', input: {}, errorText: 'syntax error' },
-        { type: 'tool-query_data', state: 'output-available', input: {}, output: 'n\n2' },
-      ],
-    }]
-    const wrapper = mountPanel('resource-1')
-
-    expect(wrapper.findAll('.tool-trace')).toHaveLength(2)
+    expect(traces[1].find('pre').text()).toContain('1')
+    expect(traces[2].text()).toContain('Inspection du schéma')
+    expect(traces[3].find('pre').text()).toContain('2')
   })
 
   it('renders failed tool traces in red with the error message', () => {

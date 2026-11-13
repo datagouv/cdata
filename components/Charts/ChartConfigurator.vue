@@ -1,18 +1,17 @@
 <template>
-  <form
-    id="chart-form"
-    class="block"
-    @submit.prevent="saveChart"
-  >
+  <div>
     <!-- Desktop: bounded to the window like the prototype, each panel scrolls inside.
     Mobile keeps the natural page flow. -->
     <div class="rounded-md border border-new-gray-light bg-white lg:flex lg:h-[calc(100dvh-3rem)] lg:min-h-[640px] lg:max-h-[860px] lg:flex-col lg:overflow-hidden">
       <section
         class="flex shrink-0 flex-col gap-4 border-b border-new-gray-light py-4 px-6 lg:flex-row lg:items-center lg:gap-5"
-        aria-label="Source de données"
+        aria-labelledby="source-heading"
       >
         <div class="min-w-0 lg:w-48 lg:shrink-0">
-          <h2 class="mb-0 text-xs font-bold">
+          <h2
+            id="source-heading"
+            class="mb-0 text-xs font-bold"
+          >
             {{ $t('Source de données') }}
           </h2>
           <p class="mb-0 mt-0.5 text-[11px] leading-4 text-new-gray-medium">
@@ -21,7 +20,7 @@
         </div>
         <div class="flex min-w-0 flex-1 flex-col gap-4 lg:flex-row lg:items-center">
           <div class="grid flex-1 gap-4 lg:grid-cols-3">
-            <fieldset class="min-w-0">
+            <div class="min-w-0">
               <ProducerSelect
                 v-model="producer"
                 :label="$t('Avec qui souhaitez-vous publier ?')"
@@ -29,8 +28,8 @@
                 hide-no-organization-notice
                 all
               />
-            </fieldset>
-            <fieldset
+            </div>
+            <div
               v-if="producer"
               class="min-w-0"
             >
@@ -43,8 +42,8 @@
                 :multiple="false"
                 :suggest="suggestDataset"
               />
-            </fieldset>
-            <fieldset
+            </div>
+            <div
               v-if="dataset"
               class="min-w-0"
             >
@@ -71,7 +70,7 @@
                   {{ resource.title }}
                 </option>
               </select>
-            </fieldset>
+            </div>
           </div>
           <p
             class="mb-0 flex shrink-0 items-center gap-1.5 text-[10px]"
@@ -105,7 +104,7 @@
       </section>
 
       <!-- Each column carries its own header: on mobile the columns stack, and
-      a header must stay above its own panel. -->
+        a header must stay above its own panel. -->
       <div class="grid lg:min-h-0 lg:flex-1 lg:grid-cols-12 lg:grid-rows-[minmax(0,1fr)]">
         <section
           class="min-w-0 lg:col-span-7 lg:flex lg:min-h-0 lg:flex-col"
@@ -219,6 +218,8 @@
               :aria-label="$t('Mode de création')"
             >
               <Tab
+                v-for="tab in tabs"
+                :key="tab.label"
                 v-slot="{ selected }"
                 as="template"
               >
@@ -226,26 +227,12 @@
                   class="flex items-center gap-1.5 border-b-2 px-1 text-xs transition-colors hover:bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-new-primary motion-reduce:transition-none"
                   :class="selected ? 'border-new-primary text-new-primary' : 'border-transparent text-new-gray-medium hover:text-new-gray-dark'"
                 >
-                  <RiSparklingLine
+                  <component
+                    :is="tab.icon"
                     class="size-4"
                     aria-hidden="true"
                   />
-                  {{ $t('Assistant') }}
-                </button>
-              </Tab>
-              <Tab
-                v-slot="{ selected }"
-                as="template"
-              >
-                <button
-                  class="flex items-center gap-1.5 border-b-2 px-1 text-xs transition-colors hover:bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-new-primary motion-reduce:transition-none"
-                  :class="selected ? 'border-new-primary text-new-primary' : 'border-transparent text-new-gray-medium hover:text-new-gray-dark'"
-                >
-                  <RiSettings3Line
-                    class="size-4"
-                    aria-hidden="true"
-                  />
-                  {{ $t('Édition manuelle') }}
+                  {{ tab.label }}
                 </button>
               </Tab>
             </TabList>
@@ -272,7 +259,12 @@
                 class="flex flex-col focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-new-primary lg:min-h-0 lg:flex-1"
                 data-testid="form-panel"
               >
-                <div class="space-y-6 py-6 px-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+                <!-- The save button of the footer, outside the tab panel, submits it with form="chart-form". -->
+                <form
+                  id="chart-form"
+                  class="space-y-6 py-6 px-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto"
+                  @submit.prevent="saveChart"
+                >
                   <template v-if="selectedResource">
                     <RequiredExplanation />
                     <fieldset class="min-w-0 space-y-4">
@@ -341,7 +333,7 @@
                             for="chart-title"
                             class="font-bold fr-label"
                           >{{ $t('Titre') }} <Required :required="true" /></label>
-                          <!-- aria-required, not required: the browser cannot focus an invalid field of the hidden tab. -->
+                          <!-- aria-required, not required: the native bubble would replace the inline errors and the footer warning of useForm. -->
                           <input
                             id="chart-title"
                             ref="titleInput"
@@ -408,7 +400,7 @@
                             :key="option.value"
                             class="inline-flex min-h-[38px] cursor-pointer items-center justify-center gap-2 rounded border px-2 text-[11px] transition-colors has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-new-primary motion-reduce:transition-none"
                             :class="form.chart_type === option.value
-                              ? 'border-new-primary bg-[#ececfe] font-semibold text-new-primary'
+                              ? 'border-new-primary bg-blue-france-contrast font-semibold text-new-primary'
                               : 'border-gray-default bg-white text-new-gray-dark hover:border-new-gray-medium'"
                           >
                             <input
@@ -591,10 +583,8 @@
                       </fieldset>
                     </div>
 
-                    <!-- cursor-auto: DSFR's core.css puts cursor: pointer on the whole
-                  details element, so the fields would look clickable. -->
                     <details
-                      class="group min-w-0 cursor-auto border-t border-new-gray-light py-4"
+                      class="group min-w-0 border-t border-new-gray-light py-4"
                       open
                       data-testid="chart-styles"
                     >
@@ -605,7 +595,8 @@
                         />
                         {{ $t('Styles') }}
                       </summary>
-                      <!-- box-border: the details content slot is content-box, which `* { box-sizing: inherit }` would pass on. -->
+                      <!-- box-border: the details content slot is content-box, which DSFR's `* { box-sizing: inherit }`
+                      would pass on to the fields (::details-content is too recent to fix it globally). -->
                       <div class="mt-4 box-border space-y-4">
                         <div>
                           <label
@@ -701,7 +692,7 @@
                       </p>
                     </div>
                   </div>
-                </div>
+                </form>
               </TabPanel>
             </TabPanels>
 
@@ -714,6 +705,7 @@
               <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
                 <BrandedButton
                   type="submit"
+                  form="chart-form"
                   class="shrink-0"
                 >
                   {{ $t('Sauvegarder le graphique') }}
@@ -742,7 +734,7 @@
         </section>
       </div>
     </div>
-  </form>
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -820,6 +812,10 @@ const sourceLoading = ref(false)
 // while an existing chart is usually tweaked by hand.
 const ASSISTANT_TAB = 0
 const MANUAL_TAB = 1
+const tabs = computed(() => [
+  { label: t('Assistant'), icon: RiSparklingLine },
+  { label: t('Édition manuelle'), icon: RiSettings3Line },
+] satisfies Array<{ label: string, icon: Component }>)
 const selectedTab = ref(props.initialChart ? MANUAL_TAB : ASSISTANT_TAB)
 
 const { touch, isTouched, getFirstError, validate } = useForm(form, {
@@ -964,16 +960,10 @@ function onLimitInput(event: Event) {
   if (input.value !== String(limit)) input.value = String(limit)
 }
 
-const columnDetails = computed<Array<FilterColumnOption>>(() => {
-  const options: Array<FilterColumnOption> = [{ key: '', value: t('Colonne'), disabled: true }]
-  const resourceColumns = columns.value[selectedResource.value ?? '']
-
-  if (resourceColumns) {
-    options.push(...resourceColumns.map(c => ({ key: c.name, value: c.name, disabled: false })))
-  }
-
-  return options
-})
+const columnDetails = computed<Array<FilterColumnOption>>(() => [
+  { key: '', value: t('Colonne'), disabled: true },
+  ...resourceColumns.value.map(c => ({ key: c.name, value: c.name, disabled: false })),
+])
 
 const filterGroups = computed<FilterGroupsState>(() => toFilterGroups(form.value.filter))
 
@@ -1140,15 +1130,14 @@ async function initializeFromChart(data: Chart) {
   }
 }
 
-async function focusFirstMissingField() {
-  await nextTick()
+function focusFirstMissingField() {
   missingFields.value[0]?.input?.focus()
 }
 
 async function saveChart() {
   if (!await validate()) {
     saveBlocked.value = true
-    await focusFirstMissingField()
+    focusFirstMissingField()
     return
   }
   saveBlocked.value = false

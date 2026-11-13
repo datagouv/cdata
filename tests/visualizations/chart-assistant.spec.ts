@@ -99,9 +99,14 @@ test('a chart with more than 50 groups shows the truncation warning', async ({ p
   await page.route('**/api/resources/*/data/*', async (route) => {
     const pageParam = new URL(route.request().url()).searchParams.get('page')
     dataPages.push(pageParam)
+    const response = (data: typeof rows, next: string | null) => ({
+      data,
+      links: { profile: '', swagger: '', next, prev: null },
+      meta: { page: 1, page_size: 50 },
+    })
     await route.fulfill({ json: pageParam === '51'
-      ? { data: rows.slice(0, 1), links: { next: null } }
-      : { data: rows, links: { next: `${route.request().url()}&page=2` } } })
+      ? response(rows.slice(0, 1), null)
+      : response(rows, `${route.request().url()}&page=2`) })
   })
 
   await page.getByRole('tab', { name: 'Assistant' }).click()

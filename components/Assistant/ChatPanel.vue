@@ -143,9 +143,11 @@
       </button>
     </p>
 
-    <!-- A div, not a form: this panel lives inside the chart configurator's root
-    form and nested forms are invalid HTML. Enter submits via handleEnter. -->
-    <div class="mt-auto shrink-0">
+    <!-- A textarea does not submit on Enter: handleEnter does. -->
+    <form
+      class="mt-auto shrink-0"
+      @submit.prevent="submit"
+    >
       <div
         class="overflow-hidden rounded-md border border-gray-default bg-white transition-[border-color,box-shadow] focus-within:border-new-primary focus-within:shadow-[0_0_0_2px_var(--color-blue-light)]"
       >
@@ -221,11 +223,10 @@
             </button>
             <button
               v-else
-              type="button"
+              type="submit"
               :aria-label="$t('Envoyer')"
               class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-new-primary text-white hover:bg-new-primary-hover disabled:cursor-not-allowed disabled:bg-new-gray-medium-clic"
               :disabled="waiting || !input.trim()"
-              @click="submit"
             >
               <RiArrowUpLine
                 class="size-4"
@@ -238,7 +239,7 @@
       <p class="m-0 mt-1 text-right text-[11px] leading-5 text-new-gray-medium">
         {{ $t('L’assistant peut faire des erreurs.') }}
       </p>
-    </div>
+    </form>
   </section>
 </template>
 

@@ -1,6 +1,6 @@
 import { ofetch } from 'ofetch'
 import { useComponentsConfig, type PluginConfig } from '../config'
-import { encodeConditionColumn, encodeConditionValue, encodeTabularParam } from './tabular'
+import { encodeConditionColumn, encodeConditionValue, encodeTabularParam, isRecord } from './tabular'
 import type { AndFilters, Filter, GenericFilter, OrFilters } from '../types/visualizations'
 import type { SortConfig, TabularProfileResponse } from '../components/TabularExplorer/types'
 import type { TranslationFunction } from '../composables/useTranslation'
@@ -107,10 +107,6 @@ const PYTHON_STRING = /'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g
 
 function maskTableName(text: string): string {
   return text.replace(TABLE_NAME, 'ressource')
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 /** Turn what ofetch throws into a TabularApiError, from the status and the parsed body. */
@@ -228,15 +224,14 @@ export function tabularErrorMessage(error: unknown, t: TranslationFunction): str
  * Past the last group PostgREST answers an empty page, or a 416 when the offset also
  * passes the rows the filters leave.
  */
-export async function hasMoreGroups(config: PluginConfig, options: FetchTabularDataOptions): Promise<boolean> {
-  const pageSize = options.pageSize ?? config.tabularApiPageSize ?? 15
-  const nextRow = (options.page ?? 1) * pageSize + 1
+export async function hasMoreGroups(config: PluginConfig, options: FetchTabularDataOptions & { pageSize: number }): Promise<boolean> {
+  const nextRow = (options.page ?? 1) * options.pageSize + 1
   try {
     const response = await fetchTabularData(config, { ...options, page: nextRow, pageSize: 1 })
     return response.data.length > 0
   }
   catch (error) {
-    if ((error as { statusCode?: unknown } | null)?.statusCode === 416) return false
+    if (error instanceof TabularApiError && error.statusCode === 416) return false
     throw error
   }
 }

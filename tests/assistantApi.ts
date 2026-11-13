@@ -33,7 +33,7 @@ export function createChartOutput(resourceId: string) {
   }
 }
 
-export const UPDATE_CHART_OUTPUT = { status: 'ok', patch: { y_axis: { unit: 'doses' } } }
+const UPDATE_CHART_OUTPUT = { status: 'ok', patch: { y_axis: { unit: 'doses' } } }
 
 function toolCallChunks(toolName: string, input: unknown, output: unknown, text: string): Array<Chunk> {
   const toolCallId = `call-${randomUUID()}`

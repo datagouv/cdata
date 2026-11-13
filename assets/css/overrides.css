@@ -46,3 +46,9 @@
 .hero-breadcrumb .fr-breadcrumb__link[aria-current]:not([aria-current="false"]) {
   color: rgba(255, 255, 255, 0.8);
 }
+
+/* DSFR puts cursor: pointer on the whole details element: only its summary toggles it,
+   and DSFR keeps the pointer on the summary with its own rule. */
+details {
+  cursor: auto;
+}

@@ -16,9 +16,9 @@ export const RESOURCE_ID = '63f39717-e5c9-4d70-a0d5-544773c1d742'
  * Mocks the tabular resource profile and data so the chart configurator can
  * render a preview without hitting the real tabular API.
  */
-export async function mockTabular(page: Page, tabularProfile: unknown = profile) {
+export async function mockTabular(page: Page) {
   await page.route('**/api/resources/*/profile/', async (route) => {
-    await route.fulfill({ json: tabularProfile })
+    await route.fulfill({ json: profile })
   })
   await page.route('**/api/resources/*/data/*', async (route) => {
     await route.fulfill({ json: data })
@@ -27,11 +27,11 @@ export async function mockTabular(page: Page, tabularProfile: unknown = profile)
 
 /**
  * Sets up the chart configurator with the shared test resource, described by
- * `tabularProfile` (the recorded profile by default).
+ * the recorded profile.
  * Selects "Admin User" as producer, the fixture dataset, and its first resource.
  */
-export async function setupChart(page: Page, tabularProfile: unknown = profile) {
-  await mockTabular(page, tabularProfile)
+export async function setupChart(page: Page) {
+  await mockTabular(page)
   await page.goto('/admin/beta/chart')
   await page.waitForLoadState('networkidle')
 

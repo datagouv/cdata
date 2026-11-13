@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { flushPromises, mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
 import ChartViewer from '~/datagouv-components/src/components/Chart/ChartViewer.vue'
 import { CHART_IMAGE_HEIGHT, CHART_IMAGE_WIDTH } from '~/datagouv-components/src/functions/charts'
 import type { ChartForApi, ColumnsDefinition, DataSeriesType } from '~/datagouv-components/src/types/visualizations'
@@ -260,6 +260,15 @@ describe('ChartViewer rendering', () => {
     const single = await mountViewer([{ column_y: 'nb', type: 'line' }], {}, { [RESOURCE_ID]: [{ year: 2020, nb: 3, rate: 1 }] })
     expect(single.wrapper.find('[role="img"]').attributes('aria-label')).toBe('Graphique en courbes : year en abscisse, nb en ordonnée, 1 valeur.')
     single.wrapper.unmount()
+  })
+
+  // The sentence is translated: its lists must not be joined in the browser language.
+  it('joins the lists of its description like the rest of the sentence on an English browser', async () => {
+    const language = vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US')
+    onTestFinished(() => language.mockRestore())
+    const { wrapper } = await mountViewer([{ column_y: 'nb', type: 'histogram' }, { column_y: 'rate', type: 'line' }])
+    expect(wrapper.find('[role="img"]').attributes('aria-label')).toBe('Graphique en barres et en courbes : year en abscisse, nb et rate en ordonnée, 2 valeurs.')
+    wrapper.unmount()
   })
 
   it('truncates long category labels with an ellipsis', async () => {

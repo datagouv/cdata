@@ -4,9 +4,9 @@ import { defineComponent, h } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import LoadingBlock from '~/datagouv-components/src/components/LoadingBlock.vue'
 import ChartViewerWrapper from '~/datagouv-components/src/components/Chart/ChartViewerWrapper.vue'
-import { configKey, type PluginConfig } from '~/datagouv-components/src/config'
+import { configKey } from '~/datagouv-components/src/config'
 import type { ChartForApi } from '~/datagouv-components/src/types/visualizations'
-import { hasMoreGroups } from '~/datagouv-components/src/functions/tabularApi'
+import type { TabularDataResponse } from '~/datagouv-components/src/functions/tabularApi'
 
 const { ofetchMock } = vi.hoisted(() => ({ ofetchMock: vi.fn() }))
 vi.mock('ofetch', () => ({ ofetch: ofetchMock }))
@@ -33,12 +33,20 @@ const ChartViewerStub = defineComponent({
   setup: () => () => h('div', { class: 'chart-viewer-stub' }),
 })
 
-// Like api-tabular 0.4.2, which sends a next link for any full page of an aggregate
-function rows(count: number) {
+function tabularResponse(data: TabularDataResponse['data'], { next = null, total }: { next?: string | null, total?: number } = {}): TabularDataResponse {
   return {
-    data: Array.from({ length: count }, (_, i) => ({ dep: String(i), n: i })),
-    links: { next: count >= 50 ? 'https://tabular.example.com/api/resources/r/data/?page=2&page_size=50' : null },
+    data,
+    links: { profile: '', swagger: '', next, prev: null },
+    meta: { page: 1, page_size: 50, ...(total === undefined ? {} : { total }) },
   }
+}
+
+// Like api-tabular 0.4.2, which sends a next link for any full page of an aggregate
+function rows(count: number, options: { next?: string | null, total?: number } = {}) {
+  return tabularResponse(Array.from({ length: count }, (_, i) => ({ dep: String(i), n: i })), {
+    next: count >= 50 ? 'https://tabular.example.com/api/resources/r/data/?page=2&page_size=50' : null,
+    ...options,
+  })
 }
 
 function dataCalls(): Array<string> {
@@ -313,8 +321,8 @@ describe('ChartViewerWrapper data fetching', () => {
   it('keeps the data of each series on the same resource', async () => {
     ofetchMock.mockImplementation(async (url: string) => {
       if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
-      if (url.includes('m__max')) return { data: [{ dep: 'a', m__max: 2 }] }
-      return { data: [{ dep: 'a', n__max: 1 }] }
+      if (url.includes('m__max')) return tabularResponse([{ dep: 'a', m__max: 2 }])
+      return tabularResponse([{ dep: 'a', n__max: 1 }])
     })
     const chart = chartFixture()
     chart.series.push({ ...chart.series[0]!, column_y: 'm' })
@@ -382,11 +390,11 @@ describe('ChartViewerWrapper data fetching', () => {
     let resolveA: (v: unknown) => void = () => {}
     ofetchMock.mockImplementation((url: string) => {
       if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
-      if (url.includes('page=51')) return Promise.resolve({ data: [{ dep: 'z', n: 0 }] })
+      if (url.includes('page=51')) return Promise.resolve(tabularResponse([{ dep: 'z', n: 0 }]))
       if (url.includes('n__max')) return new Promise((resolve) => {
         resolveA = resolve
       })
-      return Promise.resolve({ data: [{ dep: 'b', n: 1 }] })
+      return Promise.resolve(tabularResponse([{ dep: 'b', n: 1 }]))
     })
     const chart = chartFixture()
     const wrapper = mountWrapper(chart)
@@ -395,7 +403,7 @@ describe('ChartViewerWrapper data fetching', () => {
     next.series[0]!.aggregate_y = 'sum'
     await wrapper.setProps({ chart: next })
     await settle()
-    resolveA({ data: Array.from({ length: 50 }, () => ({ dep: 'a', n: 9 })) })
+    resolveA(tabularResponse(Array.from({ length: 50 }, () => ({ dep: 'a', n: 9 }))))
     await settle()
     expect(wrapper.findComponent(ChartViewerStub).props('series').data[0]).toEqual([{ dep: 'b', n: 1 }])
     expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
@@ -445,7 +453,7 @@ describe('ChartViewerWrapper data fetching', () => {
     ofetchMock.mockImplementation(async (url: string) => {
       if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
       if (url.includes('m__max')) throw new Error('400 Bad Request')
-      return { data: [{ dep: 'a', n__max: 1 }] }
+      return tabularResponse([{ dep: 'a', n__max: 1 }])
     })
     const chart = chartFixture()
     chart.series.push({ ...chart.series[0]!, column_y: 'm' })
@@ -460,7 +468,7 @@ describe('ChartViewerWrapper data fetching', () => {
     ofetchMock.mockImplementation(async (url: string) => {
       if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
       if (url.includes('m__max')) throw tabularError(404, databaseError('42883', 'function max(boolean) does not exist'))
-      return { data: [{ dep: 'a', n__max: 1 }] }
+      return tabularResponse([{ dep: 'a', n__max: 1 }])
     })
     const chart = chartFixture()
     chart.series.push({ ...chart.series[0]!, column_y: 'm' })
@@ -474,7 +482,7 @@ describe('ChartViewerWrapper data fetching', () => {
     let resolveData: (v: unknown) => void = () => {}
     ofetchMock.mockImplementation((url: string) => {
       if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
-      if (url.includes('n__max')) return Promise.resolve({ data: [{ dep: 'a', n__max: 1 }] })
+      if (url.includes('n__max')) return Promise.resolve(tabularResponse([{ dep: 'a', n__max: 1 }]))
       return new Promise((resolve) => {
         resolveData = resolve
       })
@@ -490,7 +498,7 @@ describe('ChartViewerWrapper data fetching', () => {
     expect(viewer().props('chart').series[0].aggregate_y).toBe('max')
     expect(viewer().props('series').data[0]).toEqual([{ dep: 'a', n__max: 1 }])
 
-    resolveData({ data: [{ dep: 'a', n__sum: 5 }] })
+    resolveData(tabularResponse([{ dep: 'a', n__sum: 5 }]))
     await settle()
     expect(viewer().props('chart').series[0].aggregate_y).toBe('sum')
     expect(viewer().props('series').data[0]).toEqual([{ dep: 'a', n__sum: 5 }])
@@ -628,7 +636,7 @@ describe('ChartViewerWrapper truncation note without probe', () => {
     vi.useRealTimers()
   })
 
-  function mockResponses({ page, probe }: { page: unknown, probe?: () => unknown }) {
+  function mockResponses({ page, probe }: { page: TabularDataResponse, probe?: () => unknown }) {
     ofetchMock.mockImplementation(async (url: string) => {
       if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
       if (url.includes('page=51')) return probe ? probe() : rows(0)
@@ -651,7 +659,7 @@ describe('ChartViewerWrapper truncation note without probe', () => {
   }
 
   it('reads the total of a raw series instead of probing', async () => {
-    mockResponses({ page: { ...rows(50), meta: { total: 926 } } })
+    mockResponses({ page: rows(50, { total: 926 }) })
     const wrapper = mountWrapper(rawChart())
     await settle()
     expect(warning(wrapper)).toBe(true)
@@ -659,7 +667,7 @@ describe('ChartViewerWrapper truncation note without probe', () => {
   })
 
   it('shows no note for a raw series of exactly 50 rows, without probing', async () => {
-    mockResponses({ page: { ...rows(50), meta: { total: 50 } } })
+    mockResponses({ page: rows(50, { total: 50 }) })
     const wrapper = mountWrapper(rawChart())
     await settle()
     expect(warning(wrapper)).toBe(false)
@@ -668,7 +676,7 @@ describe('ChartViewerWrapper truncation note without probe', () => {
 
   // api-tabular from the exact-next-link version on
   it('shows no note for a full aggregated page without a next link, without probing', async () => {
-    mockResponses({ page: { ...rows(50), links: { next: null } } })
+    mockResponses({ page: rows(50, { next: null }) })
     const wrapper = mountWrapper(chartFixture())
     await settle()
     expect(warning(wrapper)).toBe(false)
@@ -694,27 +702,5 @@ describe('ChartViewerWrapper truncation note without probe', () => {
     await settle()
     expect(dataCalls()).toHaveLength(1)
     expect(warning(wrapper)).toBe(false)
-  })
-})
-
-describe('hasMoreGroups', () => {
-  it('probes the first group past the page the chart fetched', async () => {
-    ofetchMock.mockReset()
-    ofetchMock.mockResolvedValue({ data: [] })
-    await expect(hasMoreGroups({ tabularApiUrl: 'https://tabular.example.com' } as PluginConfig, { resourceId: RESOURCE_ID, page: 1, pageSize: 20 })).resolves.toBe(false)
-    expect(String(ofetchMock.mock.calls[0]![0])).toContain('page=21&page_size=1')
-  })
-
-  // Past the last group, PostgREST answers 416 when the offset also passes the rows the filters leave.
-  it('reads a 416 as no further group', async () => {
-    ofetchMock.mockReset()
-    ofetchMock.mockRejectedValue(Object.assign(new Error('416 Range Not Satisfiable'), { statusCode: 416 }))
-    await expect(hasMoreGroups({ tabularApiUrl: 'https://tabular.example.com' } as PluginConfig, { resourceId: RESOURCE_ID, page: 1, pageSize: 50 })).resolves.toBe(false)
-  })
-
-  it('lets any other failure through', async () => {
-    ofetchMock.mockReset()
-    ofetchMock.mockRejectedValue(Object.assign(new Error('500 Internal Server Error'), { statusCode: 500 }))
-    await expect(hasMoreGroups({ tabularApiUrl: 'https://tabular.example.com' } as PluginConfig, { resourceId: RESOURCE_ID, page: 1, pageSize: 50 })).rejects.toThrow('500')
   })
 })

@@ -1,4 +1,6 @@
+import { isRecord } from '@datagouv/components-next'
 import type { ChartForApi, ChartForm, ColumnDefinition, DataSeries, DataSeriesType, GenericFilter, SortDirection, XAxis, TranslationFunction, XAxisSortBy, XAxisType, YAxis } from '@datagouv/components-next'
+import { humanJoin } from '~/utils/helpers'
 
 /**
  * Auto-scroll guard for the chat panel: happy-dom cannot model scroll
@@ -10,7 +12,7 @@ export function isNearChatBottom(element: { scrollTop: number, clientHeight: num
 
 // Whole words of the name only: `nombre_refus` or `montant_numeraire` are measures.
 const IDENTIFIER_NAME = /(?:^|[._\s-])(?:id|ref|reference|référence|num|numero|numéro)(?:$|[._\s-])/i
-// The parquet profile has no distinct-value count: free text is told by its name.
+// A ColumnDefinition carries no distinct-value count (nb_distinct): free text is told by its name.
 const FREE_TEXT_NAME = /(?:url|uri|description|comment|adresse|address|geometry|geojson|wkt|libell?e_long|libellé_long|(?:^|[._\s-])(?:title|titre)(?:$|[._\s-]))/i
 
 function isUsefulDimension(column: ColumnDefinition) {
@@ -35,7 +37,7 @@ export function getStarterQuestions(columns: Array<ColumnDefinition>, t: Transla
   const [dimension, secondDimension] = columns.filter(isUsefulDimension)
     .sort((a, b) => Number(b.type === 'categorical') - Number(a.type === 'categorical'))
   const measure = columns.find(isUsefulMeasure)
-  const date = columns.find(column => column.type === 'date' || column.type === 'year')
+  const date = columns.find(column => column.type === 'date')
   const suggestions = [t('Quel graphique peut-on faire avec ces données ?')]
 
   if (dimension && measure) {
@@ -159,10 +161,6 @@ export type ChartToolResult
   = | { toolCallId: string, kind: 'create', chart: ChartToolChart }
     | { toolCallId: string, kind: 'update', patch: ChartUpdatePatch }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
-
 /**
  * Successful `create_chart` / `update_chart` results of a conversation, in
  * message order. Only finished tool parts (`output-available`) whose output
@@ -181,15 +179,18 @@ export function chartToolResults(messages: unknown[]): ChartToolResult[] {
       if (!isRecord(output) || output.status !== 'ok') continue
 
       if (part.type === 'tool-create_chart') {
-        if (!isRecord(output.chart) || !Array.isArray(output.chart.series)) continue
+        const chart = output.chart
+        // Turned into form fields right away: an axis or a series that is not an object would throw there.
+        if (!isRecord(chart) || !isRecord(chart.x_axis) || !isRecord(chart.y_axis)
+          || !Array.isArray(chart.series) || !chart.series.every(isRecord)) continue
         results.push({
           toolCallId: part.toolCallId,
           kind: 'create',
-          chart: output.chart as unknown as ChartToolChart,
+          chart: chart as unknown as ChartToolChart,
         })
       }
       else if (part.type === 'tool-update_chart') {
-        if (!isRecord(output.patch) || Array.isArray(output.patch)) continue
+        if (!isRecord(output.patch)) continue
         results.push({ toolCallId: part.toolCallId, kind: 'update', patch: output.patch as ChartUpdatePatch })
       }
     }
@@ -217,8 +218,6 @@ export function mapAssistantError(error: unknown): string {
 export type ToolTraceDetail = { label: string, value: string }
 
 export type ToolTrace = {
-  type: string
-  state: string
   label: string
   summary: string
   error: boolean
@@ -326,10 +325,7 @@ function buildUpdateSummary(part: Record<string, unknown>): string {
   const patch = part.output.patch
   const fields = PATCH_FIELDS.filter(field => field.changed(patch))
   if (fields.length === 0) return fallback
-  const labels = fields.map(field => field.label)
-  const joined = labels.length === 1
-    ? labels[0]!
-    : `${labels.slice(0, -1).join(', ')} et ${labels[labels.length - 1]}`
+  const joined = humanJoin(fields.map(field => field.label))
   // « modifié » agrees with the selected fields: feminine only when all are.
   const plural = fields.length > 1 || fields[0]!.plural
   const feminine = fields.every(field => field.feminine)
@@ -354,15 +350,12 @@ function buildToolDetails(type: string, input: unknown): ToolTraceDetail[] {
 
 function buildToolTrace(type: string, part: Record<string, unknown>): ToolTrace {
   const labels = TOOL_LABELS[type] ?? FALLBACK_TOOL_LABEL
-  const state = typeof part.state === 'string' ? part.state : ''
-  const error = state === 'output-error'
+  const error = part.state === 'output-error'
   const errorText = error
     ? (typeof part.errorText === 'string' && part.errorText ? part.errorText : TOOL_ERROR_FALLBACK)
     : null
 
   return {
-    type,
-    state,
     label: labels.label,
     summary: error ? errorText! : buildSummary(type, part, labels.summary),
     error,

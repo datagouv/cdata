@@ -403,6 +403,8 @@ const echartsOption = computed(() => {
   >
 })
 
+// Joined with the translated « et », like the rest of the sentence: Intl.ListFormat
+// would follow the browser language.
 function listOf(items: Array<string>): string {
   if (items.length <= 1) return items.join('')
   return `${items.slice(0, -1).join(', ')} ${t('et')} ${items.at(-1)}`
