@@ -29,6 +29,11 @@
           to="/design/buttons"
         />
         <AdminSidebarLink
+          :icon="RiPriceTag3Line"
+          :label="$t('Tags et labels')"
+          to="/design/tags"
+        />
+        <AdminSidebarLink
           :icon="RiIdCardLine"
           :label="$t('Cartes')"
           to="/design/cards"
@@ -71,7 +76,7 @@
         <AdminSidebarLink
           :icon="RiLineChartLine"
           :label="$t('Charts')"
-          to="/design/chart"
+          to="/design/cards#chart"
         />
         <AdminSidebarLink
           :icon="RiListCheck"
@@ -87,7 +92,7 @@
 </template>
 
 <script setup lang="ts">
-import { RiEyeLine, RiExternalLinkLine, RiFileSearchLine, RiIdCardLine, RiLineChartLine, RiListView, RiRadioButtonLine, RiSearch2Line, RiSearchEyeLine, RiTranslate, RiUserSearchLine, RiListCheck } from '@remixicon/vue'
+import { RiEyeLine, RiExternalLinkLine, RiFileSearchLine, RiIdCardLine, RiLineChartLine, RiListView, RiPriceTag3Line, RiRadioButtonLine, RiSearch2Line, RiSearchEyeLine, RiTranslate, RiUserSearchLine, RiListCheck } from '@remixicon/vue'
 import AdminSidebarLink from '~/components/AdminSidebar/AdminSidebarLink/AdminSidebarLink.vue'
 import LogoOnly from '~/components/LogoOnly.vue'
 import Sidemenu from '~/components/Sidemenu/Sidemenu.global.vue'

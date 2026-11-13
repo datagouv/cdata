@@ -1,0 +1,61 @@
+import { expect, test } from './base'
+import { gotoHydrated } from './helpers'
+
+test.beforeEach(async ({ page }) => {
+  await gotoHydrated(page, '/design/tags')
+})
+
+test('shows every compact tag state', async ({ page }) => {
+  const staticTag = page.getByTestId('static-tag')
+  const clickableTag = page.getByTestId('clickable-tag')
+  const selectableTag = page.getByTestId('selectable-tag')
+  const disabledTag = page.getByTestId('disabled-tag')
+
+  for (const tag of [staticTag, clickableTag, selectableTag, disabledTag]) {
+    await expect(tag).toHaveCSS('font-size', '12px')
+    await expect(tag).toHaveCSS('min-height', '24px')
+  }
+
+  const restBackground = await clickableTag.evaluate(element => getComputedStyle(element).backgroundColor)
+  await clickableTag.hover()
+  await expect(clickableTag).not.toHaveCSS('background-color', restBackground)
+  await clickableTag.focus()
+  await expect(clickableTag).toHaveCSS('outline-style', 'solid')
+
+  await selectableTag.click()
+  await expect(selectableTag).toHaveAttribute('aria-pressed', 'true')
+  const selectedBackground = await selectableTag.evaluate(element => getComputedStyle(element).backgroundColor)
+  await selectableTag.hover()
+  await expect(selectableTag).toHaveCSS('background-color', selectedBackground)
+
+  const disabledBackground = await disabledTag.evaluate(element => getComputedStyle(element).backgroundColor)
+  await disabledTag.hover()
+  await expect(disabledTag).toHaveCSS('background-color', disabledBackground)
+})
+
+test('shows and removes multiple TagsSelect values', async ({ page }) => {
+  const selectedTags = page.getByTestId('selected-tags')
+  await expect(selectedTags.getByRole('button')).toHaveCount(3)
+  await expect(selectedTags.getByRole('button').first()).toHaveCSS('font-size', '12px')
+  await expect(selectedTags.getByRole('button').first()).toHaveCSS('min-height', '24px')
+
+  await page.getByRole('button', { name: 'Supprimer le mot-clé transport' }).click()
+  await expect(selectedTags.getByRole('button')).toHaveCount(2)
+  await expect(selectedTags).not.toContainText('transport')
+})
+
+test('shows DatasetLabelTag with and without a link', async ({ page }) => {
+  const staticLabel = page.getByTestId('dataset-label-static')
+  const linkedLabel = page.getByTestId('dataset-label-link')
+
+  await expect(staticLabel).not.toHaveAttribute('href')
+  await expect(linkedLabel).toHaveAttribute('href', '#dataset-label-examples')
+  await expect(linkedLabel).toHaveCSS('min-height', '24px')
+  await expect(linkedLabel.locator('img')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+
+  const restBackground = await linkedLabel.evaluate(element => getComputedStyle(element).backgroundColor)
+  await linkedLabel.hover()
+  await expect(linkedLabel).not.toHaveCSS('background-color', restBackground)
+  await linkedLabel.focus()
+  await expect(linkedLabel).toHaveCSS('outline-style', 'solid')
+})

@@ -53,6 +53,8 @@
   background-color: var(--background-contrast-grey);
   --hover: var(--background-action-low-blue-france);
   --active: var(--background-action-low-blue-france-active);
+  --hover-tint: var(--background-action-low-blue-france);
+  --active-tint: var(--background-action-low-blue-france-active);
 }
 
 :is(a[href], button:not(:disabled), input[type="button"]:not(:disabled)).fr-tag:not(.fr-tag--dismiss, [aria-pressed="true"]):focus-visible {
@@ -66,11 +68,21 @@
   color: var(--text-action-high-blue-france);
 }
 
+:is(a[href], button:not(:disabled), input[type="button"]:not(:disabled)).fr-tag:not(.fr-tag--dismiss, [aria-pressed="true"]):hover {
+  background-color: var(--background-action-low-blue-france) !important;
+}
+
+:is(a[href], button:not(:disabled), input[type="button"]:not(:disabled)).fr-tag:not(.fr-tag--dismiss, [aria-pressed="true"]):active {
+  background-color: var(--background-action-low-blue-france-active) !important;
+}
+
 :is(button, input[type="button"]).fr-tag:is(.fr-tag--dismiss, [aria-pressed="true"]):not(:disabled) {
   color: var(--text-inverted-blue-france);
   background-color: var(--background-action-high-blue-france);
   --hover: var(--background-action-high-blue-france);
   --active: var(--background-action-high-blue-france-active);
+  --hover-tint: var(--background-action-high-blue-france);
+  --active-tint: var(--background-action-high-blue-france-active);
 }
 
 :is(button, input[type="button"]).fr-tag:is(.fr-tag--dismiss, [aria-pressed="true"]):not(:disabled):focus-visible {
@@ -88,6 +100,8 @@
   background-color: var(--background-disabled-grey);
   --hover: var(--background-disabled-grey);
   --active: var(--background-disabled-grey);
+  --hover-tint: var(--background-disabled-grey);
+  --active-tint: var(--background-disabled-grey);
 }
 
 /*
@@ -95,31 +109,33 @@
  * cdata's linked instance neutral at rest and preserves the SVG's native pixels.
  * `!important` is required because the package ships Tailwind in important mode.
  */
-.cdata-dataset-label-tag {
-  min-height: 1.5rem;
-  color: var(--text-label-grey) !important;
-  background-color: var(--background-contrast-grey) !important;
-  gap: 0.125rem !important;
-}
+@layer utilities {
+  .cdata-dataset-label-tag {
+    min-height: 1.5rem;
+    color: var(--text-label-grey) !important;
+    background-color: var(--background-contrast-grey) !important;
+    gap: 0.125rem !important;
+  }
 
-a.cdata-dataset-label-tag:hover,
-a.cdata-dataset-label-tag:focus-visible {
-  color: var(--text-action-high-blue-france) !important;
-  background-color: var(--background-action-low-blue-france) !important;
-}
+  a.cdata-dataset-label-tag:hover,
+  a.cdata-dataset-label-tag:focus-visible {
+    color: var(--text-action-high-blue-france) !important;
+    background-color: var(--background-action-low-blue-france) !important;
+  }
 
-a.cdata-dataset-label-tag:active {
-  background-color: var(--background-action-low-blue-france-active) !important;
+  a.cdata-dataset-label-tag:active {
+    background-color: var(--background-action-low-blue-france-active) !important;
+  }
+
+  .datagouv-components .cdata-dataset-label-tag > img.bg-white {
+    background-color: transparent !important;
+    border-radius: 0 !important;
+  }
 }
 
 a.cdata-dataset-label-tag:focus-visible {
   outline: 2px solid var(--border-active-blue-france);
   outline-offset: 2px;
-}
-
-.cdata-dataset-label-tag > img {
-  background-color: transparent !important;
-  border-radius: 0 !important;
 }
 
 /* The business badge keeps its semantic colour; only its label is underlined. */
