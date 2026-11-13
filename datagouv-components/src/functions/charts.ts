@@ -9,15 +9,20 @@ import { resolveColumnType } from './tabular'
 export const CHART_IMAGE_WIDTH = 448
 export const CHART_IMAGE_HEIGHT = 320
 
-export function toChartForm(chart: Chart) {
-  // The form has one filter shared by every series: `filter` is its only source.
+/** What a chart shows, without its owner, privacy or extras: what the assistant creates too. */
+export type ChartContent = Pick<Chart, 'title' | 'description' | 'x_axis' | 'y_axis' | 'series'>
+
+/**
+ * The form fields of a chart content. The form has one filter shared by every
+ * series, read from the first one, and its own copy of it. A count series counts
+ * the X column by convention: its column_y is pointed at it.
+ */
+export function chartContentToForm(chart: ChartContent) {
   const seriesFilter: GenericFilter | null = chart.series[0]?.filters ?? null
 
   return {
     title: chart.title,
     description: chart.description,
-    private: chart.private,
-    owned: chart.organization ? { organization: chart.organization.id, owner: null } : { owner: chart.owner.id, organization: null },
     x_axis: {
       column_x: chart.x_axis.column_x,
       type: chart.x_axis.type,
@@ -28,19 +33,31 @@ export function toChartForm(chart: Chart) {
     },
     y_axis: {
       label: chart.y_axis.label || '',
-      min: chart.y_axis.min,
-      max: chart.y_axis.max,
+      min: chart.y_axis.min ?? null,
+      max: chart.y_axis.max ?? null,
       unit: chart.y_axis.unit || '',
       unit_position: chart.y_axis.unit_position || 'suffix',
     },
+    // Field by field: a series from the assistant may carry keys the form does not know.
     series: chart.series.map(serie => ({
-      ...serie,
+      type: serie.type,
+      column_y: serie.aggregate_y === 'count' ? chart.x_axis.column_x : serie.column_y,
       aggregate_y: serie.aggregate_y || '',
+      resource_id: serie.resource_id,
+      column_x_name_override: serie.column_x_name_override,
       filters: null,
     })),
+    chart_type: chart.series[0]?.type ?? null,
+    filter: seriesFilter ? JSON.parse(JSON.stringify(seriesFilter)) as GenericFilter : null,
+  } satisfies Omit<ChartForm, 'private' | 'owned' | 'extras'>
+}
+
+export function toChartForm(chart: Chart) {
+  return {
+    ...chartContentToForm(chart),
+    private: chart.private,
+    owned: chart.organization ? { organization: chart.organization.id, owner: null } : { owner: chart.owner.id, organization: null },
     extras: chart.extras,
-    chart_type: chart.series[0] ? chart.series[0].type : null,
-    filter: seriesFilter ?? null,
   } satisfies ChartForm
 }
 

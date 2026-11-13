@@ -1,4 +1,4 @@
-import type { ChartForm } from '@datagouv/components-next'
+import { chartContentToForm, type ChartForm } from '@datagouv/components-next'
 import type { ChartToolResult } from '~/utils/assistant'
 
 /**
@@ -22,39 +22,8 @@ export function applyChartToolResult(form: ChartForm, result: ChartToolResult): 
     return
   }
 
-  const { chart } = result
-  const first = chart.series[0]
-  form.title = chart.title
-  form.description = chart.description
-  form.chart_type = first?.type ?? form.chart_type
-  // Deep copy: later form edits must not mutate the message history.
-  form.filter = first?.filters ? JSON.parse(JSON.stringify(first.filters)) : null
-  form.x_axis = {
-    column_x: chart.x_axis.column_x,
-    type: chart.x_axis.type,
-    limit: chart.x_axis.limit ?? null,
-    sort_combined: chart.x_axis.sort_x_by && chart.x_axis.sort_x_direction
-      ? `${chart.x_axis.sort_x_by}-${chart.x_axis.sort_x_direction}`
-      : '',
-  }
-  form.series = chart.series.map(serie => ({
-    type: serie.type,
-    // main's form only treats a series as "count" when column_y is the x column.
-    column_y: serie.aggregate_y === 'count' ? chart.x_axis.column_x : serie.column_y,
-    aggregate_y: serie.aggregate_y ?? '',
-    resource_id: serie.resource_id,
-    column_x_name_override: null,
-    filters: null,
-  }))
-  if (chart.y_axis) {
-    form.y_axis = {
-      label: chart.y_axis.label ?? '',
-      unit: chart.y_axis.unit ?? '',
-      unit_position: chart.y_axis.unit_position || 'suffix',
-      min: chart.y_axis.min ?? null,
-      max: chart.y_axis.max ?? null,
-    }
-  }
+  // A copy: later form edits must not mutate the message history.
+  Object.assign(form, chartContentToForm(result.chart))
 }
 
 /**

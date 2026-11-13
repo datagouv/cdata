@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { buildColumnsFromProfile, formatYAxisValue, toChartApi, toChartForm } from '~/datagouv-components/src/functions/charts'
-import type { Chart } from '~/datagouv-components/src/types/visualizations'
+import { buildColumnsFromProfile, chartContentToForm, formatYAxisValue, toChartApi, toChartForm } from '~/datagouv-components/src/functions/charts'
+import type { ChartContent } from '~/datagouv-components/src/functions/charts'
+import type { Chart, GenericFilter } from '~/datagouv-components/src/types/visualizations'
 import type { TabularProfile } from '~/datagouv-components/src/components/TabularExplorer/types'
 
 const baseChart = {
@@ -41,17 +42,6 @@ describe('toChartForm / toChartApi', () => {
 
     const ownedChart = { ...baseChart, organization: null, owner: { id: 'user-1' } } as unknown as Chart
     expect(toChartForm(ownedChart).owned).toEqual({ owner: 'user-1', organization: null })
-  })
-
-  it('applies the selected chart type to the first serie', () => {
-    const form = { ...toChartForm(baseChart), chart_type: 'line' as const }
-    expect(toChartApi(form).series[0].type).toEqual('line')
-  })
-
-  it('applies the form filter to the first serie when it has none', () => {
-    const filter = { column: 'region', value: 'Bretagne' }
-    const form = { ...toChartForm(baseChart), filter } as ReturnType<typeof toChartForm>
-    expect(toChartApi(form).series[0].filters).toEqual(filter)
   })
 
   it('round-trips grouped filters through the form', () => {
@@ -160,6 +150,82 @@ describe('toChartForm / toChartApi', () => {
     expect(api.series[0].filters).toEqual(shared)
     expect(api.series[1].filters).toEqual(shared)
     expect(api.series[2].filters).toEqual(shared)
+  })
+})
+
+describe('chartContentToForm', () => {
+  const filter: GenericFilter = { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Bretagne' }
+  const content: ChartContent = {
+    title: 'Mon graphique',
+    description: 'desc',
+    x_axis: { column_x: 'region', type: 'discrete', sort_x_by: 'axis_y', sort_x_direction: 'desc', limit: 5 },
+    y_axis: { label: null, min: null, max: 10, unit: null, unit_position: null },
+    series: [
+      { type: 'line', column_y: 'montant', aggregate_y: 'sum', resource_id: 'res-1', column_x_name_override: null, filters: filter },
+      { type: 'line', column_y: 'departement', aggregate_y: 'count', resource_id: 'res-1', column_x_name_override: null, filters: null },
+    ],
+  }
+
+  it('converts the chart content to the form fields', () => {
+    expect(chartContentToForm(content)).toEqual({
+      title: 'Mon graphique',
+      description: 'desc',
+      x_axis: { column_x: 'region', type: 'discrete', limit: 5, sort_combined: 'axis_y-desc' },
+      y_axis: { label: '', min: null, max: 10, unit: '', unit_position: 'suffix' },
+      series: [
+        { type: 'line', column_y: 'montant', aggregate_y: 'sum', resource_id: 'res-1', column_x_name_override: null, filters: null },
+        // The form counts the X column: a count series is pointed at it.
+        { type: 'line', column_y: 'region', aggregate_y: 'count', resource_id: 'res-1', column_x_name_override: null, filters: null },
+      ],
+      chart_type: 'line',
+      filter,
+    })
+  })
+
+  it('maps a missing aggregate to the empty select value and a missing sort to none', () => {
+    const form = chartContentToForm({
+      ...content,
+      x_axis: { ...content.x_axis, sort_x_by: null, sort_x_direction: null },
+      series: [{ ...content.series[0]!, aggregate_y: null }],
+    })
+    expect(form.series[0]!.aggregate_y).toBe('')
+    expect(form.x_axis.sort_combined).toBe('')
+  })
+
+  it('gives the form its own objects', () => {
+    const form = chartContentToForm(content)
+    expect(form.filter).not.toBe(filter)
+    expect(form.series[0]).not.toBe(content.series[0])
+  })
+
+  // A series coming from the assistant may carry more than the form knows.
+  it('copies only the known series fields', () => {
+    const extra = { ...content.series[0]!, id: 'serie-1', color: 'red' } as unknown as ChartContent['series'][number]
+    expect(Object.keys(chartContentToForm({ ...content, series: [extra] }).series[0]!).sort())
+      .toEqual(['aggregate_y', 'column_x_name_override', 'column_y', 'filters', 'resource_id', 'type'])
+  })
+
+  it('has no chart type without a series', () => {
+    expect(chartContentToForm({ ...content, series: [] }).chart_type).toBeNull()
+  })
+})
+
+describe('toChartForm', () => {
+  it('points a loaded count series at the X column', () => {
+    const chart = {
+      ...baseChart,
+      x_axis: { ...baseChart.x_axis, column_x: 'region' },
+      series: [{ type: 'bar', column_y: 'departement', aggregate_y: 'count', filters: null }],
+    } as unknown as Chart
+
+    const form = toChartForm(chart)
+    expect(form.series[0]!.column_y).toBe('region')
+    expect(form.series[0]!.aggregate_y).toBe('count')
+  })
+
+  it('adds the privacy, the owner and the extras to the content', () => {
+    const chart = { ...baseChart, private: true, extras: { keep: 'me' } } as unknown as Chart
+    expect(toChartForm(chart)).toMatchObject({ private: true, owned: { organization: 'org-1', owner: null }, extras: { keep: 'me' } })
   })
 })
 
