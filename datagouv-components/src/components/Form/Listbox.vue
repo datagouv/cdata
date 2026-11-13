@@ -3,13 +3,14 @@
     <div class="relative min-w-0">
       <div
         ref="floatingReference"
-        class="relative w-full cursor-default overflow-hidden bg-white text-left shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-teal-300 sm:text-sm"
+        class="relative w-full cursor-default overflow-hidden bg-white text-left sm:text-sm"
       >
         <ListboxButton class="input shadow-input text-sm flex items-center gap-2">
           <slot name="button">
             <div class="w-full flex items-center justify-between gap-2">
+              <!-- min-h-lh: an empty value keeps the button at its usual height. -->
               <div
-                class="truncate"
+                class="truncate min-h-lh"
                 :class="{ 'text-new-disabled-text': isDisabled(model) }"
               >
                 {{ displayValue(model) }}

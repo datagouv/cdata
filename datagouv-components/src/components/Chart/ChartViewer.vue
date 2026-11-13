@@ -1,6 +1,8 @@
 <template>
   <div
     ref="chartContainer"
+    role="img"
+    :aria-label="description"
     class="w-full min-h-96"
   />
 </template>
@@ -12,9 +14,10 @@ import { LineChart, BarChart, type BarSeriesOption, type LineSeriesOption } from
 import { TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent } from 'echarts/components'
 import { init, type ECharts as EChartsType } from 'echarts'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
-import { summarize } from '../../functions/helpers'
+import { CHART_IMAGE_HEIGHT, CHART_IMAGE_WIDTH, formatYAxisValue, seriesLabel } from '../../functions/charts'
+import { CHART_PAGE_SIZE } from '../../functions/chartData'
 import { useFormatDate } from '../../functions/dates'
-import type { Chart, ColumnDefinition, ColumnsDefinition, XAxis, YAxis, XAxisForm, ChartForApi } from '../../types/visualizations'
+import type { Chart, ColumnDefinition, ColumnsDefinition, XAxis, XAxisForm, ChartForApi } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
 
 use([CanvasRenderer, LineChart, BarChart, TitleComponent, TooltipComponent, LegendComponent, GridComponent, DatasetComponent])
@@ -22,18 +25,59 @@ use([CanvasRenderer, LineChart, BarChart, TitleComponent, TooltipComponent, Lege
 const props = defineProps<{
   chart: Chart | ChartForApi
   series: {
+    /** Rows of each series, keyed by the series index. */
     data: Record<string, Array<Record<string, unknown>>>
+    /** Columns of each resource, keyed by resource id. */
     columns: ColumnsDefinition
   }
 }>()
 
-const { locale } = useTranslation()
+const { locale, t } = useTranslation()
 const { formatDate } = useFormatDate()
 const chartContainer = ref<HTMLElement | null>(null)
 let echartsInstance: EChartsType | null = null
 
+// One color per series, cycled by ECharts: DSFR illustrative colors that reach 3:1 on white (RGAA 3.3).
+const CHART_COLORS = ['#000091', '#CE614A', '#009081', '#A558A0', '#417DC4', '#695240', '#447049', '#B34000']
+// The color is not the only cue (RGAA 3.1): each line series has its own marker and dash, each bar series its own pattern.
+const LINE_SYMBOLS = ['circle', 'rect', 'triangle', 'diamond', 'emptyCircle', 'emptyRect', 'emptyTriangle', 'emptyDiamond']
+const LINE_TYPES = ['solid', 'dashed', 'dotted'] as const
+const BAR_DECALS = [
+  undefined,
+  { symbol: 'rect', symbolSize: 1, dashArrayX: [1, 0], dashArrayY: [2, 4], rotation: -Math.PI / 4, color: 'rgba(255, 255, 255, 0.6)' },
+  { symbol: 'circle', symbolSize: 0.6, dashArrayX: [[4, 4], [0, 4, 4, 0]], dashArrayY: [4, 0], color: 'rgba(255, 255, 255, 0.6)' },
+  { symbol: 'rect', symbolSize: 1, dashArrayX: [1, 0], dashArrayY: [2, 4], rotation: Math.PI / 4, color: 'rgba(255, 255, 255, 0.6)' },
+  { symbol: 'rect', symbolSize: 1, dashArrayX: [1, 0], dashArrayY: [2, 4], rotation: 0, color: 'rgba(255, 255, 255, 0.6)' },
+]
+// Long category labels end with an ellipsis; the axis tooltip shows them whole.
+const CATEGORY_LABEL_WIDTH = 80
+
+// Dense line series turn into a solid bead of markers: keep at most this many
+// evenly spaced ones (size 0 hides the rest; the axis tooltip still covers
+// every point). Each series starts at its own offset within the step so
+// overlapping series do not stack their markers on the same x positions.
+const MAX_LINE_SYMBOLS = 12
+const LINE_SYMBOL_SIZE = 8
+
+function lineSymbolSize(pointCount: number, seriesIndex: number, seriesCount: number) {
+  const step = Math.max(1, Math.ceil(pointCount / MAX_LINE_SYMBOLS))
+  const offset = Math.floor((seriesIndex * step) / seriesCount)
+  return (_value: unknown, params: { dataIndex: number }) =>
+    params.dataIndex % step === offset ? LINE_SYMBOL_SIZE : 0
+}
+
+// Rendered off screen: the preview is wide on desktop and tall on mobile.
 function capture(): string | null {
-  return echartsInstance?.getDataURL() ?? null
+  const option = echartsOption.value
+  if (!echartsInstance || !option) return null
+  const offscreen = init(document.createElement('div'), null, { width: CHART_IMAGE_WIDTH, height: CHART_IMAGE_HEIGHT })
+  try {
+    offscreen.setOption({ ...option, animation: false })
+    return offscreen.getDataURL({ type: 'png', pixelRatio: 1, backgroundColor: '#fff' })
+  }
+  finally {
+    offscreen.dispose()
+  }
 }
 
 defineExpose({ capture })
@@ -45,13 +89,11 @@ function mapXAxisType(xAxis: XAxis | XAxisForm): 'category' | 'value' | 'time' {
   return isDateAxis.value ? 'time' : 'value'
 }
 
-function buildYAxisFormatter(yAxis: YAxis): ((value: number) => string) | undefined {
-  return (value: number) => {
-    const v = summarize(value)
-    if (!yAxis.unit) return v
-    if (yAxis.unit_position === 'prefix') return `${yAxis.unit} ${v}`
-    return `${v} ${yAxis.unit}`
-  }
+function allYValuesAreIntegers(plotted: Array<PlottedSeries>): boolean {
+  return plotted.every(({ yColumn, rows }) => rows.every((row) => {
+    const value = row[yColumn]
+    return value === null || value === undefined || Number.isInteger(Number(value))
+  }))
 }
 
 function buildXAxisFormatter(column: ColumnDefinition | null, options?: Intl.DateTimeFormatOptions): ((value: string | number | Date) => string) | undefined {
@@ -62,6 +104,18 @@ function buildXAxisFormatter(column: ColumnDefinition | null, options?: Intl.Dat
     if (Number.isNaN(date.getTime())) return String(value)
     return formatDate(date, options ?? { dateStyle: 'short' })
   }
+}
+
+// Years (whole numbers from 1000 to 2999) read without a thousands separator:
+// "2018", not "2 018" nor ECharts' default "2,018".
+function xValuesAreYears(plotted: Array<PlottedSeries>): boolean {
+  const values = plotted.flatMap(p => p.rows.map(row => row[p.xColumn])).filter(v => v !== null && v !== undefined)
+  return values.length > 0 && values.every(v => typeof v === 'number' && Number.isInteger(v) && v >= 1000 && v <= 2999)
+}
+
+function buildXNumberFormatter(years: boolean): (value: number) => string {
+  const formatter = new Intl.NumberFormat(locale, { maximumFractionDigits: 10, useGrouping: !years })
+  return (value: number) => formatter.format(value)
 }
 
 function parseXValueAsDate(row: Record<string, unknown>, xColumn: string): Record<string, unknown> {
@@ -88,59 +142,53 @@ const xAxisColumn = computed(() => {
 
 const isDateAxis = computed(() => xAxisColumn.value?.type === 'date')
 
-const xAxisBounds = computed(() => {
-  const columnName = props.chart.x_axis.column_x
-  if (!columnName) return { min: undefined, max: undefined }
+type PlottedSeries = { xColumn: string, yColumn: string, rows: Array<Record<string, unknown>> }
 
+function xAxisBounds(plotted: Array<PlottedSeries>): { min: number | undefined, max: number | undefined } {
   let min: number | undefined
   let max: number | undefined
-
-  for (const s of props.chart.series) {
-    const xColumn = s.column_x_name_override ?? columnName
-    const data = props.series.data[s.resource_id]
-    if (!data) continue
-
-    for (const row of data) {
+  for (const { xColumn, rows } of plotted) {
+    for (const row of rows) {
       const value = row[xColumn]
       if (value === null || value === undefined) continue
-
-      let numericValue: number | undefined
-      if (value instanceof Date) {
-        numericValue = value.getTime()
-      }
-      else if (isDateAxis.value && typeof value === 'string') {
-        numericValue = new Date(value).getTime()
-      }
-      else {
-        numericValue = Number(value)
-      }
-
-      if (numericValue === undefined || Number.isNaN(numericValue)) continue
-
+      const numericValue = value instanceof Date
+        ? value.getTime()
+        : isDateAxis.value && typeof value === 'string' ? new Date(value).getTime() : Number(value)
+      if (Number.isNaN(numericValue)) continue
       if (min === undefined || numericValue < min) min = numericValue
       if (max === undefined || numericValue > max) max = numericValue
     }
   }
-
   return { min, max }
-})
+}
 
 const echartsOption = computed(() => {
   const seriesCount = props.chart.series.length
   if (!props.chart.series || seriesCount === 0) return
 
-  const seriesArray = props.chart.series.map((s) => {
+  let referenceXs: Array<unknown> | null = null
+  const xKey = (x: unknown) => x instanceof Date ? x.getTime() : String(x)
+  // The profile bounds span the whole column: once values are left out (filter,
+  // limit, truncation), they would stretch the axis over values that are not drawn.
+  let valuesLeftOut = false
+
+  const xAxisType = mapXAxisType(props.chart.x_axis)
+  const isTimeAxis = xAxisType === 'time'
+
+  const seriesArray = props.chart.series.map((s, seriesIndex) => {
     const xColumn = s.column_x_name_override ?? props.chart.x_axis.column_x
     const yColumn = s.aggregate_y ? `${s.column_y}__${s.aggregate_y}` : s.column_y
     const resourceId = s.resource_id
 
     const resourceColumns = props.series.columns[resourceId]
-    if (!xColumn || !yColumn || !resourceId || !s.type || !props.series.data[resourceId] || !resourceColumns) {
+    const rawData = props.series.data[String(seriesIndex)]
+    if (!xColumn || !yColumn || !resourceId || !s.type || !rawData || !resourceColumns) {
       return null
     }
 
-    const rawData = props.series.data[resourceId]
-    const sortedData = isDateAxis.value
+    // Only a time axis needs Date values: on a category axis each Date object
+    // would be a distinct category, so the series would not share their X values.
+    const sortedData = isTimeAxis
       ? rawData.map(row => parseXValueAsDate(row, xColumn))
       : [...rawData]
     const sortBy = props.chart.x_axis.sort_x_by ?? (isDateAxis.value ? 'axis_x' : null)
@@ -192,18 +240,60 @@ const echartsOption = computed(() => {
       })
     }
 
+    // The first series decides the X order and, with a limit, the kept X
+    // values. When sorting by Y each series would otherwise rank X on its own
+    // column: the other series are reordered and cut to the first series' X
+    // values (a missing X gives an empty point) so they stay aligned.
+    const limit = props.chart.x_axis.limit
+    if (s.filters || rawData.length >= CHART_PAGE_SIZE || (limit != null && limit < sortedData.length)) valuesLeftOut = true
+    let limitedData: Array<Record<string, unknown>>
+    if (!referenceXs) {
+      limitedData = limit != null && limit < sortedData.length
+        ? sortedData.slice(0, limit)
+        : sortedData
+      referenceXs = limitedData.map(row => row[xColumn])
+    }
+    else if (sortBy === 'axis_y') {
+      const byX = new Map(sortedData.map(row => [xKey(row[xColumn]), row]))
+      limitedData = referenceXs.map(x => byX.get(xKey(x)) ?? { [xColumn]: x })
+    }
+    else {
+      limitedData = limit != null && limit < sortedData.length
+        ? sortedData.slice(0, limit)
+        : sortedData
+    }
+
+    const lineOptions = s.type === 'histogram'
+      ? {}
+      // showAllSymbol: ECharts' own 'auto' thinning (category axes) would
+      // fight the evenly spaced selection.
+      : {
+          smooth: true,
+          showAllSymbol: true,
+          symbol: LINE_SYMBOLS[seriesIndex % LINE_SYMBOLS.length],
+          symbolSize: lineSymbolSize(limitedData.length, seriesIndex, seriesCount),
+          lineStyle: { type: LINE_TYPES[seriesIndex % LINE_TYPES.length] },
+        }
+    const barOptions = s.type === 'histogram' && BAR_DECALS[seriesIndex % BAR_DECALS.length]
+      ? { itemStyle: { decal: BAR_DECALS[seriesIndex % BAR_DECALS.length] } }
+      : {}
+
     return {
+      xColumn,
+      yColumn,
+      label: seriesLabel(s, t),
       series: {
         type: s.type === 'histogram' ? 'bar' : 'line',
+        ...lineOptions,
+        ...barOptions,
         dimensions: s.aggregate_y ? [xColumn, yColumn] : resourceColumns.map(c => c.name),
-        name: yColumn,
         encode: {
           x: xColumn,
           y: yColumn,
         },
       } as LineSeriesOption | BarSeriesOption,
       data: {
-        source: sortedData,
+        source: limitedData,
         dimensions: s.aggregate_y ? [xColumn, yColumn] : resourceColumns.map(c => c.name),
       },
     }
@@ -213,42 +303,60 @@ const echartsOption = computed(() => {
     series: [] as Array<LineSeriesOption | BarSeriesOption>,
     data: [] as Array<Record<string, unknown>>,
   }
+  const plotted: Array<PlottedSeries> = []
+  const labelCounts = new Map<string, number>()
 
   for (const curr of seriesArray) {
     if (!curr) continue
-    seriesData.series.push(curr.series)
+    // ECharts merges the legend entries of series sharing a name.
+    const count = (labelCounts.get(curr.label) ?? 0) + 1
+    labelCounts.set(curr.label, count)
+    seriesData.series.push({ ...curr.series, name: count > 1 ? `${curr.label} (${count})` : curr.label, datasetIndex: seriesData.data.length })
     seriesData.data.push(curr.data)
+    plotted.push({ xColumn: curr.xColumn, yColumn: curr.yColumn, rows: curr.data.source })
   }
 
-  const xAxisType = mapXAxisType(props.chart.x_axis)
+  const shownBounds = xAxisBounds(plotted)
+  const yearAxis = xAxisType === 'value' && xValuesAreYears(plotted)
+  const xNumberFormatter = buildXNumberFormatter(yearAxis)
+  const xMin = valuesLeftOut ? shownBounds.min : xAxisColumn.value?.min ?? shownBounds.min
+  const xMax = valuesLeftOut ? shownBounds.max : xAxisColumn.value?.max ?? shownBounds.max
 
   return {
     dataset: [...seriesData.data],
     textStyle: {
       fontFamily: 'Marianne, arial, sans-serif',
     },
-    color: '#000091',
+    color: CHART_COLORS,
     tooltip: {
       trigger: 'axis' as const,
-      formatter: (params: Array<{ value: Record<string, unknown>, axisValueLabel: string, seriesName: string }>) => {
-        let tooltip = ''
+      formatter: (params: Array<{ value: Record<string, unknown>, axisValue: unknown, axisValueLabel: string, seriesName: string, seriesIndex: number }>) => {
         const valueFormatter = new Intl.NumberFormat(locale)
         const xAxisFormatter = buildXAxisFormatter(xAxisColumn.value, { dateStyle: 'medium' })
+        const first = params[0]
+        if (!first) return ''
+        const axisLabel = xAxisFormatter
+          ? xAxisFormatter(first.axisValueLabel)
+          : xAxisType === 'value' && typeof first.axisValue === 'number' ? xNumberFormatter(first.axisValue) : first.axisValueLabel
+        let tooltip = `<strong>${format.encodeHTML(String(axisLabel))}</strong><br>`
         for (const param of params) {
-          const seriesName = param.seriesName
-          const axisLabel = xAxisFormatter ? xAxisFormatter(param.axisValueLabel) : param.axisValueLabel
-          tooltip += `${format.encodeHTML(String(axisLabel))}: <strong>${valueFormatter.format(Number(param.value[seriesName]))}</strong><br>`
+          const yColumn = plotted[param.seriesIndex]?.yColumn
+          const value = yColumn === undefined ? undefined : param.value[yColumn]
+          const formatted = value === null || value === undefined ? '–' : valueFormatter.format(Number(value))
+          tooltip += `${format.encodeHTML(param.seriesName)}: <strong>${formatted}</strong><br>`
         }
         return tooltip
       },
     },
     legend: {
-      show: false,
+      show: seriesCount > 1,
       bottom: 0,
     },
     grid: {
       top: 60,
-      bottom: 40,
+      // Labels + nameLocation 'middle' name; more room for the legend row when
+      // several series are shown.
+      bottom: seriesCount > 1 ? 80 : 60,
       left: 20,
       right: 20,
       containLabel: true,
@@ -256,19 +364,36 @@ const echartsOption = computed(() => {
     xAxis: {
       type: xAxisType,
       name: (props.chart.x_axis as XAxis).column_x,
-      min: xAxisType !== 'category' ? xAxisColumn.value?.min ?? xAxisBounds.value.min ?? undefined : undefined,
-      max: xAxisType !== 'category' ? xAxisColumn.value?.max ?? xAxisBounds.value.max ?? undefined : undefined,
-      axisLabel: xAxisType === 'time'
-        ? { formatter: buildXAxisFormatter(xAxisColumn.value) }
-        : undefined,
+      // 'end' (the default) renders the name past the grid edge, where it gets
+      // clipped by the canvas; 'middle' centers it under the axis.
+      nameLocation: 'middle' as const,
+      // Clears the axis labels between the axis line and the name.
+      nameGap: 30,
+      min: xAxisType !== 'category' ? xMin : undefined,
+      max: xAxisType !== 'category' ? xMax : undefined,
+      minInterval: yearAxis ? 1 : undefined,
+      ...(xAxisType === 'value' ? { axisPointer: { label: { formatter: ({ value }: { value: unknown }) => xNumberFormatter(Number(value)) } } } : {}),
+      // 'auto' + hideOverlap: ECharts skips labels that don't fit instead of
+      // overlapping them; merged with the date formatter.
+      axisLabel: {
+        interval: xAxisType === 'category' ? 'auto' as const : undefined,
+        hideOverlap: true,
+        width: CATEGORY_LABEL_WIDTH,
+        overflow: 'truncate' as const,
+        ...(isDateAxis.value ? { formatter: buildXAxisFormatter(xAxisColumn.value) } : {}),
+        ...(xAxisType === 'value' ? { formatter: xNumberFormatter } : {}),
+      },
     },
     yAxis: {
       type: 'value' as const,
       name: props.chart.y_axis.label ?? undefined,
       min: props.chart.y_axis.min ?? undefined,
       max: props.chart.y_axis.max ?? undefined,
+      // Integer data (counts…) must not get fractional ticks like 0,2 or 0,4.
+      minInterval: allYValuesAreIntegers(plotted) ? 1 : undefined,
       axisLabel: {
-        formatter: buildYAxisFormatter(props.chart.y_axis),
+        hideOverlap: true,
+        formatter: (value: number) => formatYAxisValue(value, locale, props.chart.y_axis),
       },
     },
     series: seriesData.series,
@@ -276,6 +401,27 @@ const echartsOption = computed(() => {
     | BarSeriesOption
     | LineSeriesOption
   >
+})
+
+// Joined with the translated « et », like the rest of the sentence: Intl.ListFormat
+// would follow the browser language.
+function listOf(items: Array<string>): string {
+  if (items.length <= 1) return items.join('')
+  return `${items.slice(0, -1).join(', ')} ${t('et')} ${items.at(-1)}`
+}
+
+const description = computed(() => {
+  const series = props.chart.series.filter(s => s.type)
+  const types = [...new Set(series.map(s => s.type === 'histogram' ? t('en barres') : t('en courbes')))]
+  const firstRows = props.series.data['0'] ?? []
+  const limit = props.chart.x_axis.limit
+  const valueCount = limit != null ? Math.min(limit, firstRows.length) : firstRows.length
+  return t('Graphique {types} : {x} en abscisse, {y} en ordonnée, aucune valeur. | Graphique {types} : {x} en abscisse, {y} en ordonnée, {n} valeur. | Graphique {types} : {x} en abscisse, {y} en ordonnée, {n} valeurs.', {
+    types: listOf(types),
+    x: props.chart.x_axis.column_x ?? '',
+    y: listOf(series.map(s => seriesLabel(s, t))),
+    n: valueCount,
+  })
 })
 
 onMounted(() => {

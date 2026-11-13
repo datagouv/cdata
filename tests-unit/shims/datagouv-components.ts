@@ -6,3 +6,7 @@ export { accessTypeToApi, accessTypeToForm, defaultAccessTypeForm } from '~/data
 export { throwOnNever } from '~/datagouv-components/src/functions/never'
 export { DESCRIPTION_MIN_LENGTH } from '~/datagouv-components/src/functions/description'
 export { getResourceFilesize } from '~/datagouv-components/src/functions/resources'
+export { useTranslation } from '~/datagouv-components/src/composables/useTranslation'
+export { default as MarkdownViewer } from '~/datagouv-components/src/components/MarkdownViewer.vue'
+export { chartContentToForm } from '~/datagouv-components/src/functions/charts'
+export { isRecord } from '~/datagouv-components/src/functions/tabular'

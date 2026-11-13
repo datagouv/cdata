@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import type { ColumnFilters, ColumnType, DateFilter, SortConfig, TabularUrlAlias } from '~/datagouv-components/src/components/TabularExplorer/types'
-import { buildCellValueFilter, buildDateFilterParams, filtersFromUrlQuery, filtersToUrlQuery, hasFilterForColumn, resolveColumnType, buildGlobalSearchConditions, searchFromUrlParam, sortFromUrlParam, sortToUrlParam, toIsoDay, useFormatTabular } from '~/datagouv-components/src/functions/tabular'
+import { buildCellValueFilter, buildDateFilterParams, buildTableQuery, filtersFromUrlQuery, filtersToUrlQuery, hasFilterForColumn, resolveColumnType, buildGlobalSearchConditions, searchFromUrlParam, sortFromUrlParam, sortToUrlParam, toIsoDay, useFormatTabular } from '~/datagouv-components/src/functions/tabular'
 
 const has = (filter?: ColumnFilters) => hasFilterForColumn(filter ? { price: filter } : {}, 'price')
 
@@ -407,15 +407,31 @@ describe('global search query conditions', () => {
     expect(conditions[0]).toBe('Administration__contains.min%2Bmax')
   })
 
-  it('encodes the characters of the or(...) grammar the API would fail to parse', () => {
-    // A raw dot ends the operator, a raw parenthesis closes the expression:
-    // either one makes the API reject the whole query with a 400.
+  // The explorer sends its query through ufo, which percent-encodes the value once more:
+  // api-tabular then decodes twice before PostgREST parses the condition.
+  it('encodes the characters of the or(...) grammar one layer short of the query string', () => {
     expect(buildGlobalSearchConditions(['Objet'], typeForCadaCol, 'art. 6'))
-      .toEqual(['Objet__contains.art%252E%206'])
-    expect(buildGlobalSearchConditions(['Objet'], typeForCadaCol, 'mairie (Paris)'))
-      .toEqual(['Objet__contains.mairie%20%2528Paris%2529'])
-    expect(buildGlobalSearchConditions(['Objet'], typeForCadaCol, 'a,b'))
-      .toEqual(['Objet__contains.a%2Cb'])
+      .toEqual(['Objet__contains.art%2E%206'])
+    expect(buildGlobalSearchConditions(['Objet'], typeForCadaCol, 'dit "X" \\ #1'))
+      .toEqual(['Objet__contains.dit%20%5C%22X%5C%22%20%5C%5C%20%231'])
+  })
+
+  it('turns the commas and closing parentheses of a search into single-character wildcards', () => {
+    // PostgREST cannot read them in an unquoted value, and a quoted one would be
+    // searched with its quotes: `_` matches them, and any other single character.
+    expect(buildGlobalSearchConditions(['Objet'], typeForCadaCol, 'mairie (Paris), 1er'))
+      .toEqual(['Objet__contains.mairie%20%28Paris__%201er'])
+  })
+
+  // Encoded, the dots, parentheses and commas of a name are not read as the grammar of `or(...)`
+  it('encodes the column names, one URL layer short of the query string', () => {
+    const conditions = buildGlobalSearchConditions(['Nb. habitants', 'Taux (en points, 2020)', 'a&b', '50%'], () => 'text', 'x')
+    expect(conditions).toEqual([
+      'Nb%2E habitants__contains.x',
+      'Taux %28en points%2C 2020%29__contains.x',
+      'a&b__contains.x',
+      '50%25__contains.x',
+    ])
   })
 
   it('only adds __exact for number columns when search is a valid number', () => {
@@ -444,7 +460,7 @@ describe('global search query conditions', () => {
     }
 
     // The decimal separator is encoded like any other dot of the grammar
-    expect(buildGlobalSearchConditions(cols, c => types[c], '-12.5')).toContain('id__exact.-12%252E5')
+    expect(buildGlobalSearchConditions(cols, c => types[c], '-12.5')).toContain('id__exact.-12%2E5')
   })
 
   it('excludes date, year and boolean columns from global search', () => {
@@ -485,5 +501,37 @@ describe('formatCellDate', () => {
     expect(formatCellDate('')).toBe('–')
     expect(formatCellDate(null)).toBe('–')
     expect(formatCellDate('pas une date')).toBe('pas une date')
+  })
+})
+
+describe('buildTableQuery', () => {
+  // The query goes through ufo (useFetch, ofetch) or URLSearchParams (CSV download),
+  // which add the outer URL layer: only the inner one is built here.
+  it('encodes the column names and values of the filters one layer short of the query string', () => {
+    expect(buildTableQuery(
+      { column: 'Nb. habitants', direction: 'desc' },
+      {
+        'a&b': { exact: 'A&B', contains: '50%' },
+        '#1': { in: ['#1', 'Paris, 1er'] },
+        'x=y': { min: 1, max: 2, null: 'exclude' },
+        'Séance': { date: { operator: 'is', start: '2024-11-01' } },
+      },
+      [],
+    )).toEqual({
+      'Nb.%20habitants__sort': 'desc',
+      'a%26b__exact': 'A%26B',
+      'a%26b__contains': '50%25',
+      '%231__in': '%22%231%22%2C%22Paris%2C%201er%22',
+      'x%3Dy__greater': 1,
+      'x%3Dy__less': 2,
+      'x%3Dy__isnotnull': '',
+      'S%C3%A9ance__greater': '2024-11-01',
+      'S%C3%A9ance__strictly_less': '2024-11-02',
+    })
+  })
+
+  it('adds the global search conditions as one or param', () => {
+    expect(buildTableQuery(null, {}, ['a__contains.x', 'b__contains.x'])).toEqual({ or: '(a__contains.x,b__contains.x)' })
+    expect(buildTableQuery(null, { a: { null: 'only' } }, [])).toEqual({ a__isnull: '' })
   })
 })

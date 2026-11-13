@@ -26,7 +26,8 @@ export async function mockTabular(page: Page) {
 }
 
 /**
- * Sets up the chart configurator with the shared test resource.
+ * Sets up the chart configurator with the shared test resource, described by
+ * the recorded profile.
  * Selects "Admin User" as producer, the fixture dataset, and its first resource.
  */
 export async function setupChart(page: Page) {
@@ -34,7 +35,9 @@ export async function setupChart(page: Page) {
   await page.goto('/admin/beta/chart')
   await page.waitForLoadState('networkidle')
 
-  await page.getByTestId('producer-select').click()
+  // Click the HeadlessUI toggle button covering the input: in the narrow source band,
+  // clicking the center of the wrapper can land outside it and never open the listbox.
+  await page.getByTestId('searchable-select-avec-qui-souhaitez-vous-publier').click()
   await page.getByRole('option', { name: 'Admin User', exact: true }).click()
 
   await page.getByTestId('searchable-select-jeu-de-donn-es').click()
@@ -56,6 +59,8 @@ export async function setupChart(page: Page) {
   await resourceProfilePromise
   await page.waitForTimeout(300) // necessary to wait for the watch, no real async to check
 
+  // The assistant is the default panel: most specs drive the form.
+  await page.getByRole('tab', { name: 'Édition manuelle' }).click()
   await expect(page.getByLabel('Titre')).toBeVisible()
   expect(await page.getByPlaceholder('Rechercher une colonne à afficher...').inputValue()).toBe('année_publication')
 }
@@ -81,10 +86,8 @@ export async function setupAndSaveChart(page: Page, options: SetupAndSaveChartOp
   await page.getByLabel('Description').fill(description)
 
   if (options.type) {
-    const chartTypeButton = page.locator('#chart-type').getByRole('button')
-    await chartTypeButton.click()
-    const optionName = options.type === 'line' ? 'Ligne' : 'Histogramme'
-    await page.getByRole('option', { name: optionName, exact: true }).click()
+    const optionName = options.type === 'line' ? 'Courbe' : 'Histogramme'
+    await page.getByTestId('chart-type').getByText(optionName, { exact: true }).click()
   }
 
   // The chart preview must be rendered before saving, otherwise the capture is empty
@@ -113,6 +116,8 @@ export type CreateChartOptions = {
   type?: 'line' | 'histogram'
   private?: boolean
   withImage?: boolean
+  xColumn?: string
+  series?: Chart['series']
 }
 
 /**
@@ -125,9 +130,9 @@ export async function createChart(request: APIRequestContext, options: CreateCha
       title: options.title,
       description: options.description ?? `Description de ${options.title}.`,
       private: options.private ?? false,
-      x_axis: { column_x: 'annee', sort_x_by: null, sort_x_direction: null, type: 'discrete' },
+      x_axis: { column_x: options.xColumn ?? 'annee', sort_x_by: null, sort_x_direction: null, type: 'discrete', limit: null },
       y_axis: { min: null, max: null, label: null, unit: null, unit_position: 'suffix' },
-      series: [{ type: options.type ?? 'histogram', column_y: 'valeur', aggregate_y: 'sum', resource_id: RESOURCE_ID, column_x_name_override: null, filters: null }],
+      series: options.series ?? [{ type: options.type ?? 'histogram', column_y: 'valeur', aggregate_y: 'sum', resource_id: RESOURCE_ID, column_x_name_override: null, filters: null }],
       extras: {},
     },
   })

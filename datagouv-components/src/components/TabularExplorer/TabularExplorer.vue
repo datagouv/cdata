@@ -30,7 +30,7 @@ import { useFetch } from '../../functions/api'
 import { useComponentsConfig } from '../../config'
 import { useTranslation } from '../../composables/useTranslation'
 import { injectTabularProfile } from '../../composables/useTabularProfile'
-import { hasFilterForColumn as _hasFilterForColumn, buildDateFilterParams, buildGlobalSearchConditions, isSameSort, useFormatTabular } from '../../functions/tabular'
+import { hasFilterForColumn as _hasFilterForColumn, buildGlobalSearchConditions, buildTableQuery, isSameSort, useFormatTabular } from '../../functions/tabular'
 import PreviewError from '../ResourceAccordion/PreviewError.vue'
 import TabularSkeleton from './TabularSkeleton.vue'
 import type { TabularDataResponse, TabularRow, SortConfig, ColumnFilters, DateFilter, TabularUrlAlias } from './types'
@@ -131,41 +131,10 @@ const PAGE_SIZE = 50
 // What the table shows (sort, filters, search), apart from its pagination: the
 // filtered download sends the very same params, so the file can't drift from the table.
 const tableQuery = computed(() => {
-  const q: Record<string, string | number> = {}
-  if (sort.value) {
-    q[`${sort.value.column}__sort`] = sort.value.direction
-  }
-  for (const [col, filter] of Object.entries(filters.value)) {
-    if (filter.in?.length) {
-      q[`${col}__in`] = filter.in.join(',')
-    }
-    if (filter.exact != null) {
-      q[`${col}__exact`] = filter.exact
-    }
-    if (Number.isFinite(filter.min)) {
-      q[`${col}__greater`] = filter.min!
-    }
-    if (Number.isFinite(filter.max)) {
-      q[`${col}__less`] = filter.max!
-    }
-    if (filter.contains) {
-      q[`${col}__contains`] = filter.contains
-    }
-    if (filter.null === 'only') {
-      q[`${col}__isnull`] = ''
-    }
-    else if (filter.null === 'exclude') {
-      q[`${col}__isnotnull`] = ''
-    }
-    if (filter.date) {
-      Object.assign(q, buildDateFilterParams(col, filter.date))
-    }
-  }
-  if (globalSearch.value && profileData.value?.profile) {
-    const conditions = buildGlobalSearchConditions(allColumns.value, getColumnType, globalSearch.value)
-    q.or = '(' + conditions.join(',') + ')'
-  }
-  return q
+  const conditions = globalSearch.value && profileData.value?.profile
+    ? buildGlobalSearchConditions(allColumns.value, getColumnType, globalSearch.value)
+    : []
+  return buildTableQuery(sort.value, filters.value, conditions)
 })
 
 const dataQuery = computed(() => ({ page: 1, page_size: PAGE_SIZE, ...tableQuery.value }))

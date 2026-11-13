@@ -15,6 +15,7 @@
       <BrandedButton
         size="xs"
         color="tertiary"
+        class="[&&]:text-new-primary"
         :icon="RiAddLine"
         @click="$emit('add-condition')"
       >
@@ -26,6 +27,7 @@
         color="tertiary"
         :icon="RiDeleteBinLine"
         icon-only
+        :aria-label="t('Supprimer le groupe')"
         @click="$emit('remove-group')"
       />
     </div>

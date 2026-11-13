@@ -132,7 +132,7 @@ export const TABULAR_FILTERS_PARAM = 'filters'
 export const TABULAR_SORT_PARAM = 'sort'
 export const TABULAR_SEARCH_PARAM = 'q'
 
-function isRecord(value: unknown): value is Record<string, unknown> {
+export function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
@@ -388,18 +388,72 @@ export function useFormatTabular() {
 const TRUTHY_VALUES = ['true', '1', 'oui', 'yes']
 const FALSY_VALUES = ['false', '0', 'non', 'no']
 
-// `encodeURIComponent` leaves `.`, `(` and `)` as-is, but they are the operator
-// separator and the delimiters of the API's `or(...)` grammar: a search value
-// containing one makes the parser reject the whole query with a 400.
-// The API percent-decodes the query string once before running the grammar
-// parser, then percent-decodes the parsed value: grammar-significant characters
-// must therefore be sent double-encoded (`%252E`) so the first decode leaves
-// them escaped (`%2E`) for the parser to unquote after parsing.
-export function encodeConditionValue(value: string): string {
+// api-tabular percent-decodes the query string, then forwards it to PostgREST, which
+// decodes it again: every name and value goes through two URL layers. The functions
+// below build both for a URL written by hand; the explorer hands the inner layer to
+// ufo or URLSearchParams, which add the outer one.
+// udata builds the same params for the assistant: both must stay identical.
+
+function percentEncode(char: string): string {
+  return `%${char.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0')}`
+}
+
+/** A column name or value of a top-level param (`column__condition=value`, `columns=`…), inner layer. */
+export function tabularParamInner(value: string): string {
   return encodeURIComponent(value)
-    .replace(/\./g, '%252E')
-    .replace(/\(/g, '%2528')
-    .replace(/\)/g, '%2529')
+}
+
+/** A column name or value of a top-level param, both layers. */
+export function encodeTabularParam(value: string): string {
+  return encodeURIComponent(tabularParamInner(value)).replace(/[!'()*]/g, percentEncode)
+}
+
+/**
+ * A column name of an `or(...)` / `and(...)` condition, inner layer: what api-tabular
+ * would parse (`,` `(` `)` `.`), `#` which would end the PostgREST URL and `%` which
+ * PostgREST would decode are encoded once more so that they survive the first decode,
+ * and `\` `"` are escaped for PostgREST. Unquoted: api-tabular does not read the
+ * condition of a quoted column whose operator holds a `_` (`"col"__strictly_less`).
+ */
+export function conditionColumn(column: string): string {
+  return column.replace(/[%,().#"\\]/g, (char) => {
+    if (char === '"') return '\\%22'
+    if (char === '\\') return '\\\\'
+    return percentEncode(char)
+  })
+}
+
+/** A value of an `or(...)` / `and(...)` condition, inner layer: quoted, PostgREST reads it whole. */
+export function conditionOperand(value: string): string {
+  return `"${conditionColumn(value)}"`
+}
+
+/** A value of an `or(...)` / `and(...)` condition, both layers. */
+export function encodeConditionValue(value: string): string {
+  return encodeURIComponent(conditionOperand(value))
+}
+
+/** A column name of an `or(...)` / `and(...)` condition, both layers. */
+export function encodeConditionColumn(column: string): string {
+  return encodeURIComponent(conditionColumn(column))
+}
+
+/** The value of an `__in` param, before its URL layers: PostgREST reads a quoted item whole. */
+export function tabularInList(values: Array<string>): string {
+  return values.map(value => `"${value.replace(/["\\]/g, char => `\\${char}`)}"`).join(',')
+}
+
+// The explorer search sends its `or(...)` through ufo, which encodes it once more:
+// the value only carries the first layer. It cannot be quoted, since api-tabular
+// wraps a `__contains` value in `*…*`, and an unquoted value cannot hold a `,` or
+// a `)` for PostgREST: the LIKE wildcard `_` stands in for them.
+function encodeSearchValue(value: string): string {
+  return encodeURIComponent(value)
+    .replace(/%5C/g, '%5C%5C')
+    .replace(/%22/g, '%5C%22')
+    .replace(/\./g, '%2E')
+    .replace(/\(/g, '%28')
+    .replace(/%2C|\)/g, '_')
 }
 
 // A decimal literal, not `Number()`: the API compares against a number column,
@@ -422,13 +476,59 @@ export function buildGlobalSearchConditions(
   for (const col of allColumns) {
     const type = getColumnType(col)
     if (type === 'text' || type === 'categorical') {
-      conditions.push(col + '__contains.' + encodeConditionValue(searchValue))
+      conditions.push(conditionColumn(col) + '__contains.' + encodeSearchValue(searchValue))
     }
     else if (type === 'number' && NUMBER_LITERAL_RE.test(searchValue)) {
-      conditions.push(col + '__exact.' + encodeConditionValue(searchValue))
+      conditions.push(conditionColumn(col) + '__exact.' + encodeSearchValue(searchValue))
     }
   }
   return conditions
+}
+
+/**
+ * The params of the explorer table (sort, filters, global search), apart from its
+ * pagination. Inner URL layer: ufo (useFetch, ofetch) and URLSearchParams add the outer one.
+ */
+export function buildTableQuery(
+  sort: SortConfig | null,
+  filters: Record<string, ColumnFilters>,
+  searchConditions: string[],
+): Record<string, string | number> {
+  const q: Record<string, string | number> = {}
+  if (sort) {
+    q[`${tabularParamInner(sort.column)}__sort`] = sort.direction
+  }
+  for (const [col, filter] of Object.entries(filters)) {
+    const column = tabularParamInner(col)
+    if (filter.in?.length) {
+      q[`${column}__in`] = tabularParamInner(tabularInList(filter.in))
+    }
+    if (filter.exact != null) {
+      q[`${column}__exact`] = tabularParamInner(filter.exact)
+    }
+    if (Number.isFinite(filter.min)) {
+      q[`${column}__greater`] = filter.min!
+    }
+    if (Number.isFinite(filter.max)) {
+      q[`${column}__less`] = filter.max!
+    }
+    if (filter.contains) {
+      q[`${column}__contains`] = tabularParamInner(filter.contains)
+    }
+    if (filter.null === 'only') {
+      q[`${column}__isnull`] = ''
+    }
+    else if (filter.null === 'exclude') {
+      q[`${column}__isnotnull`] = ''
+    }
+    if (filter.date) {
+      Object.assign(q, buildDateFilterParams(column, filter.date))
+    }
+  }
+  if (searchConditions.length) {
+    q.or = '(' + searchConditions.join(',') + ')'
+  }
+  return q
 }
 
 export function isTruthy(value: unknown): boolean {

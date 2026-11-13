@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { buildColumnsFromProfile, toChartApi, toChartForm } from '~/datagouv-components/src/functions/charts'
-import type { Chart } from '~/datagouv-components/src/types/visualizations'
+import { buildColumnsFromProfile, chartContentToForm, formatYAxisValue, toChartApi, toChartForm } from '~/datagouv-components/src/functions/charts'
+import type { ChartContent } from '~/datagouv-components/src/functions/charts'
+import type { Chart, GenericFilter } from '~/datagouv-components/src/types/visualizations'
 import type { TabularProfile } from '~/datagouv-components/src/components/TabularExplorer/types'
 
 const baseChart = {
@@ -9,7 +10,7 @@ const baseChart = {
   private: false,
   organization: { id: 'org-1' },
   owner: null,
-  x_axis: { column_x: 'annee', type: 'categorical', sort_x_by: 'axis_x', sort_x_direction: 'asc' },
+  x_axis: { column_x: 'annee', type: 'categorical', sort_x_by: 'axis_x', sort_x_direction: 'asc', limit: null },
   y_axis: { label: 'Total', min: 0, max: 100, unit: '€', unit_position: 'suffix' },
   series: [{ type: 'bar', column_y: 'montant', aggregate_y: 'sum', filters: null }],
   extras: {},
@@ -41,17 +42,6 @@ describe('toChartForm / toChartApi', () => {
 
     const ownedChart = { ...baseChart, organization: null, owner: { id: 'user-1' } } as unknown as Chart
     expect(toChartForm(ownedChart).owned).toEqual({ owner: 'user-1', organization: null })
-  })
-
-  it('applies the selected chart type to the first serie', () => {
-    const form = { ...toChartForm(baseChart), chart_type: 'line' as const }
-    expect(toChartApi(form).series[0].type).toEqual('line')
-  })
-
-  it('applies the form filter to the first serie when it has none', () => {
-    const filter = { column: 'region', value: 'Bretagne' }
-    const form = { ...toChartForm(baseChart), filter } as ReturnType<typeof toChartForm>
-    expect(toChartApi(form).series[0].filters).toEqual(filter)
   })
 
   it('round-trips grouped filters through the form', () => {
@@ -104,6 +94,138 @@ describe('toChartForm / toChartApi', () => {
 
     const api = toChartApi(form)
     expect(api.series[0].aggregate_y).toBeNull()
+  })
+
+  it('keeps x_axis.limit through the form round trip', () => {
+    const chart = { ...baseChart, x_axis: { ...baseChart.x_axis, limit: 12 } } as unknown as Chart
+    const form = toChartForm(chart)
+    expect(form.x_axis.limit).toEqual(12)
+    expect(toChartApi(form).x_axis.limit).toEqual(12)
+  })
+
+  it('sends a null limit when the chart has none', () => {
+    const chart = { ...baseChart, x_axis: { column_x: 'annee', type: 'discrete', sort_x_by: null, sort_x_direction: null } } as unknown as Chart
+    const form = toChartForm(chart)
+    expect(form.x_axis.limit).toBeNull()
+    expect(toChartApi(form).x_axis.limit).toBeNull()
+  })
+
+  it('sends no filter once the filter of a filtered chart is removed in the form', () => {
+    const filter = { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Bretagne' } as const
+    const chart = {
+      ...baseChart,
+      series: [{ type: 'bar', column_y: 'montant', aggregate_y: 'sum', filters: filter }],
+    } as unknown as Chart
+    const form = toChartForm(chart)
+    form.filter = null
+    expect(toChartApi(form).series[0].filters).toBeNull()
+  })
+
+  it('sends the edited form filter instead of the filter the chart was loaded with', () => {
+    const chart = {
+      ...baseChart,
+      series: [{ type: 'bar', column_y: 'montant', aggregate_y: 'sum', filters: { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Bretagne' } }],
+    } as unknown as Chart
+    const form = toChartForm(chart)
+    const edited = { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Normandie' } as const
+    form.filter = edited
+    expect(toChartApi(form).series[0].filters).toEqual(edited)
+  })
+
+  it('applies the chart type and the form filter to every series', () => {
+    const own = { _cls: 'Filter', column: 'a', condition: 'exact', value: '1' } as const
+    const shared = { _cls: 'Filter', column: 'b', condition: 'exact', value: '2' } as const
+    const chart = {
+      ...baseChart,
+      series: [
+        { type: 'bar', column_y: 'm', aggregate_y: 'sum', filters: shared },
+        { type: 'bar', column_y: 'n', aggregate_y: 'sum', filters: null },
+        { type: 'bar', column_y: 'o', aggregate_y: 'sum', filters: own },
+      ],
+    } as unknown as Chart
+    const form = toChartForm(chart)
+    form.chart_type = 'line'
+    const api = toChartApi(form)
+    expect(api.series.map(s => s.type)).toEqual(['line', 'line', 'line'])
+    expect(api.series[0].filters).toEqual(shared)
+    expect(api.series[1].filters).toEqual(shared)
+    expect(api.series[2].filters).toEqual(shared)
+  })
+})
+
+describe('chartContentToForm', () => {
+  const filter: GenericFilter = { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Bretagne' }
+  const content: ChartContent = {
+    title: 'Mon graphique',
+    description: 'desc',
+    x_axis: { column_x: 'region', type: 'discrete', sort_x_by: 'axis_y', sort_x_direction: 'desc', limit: 5 },
+    y_axis: { label: null, min: null, max: 10, unit: null, unit_position: null },
+    series: [
+      { type: 'line', column_y: 'montant', aggregate_y: 'sum', resource_id: 'res-1', column_x_name_override: null, filters: filter },
+      { type: 'line', column_y: 'departement', aggregate_y: 'count', resource_id: 'res-1', column_x_name_override: null, filters: null },
+    ],
+  }
+
+  it('converts the chart content to the form fields', () => {
+    expect(chartContentToForm(content)).toEqual({
+      title: 'Mon graphique',
+      description: 'desc',
+      x_axis: { column_x: 'region', type: 'discrete', limit: 5, sort_combined: 'axis_y-desc' },
+      y_axis: { label: '', min: null, max: 10, unit: '', unit_position: 'suffix' },
+      series: [
+        { type: 'line', column_y: 'montant', aggregate_y: 'sum', resource_id: 'res-1', column_x_name_override: null, filters: null },
+        // The form counts the X column: a count series is pointed at it.
+        { type: 'line', column_y: 'region', aggregate_y: 'count', resource_id: 'res-1', column_x_name_override: null, filters: null },
+      ],
+      chart_type: 'line',
+      filter,
+    })
+  })
+
+  it('maps a missing aggregate to the empty select value and a missing sort to none', () => {
+    const form = chartContentToForm({
+      ...content,
+      x_axis: { ...content.x_axis, sort_x_by: null, sort_x_direction: null },
+      series: [{ ...content.series[0]!, aggregate_y: null }],
+    })
+    expect(form.series[0]!.aggregate_y).toBe('')
+    expect(form.x_axis.sort_combined).toBe('')
+  })
+
+  it('gives the form its own objects', () => {
+    const form = chartContentToForm(content)
+    expect(form.filter).not.toBe(filter)
+    expect(form.series[0]).not.toBe(content.series[0])
+  })
+
+  // A series coming from the assistant may carry more than the form knows.
+  it('copies only the known series fields', () => {
+    const extra = { ...content.series[0]!, id: 'serie-1', color: 'red' } as unknown as ChartContent['series'][number]
+    expect(Object.keys(chartContentToForm({ ...content, series: [extra] }).series[0]!).sort())
+      .toEqual(['aggregate_y', 'column_x_name_override', 'column_y', 'filters', 'resource_id', 'type'])
+  })
+
+  it('has no chart type without a series', () => {
+    expect(chartContentToForm({ ...content, series: [] }).chart_type).toBeNull()
+  })
+})
+
+describe('toChartForm', () => {
+  it('points a loaded count series at the X column', () => {
+    const chart = {
+      ...baseChart,
+      x_axis: { ...baseChart.x_axis, column_x: 'region' },
+      series: [{ type: 'bar', column_y: 'departement', aggregate_y: 'count', filters: null }],
+    } as unknown as Chart
+
+    const form = toChartForm(chart)
+    expect(form.series[0]!.column_y).toBe('region')
+    expect(form.series[0]!.aggregate_y).toBe('count')
+  })
+
+  it('adds the privacy, the owner and the extras to the content', () => {
+    const chart = { ...baseChart, private: true, extras: { keep: 'me' } } as unknown as Chart
+    expect(toChartForm(chart)).toMatchObject({ private: true, owned: { organization: 'org-1', owner: null }, extras: { keep: 'me' } })
   })
 })
 
@@ -208,5 +330,42 @@ describe('buildColumnsFromProfile', () => {
       { name: 'label', type: 'text', min: undefined, max: undefined },
       { name: 'created_at', type: 'date', min: undefined, max: undefined },
     ])
+  })
+})
+
+describe('formatYAxisValue', () => {
+  // Intl puts a no-break space between the number and the compact suffix.
+  const NBSP = '\u00A0'
+
+  it('gives distinct fractional ticks distinct labels with a decimal comma', () => {
+    const labels = [0, 0.2, 0.4, 0.6, 0.8, 1].map(v => formatYAxisValue(v, 'fr', { unit: null, unit_position: null }))
+
+    expect(labels).toEqual(['0', '0,2', '0,4', '0,6', '0,8', '1'])
+  })
+
+  it('abbreviates thousands and millions the French way', () => {
+    const format = (v: number) => formatYAxisValue(v, 'fr', { unit: null, unit_position: null })
+
+    expect(format(12000)).toBe(`12${NBSP}k`)
+    expect(format(1250000)).toBe(`1,25${NBSP}M`)
+    expect(format(-3500000)).toBe(`-3,5${NBSP}M`)
+  })
+
+  it('keeps distinct close ticks distinct once abbreviated', () => {
+    const labels = [1200000, 1220000, 1240000].map(v => formatYAxisValue(v, 'fr', { unit: null, unit_position: null }))
+
+    expect(new Set(labels).size).toBe(3)
+  })
+
+  it('does not abbreviate values below a thousand', () => {
+    expect(formatYAxisValue(999, 'fr', { unit: null, unit_position: null })).toBe('999')
+  })
+
+  it('puts the unit after the value by default', () => {
+    expect(formatYAxisValue(2.5, 'fr', { unit: 'kg', unit_position: null })).toBe('2,5 kg')
+  })
+
+  it('puts a prefix unit before the value', () => {
+    expect(formatYAxisValue(1500, 'fr', { unit: '€', unit_position: 'prefix' })).toBe(`€ 1,5${NBSP}k`)
   })
 })

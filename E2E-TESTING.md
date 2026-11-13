@@ -68,3 +68,16 @@ pnpm run test:e2e
 ## Paramètres fréquemment utilisés
 - `--project firefox`: Lance uniquement les tests pour firefox (existe aussi avec `--project chromium`)
 - `--only-changed`: Lance uniquement les tests modifiés depuis le dernier commit, et les tests qui importent un fichier modifié
+
+## Assistant factice
+
+Les tests du configurateur de graphiques (`tests/visualizations/chart-configurator.spec.ts`, `chart-assistant.spec.ts`) ne parlent jamais à un vrai assistant : `tests/fake-services.ts` sert `POST /api/1/assistant/chat/` en flux Vercel AI (`tests/assistantApi.ts`).
+
+- **Scénario par défaut** (fake-services) : au premier message de l'utilisateur, un appel `create_chart` (dep / max `n_cum_dose1`, histogramme, tri `axis_y-desc`, limite 5, sur la ressource de la requête) ; aux messages suivants, un appel `update_chart` (`y_axis.unit = "doses"`).
+- **Scénario propre à un test** : `routeAssistantStream(page, stream)` (`tests/assistantApi.ts`) intercepte la requête du chat dans la page. `stream` est un flux (`createChartStream(resourceId, output)`, `updateChartStream()`) ou une fonction du corps de la requête. `chart-assistant.spec.ts` s'en sert pour scripter un graphique sur les colonnes du profil de la ressource mockée (`tests/visualizations/profile.json`).
+- Les données tabulaires sont mockées par `mockTabular` ; `setupChart` l'appelle, donc une route `/data/` propre à un test doit être déclarée **après** `setupChart` pour être prise en compte.
+
+### Pièges
+
+- **Port des faux services** : Playwright démarre les faux services en local sur le port 3100 par défaut. Si ce port est occupé (par exemple par un frontend de démo), définir `FAKE_SERVICES_URL` (ex. `FAKE_SERVICES_URL=http://localhost:3109`) : le port de cette URL est utilisé pour le serveur.
+- **Serveur déjà lancé** : `reuseExistingServer` est actif. Un `pnpm dev` déjà lancé ne reçoit pas l'environnement du `webServer` (`NUXT_PUBLIC_ASSISTANT_API_BASE`) : les tests de l'assistant visent alors la vraie `apiBase`. Lancer le serveur avec `NUXT_PUBLIC_ASSISTANT_API_BASE=<FAKE_SERVICES_URL>` (en CI, c'est l'étape « Start cdata server »).
