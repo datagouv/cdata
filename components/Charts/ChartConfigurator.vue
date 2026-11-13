@@ -753,7 +753,6 @@ import { toAssistantVisualization } from '~/utils/assistant'
 import ChartFilterGroup from './ChartFilterGroup.vue'
 import { createChartResultHandler } from './applyChartToolResult'
 import ProducerSelect from '../ProducerSelect.vue'
-import ChatPanel from '../Assistant/ChatPanel.vue'
 import type { DatasetSuggest } from '~/types/types'
 
 type XAxisColumnOption = ColumnDefinition & {
@@ -787,6 +786,8 @@ const $chartsApi = $fetch.create({
 })
 
 const typeConfig = buildTypeConfig(t)
+// Loaded on demand: it brings the AI SDK and zod, whose eval probe a strict CSP reports.
+const ChatPanel = defineAsyncComponent(() => import('../Assistant/ChatPanel.vue'))
 const ChartViewerWrapper = defineAsyncComponent(() => import('@datagouv/components-next/chart').then(m => m.ChartViewerWrapper))
 
 const form = defineModel<ChartForm>({

@@ -1,5 +1,6 @@
 import type { Ref } from 'vue'
 import { watch } from 'vue'
+import './zodJitless'
 import { useChat } from '@ai-sdk/vue'
 import { DefaultChatTransport } from 'ai'
 import { buildChatBody, type AssistantVisualization } from '~/utils/assistant'
