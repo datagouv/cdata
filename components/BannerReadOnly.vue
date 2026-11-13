@@ -4,7 +4,7 @@
     type="warning"
   >
     <div class="fr-container">
-      {{ $t('Pour des raisons de sécurité, la création de nouveaux contenus est actuellement désactivée.') }}
+      {{ $t('Pour des raisons techniques, la création de nouveaux contenus est actuellement désactivée.') }}
     </div>
   </SimpleBanner>
 </template>
