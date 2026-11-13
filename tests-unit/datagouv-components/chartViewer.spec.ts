@@ -476,7 +476,7 @@ describe('ChartViewer capture', () => {
     initMock.mockClear()
   })
 
-  // The saved image fills the 250×190 media box of ChartCard (the API keeps it within
+  // The saved image fills the 224×160 media box of ChartCard (the API keeps it within
   // 250px): its size must not follow the preview, wide on desktop and tall on mobile.
   it('renders the image off screen at a fixed size with the card ratio', async () => {
     const { wrapper } = await mountViewer([{ column_y: 'nb', type: 'histogram' }])
@@ -491,7 +491,7 @@ describe('ChartViewer capture', () => {
     expect(container).not.toBe(previewContainer)
     expect(container.isConnected).toBe(false)
     expect(options).toMatchObject({ width: CHART_IMAGE_WIDTH, height: CHART_IMAGE_HEIGHT })
-    expect(CHART_IMAGE_WIDTH / CHART_IMAGE_HEIGHT).toBeCloseTo(250 / 190)
+    expect(CHART_IMAGE_WIDTH / CHART_IMAGE_HEIGHT).toBeCloseTo(224 / 160)
     // No animation: the image is taken right after the option is set.
     expect(setOptionMock.mock.calls.at(-1)![0]).toEqual({ ...previewOption, animation: false })
     const offscreen = initMock.mock.results[1]!.value as ReturnType<typeof fakeInstance>

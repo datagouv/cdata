@@ -3,10 +3,11 @@ import type { ColumnType, TabularProfile } from '../components/TabularExplorer/t
 import type { TranslationFunction } from '../composables/useTranslation'
 import { resolveColumnType } from './tabular'
 
-// Size of the saved chart image: twice the 250×190 media box of ChartCard, which the
-// API brings back within 250px. Fixed, so the preview size on screen does not matter.
-export const CHART_IMAGE_WIDTH = 500
-export const CHART_IMAGE_HEIGHT = 380
+// Size of the saved chart image: twice the 224×160 media box of ChartCard (ObjectCard
+// media-size="xl"), which the API brings back within 250px. Fixed, so the preview size
+// on screen does not matter.
+export const CHART_IMAGE_WIDTH = 448
+export const CHART_IMAGE_HEIGHT = 320
 
 export function toChartForm(chart: Chart) {
   // The form has one filter shared by every series: `filter` is its only source.
