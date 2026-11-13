@@ -19,19 +19,24 @@
     </SearchableSelect>
     <div
       v-if="tags.length"
-      class="mt-2 flex flex-wrap"
+      class="mt-2 flex flex-wrap gap-2"
       data-testid="selected-tags"
     >
       <button
         v-for="tag in tags"
         :key="tag.text"
-        class="fr-tag fr-tag--sm fr-tag--dismiss mr-2 mb-2"
+        class="fr-tag fr-tag--sm"
         :aria-label="t('Supprimer le mot-clé {tag}', { tag: tag.text })"
         :data-testid="`selected-tag-${tag.text}`"
         type="button"
         @click="removeTag(tag)"
       >
         {{ tag.text }}
+        <RiCloseLine
+          class="size-3.5"
+          aria-hidden="true"
+          focusable="false"
+        />
       </button>
     </div>
   </div>
@@ -39,6 +44,7 @@
 
 <script setup lang="ts">
 import { SearchableSelect } from '@datagouv/components-next'
+import { RiCloseLine } from '@remixicon/vue'
 import type { Tag } from '~/types/types'
 
 const props = defineProps<{

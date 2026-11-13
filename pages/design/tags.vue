@@ -13,33 +13,33 @@
       Tags et labels
     </h1>
     <p class="mb-8 text-gray-plain">
-      Les exemples sont autonomes afin de pouvoir vérifier les tailles et les états sans backend local.
+      Reprise des variantes proposées dans le Component Design Lab. Les exemples sont autonomes afin de vérifier les états sans backend local.
     </p>
 
     <div class="space-y-12 pb-32">
       <section data-testid="components-tag-examples">
         <h2 class="!mb-3">
-          Tag — @datagouv/components
+          Tag — proposition du Design Lab
         </h2>
         <p class="mb-4 text-gray-plain">
-          Ces exemples reprennent directement le composant partagé utilisé dans les informations d’un jeu de données et les cartes de schéma.
+          Le composant est possédé par @datagouv/components-next. Ces exemples montrent son rendu actuel côté consommateur ; son API interactive devra être portée dans ce dépôt partagé.
         </p>
         <div class="flex flex-wrap items-center gap-4">
           <Tag type="secondary">
-            Mot-clé statique
+            Mobilité
           </Tag>
           <Tag
             type="secondary"
             :icon="RiCheckboxCircleLine"
           >
-            Schéma de données
+            Données ouvertes
           </Tag>
           <NuxtLink
             class="fr-raw-link"
             to="#components-tag-examples"
           >
             <Tag type="secondary">
-              Mot-clé avec lien
+              Environnement
             </Tag>
           </NuxtLink>
         </div>
@@ -47,22 +47,33 @@
 
       <section data-testid="tag-variants">
         <h2 class="!mb-3">
-          Tags DSFR interactifs
+          Variantes et états interactifs
         </h2>
         <p class="mb-4 text-gray-plain">
-          Les variantes propres à cdata reprennent la forme compacte du composant partagé, avec leurs états interactifs DSFR.
+          Géométrie et états de la proposition Tag : 12/18, icônes 14 px, pilule neutre et couleurs d’action DSFR.
         </p>
         <div class="flex flex-wrap items-center gap-4">
           <span
             class="fr-tag"
             data-testid="static-tag"
-          >Statique</span>
+          >Tag de catégorie</span>
+          <span class="fr-tag">
+            <RiInformationLine
+              class="size-3.5"
+              aria-hidden="true"
+            />
+            Avec icône
+          </span>
+          <a
+            class="fr-tag"
+            href="#tag-variants"
+          >Cliquable · lien</a>
           <button
             class="fr-tag"
             data-testid="clickable-tag"
             type="button"
           >
-            Cliquable
+            Cliquable · bouton
           </button>
           <button
             class="fr-tag"
@@ -72,14 +83,23 @@
             @click="isSelected = !isSelected"
           >
             Sélectionnable
+            <RiCheckLine
+              v-if="isSelected"
+              class="size-3.5"
+              aria-hidden="true"
+            />
           </button>
           <button
-            class="fr-tag fr-tag--dismiss"
+            class="fr-tag"
             data-testid="dismissible-tag"
             type="button"
             aria-label="Supprimer le tag supprimable"
           >
             Supprimable
+            <RiCloseLine
+              class="size-3.5"
+              aria-hidden="true"
+            />
           </button>
           <button
             class="fr-tag"
@@ -100,7 +120,7 @@
           TagsSelect
         </h2>
         <p class="mb-4 text-gray-plain">
-          Plusieurs valeurs sélectionnées, avec suppression fonctionnelle.
+          Plusieurs valeurs sélectionnées avec la géométrie du Design Lab et suppression fonctionnelle.
         </p>
         <div class="max-w-xl">
           <TagsSelect
@@ -112,10 +132,10 @@
 
       <section data-testid="dataset-label-examples">
         <h2 class="!mb-3">
-          DatasetLabelTag
+          DatasetLabelTag — proposition du Design Lab
         </h2>
         <p class="mb-4 text-gray-plain">
-          La variante liée reste neutre au repos et conserve l’illustration native du label.
+          La variante statique reste informative ; la variante liée adopte les états du tag interactif. L’illustration est contenue dans 14 px, sans pastille blanche.
         </p>
         <div class="flex flex-wrap items-center gap-4">
           <div class="space-y-2">
@@ -123,7 +143,8 @@
               Sans lien
             </p>
             <LabelTag
-              :badge="servicePublicBadge"
+              :badge="hvdBadge"
+              class="cdata-dataset-label-tag"
               data-testid="dataset-label-static"
             />
           </div>
@@ -132,21 +153,73 @@
               Avec lien
             </p>
             <LabelTag
-              :badge="servicePublicBadge"
-              url="#dataset-label-examples"
+              :badge="hvdBadge"
+              url="/datasets/search?badge=hvd"
               class="cdata-dataset-label-tag"
               data-testid="dataset-label-link"
             />
           </div>
           <div class="space-y-2">
             <p class="text-sm font-bold">
-              Autre illustration
+              Libellé long
             </p>
             <LabelTag
-              :badge="hvdBadge"
-              url="#dataset-label-examples"
+              :badge="longBadge"
               class="cdata-dataset-label-tag"
-              data-testid="dataset-label-hvd"
+              data-testid="dataset-label-long"
+            />
+          </div>
+        </div>
+      </section>
+
+      <section data-testid="hvd-status-examples">
+        <h2 class="!mb-3">
+          HvdStatutBadge — proposition du Design Lab
+        </h2>
+        <p class="mb-4 text-gray-plain">
+          Le statut conserve sa couleur métier. Avec une URL, toute la pastille est cliquable, l’icône externe n’apparaît qu’une fois et seul le libellé se souligne au survol.
+        </p>
+        <div class="flex flex-wrap items-center gap-4">
+          <div
+            class="space-y-2"
+            data-testid="hvd-status-empty"
+          >
+            <p class="text-sm font-bold">
+              Sans statut
+            </p>
+            <HvdStatutBadge
+              :statut="null"
+              :url="null"
+              type="default"
+              :links-to-data="false"
+            />
+          </div>
+          <div
+            class="space-y-2"
+            data-testid="hvd-status-static"
+          >
+            <p class="text-sm font-bold">
+              Statut fourni par la page
+            </p>
+            <HvdStatutBadge
+              statut="Publié"
+              :url="null"
+              type="success"
+              :links-to-data="false"
+            />
+          </div>
+          <div
+            class="space-y-2"
+            data-testid="hvd-status-link"
+          >
+            <p class="text-sm font-bold">
+              Avec lien vers les données
+            </p>
+            <HvdStatutBadge
+              statut="Publié"
+              url="https://www.data.gouv.fr/datasets/base-adresse-nationale"
+              type="success"
+              :links-to-data="true"
             />
           </div>
         </div>
@@ -157,8 +230,9 @@
 
 <script setup lang="ts">
 import { LabelTag, Tag, type TranslatedBadge } from '@datagouv/components-next'
-import { RiCheckboxCircleLine } from '@remixicon/vue'
+import { RiCheckLine, RiCheckboxCircleLine, RiCloseLine, RiInformationLine } from '@remixicon/vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import HvdStatutBadge from '~/components/SuiviDePublication/HvdStatutBadge.vue'
 import TagsSelect from '~/components/TagsSelect.vue'
 import type { Tag as KeywordTag } from '~/types/types'
 
@@ -181,12 +255,12 @@ async function suggestExampleTags(query: string): Promise<Array<KeywordTag>> {
   return exampleKeywords.filter(tag => tag.text.includes(normalizedQuery))
 }
 
-const servicePublicBadge: TranslatedBadge = {
-  kind: 'spd',
-  label: 'Service public de la donnée',
-}
 const hvdBadge: TranslatedBadge = {
   kind: 'hvd',
   label: 'Données de forte valeur',
+}
+const longBadge: TranslatedBadge = {
+  kind: 'example',
+  label: 'Un label au libellé particulièrement long pour vérifier le retour à la ligne',
 }
 </script>

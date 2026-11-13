@@ -37,18 +37,25 @@
 /*
  * Compact tags and interaction states owned by cdata.
  *
- * DSFR interactive tags are blue at rest by default. In cdata they stay neutral
- * until hover/focus, while selected and dismissible values keep a stable blue.
+ * Consumer implementation of the Component Design Lab proposal. Static tags
+ * stay neutral; interactive tags use DSFR action colours and selected filters
+ * keep the high blue state.
  */
 .fr-tag {
+  box-sizing: border-box;
+  gap: 0.25rem;
   font-size: 0.75rem;
-  line-height: 1.25rem;
+  font-weight: 400;
+  line-height: 1.125rem;
   min-height: 1.5rem;
   padding: 0.125rem 0.5rem;
+  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
   border-radius: 0.75rem;
+  color: var(--text-label-grey);
+  background-color: var(--background-contrast-grey);
 }
 
-:is(a[href], button:not(:disabled), input[type="button"]:not(:disabled)).fr-tag:not(.fr-tag--dismiss, [aria-pressed="true"]) {
+:is(a[href], button:not(:disabled), input[type="button"]:not(:disabled)).fr-tag:not([aria-pressed="true"]) {
   color: var(--text-label-grey);
   background-color: var(--background-contrast-grey);
   --hover: var(--background-action-low-blue-france);
@@ -57,26 +64,26 @@
   --active-tint: var(--background-action-low-blue-france-active);
 }
 
-:is(a[href], button:not(:disabled), input[type="button"]:not(:disabled)).fr-tag:not(.fr-tag--dismiss, [aria-pressed="true"]):focus-visible {
+:is(a[href], button:not(:disabled), input[type="button"]:not(:disabled)).fr-tag:not([aria-pressed="true"]):focus-visible {
   color: var(--text-action-high-blue-france);
   background-color: var(--background-action-low-blue-france);
   outline: 2px solid var(--border-active-blue-france);
   outline-offset: 2px;
 }
 
-:is(a[href], button:not(:disabled), input[type="button"]:not(:disabled)).fr-tag:not(.fr-tag--dismiss, [aria-pressed="true"]):is(:hover, :active) {
+:is(a[href], button:not(:disabled), input[type="button"]:not(:disabled)).fr-tag:not([aria-pressed="true"]):is(:hover, :active) {
   color: var(--text-action-high-blue-france);
 }
 
-:is(a[href], button:not(:disabled), input[type="button"]:not(:disabled)).fr-tag:not(.fr-tag--dismiss, [aria-pressed="true"]):hover {
+:is(a[href], button:not(:disabled), input[type="button"]:not(:disabled)).fr-tag:not([aria-pressed="true"]):hover {
   background-color: var(--background-action-low-blue-france) !important;
 }
 
-:is(a[href], button:not(:disabled), input[type="button"]:not(:disabled)).fr-tag:not(.fr-tag--dismiss, [aria-pressed="true"]):active {
+:is(a[href], button:not(:disabled), input[type="button"]:not(:disabled)).fr-tag:not([aria-pressed="true"]):active {
   background-color: var(--background-action-low-blue-france-active) !important;
 }
 
-:is(button, input[type="button"]).fr-tag:is(.fr-tag--dismiss, [aria-pressed="true"]):not(:disabled) {
+:is(button, input[type="button"]).fr-tag[aria-pressed="true"]:not(:disabled) {
   color: var(--text-inverted-blue-france);
   background-color: var(--background-action-high-blue-france);
   --hover: var(--background-action-high-blue-france);
@@ -85,7 +92,7 @@
   --active-tint: var(--background-action-high-blue-france-active);
 }
 
-:is(button, input[type="button"]).fr-tag:is(.fr-tag--dismiss, [aria-pressed="true"]):not(:disabled):focus-visible {
+:is(button, input[type="button"]).fr-tag[aria-pressed="true"]:not(:disabled):focus-visible {
   outline: 2px solid var(--border-active-blue-france);
   outline-offset: 2px;
 }
@@ -111,10 +118,18 @@
  */
 @layer utilities {
   .cdata-dataset-label-tag {
+    box-sizing: border-box;
     min-height: 1.5rem;
+    padding: 0.125rem 0.5rem !important;
+    border: 1px solid color-mix(in srgb, currentColor 20%, transparent) !important;
+    border-radius: 999px !important;
+    font-size: 0.75rem !important;
+    font-weight: 400 !important;
+    line-height: 1.125rem !important;
+    text-transform: none !important;
     color: var(--text-label-grey) !important;
     background-color: var(--background-contrast-grey) !important;
-    gap: 0.125rem !important;
+    gap: 0.25rem !important;
   }
 
   a.cdata-dataset-label-tag:hover,
@@ -125,6 +140,13 @@
 
   a.cdata-dataset-label-tag:active {
     background-color: var(--background-action-low-blue-france-active) !important;
+  }
+
+  .datagouv-components .cdata-dataset-label-tag > img {
+    width: 0.875rem;
+    height: 0.875rem;
+    object-fit: contain;
+    flex-shrink: 0;
   }
 
   .datagouv-components .cdata-dataset-label-tag > img.bg-white {
@@ -143,8 +165,13 @@ a.cdata-dataset-label-tag:focus-visible {
   display: inline-flex;
   border-radius: 0.25rem;
   background-color: transparent !important;
+  background-image: none !important;
   --hover-tint: transparent;
   --active-tint: transparent;
+}
+
+.hvd-status-badge-link::after {
+  content: none !important;
 }
 
 .hvd-status-badge-link:hover,

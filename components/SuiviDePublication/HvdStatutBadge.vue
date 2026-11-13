@@ -14,7 +14,6 @@
       :icon-right="RiExternalLinkLine"
       size="sm"
       :no-wrap="false"
-      icon-size="size-3"
     >
       {{ statut }}
     </AdminBadge>
