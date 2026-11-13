@@ -20,11 +20,14 @@
     <div
       v-if="tags.length"
       class="mt-2 flex flex-wrap"
+      data-testid="selected-tags"
     >
       <button
         v-for="tag in tags"
         :key="tag.text"
         class="fr-tag fr-tag--sm fr-tag--dismiss mr-2 mb-2"
+        :aria-label="t('Supprimer le mot-clé {tag}', { tag: tag.text })"
+        :data-testid="`selected-tag-${tag.text}`"
         type="button"
         @click="removeTag(tag)"
       >
