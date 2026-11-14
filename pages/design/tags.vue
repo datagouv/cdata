@@ -169,48 +169,15 @@
           Labels métier des cartes
         </h2>
         <div class="flex flex-wrap items-center gap-4">
-          <span class="inline-flex items-center gap-1 min-h-6 px-2 py-0.5 rounded border border-current/20 text-xs/[18px] font-medium bg-gray-lower text-gray-plain">
-            <RiLockLine
-              class="size-3.5 flex-none"
-              aria-hidden="true"
-            />
-            Brouillon
-          </span>
-          <span class="inline-flex items-center gap-1 min-h-6 px-2 py-0.5 rounded border border-current/20 text-xs/[18px] font-medium bg-gray-lower text-gray-plain">
-            <RiArchiveLine
-              class="size-3.5 flex-none"
-              aria-hidden="true"
-            />
-            Archivé
-          </span>
-          <span class="inline-flex items-center gap-1 min-h-6 px-2 py-0.5 rounded border border-current/20 text-xs/[18px] font-medium bg-new-warning-light text-new-warning">
-            <RiLockLine
-              class="size-3.5 flex-none"
-              aria-hidden="true"
-            />
-            Accès restreint
-          </span>
-          <span class="inline-flex items-center gap-1 min-h-6 px-2 py-0.5 rounded border border-current/20 text-xs/[18px] font-medium bg-warning2-lightest text-warning2-dark">
-            <RiPassValidLine
-              class="size-3.5 flex-none"
-              aria-hidden="true"
-            />
-            Ouvert avec un compte
-          </span>
-          <span class="inline-flex items-center gap-1 min-h-6 px-2 py-0.5 rounded border border-current/20 text-xs/[18px] font-medium bg-new-error-light text-new-error">
-            <RiDeleteBinLine
-              class="size-3.5 flex-none"
-              aria-hidden="true"
-            />
-            Supprimé
-          </span>
-          <span class="inline-flex items-center gap-1 min-h-6 px-2 py-0.5 rounded border border-current/20 text-xs/[18px] font-medium bg-blue-france-contrast text-new-primary">
-            <RiGovernmentLine
-              class="size-3.5 flex-none"
-              aria-hidden="true"
-            />
-            Service public
-          </span>
+          <AdminBadge
+            v-for="label in cardBusinessLabels"
+            :key="label.label"
+            size="sm"
+            :type="label.type"
+            :icon="label.icon"
+          >
+            {{ label.label }}
+          </AdminBadge>
         </div>
       </section>
 
@@ -292,6 +259,7 @@
 <script setup lang="ts">
 import { LabelTag, Tag, type TranslatedBadge } from '@datagouv/components-next'
 import { RiArchiveLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiDeleteBinLine, RiGovernmentLine, RiInformationLine, RiLockLine, RiPassValidLine } from '@remixicon/vue'
+import type { Component } from 'vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import HvdStatutBadge from '~/components/SuiviDePublication/HvdStatutBadge.vue'
@@ -310,6 +278,14 @@ const exampleKeywords: Array<KeywordTag> = [
   { text: 'accessibilité' },
   { text: 'environnement' },
   { text: 'mobilité' },
+]
+const cardBusinessLabels: Array<{ label: string, type: AdminBadgeType, icon: Component }> = [
+  { label: 'Brouillon', type: 'secondary', icon: RiLockLine },
+  { label: 'Archivé', type: 'warning', icon: RiArchiveLine },
+  { label: 'Accès restreint', type: 'warning', icon: RiLockLine },
+  { label: 'Ouvert avec un compte', type: 'warning', icon: RiPassValidLine },
+  { label: 'Supprimé', type: 'danger', icon: RiDeleteBinLine },
+  { label: 'Service public', type: 'primary', icon: RiGovernmentLine },
 ]
 const tableStatusGroups: Array<Array<{ label: string, type: AdminBadgeType }>> = [
   [

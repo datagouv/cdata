@@ -12,7 +12,7 @@
     <AdminBadge
       :type="type"
       :icon-right="RiExternalLinkLine"
-      size="sm"
+      size="xs"
       :no-wrap="false"
     >
       {{ statut }}
@@ -21,7 +21,7 @@
   <AdminBadge
     v-else
     :type="type"
-    size="sm"
+    size="xs"
     :no-wrap="false"
   >
     {{ statut }}

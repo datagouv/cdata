@@ -45,13 +45,23 @@ test('shows every compact tag state', async ({ page }) => {
 
 test('shows the business labels used by cards', async ({ page }) => {
   const labels = page.getByTestId('card-business-labels')
+  const statuses = page.getByTestId('table-statuses')
 
   for (const text of ['Brouillon', 'Archivé', 'Accès restreint', 'Ouvert avec un compte', 'Supprimé', 'Service public']) {
     await expect(labels.getByText(text, { exact: true })).toBeVisible()
   }
 
-  await expect(labels.locator('span').first()).toHaveCSS('min-height', '24px')
-  await expect(labels.locator('svg').first()).toHaveCSS('width', '14px')
+  const cardBadges = labels.locator('.admin-badge')
+  await expect(cardBadges).toHaveCount(6)
+  await expect(cardBadges.first()).toHaveCSS('min-height', '24px')
+  await expect(cardBadges.first().locator('svg')).toHaveCSS('width', '14px')
+
+  for (const [cardLabel, tableStatus] of [['Brouillon', 'Brouillon'], ['Archivé', 'Archivé'], ['Accès restreint', 'Archivé'], ['Ouvert avec un compte', 'Archivé'], ['Supprimé', 'Supprimé'], ['Service public', 'Public']]) {
+    const cardBadge = cardBadges.filter({ hasText: cardLabel })
+    const tableBadge = statuses.locator('.admin-badge').filter({ hasText: tableStatus }).first()
+    await expect(cardBadge).toHaveCSS('color', await tableBadge.evaluate(element => getComputedStyle(element).color))
+    await expect(cardBadge).toHaveCSS('background-color', await tableBadge.evaluate(element => getComputedStyle(element).backgroundColor))
+  }
 })
 
 test('shows the statuses used in tables', async ({ page }) => {
@@ -123,7 +133,11 @@ test('shows HvdStatutBadge with and without a data URL', async ({ page }) => {
   await expect(page.getByTestId('hvd-status-empty').getByText('-', { exact: true })).toBeVisible()
 
   const staticBadge = page.getByTestId('hvd-status-static').locator('.admin-badge')
+  const completedTableBadge = page.getByTestId('table-statuses').locator('.admin-badge').filter({ hasText: 'Terminé' }).first()
   await expect(staticBadge).toHaveCSS('text-transform', 'none')
+  await expect(staticBadge).toHaveCSS('min-height', '20px')
+  await expect(staticBadge).toHaveCSS('color', await completedTableBadge.evaluate(element => getComputedStyle(element).color))
+  await expect(staticBadge).toHaveCSS('background-color', await completedTableBadge.evaluate(element => getComputedStyle(element).backgroundColor))
 
   const linkedBadge = page.getByTestId('hvd-status-link').locator('a')
   await expect(linkedBadge).toHaveAttribute('target', '_blank')
