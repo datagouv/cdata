@@ -129,7 +129,12 @@
 
 :is(button, input[type="button"]).fr-tag[aria-pressed="true"]:not(:disabled),
 :is(button, input[type="button"]).fr-tag[aria-pressed="true"]:not(:disabled):hover {
-  background-image: radial-gradient(circle at 100% 0.1875rem, transparent 0.4475rem, var(--background-active-blue-france) 0.5rem);
+  background-color: var(--background-action-high-blue-france) !important;
+  background-image: none !important;
+}
+
+:is(button, input[type="button"]).fr-tag[aria-pressed="true"]::after {
+  content: none !important;
 }
 
 :is(button, input[type="button"]).fr-tag:disabled {

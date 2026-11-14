@@ -12,18 +12,12 @@
     <h1 class="mb-3">
       Tags et labels
     </h1>
-    <p class="mb-8 text-gray-plain">
-      Reprise des variantes proposées dans le Component Design Lab. Les exemples sont autonomes afin de vérifier les états sans backend local.
-    </p>
 
-    <div class="space-y-12 pb-32">
+    <div class="mt-8 space-y-12 pb-32">
       <section data-testid="components-tag-examples">
         <h2 class="!mb-3">
-          Tag — proposition du Design Lab
+          Tags
         </h2>
-        <p class="mb-4 text-gray-plain">
-          Le composant est possédé par @datagouv/components-next. Ces exemples montrent son rendu actuel côté consommateur ; son API interactive devra être portée dans ce dépôt partagé.
-        </p>
         <div class="flex flex-wrap items-center gap-4">
           <Tag
             type="secondary"
@@ -57,11 +51,8 @@
 
       <section data-testid="tag-variants">
         <h2 class="!mb-3">
-          Variantes et états interactifs
+          États interactifs
         </h2>
-        <p class="mb-4 text-gray-plain">
-          Géométrie et états de la proposition Tag : 12/18, icônes 14 px, pilule neutre et couleurs d’action DSFR.
-        </p>
         <div class="flex flex-wrap items-center gap-4">
           <span
             class="fr-tag"
@@ -120,18 +111,12 @@
             Désactivé
           </button>
         </div>
-        <p class="mt-4 text-sm text-gray-plain">
-          Survolez les tags et utilisez la touche Tab pour vérifier le hover et le focus clavier.
-        </p>
       </section>
 
       <section data-testid="tags-select-example">
         <h2 class="!mb-3">
           TagsSelect
         </h2>
-        <p class="mb-4 text-gray-plain">
-          Plusieurs valeurs sélectionnées avec la géométrie du Design Lab et suppression fonctionnelle.
-        </p>
         <div class="max-w-xl">
           <TagsSelect
             v-model="selectedKeywords"
@@ -142,11 +127,8 @@
 
       <section data-testid="dataset-label-examples">
         <h2 class="!mb-3">
-          DatasetLabelTag — proposition du Design Lab
+          Labels de données
         </h2>
-        <p class="mb-4 text-gray-plain">
-          La variante statique reste informative ; la variante liée adopte les états du tag interactif. L’illustration est contenue dans 14 px, sans pastille blanche.
-        </p>
         <div class="flex flex-wrap items-center gap-4">
           <div class="space-y-2">
             <p class="text-sm font-bold">
@@ -182,13 +164,60 @@
         </div>
       </section>
 
+      <section data-testid="card-business-labels">
+        <h2 class="!mb-3">
+          Labels métier des cartes
+        </h2>
+        <div class="flex flex-wrap items-center gap-4">
+          <span class="inline-flex items-center gap-1 min-h-6 px-2 py-0.5 rounded border border-current/20 text-xs/[18px] font-medium bg-gray-lower text-gray-plain">
+            <RiLockLine
+              class="size-3.5 flex-none"
+              aria-hidden="true"
+            />
+            Brouillon
+          </span>
+          <span class="inline-flex items-center gap-1 min-h-6 px-2 py-0.5 rounded border border-current/20 text-xs/[18px] font-medium bg-gray-lower text-gray-plain">
+            <RiArchiveLine
+              class="size-3.5 flex-none"
+              aria-hidden="true"
+            />
+            Archivé
+          </span>
+          <span class="inline-flex items-center gap-1 min-h-6 px-2 py-0.5 rounded border border-current/20 text-xs/[18px] font-medium bg-new-warning-light text-new-warning">
+            <RiLockLine
+              class="size-3.5 flex-none"
+              aria-hidden="true"
+            />
+            Accès restreint
+          </span>
+          <span class="inline-flex items-center gap-1 min-h-6 px-2 py-0.5 rounded border border-current/20 text-xs/[18px] font-medium bg-warning2-lightest text-warning2-dark">
+            <RiPassValidLine
+              class="size-3.5 flex-none"
+              aria-hidden="true"
+            />
+            Ouvert avec un compte
+          </span>
+          <span class="inline-flex items-center gap-1 min-h-6 px-2 py-0.5 rounded border border-current/20 text-xs/[18px] font-medium bg-new-error-light text-new-error">
+            <RiDeleteBinLine
+              class="size-3.5 flex-none"
+              aria-hidden="true"
+            />
+            Supprimé
+          </span>
+          <span class="inline-flex items-center gap-1 min-h-6 px-2 py-0.5 rounded border border-current/20 text-xs/[18px] font-medium bg-blue-france-contrast text-new-primary">
+            <RiGovernmentLine
+              class="size-3.5 flex-none"
+              aria-hidden="true"
+            />
+            Service public
+          </span>
+        </div>
+      </section>
+
       <section data-testid="hvd-status-examples">
         <h2 class="!mb-3">
-          HvdStatutBadge — proposition du Design Lab
+          Statuts HVD
         </h2>
-        <p class="mb-4 text-gray-plain">
-          Le statut conserve sa couleur métier. Avec une URL, toute la pastille est cliquable, l’icône externe n’apparaît qu’une fois et seul le libellé se souligne au survol.
-        </p>
         <div class="flex flex-wrap items-center gap-4">
           <div
             class="space-y-2"
@@ -240,7 +269,7 @@
 
 <script setup lang="ts">
 import { LabelTag, Tag, type TranslatedBadge } from '@datagouv/components-next'
-import { RiCheckLine, RiCheckboxCircleLine, RiCloseLine, RiInformationLine } from '@remixicon/vue'
+import { RiArchiveLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiDeleteBinLine, RiGovernmentLine, RiInformationLine, RiLockLine, RiPassValidLine } from '@remixicon/vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import HvdStatutBadge from '~/components/SuiviDePublication/HvdStatutBadge.vue'
 import TagsSelect from '~/components/TagsSelect.vue'

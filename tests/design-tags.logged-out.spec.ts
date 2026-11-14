@@ -26,6 +26,9 @@ test('shows every compact tag state', async ({ page }) => {
 
   await selectableTag.click()
   await expect(selectableTag).toHaveAttribute('aria-pressed', 'true')
+  await expect(selectableTag.locator('svg')).toHaveCount(1)
+  await expect(selectableTag.locator('svg')).toHaveCSS('width', '14px')
+  expect(await selectableTag.evaluate(element => getComputedStyle(element, '::after').content)).toBe('none')
   const selectedBackground = await selectableTag.evaluate(element => getComputedStyle(element).backgroundColor)
   await selectableTag.hover()
   await expect(selectableTag).toHaveCSS('background-color', selectedBackground)
@@ -38,6 +41,17 @@ test('shows every compact tag state', async ({ page }) => {
   const dismissibleBackground = await dismissibleTag.evaluate(element => getComputedStyle(element).backgroundColor)
   await dismissibleTag.hover()
   await expect(dismissibleTag).not.toHaveCSS('background-color', dismissibleBackground)
+})
+
+test('shows the business labels used by cards', async ({ page }) => {
+  const labels = page.getByTestId('card-business-labels')
+
+  for (const text of ['Brouillon', 'Archivé', 'Accès restreint', 'Ouvert avec un compte', 'Supprimé', 'Service public']) {
+    await expect(labels.getByText(text, { exact: true })).toBeVisible()
+  }
+
+  await expect(labels.locator('span').first()).toHaveCSS('min-height', '24px')
+  await expect(labels.locator('svg').first()).toHaveCSS('width', '14px')
 })
 
 test('shows component tags with a stroke, including the linked variant', async ({ page }) => {
