@@ -49,10 +49,40 @@
   line-height: 1.125rem;
   min-height: 1.5rem;
   padding: 0.125rem 0.5rem;
-  border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+  border: 1px solid var(--border-default-grey);
   border-radius: 0.75rem;
   color: var(--text-label-grey);
   background-color: var(--background-contrast-grey);
+}
+
+/*
+ * @datagouv/components-next Tag does not expose a bordered variant yet.
+ * cdata adds the Design Lab stroke to its direct examples and to the tags
+ * rendered by DatasetInformationSection without changing the shared package.
+ */
+@layer utilities {
+  .cdata-tag,
+  .cdata-dataset-information .fr-raw-link > span {
+    box-sizing: border-box;
+    min-height: 1.5rem;
+    border: 1px solid var(--border-default-grey) !important;
+  }
+
+  .cdata-tag-link:hover > .cdata-tag,
+  .cdata-tag-link:focus-visible > .cdata-tag,
+  .cdata-dataset-information .fr-raw-link:hover > span,
+  .cdata-dataset-information .fr-raw-link:focus-visible > span {
+    color: var(--text-action-high-blue-france) !important;
+    border-color: var(--border-action-high-blue-france) !important;
+    background-color: var(--background-action-low-blue-france) !important;
+  }
+}
+
+.cdata-tag-link:focus-visible,
+.cdata-dataset-information .fr-raw-link:focus-visible {
+  border-radius: 0.75rem;
+  outline: 2px solid var(--border-active-blue-france);
+  outline-offset: 2px;
 }
 
 :is(a[href], button:not(:disabled), input[type="button"]:not(:disabled)).fr-tag:not([aria-pressed="true"]) {
@@ -121,7 +151,7 @@
     box-sizing: border-box;
     min-height: 1.5rem;
     padding: 0.125rem 0.5rem !important;
-    border: 1px solid color-mix(in srgb, currentColor 20%, transparent) !important;
+    border: 1px solid var(--border-default-grey) !important;
     border-radius: 999px !important;
     font-size: 0.75rem !important;
     font-weight: 400 !important;

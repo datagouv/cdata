@@ -40,6 +40,24 @@ test('shows every compact tag state', async ({ page }) => {
   await expect(dismissibleTag).not.toHaveCSS('background-color', dismissibleBackground)
 })
 
+test('shows component tags with a stroke, including the linked variant', async ({ page }) => {
+  const staticTag = page.getByTestId('components-tag-static')
+  const iconTag = page.getByTestId('components-tag-icon')
+  const linkedTag = page.getByTestId('components-tag-link')
+
+  for (const tag of [staticTag, iconTag, linkedTag]) {
+    await expect(tag).toHaveCSS('border-top-width', '1px')
+    await expect(tag).toHaveCSS('min-height', '24px')
+  }
+
+  const link = linkedTag.locator('..')
+  const restBackground = await linkedTag.evaluate(element => getComputedStyle(element).backgroundColor)
+  await link.hover()
+  await expect(linkedTag).not.toHaveCSS('background-color', restBackground)
+  await link.focus()
+  await expect(link).toHaveCSS('outline-style', 'solid')
+})
+
 test('shows and removes multiple TagsSelect values', async ({ page }) => {
   const selectedTags = page.getByTestId('selected-tags')
   await expect(selectedTags.getByRole('button')).toHaveCount(3)

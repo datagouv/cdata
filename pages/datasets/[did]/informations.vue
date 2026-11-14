@@ -1,6 +1,9 @@
 <template>
   <div class="divide-y">
-    <DatasetInformationSection :dataset="dataset">
+    <DatasetInformationSection
+      :dataset="dataset"
+      class="cdata-dataset-information"
+    >
       <!-- A dataset that cannot get a DOI offers no request at all rather than sending the support a demand refused in advance. -->
       <div v-if="doi || !doiBlockedReason(dataset)">
         <DescriptionListTerm>{{ $t('DOI') }}</DescriptionListTerm>

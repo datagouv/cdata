@@ -25,20 +25,30 @@
           Le composant est possédé par @datagouv/components-next. Ces exemples montrent son rendu actuel côté consommateur ; son API interactive devra être portée dans ce dépôt partagé.
         </p>
         <div class="flex flex-wrap items-center gap-4">
-          <Tag type="secondary">
+          <Tag
+            type="secondary"
+            class="cdata-tag"
+            data-testid="components-tag-static"
+          >
             Mobilité
           </Tag>
           <Tag
             type="secondary"
             :icon="RiCheckboxCircleLine"
+            class="cdata-tag"
+            data-testid="components-tag-icon"
           >
             Données ouvertes
           </Tag>
           <NuxtLink
-            class="fr-raw-link"
+            class="fr-raw-link cdata-tag-link"
             to="#components-tag-examples"
           >
-            <Tag type="secondary">
+            <Tag
+              type="secondary"
+              class="cdata-tag"
+              data-testid="components-tag-link"
+            >
               Environnement
             </Tag>
           </NuxtLink>
