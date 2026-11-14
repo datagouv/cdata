@@ -181,6 +181,17 @@
         </div>
       </section>
 
+      <section data-testid="access-type-badges">
+        <h2 class="!mb-3">
+          Types d’accès API
+        </h2>
+        <div class="flex flex-wrap items-center gap-4">
+          <AccessTypeBadge access-type="open" />
+          <AccessTypeBadge access-type="open_with_account" />
+          <AccessTypeBadge access-type="restricted" />
+        </div>
+      </section>
+
       <section data-testid="table-statuses">
         <h2 class="!mb-3">
           Statuts des tableaux
@@ -260,6 +271,7 @@
 import { LabelTag, Tag, type TranslatedBadge } from '@datagouv/components-next'
 import { RiArchiveLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiDeleteBinLine, RiGovernmentLine, RiInformationLine, RiLockLine, RiPassValidLine } from '@remixicon/vue'
 import type { Component } from 'vue'
+import AccessTypeBadge from '~/components/AccessTypes/AccessTypeBadge.vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import HvdStatutBadge from '~/components/SuiviDePublication/HvdStatutBadge.vue'
@@ -283,7 +295,7 @@ const cardBusinessLabels: Array<{ label: string, type: AdminBadgeType, icon: Com
   { label: 'Brouillon', type: 'secondary', icon: RiLockLine },
   { label: 'Archivé', type: 'warning', icon: RiArchiveLine },
   { label: 'Accès restreint', type: 'warning', icon: RiLockLine },
-  { label: 'Ouvert avec un compte', type: 'warning', icon: RiPassValidLine },
+  { label: 'Ouvert avec un compte', type: 'yellow', icon: RiPassValidLine },
   { label: 'Supprimé', type: 'danger', icon: RiDeleteBinLine },
   { label: 'Service public', type: 'primary', icon: RiGovernmentLine },
 ]

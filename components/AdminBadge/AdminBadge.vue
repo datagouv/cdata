@@ -47,6 +47,7 @@ const colors = computed(() => {
     secondary: 'text-secondary-dark bg-secondary-lightest',
     success: 'text-new-success bg-new-success-light',
     warning: 'text-new-warning bg-new-warning-light',
+    yellow: 'text-warning2-dark bg-warning2-lightest',
     danger: 'text-new-error bg-new-error-light',
     default: 'text-gray-plain bg-gray-lower',
     pink: 'text-pink bg-pink-soft',

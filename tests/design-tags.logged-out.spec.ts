@@ -46,6 +46,7 @@ test('shows every compact tag state', async ({ page }) => {
 test('shows the business labels used by cards', async ({ page }) => {
   const labels = page.getByTestId('card-business-labels')
   const statuses = page.getByTestId('table-statuses')
+  const accessTypes = page.getByTestId('access-type-badges')
 
   for (const text of ['Brouillon', 'Archivé', 'Accès restreint', 'Ouvert avec un compte', 'Supprimé', 'Service public']) {
     await expect(labels.getByText(text, { exact: true })).toBeVisible()
@@ -56,12 +57,30 @@ test('shows the business labels used by cards', async ({ page }) => {
   await expect(cardBadges.first()).toHaveCSS('min-height', '24px')
   await expect(cardBadges.first().locator('svg')).toHaveCSS('width', '14px')
 
-  for (const [cardLabel, tableStatus] of [['Brouillon', 'Brouillon'], ['Archivé', 'Archivé'], ['Accès restreint', 'Archivé'], ['Ouvert avec un compte', 'Archivé'], ['Supprimé', 'Supprimé'], ['Service public', 'Public']]) {
+  for (const [cardLabel, tableStatus] of [['Brouillon', 'Brouillon'], ['Archivé', 'Archivé'], ['Accès restreint', 'Archivé'], ['Supprimé', 'Supprimé'], ['Service public', 'Public']]) {
     const cardBadge = cardBadges.filter({ hasText: cardLabel })
     const tableBadge = statuses.locator('.admin-badge').filter({ hasText: tableStatus }).first()
     await expect(cardBadge).toHaveCSS('color', await tableBadge.evaluate(element => getComputedStyle(element).color))
     await expect(cardBadge).toHaveCSS('background-color', await tableBadge.evaluate(element => getComputedStyle(element).backgroundColor))
   }
+
+  const accountCardBadge = cardBadges.filter({ hasText: 'Ouvert avec un compte' })
+  const accountAccessBadge = accessTypes.locator('.admin-badge').filter({ hasText: 'Ouvert avec compte' })
+  await expect(accountCardBadge).toHaveCSS('color', await accountAccessBadge.evaluate(element => getComputedStyle(element).color))
+  await expect(accountCardBadge).toHaveCSS('background-color', await accountAccessBadge.evaluate(element => getComputedStyle(element).backgroundColor))
+})
+
+test('shows API access types with the account-only yellow tone', async ({ page }) => {
+  const accessTypes = page.getByTestId('access-type-badges')
+
+  await expect(accessTypes.getByText('Ouvert', { exact: true })).toBeVisible()
+  await expect(accessTypes.getByText('Ouvert avec compte', { exact: true })).toBeVisible()
+  await expect(accessTypes.getByText('Restreint', { exact: true })).toBeVisible()
+  await expect(accessTypes.locator('.admin-badge')).toHaveCount(3)
+
+  const accountBadge = accessTypes.locator('.admin-badge').filter({ hasText: 'Ouvert avec compte' })
+  const restrictedBadge = accessTypes.locator('.admin-badge').filter({ hasText: 'Restreint' })
+  await expect(accountBadge).not.toHaveCSS('background-color', await restrictedBadge.evaluate(element => getComputedStyle(element).backgroundColor))
 })
 
 test('shows the statuses used in tables', async ({ page }) => {
