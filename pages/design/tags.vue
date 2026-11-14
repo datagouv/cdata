@@ -84,32 +84,23 @@
               'data-testid': 'toggletip-tag',
             }"
           >
-            Avec infobulle
             <RiInformationLine
               class="size-3.5"
               aria-hidden="true"
             />
-            <template #toggletip="{ close }">
-              <div class="flex justify-between border-b border-gray-default">
-                <h3 class="m-0 p-3 text-base">
+            Avec infobulle
+            <template #toggletip>
+              <section class="flex flex-col gap-2 text-sm/[22px] text-gray-title">
+                <h3 class="m-0 text-base/6 font-semibold">
                   Informations du tag
                 </h3>
-                <button
-                  type="button"
-                  class="flex size-10 items-center justify-center border-l border-gray-default"
-                  title="Fermer"
-                  data-testid="toggletip-tag-close"
-                  @click="close"
+                <p
+                  class="m-0"
+                  data-testid="toggletip-tag-content"
                 >
-                  &times;
-                </button>
-              </div>
-              <p
-                class="m-0 p-3 text-sm"
-                data-testid="toggletip-tag-content"
-              >
-                Ce tag apporte une information complémentaire au clic.
-              </p>
+                  Ce tag apporte une information complémentaire au clic.
+                </p>
+              </section>
             </template>
           </Toggletip>
           <button
@@ -119,12 +110,12 @@
             :aria-pressed="isSelected"
             @click="isSelected = !isSelected"
           >
-            Sélectionnable
             <RiCheckLine
               v-if="isSelected"
               class="size-3.5"
               aria-hidden="true"
             />
+            Sélectionnable
           </button>
           <button
             class="fr-tag"
@@ -132,11 +123,11 @@
             type="button"
             aria-label="Supprimer le tag supprimable"
           >
-            Supprimable
             <RiCloseLine
               class="size-3.5"
               aria-hidden="true"
             />
+            Supprimable
           </button>
           <button
             class="fr-tag"

@@ -28,6 +28,7 @@ test('shows every compact tag state', async ({ page }) => {
   await expect(selectableTag).toHaveAttribute('aria-pressed', 'true')
   await expect(selectableTag.locator('svg')).toHaveCount(1)
   await expect(selectableTag.locator('svg')).toHaveCSS('width', '14px')
+  expect(await selectableTag.evaluate(element => element.firstElementChild?.tagName.toLowerCase())).toBe('svg')
   expect(await selectableTag.evaluate(element => getComputedStyle(element, '::after').content)).toBe('none')
   const selectedBackground = await selectableTag.evaluate(element => getComputedStyle(element).backgroundColor)
   await selectableTag.hover()
@@ -38,6 +39,7 @@ test('shows every compact tag state', async ({ page }) => {
   await expect(disabledTag).toHaveCSS('background-color', disabledBackground)
 
   const dismissibleTag = page.getByTestId('dismissible-tag')
+  expect(await dismissibleTag.evaluate(element => element.firstElementChild?.tagName.toLowerCase())).toBe('svg')
   const dismissibleBackground = await dismissibleTag.evaluate(element => getComputedStyle(element).backgroundColor)
   await dismissibleTag.hover()
   await expect(dismissibleTag).not.toHaveCSS('background-color', dismissibleBackground)
@@ -50,14 +52,16 @@ test('opens and closes a tag toggletip', async ({ page }) => {
   await expect(tag).toHaveCSS('font-size', '12px')
   await expect(tag).toHaveCSS('min-height', '24px')
   await expect(tag.locator('svg')).toHaveCount(1)
+  expect(await tag.evaluate(element => element.firstElementChild?.tagName.toLowerCase())).toBe('svg')
   await tag.focus()
   await expect(tag).toHaveCSS('outline-style', 'solid')
 
   await tag.click()
   await expect(tag).toHaveAttribute('aria-expanded', 'true')
   await expect(content).toBeVisible()
+  await expect(content.locator('..').locator('..')).toHaveClass(/p-4/)
 
-  await page.getByTestId('toggletip-tag-close').click()
+  await tag.click()
   await expect(tag).toHaveAttribute('aria-expanded', 'false')
   await expect(content).toBeHidden()
 })
