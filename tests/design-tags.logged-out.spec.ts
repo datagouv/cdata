@@ -43,6 +43,25 @@ test('shows every compact tag state', async ({ page }) => {
   await expect(dismissibleTag).not.toHaveCSS('background-color', dismissibleBackground)
 })
 
+test('opens and closes a tag toggletip', async ({ page }) => {
+  const tag = page.getByTestId('toggletip-tag')
+  const content = page.getByTestId('toggletip-tag-content')
+
+  await expect(tag).toHaveCSS('font-size', '12px')
+  await expect(tag).toHaveCSS('min-height', '24px')
+  await expect(tag.locator('svg')).toHaveCount(1)
+  await tag.focus()
+  await expect(tag).toHaveCSS('outline-style', 'solid')
+
+  await tag.click()
+  await expect(tag).toHaveAttribute('aria-expanded', 'true')
+  await expect(content).toBeVisible()
+
+  await page.getByTestId('toggletip-tag-close').click()
+  await expect(tag).toHaveAttribute('aria-expanded', 'false')
+  await expect(content).toBeHidden()
+})
+
 test('shows the business labels used by cards', async ({ page }) => {
   const labels = page.getByTestId('card-business-labels')
   const statuses = page.getByTestId('table-statuses')
@@ -68,6 +87,10 @@ test('shows the business labels used by cards', async ({ page }) => {
   const accountAccessBadge = accessTypes.locator('.admin-badge').filter({ hasText: 'Ouvert avec un compte' })
   await expect(accountCardBadge).toHaveCSS('color', await accountAccessBadge.evaluate(element => getComputedStyle(element).color))
   await expect(accountCardBadge).toHaveCSS('background-color', await accountAccessBadge.evaluate(element => getComputedStyle(element).backgroundColor))
+
+  const draftIcon = cardBadges.filter({ hasText: 'Brouillon' }).locator('svg')
+  const restrictedIcon = cardBadges.filter({ hasText: 'Accès restreint' }).locator('svg')
+  expect(await draftIcon.innerHTML()).not.toBe(await restrictedIcon.innerHTML())
 })
 
 test('shows API access types with the account-only yellow tone', async ({ page }) => {
@@ -109,12 +132,10 @@ test('shows the statuses used in tables', async ({ page }) => {
   await expect(badges.first().locator(':scope > span')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
 })
 
-test('shows resource license, schema and format metadata', async ({ page }) => {
-  const metadata = page.getByTestId('resource-metadata-badges')
+test('shows the data schema badge', async ({ page }) => {
+  const schema = page.getByTestId('schema-badge')
 
-  await expect(metadata.getByText('Licence Ouverte 2.0', { exact: true })).toBeVisible()
-  await expect(metadata.getByText('etalab/schema-irve', { exact: true })).toBeVisible()
-  await expect(metadata.getByText('CSV', { exact: true })).toBeVisible()
+  await expect(schema.getByText('etalab/schema-irve', { exact: true })).toBeVisible()
 })
 
 test('shows component tags with a stroke, including the linked variant', async ({ page }) => {

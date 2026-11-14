@@ -76,6 +76,42 @@
           >
             Cliquable · bouton
           </button>
+          <Toggletip
+            :styled-button="false"
+            button-class="fr-tag"
+            :button-props="{
+              'title': 'Afficher les informations du tag',
+              'data-testid': 'toggletip-tag',
+            }"
+          >
+            Avec infobulle
+            <RiInformationLine
+              class="size-3.5"
+              aria-hidden="true"
+            />
+            <template #toggletip="{ close }">
+              <div class="flex justify-between border-b border-gray-default">
+                <h3 class="m-0 p-3 text-base">
+                  Informations du tag
+                </h3>
+                <button
+                  type="button"
+                  class="flex size-10 items-center justify-center border-l border-gray-default"
+                  title="Fermer"
+                  data-testid="toggletip-tag-close"
+                  @click="close"
+                >
+                  &times;
+                </button>
+              </div>
+              <p
+                class="m-0 p-3 text-sm"
+                data-testid="toggletip-tag-content"
+              >
+                Ce tag apporte une information complémentaire au clic.
+              </p>
+            </template>
+          </Toggletip>
           <button
             class="fr-tag"
             data-testid="selectable-tag"
@@ -192,36 +228,11 @@
         </div>
       </section>
 
-      <section data-testid="resource-metadata-badges">
+      <section data-testid="schema-badge">
         <h2 class="!mb-3">
-          Métadonnées de ressources
+          Schéma de données
         </h2>
-        <div class="flex flex-wrap items-start gap-6">
-          <div class="space-y-2">
-            <p class="text-sm font-bold">
-              Licence
-            </p>
-            <LicenseBadge :license="exampleLicense" />
-          </div>
-          <div class="space-y-2">
-            <p class="text-sm font-bold">
-              Schéma
-            </p>
-            <span class="fr-tag">etalab/schema-irve</span>
-          </div>
-          <div class="space-y-2">
-            <p class="text-sm font-bold">
-              Format
-            </p>
-            <span class="inline-flex min-h-6 items-center gap-1 rounded bg-gray-some px-2 font-mono text-xs text-gray-medium">
-              <ResourceIcon
-                :resource="exampleResource"
-                class="size-3.5"
-              />
-              CSV
-            </span>
-          </div>
-        </div>
+        <span class="fr-tag">etalab/schema-irve</span>
       </section>
 
       <section data-testid="table-statuses">
@@ -305,8 +316,8 @@
 </template>
 
 <script setup lang="ts">
-import { LabelTag, LicenseBadge, ResourceIcon, Tag, type License, type TranslatedBadge } from '@datagouv/components-next'
-import { RiArchiveLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiDeleteBinLine, RiGovernmentLine, RiInformationLine, RiLockLine, RiPassValidLine } from '@remixicon/vue'
+import { LabelTag, Tag, Toggletip, type TranslatedBadge } from '@datagouv/components-next'
+import { RiArchiveLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiDeleteBinLine, RiDraftLine, RiGovernmentLine, RiInformationLine, RiLockLine, RiPassValidLine } from '@remixicon/vue'
 import type { Component } from 'vue'
 import AccessTypeBadge from '~/components/AccessTypes/AccessTypeBadge.vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
@@ -329,7 +340,7 @@ const exampleKeywords: Array<KeywordTag> = [
   { text: 'mobilité' },
 ]
 const cardBusinessLabels: Array<{ label: string, type: AdminBadgeType, icon: Component }> = [
-  { label: 'Brouillon', type: 'secondary', icon: RiLockLine },
+  { label: 'Brouillon', type: 'secondary', icon: RiDraftLine },
   { label: 'Archivé', type: 'warning', icon: RiArchiveLine },
   { label: 'Accès restreint', type: 'warning', icon: RiLockLine },
   { label: 'Ouvert avec un compte', type: 'yellow', icon: RiPassValidLine },
@@ -394,18 +405,5 @@ const hvdBadge: TranslatedBadge = {
 const longBadge: TranslatedBadge = {
   kind: 'example',
   label: 'Un label au libellé particulièrement long pour vérifier le retour à la ligne',
-}
-const exampleLicense: License = {
-  alternate_titles: null,
-  alternate_urls: null,
-  flags: [],
-  id: 'lov2',
-  maintainer: null,
-  title: 'Licence Ouverte 2.0',
-  url: 'https://www.etalab.gouv.fr/licence-ouverte-open-licence/',
-}
-const exampleResource = {
-  format: 'csv',
-  filetype: 'file' as const,
 }
 </script>
