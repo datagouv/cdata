@@ -16,11 +16,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import type { OrganizationOrSuggest } from '../types/organizations'
-import { throwOnNever } from '../functions/never'
+import type { OrganizationOption } from '../functions/organization-options'
 import Placeholder from './Placeholder.vue'
 
 const props = defineProps<{
-  organization: OrganizationOrSuggest
+  // OrganizationOption covers the lightweight entries built from search facets,
+  // which carry neither a logo nor a thumbnail.
+  organization: OrganizationOrSuggest | OrganizationOption
   sizeClass: string
 }>()
 
@@ -28,6 +30,6 @@ const thumbnail = computed(() => {
   if ('logo_thumbnail' in props.organization) return props.organization.logo_thumbnail
   if ('image_url' in props.organization) return props.organization.image_url
 
-  return throwOnNever(props.organization, 'Organization is neither an Organization or an OrganizationSuggest')
+  return null
 })
 </script>

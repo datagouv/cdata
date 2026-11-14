@@ -387,6 +387,110 @@ test('switching type resets page and clears a type-scoped custom filter in one g
   expect(url.searchParams.has('page')).toBeFalsy()
 })
 
+test.describe('organization filter option list', () => {
+  // `organization` is an advanced filter on the default dataset config, so the
+  // "Filtres avancés" panel has to be open. The testid sits on the combobox button,
+  // not on its input, and the input is targeted by its placeholder rather than by
+  // role + name: the "Organisations" label is shared with the search type radio
+  // group, and a disabled input is dropped from the accessibility tree anyway,
+  // which would hide it while the selected organization is still being resolved.
+  const openAdvancedFilters = async (page: Page) => {
+    await page.getByRole('button', { name: 'Filtres avancés' }).click()
+  }
+
+  const organizationInput = (page: Page) => page.getByPlaceholder('Toutes les organisations')
+
+  const openOrganizationSelect = async (page: Page) => {
+    await openAdvancedFilters(page)
+
+    const trigger = page.getByTestId('searchable-select-organisations')
+    await trigger.scrollIntoViewIfNeeded()
+    await trigger.click()
+
+    return organizationInput(page)
+  }
+
+  test('falls back to the suggest endpoint while nothing narrows the results', async ({ page }) => {
+    await page.goto('/datasets/search')
+    await page.waitForLoadState('networkidle')
+
+    const suggestRequest = page.waitForRequest(req => req.url().includes('/api/1/organizations/suggest/'))
+    await openOrganizationSelect(page)
+    await suggestRequest
+
+    // The suggest endpoint answers without a count, unlike the facets.
+    await expect(page.getByTestId('organization-option-count')).toHaveCount(0)
+  })
+
+  test('offers the counted facets of the results once a query narrows them down', async ({ page }) => {
+    // Collect the organization suggest calls to assert none is needed here.
+    let suggestCalls = 0
+    page.on('request', (req) => {
+      if (req.url().includes('/api/1/organizations/suggest/')) suggestCalls++
+    })
+
+    await page.goto('/datasets/search?q=meteo')
+    await page.waitForLoadState('networkidle')
+
+    await openOrganizationSelect(page)
+
+    // The facet carries a count, unlike the suggest endpoint which returns none.
+    // Its exact value depends on the seed, and `Intl` renders it in French compact
+    // notation ("1,2 k" past a thousand), so only assert it starts with a non-zero digit.
+    const meteoFrance = page.getByRole('option').filter({ hasText: 'Météo-France' })
+    await expect(meteoFrance).toBeVisible()
+    await expect(meteoFrance.getByTestId('organization-option-count')).toHaveText(/^[1-9]/)
+    expect(suggestCalls).toBe(0)
+  })
+
+  test('goes back to the suggest endpoint as soon as the user types', async ({ page }) => {
+    await page.goto('/datasets/search?q=meteo')
+    await page.waitForLoadState('networkidle')
+
+    const input = await openOrganizationSelect(page)
+
+    const suggestRequest = page.waitForRequest((req) => {
+      const url = new URL(req.url())
+      return url.pathname.includes('/api/1/organizations/suggest/') && url.searchParams.get('q') === 'met'
+    })
+    // fill() dispatches the change event SearchableSelect listens to, then the
+    // debounced watcher calls the suggest endpoint with the typed query.
+    await input.click()
+    await input.fill('met')
+    await suggestRequest
+  })
+
+  test('offers the counted facets once the query narrows the results after mounting', async ({ page }) => {
+    // Regression guard: the select resolves its options on mount, so a query typed
+    // afterwards used to leave the mount-time suggest list in place, without counts.
+    await page.goto('/datasets/search')
+    await page.waitForLoadState('networkidle')
+
+    // The main search input is named after its placeholder on the datasets page.
+    await page.getByPlaceholder('ex. élections présidentielles').fill('meteo')
+    await page.waitForURL(/q=meteo/)
+
+    await openOrganizationSelect(page)
+
+    // Météo-France is only reachable through the facets here, since the suggest
+    // endpoint is not asked again for an already non-empty query.
+    const meteoFrance = page.getByRole('option').filter({ hasText: 'Météo-France' })
+    await expect(meteoFrance).toBeVisible()
+    await expect(meteoFrance.getByTestId('organization-option-count')).toHaveText(/^[1-9]/)
+  })
+
+  test('keeps the selected organization displayed once it drops out of the facets', async ({ page }) => {
+    // Brest métropole has 366 datasets but none of them match "meteo", so the
+    // organization_id_with_name facet of that result is empty while the filter
+    // stays applied. The field must not fall back to its placeholder.
+    await page.goto('/datasets/search?organization=534fff5ba3a7292c64a77d19&q=meteo')
+    await page.waitForLoadState('networkidle')
+
+    await openAdvancedFilters(page)
+    await expect(organizationInput(page)).toHaveValue('Brest métropole')
+  })
+})
+
 test.describe('mobile', () => {
   test.use({ viewport: { width: 390, height: 844 } })
 

@@ -295,6 +295,19 @@ export type SortOption<Sort extends string> = {
   label: string
 }
 
+/**
+ * Where the organization filter takes its option list from:
+ * - `facets`: the `organization_id_with_name` facet of the current results. The
+ *   facet is capped, and typing in the select does not narrow it: use
+ *   `facets-then-suggest` unless the list is meant to be read-only;
+ * - `suggest`: the organizations suggest endpoint, searchable by name;
+ * - `facets-then-suggest`: the facets once the results are narrowed down by a
+ *   query or a filter, the suggest endpoint otherwise and as soon as the user
+ *   types, since the facet is capped and must not be the only way to reach an
+ *   organization.
+ */
+export type OrganizationSource = 'facets' | 'suggest' | 'facets-then-suggest'
+
 export type DatasetSearchConfig = {
   class: 'datasets'
   key?: string
@@ -304,6 +317,7 @@ export type DatasetSearchConfig = {
   hiddenFilters?: HiddenFilter<DatasetSearchFilters>[]
   basicFilters?: (keyof DatasetSearchFilters)[]
   advancedFilters?: (keyof DatasetSearchFilters)[]
+  organizationSource?: OrganizationSource
   sortOptions?: SortOption<DatasetSearchSort>[]
   defaultSort?: DatasetSearchSort
 }
@@ -317,6 +331,7 @@ export type DataserviceSearchConfig = {
   hiddenFilters?: HiddenFilter<DataserviceSearchFilters>[]
   basicFilters?: (keyof DataserviceSearchFilters)[]
   advancedFilters?: (keyof DataserviceSearchFilters)[]
+  organizationSource?: OrganizationSource
   sortOptions?: SortOption<DataserviceSearchSort>[]
   defaultSort?: DataserviceSearchSort
 }
@@ -330,6 +345,7 @@ export type ReuseSearchConfig = {
   hiddenFilters?: HiddenFilter<ReuseSearchFilters>[]
   basicFilters?: (keyof ReuseSearchFilters)[]
   advancedFilters?: (keyof ReuseSearchFilters)[]
+  organizationSource?: OrganizationSource
   sortOptions?: SortOption<ReuseSearchSort>[]
   defaultSort?: ReuseSearchSort
 }
@@ -343,6 +359,7 @@ export type OrganizationSearchConfig = {
   hiddenFilters?: HiddenFilter<OrganizationSearchFilters>[]
   basicFilters?: (keyof OrganizationSearchFilters)[]
   advancedFilters?: (keyof OrganizationSearchFilters)[]
+  organizationSource?: OrganizationSource
   sortOptions?: SortOption<OrganizationSearchSort>[]
   defaultSort?: OrganizationSearchSort
 }
@@ -356,6 +373,7 @@ export type TopicSearchConfig = {
   hiddenFilters?: HiddenFilter<TopicSearchFilters>[]
   basicFilters?: (keyof TopicSearchFilters)[]
   advancedFilters?: (keyof TopicSearchFilters)[]
+  organizationSource?: OrganizationSource
   sortOptions?: SortOption<TopicSearchSort>[]
   defaultSort?: TopicSearchSort
 }
