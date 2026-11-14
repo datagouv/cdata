@@ -6,7 +6,7 @@
       :placeholder="t('Chercher un mot clé…')"
       :get-option-id="(tag: Tag) => tag.text"
       :allow-new-option="toTag"
-      :suggest="suggestTags"
+      :suggest
       :multiple="true"
       class="!mb-0"
 
@@ -19,16 +19,24 @@
     </SearchableSelect>
     <div
       v-if="tags.length"
-      class="mt-2 flex flex-wrap"
+      class="mt-2 flex flex-wrap gap-2"
+      data-testid="selected-tags"
     >
       <button
         v-for="tag in tags"
         :key="tag.text"
-        class="fr-tag fr-tag--sm fr-tag--dismiss mr-2 mb-2"
+        class="fr-tag fr-tag--sm"
+        :aria-label="t('Supprimer le mot-clé {tag}', { tag: tag.text })"
+        :data-testid="`selected-tag-${tag.text}`"
         type="button"
         @click="removeTag(tag)"
       >
         {{ tag.text }}
+        <RiCloseLine
+          class="size-3.5"
+          aria-hidden="true"
+          focusable="false"
+        />
       </button>
     </div>
   </div>
@@ -36,11 +44,13 @@
 
 <script setup lang="ts">
 import { SearchableSelect } from '@datagouv/components-next'
+import { RiCloseLine } from '@remixicon/vue'
 import type { Tag } from '~/types/types'
 
-defineProps<{
+const props = defineProps<{
   errorText?: string | null
   warningText?: string | null
+  suggest?: (query: string) => Promise<Array<Tag>>
 }>()
 const tags = defineModel<Array<Tag>>({ required: true })
 
@@ -55,6 +65,8 @@ async function suggestTags(query: string) {
     },
   })
 }
+
+const suggest = computed(() => props.suggest ?? suggestTags)
 function removeTag(tag: Tag) {
   tags.value = tags.value.filter(otherTag => otherTag.text !== tag.text)
 }

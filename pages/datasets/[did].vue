@@ -307,6 +307,7 @@
                     :key="badge.kind"
                     :badge
                     :url="`/datasets/search?badge=${badge.kind}`"
+                    class="cdata-dataset-label-tag"
                   />
                 </dd>
               </div>

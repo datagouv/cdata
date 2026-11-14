@@ -27,10 +27,32 @@ test('dataset with labels shows label section', async ({ page }) => {
   // Check that labels are clickable links
   await expect(labelsList.locator('a')).toHaveCount(1)
 
+  const label = labelsList.locator('a').first()
+  await expect(label).toHaveCSS('font-size', '12px')
+  await expect(label).toHaveCSS('min-height', '24px')
+  await expect(label.locator('img')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+
   // The label text comes from the badge reference list, which the page only
   // fetches for datasets that carry badges: a link with an empty label means
   // that list was not loaded.
   await expect(labelsList.locator('a')).toHaveText(/Service public de la donnée/)
+})
+
+test('linked dataset labels are neutral at rest and blue on hover and focus', async ({ page }) => {
+  await page.goto(
+    '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
+  )
+
+  const label = page.getByTestId('label-list').locator('a').first()
+  const restBackground = await label.evaluate(element => getComputedStyle(element).backgroundColor)
+  await label.hover()
+  const hoverBackground = await label.evaluate(element => getComputedStyle(element).backgroundColor)
+  expect(hoverBackground).not.toBe(restBackground)
+
+  await label.focus()
+  await expect(label).toBeFocused()
+  await expect(label).toHaveCSS('outline-style', 'solid')
+  await expect(label).toHaveCSS('outline-width', '2px')
 })
 
 test('dataset labels have proper tooltips and information', async ({
