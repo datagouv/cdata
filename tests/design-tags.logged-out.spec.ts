@@ -61,7 +61,12 @@ test('shows the statuses used in tables', async ({ page }) => {
     await expect(statuses.getByText(text, { exact: true })).toBeVisible()
   }
 
-  await expect(statuses.locator('.admin-badge')).toHaveCount(15)
+  const badges = statuses.locator('.admin-badge')
+  await expect(badges).toHaveCount(15)
+  await expect(badges.first()).toHaveCSS('min-height', '20px')
+  await expect(badges.first()).toHaveCSS('line-height', '16px')
+  await expect(badges.first()).toHaveCSS('padding-top', '1px')
+  await expect(badges.first()).toHaveCSS('padding-bottom', '1px')
 })
 
 test('shows component tags with a stroke, including the linked variant', async ({ page }) => {

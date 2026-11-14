@@ -76,7 +76,8 @@ const iconSize = computed(() => props.iconSize || 'size-3.5')
 
 .admin-badge[data-size="xs"] {
   min-height: 1.25rem;
-  padding: 0 0.375rem;
+  padding: 0.0625rem 0.375rem;
+  line-height: 1rem;
 }
 
 .admin-badge__icon {
