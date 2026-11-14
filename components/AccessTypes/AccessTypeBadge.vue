@@ -1,33 +1,39 @@
 <template>
   <AdminBadge
     size="sm"
-    :type
+    :type="display.type"
+    :icon="display.icon"
   >
-    {{ label }}
+    {{ display.label }}
   </AdminBadge>
 </template>
 
 <script setup lang="ts">
 import type { AccessType } from '@datagouv/components-next'
+import { RiLockLine, RiPassValidLine } from '@remixicon/vue'
+import type { Component } from 'vue'
 import type { AdminBadgeType } from '~/types/types'
 
 const props = defineProps<{ accessType: AccessType }>()
 
 const { t } = useTranslation()
 
-const label = computed(() => {
+const display = computed<{ label: string, type: AdminBadgeType, icon?: Component }>(() => {
   return {
-    open: t('Ouvert'),
-    open_with_account: t('Ouvert avec compte'),
-    restricted: t('Restreint'),
-  }[props.accessType]
-})
-
-const type = computed(() => {
-  return {
-    open: 'success' as AdminBadgeType,
-    open_with_account: 'yellow' as AdminBadgeType,
-    restricted: 'warning' as AdminBadgeType,
+    open: {
+      label: t('Ouvert'),
+      type: 'success' as const,
+    },
+    open_with_account: {
+      label: t('Ouvert avec un compte'),
+      type: 'yellow' as const,
+      icon: RiPassValidLine,
+    },
+    restricted: {
+      label: t('Accès restreint'),
+      type: 'warning' as const,
+      icon: RiLockLine,
+    },
   }[props.accessType]
 })
 </script>

@@ -65,7 +65,7 @@ test('shows the business labels used by cards', async ({ page }) => {
   }
 
   const accountCardBadge = cardBadges.filter({ hasText: 'Ouvert avec un compte' })
-  const accountAccessBadge = accessTypes.locator('.admin-badge').filter({ hasText: 'Ouvert avec compte' })
+  const accountAccessBadge = accessTypes.locator('.admin-badge').filter({ hasText: 'Ouvert avec un compte' })
   await expect(accountCardBadge).toHaveCSS('color', await accountAccessBadge.evaluate(element => getComputedStyle(element).color))
   await expect(accountCardBadge).toHaveCSS('background-color', await accountAccessBadge.evaluate(element => getComputedStyle(element).backgroundColor))
 })
@@ -74,12 +74,18 @@ test('shows API access types with the account-only yellow tone', async ({ page }
   const accessTypes = page.getByTestId('access-type-badges')
 
   await expect(accessTypes.getByText('Ouvert', { exact: true })).toBeVisible()
-  await expect(accessTypes.getByText('Ouvert avec compte', { exact: true })).toBeVisible()
-  await expect(accessTypes.getByText('Restreint', { exact: true })).toBeVisible()
+  await expect(accessTypes.getByText('Ouvert avec un compte', { exact: true })).toBeVisible()
+  await expect(accessTypes.getByText('Accès restreint', { exact: true })).toBeVisible()
   await expect(accessTypes.locator('.admin-badge')).toHaveCount(3)
 
-  const accountBadge = accessTypes.locator('.admin-badge').filter({ hasText: 'Ouvert avec compte' })
-  const restrictedBadge = accessTypes.locator('.admin-badge').filter({ hasText: 'Restreint' })
+  const openBadge = accessTypes.locator('.admin-badge').filter({ hasText: /^Ouvert$/ })
+  const accountBadge = accessTypes.locator('.admin-badge').filter({ hasText: 'Ouvert avec un compte' })
+  const restrictedBadge = accessTypes.locator('.admin-badge').filter({ hasText: 'Accès restreint' })
+  await expect(openBadge.locator('svg')).toHaveCount(0)
+  await expect(accountBadge.locator('svg')).toHaveCount(1)
+  await expect(restrictedBadge.locator('svg')).toHaveCount(1)
+  await expect(accountBadge.locator('svg')).toHaveCSS('width', '14px')
+  await expect(restrictedBadge.locator('svg')).toHaveCSS('width', '14px')
   await expect(accountBadge).not.toHaveCSS('background-color', await restrictedBadge.evaluate(element => getComputedStyle(element).backgroundColor))
 })
 
