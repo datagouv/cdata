@@ -54,6 +54,16 @@ test('shows the business labels used by cards', async ({ page }) => {
   await expect(labels.locator('svg').first()).toHaveCSS('width', '14px')
 })
 
+test('shows the statuses used in tables', async ({ page }) => {
+  const statuses = page.getByTestId('table-statuses')
+
+  for (const text of ['Public', 'Brouillon', 'Archivé', 'Supprimé', 'En attente', 'En traitement', 'Terminé', 'Terminé avec des erreurs', 'Échoué', 'Disponible', 'Indisponible', 'Pas encore contrôlé', 'Nouveau', 'Répondu', 'Clos']) {
+    await expect(statuses.getByText(text, { exact: true })).toBeVisible()
+  }
+
+  await expect(statuses.locator('.admin-badge')).toHaveCount(15)
+})
+
 test('shows component tags with a stroke, including the linked variant', async ({ page }) => {
   const staticTag = page.getByTestId('components-tag-static')
   const iconTag = page.getByTestId('components-tag-icon')

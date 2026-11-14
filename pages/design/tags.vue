@@ -214,6 +214,28 @@
         </div>
       </section>
 
+      <section data-testid="table-statuses">
+        <h2 class="!mb-3">
+          Statuts des tableaux
+        </h2>
+        <div class="space-y-4">
+          <div
+            v-for="(group, index) in tableStatusGroups"
+            :key="index"
+            class="flex flex-wrap items-center gap-2"
+          >
+            <AdminBadge
+              v-for="status in group"
+              :key="status.label"
+              size="xs"
+              :type="status.type"
+            >
+              {{ status.label }}
+            </AdminBadge>
+          </div>
+        </div>
+      </section>
+
       <section data-testid="hvd-status-examples">
         <h2 class="!mb-3">
           Statuts HVD
@@ -270,10 +292,11 @@
 <script setup lang="ts">
 import { LabelTag, Tag, type TranslatedBadge } from '@datagouv/components-next'
 import { RiArchiveLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiDeleteBinLine, RiGovernmentLine, RiInformationLine, RiLockLine, RiPassValidLine } from '@remixicon/vue'
+import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import HvdStatutBadge from '~/components/SuiviDePublication/HvdStatutBadge.vue'
 import TagsSelect from '~/components/TagsSelect.vue'
-import type { Tag as KeywordTag } from '~/types/types'
+import type { AdminBadgeType, Tag as KeywordTag } from '~/types/types'
 
 const isSelected = ref(false)
 const selectedKeywords = ref<Array<KeywordTag>>([
@@ -287,6 +310,29 @@ const exampleKeywords: Array<KeywordTag> = [
   { text: 'accessibilité' },
   { text: 'environnement' },
   { text: 'mobilité' },
+]
+const tableStatusGroups: Array<Array<{ label: string, type: AdminBadgeType }>> = [
+  [
+    { label: 'Public', type: 'primary' },
+    { label: 'Brouillon', type: 'secondary' },
+    { label: 'Archivé', type: 'warning' },
+    { label: 'Supprimé', type: 'danger' },
+  ],
+  [
+    { label: 'En attente', type: 'secondary' },
+    { label: 'En traitement', type: 'primary' },
+    { label: 'Terminé', type: 'success' },
+    { label: 'Terminé avec des erreurs', type: 'warning' },
+    { label: 'Échoué', type: 'danger' },
+  ],
+  [
+    { label: 'Disponible', type: 'primary' },
+    { label: 'Indisponible', type: 'danger' },
+    { label: 'Pas encore contrôlé', type: 'secondary' },
+    { label: 'Nouveau', type: 'primary' },
+    { label: 'Répondu', type: 'secondary' },
+    { label: 'Clos', type: 'secondary' },
+  ],
 ]
 
 async function suggestExampleTags(query: string): Promise<Array<KeywordTag>> {
