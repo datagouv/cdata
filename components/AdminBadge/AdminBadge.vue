@@ -80,6 +80,11 @@ const iconSize = computed(() => props.iconSize || 'size-3.5')
   line-height: 1rem;
 }
 
+.admin-badge[data-size="xs"] > span,
+.admin-badge[data-size="xs"] > .admin-badge__icon {
+  transform: translateY(-0.0625rem);
+}
+
 .admin-badge__icon {
   flex-shrink: 0;
 }

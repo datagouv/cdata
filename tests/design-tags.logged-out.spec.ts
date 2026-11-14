@@ -67,6 +67,7 @@ test('shows the statuses used in tables', async ({ page }) => {
   await expect(badges.first()).toHaveCSS('line-height', '16px')
   await expect(badges.first()).toHaveCSS('padding-top', '1px')
   await expect(badges.first()).toHaveCSS('padding-bottom', '1px')
+  await expect(badges.first().locator(':scope > span')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
 })
 
 test('shows component tags with a stroke, including the linked variant', async ({ page }) => {
