@@ -86,17 +86,29 @@ test('shows API access types with the account-only yellow tone', async ({ page }
 test('shows the statuses used in tables', async ({ page }) => {
   const statuses = page.getByTestId('table-statuses')
 
-  for (const text of ['Public', 'Brouillon', 'Archivé', 'Supprimé', 'En attente', 'En traitement', 'Terminé', 'Terminé avec des erreurs', 'Échoué', 'Disponible', 'Indisponible', 'Pas encore contrôlé', 'Nouveau', 'Répondu', 'Clos']) {
+  for (const context of ['Publication des objets', 'Traitements', 'Disponibilité des ressources principales', 'Disponibilité des ressources communautaires', 'Discussions']) {
+    await expect(statuses.getByText(context, { exact: true })).toBeVisible()
+  }
+
+  for (const text of ['Public', 'Brouillon', 'Archivé', 'Supprimé', 'En attente', 'En traitement', 'Terminé', 'Terminé avec des erreurs', 'Échoué', 'Inconnu', 'Pas encore contrôlé', 'Nouveau', 'Répondu', 'Clos']) {
     await expect(statuses.getByText(text, { exact: true })).toBeVisible()
   }
 
   const badges = statuses.locator('.admin-badge')
-  await expect(badges).toHaveCount(15)
+  await expect(badges).toHaveCount(18)
   await expect(badges.first()).toHaveCSS('min-height', '20px')
   await expect(badges.first()).toHaveCSS('line-height', '16px')
   await expect(badges.first()).toHaveCSS('padding-top', '1px')
   await expect(badges.first()).toHaveCSS('padding-bottom', '1px')
   await expect(badges.first().locator(':scope > span')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
+})
+
+test('shows resource license, schema and format metadata', async ({ page }) => {
+  const metadata = page.getByTestId('resource-metadata-badges')
+
+  await expect(metadata.getByText('Licence Ouverte 2.0', { exact: true })).toBeVisible()
+  await expect(metadata.getByText('etalab/schema-irve', { exact: true })).toBeVisible()
+  await expect(metadata.getByText('CSV', { exact: true })).toBeVisible()
 })
 
 test('shows component tags with a stroke, including the linked variant', async ({ page }) => {

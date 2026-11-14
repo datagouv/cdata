@@ -192,24 +192,61 @@
         </div>
       </section>
 
+      <section data-testid="resource-metadata-badges">
+        <h2 class="!mb-3">
+          Métadonnées de ressources
+        </h2>
+        <div class="flex flex-wrap items-start gap-6">
+          <div class="space-y-2">
+            <p class="text-sm font-bold">
+              Licence
+            </p>
+            <LicenseBadge :license="exampleLicense" />
+          </div>
+          <div class="space-y-2">
+            <p class="text-sm font-bold">
+              Schéma
+            </p>
+            <span class="fr-tag">etalab/schema-irve</span>
+          </div>
+          <div class="space-y-2">
+            <p class="text-sm font-bold">
+              Format
+            </p>
+            <span class="inline-flex min-h-6 items-center gap-1 rounded bg-gray-some px-2 font-mono text-xs text-gray-medium">
+              <ResourceIcon
+                :resource="exampleResource"
+                class="size-3.5"
+              />
+              CSV
+            </span>
+          </div>
+        </div>
+      </section>
+
       <section data-testid="table-statuses">
         <h2 class="!mb-3">
           Statuts des tableaux
         </h2>
         <div class="space-y-4">
           <div
-            v-for="(group, index) in tableStatusGroups"
-            :key="index"
-            class="flex flex-wrap items-center gap-2"
+            v-for="group in tableStatusGroups"
+            :key="group.label"
+            class="space-y-2"
           >
-            <AdminBadge
-              v-for="status in group"
-              :key="status.label"
-              size="xs"
-              :type="status.type"
-            >
-              {{ status.label }}
-            </AdminBadge>
+            <p class="text-sm font-bold">
+              {{ group.label }}
+            </p>
+            <div class="flex flex-wrap items-center gap-2">
+              <AdminBadge
+                v-for="status in group.statuses"
+                :key="status.label"
+                size="xs"
+                :type="status.type"
+              >
+                {{ status.label }}
+              </AdminBadge>
+            </div>
           </div>
         </div>
       </section>
@@ -268,7 +305,7 @@
 </template>
 
 <script setup lang="ts">
-import { LabelTag, Tag, type TranslatedBadge } from '@datagouv/components-next'
+import { LabelTag, LicenseBadge, ResourceIcon, Tag, type License, type TranslatedBadge } from '@datagouv/components-next'
 import { RiArchiveLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiDeleteBinLine, RiGovernmentLine, RiInformationLine, RiLockLine, RiPassValidLine } from '@remixicon/vue'
 import type { Component } from 'vue'
 import AccessTypeBadge from '~/components/AccessTypes/AccessTypeBadge.vue'
@@ -299,28 +336,50 @@ const cardBusinessLabels: Array<{ label: string, type: AdminBadgeType, icon: Com
   { label: 'Supprimé', type: 'danger', icon: RiDeleteBinLine },
   { label: 'Service public', type: 'primary', icon: RiGovernmentLine },
 ]
-const tableStatusGroups: Array<Array<{ label: string, type: AdminBadgeType }>> = [
-  [
-    { label: 'Public', type: 'primary' },
-    { label: 'Brouillon', type: 'secondary' },
-    { label: 'Archivé', type: 'warning' },
-    { label: 'Supprimé', type: 'danger' },
-  ],
-  [
-    { label: 'En attente', type: 'secondary' },
-    { label: 'En traitement', type: 'primary' },
-    { label: 'Terminé', type: 'success' },
-    { label: 'Terminé avec des erreurs', type: 'warning' },
-    { label: 'Échoué', type: 'danger' },
-  ],
-  [
-    { label: 'Disponible', type: 'primary' },
-    { label: 'Indisponible', type: 'danger' },
-    { label: 'Pas encore contrôlé', type: 'secondary' },
-    { label: 'Nouveau', type: 'primary' },
-    { label: 'Répondu', type: 'secondary' },
-    { label: 'Clos', type: 'secondary' },
-  ],
+const tableStatusGroups: Array<{ label: string, statuses: Array<{ label: string, type: AdminBadgeType }> }> = [
+  {
+    label: 'Publication des objets',
+    statuses: [
+      { label: 'Public', type: 'primary' },
+      { label: 'Brouillon', type: 'secondary' },
+      { label: 'Archivé', type: 'warning' },
+      { label: 'Supprimé', type: 'danger' },
+    ],
+  },
+  {
+    label: 'Traitements',
+    statuses: [
+      { label: 'En attente', type: 'secondary' },
+      { label: 'En traitement', type: 'primary' },
+      { label: 'Terminé', type: 'success' },
+      { label: 'Terminé avec des erreurs', type: 'warning' },
+      { label: 'Échoué', type: 'danger' },
+    ],
+  },
+  {
+    label: 'Disponibilité des ressources principales',
+    statuses: [
+      { label: 'Disponible', type: 'primary' },
+      { label: 'Indisponible', type: 'danger' },
+      { label: 'Inconnu', type: 'warning' },
+    ],
+  },
+  {
+    label: 'Disponibilité des ressources communautaires',
+    statuses: [
+      { label: 'Disponible', type: 'primary' },
+      { label: 'Indisponible', type: 'danger' },
+      { label: 'Pas encore contrôlé', type: 'secondary' },
+    ],
+  },
+  {
+    label: 'Discussions',
+    statuses: [
+      { label: 'Nouveau', type: 'primary' },
+      { label: 'Répondu', type: 'secondary' },
+      { label: 'Clos', type: 'secondary' },
+    ],
+  },
 ]
 
 async function suggestExampleTags(query: string): Promise<Array<KeywordTag>> {
@@ -335,5 +394,18 @@ const hvdBadge: TranslatedBadge = {
 const longBadge: TranslatedBadge = {
   kind: 'example',
   label: 'Un label au libellé particulièrement long pour vérifier le retour à la ligne',
+}
+const exampleLicense: License = {
+  alternate_titles: null,
+  alternate_urls: null,
+  flags: [],
+  id: 'lov2',
+  maintainer: null,
+  title: 'Licence Ouverte 2.0',
+  url: 'https://www.etalab.gouv.fr/licence-ouverte-open-licence/',
+}
+const exampleResource = {
+  format: 'csv',
+  filetype: 'file' as const,
 }
 </script>
