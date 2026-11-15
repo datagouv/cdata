@@ -18,6 +18,10 @@ test('shows every compact tag state', async ({ page }) => {
     await expect(tag).toHaveCSS('border-top-width', '1px')
   }
 
+  const iconTag = page.getByTestId('icon-tag')
+  await expect(iconTag).toHaveCSS('padding-left', '6px')
+  await expect(iconTag.locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
+
   const restBackground = await clickableTag.evaluate(element => getComputedStyle(element).backgroundColor)
   await clickableTag.hover()
   await expect(clickableTag).not.toHaveCSS('background-color', restBackground)
@@ -28,6 +32,8 @@ test('shows every compact tag state', async ({ page }) => {
   await expect(selectableTag).toHaveAttribute('aria-pressed', 'true')
   await expect(selectableTag.locator('svg')).toHaveCount(1)
   await expect(selectableTag.locator('svg')).toHaveCSS('width', '14px')
+  await expect(selectableTag).toHaveCSS('padding-left', '6px')
+  await expect(selectableTag.locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
   expect(await selectableTag.evaluate(element => element.firstElementChild?.tagName.toLowerCase())).toBe('svg')
   expect(await selectableTag.evaluate(element => getComputedStyle(element, '::after').content)).toBe('none')
   const selectedBackground = await selectableTag.evaluate(element => getComputedStyle(element).backgroundColor)
@@ -40,6 +46,7 @@ test('shows every compact tag state', async ({ page }) => {
 
   const dismissibleTag = page.getByTestId('dismissible-tag')
   expect(await dismissibleTag.evaluate(element => element.firstElementChild?.tagName.toLowerCase())).toBe('svg')
+  await expect(dismissibleTag).toHaveCSS('padding-left', '6px')
   const dismissibleBackground = await dismissibleTag.evaluate(element => getComputedStyle(element).backgroundColor)
   await dismissibleTag.hover()
   await expect(dismissibleTag).not.toHaveCSS('background-color', dismissibleBackground)
@@ -53,6 +60,8 @@ test('opens and closes a tag toggletip', async ({ page }) => {
   await expect(tag).toHaveCSS('min-height', '24px')
   await expect(tag.locator('svg')).toHaveCount(1)
   expect(await tag.evaluate(element => element.firstElementChild?.tagName.toLowerCase())).toBe('svg')
+  await expect(tag).toHaveCSS('padding-left', '6px')
+  await expect(tag.locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
   await tag.focus()
   await expect(tag).toHaveCSS('outline-style', 'solid')
 
@@ -167,6 +176,9 @@ test('shows and removes multiple TagsSelect values', async ({ page }) => {
   await expect(selectedTags.getByRole('button').first()).toHaveCSS('line-height', '18px')
   await expect(selectedTags.getByRole('button').first()).toHaveCSS('min-height', '24px')
   await expect(selectedTags.getByRole('button').first().locator('svg')).toHaveCSS('width', '14px')
+  expect(await selectedTags.getByRole('button').first().evaluate(element => element.firstElementChild?.tagName.toLowerCase())).toBe('svg')
+  await expect(selectedTags.getByRole('button').first()).toHaveCSS('padding-left', '6px')
+  await expect(selectedTags.getByRole('button').first().locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
 
   await page.getByRole('button', { name: 'Supprimer le mot-clé transport' }).click()
   await expect(selectedTags.getByRole('button')).toHaveCount(2)

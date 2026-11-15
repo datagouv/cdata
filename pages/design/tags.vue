@@ -58,7 +58,10 @@
             class="fr-tag"
             data-testid="static-tag"
           >Tag de catégorie</span>
-          <span class="fr-tag">
+          <span
+            class="fr-tag"
+            data-testid="icon-tag"
+          >
             <RiInformationLine
               class="size-3.5"
               aria-hidden="true"

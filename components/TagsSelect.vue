@@ -31,12 +31,12 @@
         type="button"
         @click="removeTag(tag)"
       >
-        {{ tag.text }}
         <RiCloseLine
           class="size-3.5"
           aria-hidden="true"
           focusable="false"
         />
+        {{ tag.text }}
       </button>
     </div>
   </div>
