@@ -57,16 +57,31 @@
 
 /*
  * Icons have more visual weight than text at the same geometric center.
- * Keep them first, tighten the icon-side padding and lift them by one pixel so
- * the glyph aligns with the text's optical center rather than its line box.
+ * Keep them first, tighten the icon-side padding and lift each implementation
+ * just enough to align the glyph with the text rather than its line box.
  */
-:is(.fr-tag, .cdata-tag):has(> svg:first-child) {
+.fr-tag:has(> svg:first-child) {
   padding-inline-start: 0.375rem;
 }
 
-:is(.fr-tag, .cdata-tag) > svg:first-child {
+.fr-tag > svg:first-child {
   flex: none;
-  transform: translateY(-0.0625rem);
+  width: 0.875rem;
+  height: 0.875rem;
+  transform: translateY(-0.03125rem);
+}
+
+@layer utilities {
+  .cdata-tag:has(> svg:first-child) {
+    padding-inline-start: 0.375rem !important;
+  }
+
+  .cdata-tag > svg:first-child {
+    flex: none;
+    width: 0.875rem !important;
+    height: 0.875rem !important;
+    transform: translateY(-0.0625rem);
+  }
 }
 
 /*

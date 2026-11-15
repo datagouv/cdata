@@ -20,7 +20,9 @@ test('shows every compact tag state', async ({ page }) => {
 
   const iconTag = page.getByTestId('icon-tag')
   await expect(iconTag).toHaveCSS('padding-left', '6px')
-  await expect(iconTag.locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
+  await expect(iconTag.locator('svg')).toHaveCSS('width', '14px')
+  await expect(iconTag.locator('svg')).toHaveCSS('height', '14px')
+  await expect(iconTag.locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -0.5)')
 
   const restBackground = await clickableTag.evaluate(element => getComputedStyle(element).backgroundColor)
   await clickableTag.hover()
@@ -33,7 +35,7 @@ test('shows every compact tag state', async ({ page }) => {
   await expect(selectableTag.locator('svg')).toHaveCount(1)
   await expect(selectableTag.locator('svg')).toHaveCSS('width', '14px')
   await expect(selectableTag).toHaveCSS('padding-left', '6px')
-  await expect(selectableTag.locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
+  await expect(selectableTag.locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -0.5)')
   expect(await selectableTag.evaluate(element => element.firstElementChild?.tagName.toLowerCase())).toBe('svg')
   expect(await selectableTag.evaluate(element => getComputedStyle(element, '::after').content)).toBe('none')
   const selectedBackground = await selectableTag.evaluate(element => getComputedStyle(element).backgroundColor)
@@ -61,7 +63,7 @@ test('opens and closes a tag toggletip', async ({ page }) => {
   await expect(tag.locator('svg')).toHaveCount(1)
   expect(await tag.evaluate(element => element.firstElementChild?.tagName.toLowerCase())).toBe('svg')
   await expect(tag).toHaveCSS('padding-left', '6px')
-  await expect(tag.locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
+  await expect(tag.locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -0.5)')
   await tag.focus()
   await expect(tag).toHaveCSS('outline-style', 'solid')
 
@@ -161,6 +163,10 @@ test('shows component tags with a stroke, including the linked variant', async (
     await expect(tag).toHaveCSS('min-height', '24px')
   }
 
+  await expect(iconTag.locator('svg')).toHaveCSS('width', '14px')
+  await expect(iconTag.locator('svg')).toHaveCSS('height', '14px')
+  await expect(iconTag.locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
+
   const link = linkedTag.locator('..')
   const restBackground = await linkedTag.evaluate(element => getComputedStyle(element).backgroundColor)
   await link.hover()
@@ -178,7 +184,8 @@ test('shows and removes multiple TagsSelect values', async ({ page }) => {
   await expect(selectedTags.getByRole('button').first().locator('svg')).toHaveCSS('width', '14px')
   expect(await selectedTags.getByRole('button').first().evaluate(element => element.firstElementChild?.tagName.toLowerCase())).toBe('svg')
   await expect(selectedTags.getByRole('button').first()).toHaveCSS('padding-left', '6px')
-  await expect(selectedTags.getByRole('button').first().locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
+  await expect(selectedTags.getByRole('button').first().locator('svg')).toHaveCSS('height', '14px')
+  await expect(selectedTags.getByRole('button').first().locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -0.5)')
 
   await page.getByRole('button', { name: 'Supprimer le mot-clé transport' }).click()
   await expect(selectedTags.getByRole('button')).toHaveCount(2)
