@@ -52,7 +52,7 @@
   border: 1px solid var(--border-default-grey);
   border-radius: 0.75rem;
   color: var(--text-label-grey);
-  background-color: var(--background-contrast-grey);
+  background-color: transparent;
 }
 
 /*
@@ -104,6 +104,7 @@
     border: 1px solid var(--border-default-grey) !important;
     font-weight: 400 !important;
     line-height: 1.125rem !important;
+    background-color: transparent !important;
   }
 
   .cdata-tag-link:hover > .cdata-tag,
@@ -125,7 +126,7 @@
 
 :is(a[href], button:not(:disabled), input[type="button"]:not(:disabled)).fr-tag:not([aria-pressed="true"]) {
   color: var(--text-label-grey);
-  background-color: var(--background-contrast-grey);
+  background-color: transparent;
   --hover: var(--background-action-low-blue-france);
   --active: var(--background-action-low-blue-france-active);
   --hover-tint: var(--background-action-low-blue-france);
@@ -201,7 +202,7 @@
     line-height: 1.125rem !important;
     text-transform: none !important;
     color: var(--text-label-grey) !important;
-    background-color: var(--background-contrast-grey) !important;
+    background-color: transparent !important;
     gap: 0.25rem !important;
   }
 

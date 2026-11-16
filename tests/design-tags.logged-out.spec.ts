@@ -19,6 +19,9 @@ test('shows every compact tag state', async ({ page }) => {
     await expect(tag).toHaveCSS('border-top-width', '1px')
   }
 
+  await expect(staticTag).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+  await expect(clickableTag).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+
   const iconTag = page.getByTestId('icon-tag')
   await expect(iconTag).toHaveCSS('padding-left', '6px')
   await expect(iconTag.locator('svg')).toHaveCSS('width', '14px')
@@ -90,7 +93,7 @@ test('shows the business labels used by cards', async ({ page }) => {
   const cardBadges = labels.locator('.admin-badge')
   await expect(cardBadges).toHaveCount(6)
   await expect(cardBadges.first()).toHaveCSS('min-height', '24px')
-  await expect(cardBadges.first()).toHaveCSS('font-weight', '400')
+  await expect(cardBadges.first()).toHaveCSS('font-weight', '500')
   await expect(cardBadges.first().locator('svg')).toHaveCSS('width', '14px')
 
   for (const [cardLabel, tableStatus] of [['Brouillon', 'Brouillon'], ['Archivé', 'Archivé'], ['Accès restreint', 'Archivé'], ['Supprimé', 'Supprimé'], ['Service public', 'Public']]) {
@@ -124,6 +127,9 @@ test('shows API access types with the account-only yellow tone', async ({ page }
   await expect(openBadge.locator('svg')).toHaveCount(0)
   await expect(accountBadge.locator('svg')).toHaveCount(1)
   await expect(restrictedBadge.locator('svg')).toHaveCount(1)
+  await expect(openBadge).toHaveCSS('font-weight', '500')
+  await expect(accountBadge).toHaveCSS('font-weight', '500')
+  await expect(restrictedBadge).toHaveCSS('font-weight', '500')
   await expect(accountBadge.locator('svg')).toHaveCSS('width', '14px')
   await expect(restrictedBadge.locator('svg')).toHaveCSS('width', '14px')
   await expect(accountBadge).not.toHaveCSS('background-color', await restrictedBadge.evaluate(element => getComputedStyle(element).backgroundColor))
@@ -166,6 +172,7 @@ test('shows component tags with a stroke, including the linked variant', async (
     await expect(tag).toHaveCSS('min-height', '24px')
     await expect(tag).toHaveCSS('font-weight', '400')
     await expect(tag).toHaveCSS('line-height', '18px')
+    await expect(tag).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
   }
 
   await expect(iconTag.locator('svg')).toHaveCSS('width', '14px')
@@ -207,6 +214,7 @@ test('shows DatasetLabelTag with and without a link', async ({ page }) => {
   await expect(linkedLabel).toHaveAttribute('href', '/datasets/search?badge=hvd')
   await expect(staticLabel).toHaveCSS('line-height', '18px')
   await expect(staticLabel).toHaveCSS('font-weight', '400')
+  await expect(staticLabel).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
   await expect(linkedLabel).toHaveCSS('min-height', '24px')
   await expect(linkedLabel.locator('img')).toHaveCSS('width', '14px')
   await expect(linkedLabel.locator('img')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')

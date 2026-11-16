@@ -1,5 +1,6 @@
 <template>
   <AdminBadge
+    class="!font-medium"
     size="sm"
     :type="display.type"
     :icon="display.icon"

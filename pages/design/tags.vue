@@ -202,6 +202,7 @@
           <AdminBadge
             v-for="label in cardBusinessLabels"
             :key="label.label"
+            class="!font-medium"
             size="sm"
             :type="label.type"
             :icon="label.icon"
