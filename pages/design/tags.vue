@@ -198,6 +198,30 @@
           Statuts des tableaux
         </h2>
         <div class="space-y-4">
+          <div class="space-y-2">
+            <p class="text-sm font-bold">
+              Publication des objets
+            </p>
+            <div class="flex flex-wrap items-center gap-2">
+              <DatasetBadge
+                v-for="dataset in statusDatasets"
+                :key="dataset.id"
+                :dataset
+              />
+            </div>
+          </div>
+          <div class="space-y-2">
+            <p class="text-sm font-bold">
+              Traitements
+            </p>
+            <div class="flex flex-wrap items-center gap-2">
+              <JobBadge
+                v-for="job in statusJobs"
+                :key="job.id"
+                :job
+              />
+            </div>
+          </div>
           <div
             v-for="group in tableStatusGroups"
             :key="group.label"
@@ -279,10 +303,14 @@ import { RiArchiveLine, RiCheckboxCircleLine, RiCheckLine, RiDeleteBinLine, RiDr
 import type { Component } from 'vue'
 import AccessTypeBadge from '~/components/AccessTypes/AccessTypeBadge.vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
+import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import JobBadge from '~/components/Harvesters/JobBadge.vue'
 import HvdStatutBadge from '~/components/SuiviDePublication/HvdStatutBadge.vue'
 import TagsSelect from '~/components/TagsSelect.vue'
+import type { HarvesterJobPreview, HarvesterJobStatus } from '~/types/harvesters'
 import type { AdminBadgeType, Tag as KeywordTag } from '~/types/types'
+import { exampleDatasets } from '~/utils/design/cardExamples'
 
 const isSelected = ref(false)
 const selectedKeywords = ref<Array<KeywordTag>>([
@@ -305,26 +333,26 @@ const cardBusinessLabels: Array<{ label: string, type: AdminBadgeType, icon: Com
   { label: 'Supprimé', type: 'danger', icon: RiDeleteBinLine },
   { label: 'Service public', type: 'primary', icon: RiGovernmentLine },
 ]
+const [publicDataset, , draftDataset, archivedDataset] = exampleDatasets.map(example => example.data)
+const statusDatasets = [
+  publicDataset!,
+  draftDataset!,
+  archivedDataset!,
+  { ...publicDataset!, id: 'demo-dataset-deleted', deleted: '2026-01-01T00:00:00Z' },
+]
+const jobStatuses: Array<HarvesterJobStatus> = ['pending', 'initializing', 'initialized', 'processing', 'done', 'done-errors', 'failed']
+const statusJobs: Array<HarvesterJobPreview> = jobStatuses.map(status => ({
+  id: `demo-job-${status}`,
+  created: '2026-01-01T00:00:00Z',
+  started: null,
+  ended: null,
+  status,
+  errors: [],
+  items: [],
+  source: { id: 'demo-harvester', class: 'HarvestSource' },
+}))
+// These statuses come from private getStatus functions of their tables: there is no component to render on its own
 const tableStatusGroups: Array<{ label: string, statuses: Array<{ label: string, type: AdminBadgeType }> }> = [
-  {
-    label: 'Publication des objets',
-    statuses: [
-      { label: 'Public', type: 'primary' },
-      { label: 'Brouillon', type: 'secondary' },
-      { label: 'Archivé', type: 'warning' },
-      { label: 'Supprimé', type: 'danger' },
-    ],
-  },
-  {
-    label: 'Traitements',
-    statuses: [
-      { label: 'En attente', type: 'secondary' },
-      { label: 'En traitement', type: 'primary' },
-      { label: 'Terminé', type: 'success' },
-      { label: 'Terminé avec des erreurs', type: 'warning' },
-      { label: 'Échoué', type: 'danger' },
-    ],
-  },
   {
     label: 'Disponibilité des ressources principales',
     statuses: [

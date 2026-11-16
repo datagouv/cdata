@@ -72,7 +72,7 @@ test('shows the statuses used in tables', async ({ page }) => {
     await expect(statuses.getByText(context, { exact: true })).toBeVisible()
   }
 
-  for (const text of ['Public', 'Brouillon', 'Archivé', 'Supprimé', 'En attente', 'En traitement', 'Terminé', 'Terminé avec des erreurs', 'Échoué', 'Inconnu', 'Pas encore contrôlé', 'Nouveau', 'Répondu', 'Clos']) {
+  for (const text of ['Public', 'Brouillon', 'Archivé', 'Supprimé', 'En attente', 'En cours d\'initialisation', 'Initialisé', 'En traitement', 'Terminé', 'Terminé avec des erreurs', 'Échoué', 'Inconnu', 'Pas encore contrôlé', 'Nouveau', 'Répondu', 'Clos']) {
     await expect(statuses.getByText(text, { exact: true })).toBeVisible()
   }
 })
