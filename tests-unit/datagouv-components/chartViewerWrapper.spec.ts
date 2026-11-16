@@ -41,7 +41,7 @@ function tabularResponse(data: TabularDataResponse['data'], { next = null, total
   }
 }
 
-// Like api-tabular 0.4.2, which sends a next link for any full page of an aggregate
+// A full page links to the next one by default, as when a group is left
 function rows(count: number, options: { next?: string | null, total?: number } = {}) {
   return tabularResponse(Array.from({ length: count }, (_, i) => ({ dep: String(i), n: i })), {
     next: count >= 50 ? 'https://tabular.example.com/api/resources/r/data/?page=2&page_size=50' : null,
@@ -53,11 +53,12 @@ function dataCalls(): Array<string> {
   return ofetchMock.mock.calls.map(c => String(c[0])).filter(url => url.includes('/data/'))
 }
 
-function mockApi(firstPage: number, hasFiftyFirst: boolean) {
+const NEXT = 'https://tabular.example.com/api/resources/r/data/?page=2&page_size=50'
+
+function mockApi(firstPage: number, hasMoreGroups: boolean) {
   ofetchMock.mockImplementation(async (url: string) => {
     if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
-    if (url.includes('page=51')) return rows(hasFiftyFirst ? 1 : 0)
-    return rows(firstPage)
+    return rows(firstPage, { next: hasMoreGroups ? NEXT : null })
   })
 }
 
@@ -173,22 +174,15 @@ describe('ChartViewerWrapper data fetching', () => {
     expect(url).toContain('dep__sort=asc')
   })
 
-  it('checks the 51st group only when the page is full', async () => {
-    mockApi(49, false)
-    mountWrapper(chartFixture())
+  it('reads the groups left from the next link, without any further request', async () => {
+    mockApi(50, true)
+    const wrapper = mountWrapper(chartFixture())
     await settle()
     expect(dataCalls()).toHaveLength(1)
-
-    ofetchMock.mockReset()
-    mockApi(50, false)
-    mountWrapper(chartFixture())
-    await settle()
-    const calls = dataCalls()
-    expect(calls).toHaveLength(2)
-    expect(calls[1]).toContain('page=51&page_size=1')
+    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(true)
   })
 
-  it('shows the Y-sort warning when the 51st group exists', async () => {
+  it('shows the Y-sort warning when a group is left', async () => {
     mockApi(50, true)
     const wrapper = mountWrapper(chartFixture())
     await settle()
@@ -210,21 +204,26 @@ describe('ChartViewerWrapper data fetching', () => {
 
   // RGAA 7.5: a live region announces what is added to it, so it is there before the note.
   it('announces the warning in a status region that exists before it, its icon hidden', async () => {
-    let resolveProbe: (v: unknown) => void = () => {}
+    let resolveData: (v: unknown) => void = () => {}
+    let firstLoad = true
     ofetchMock.mockImplementation((url: string) => {
       if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
-      if (url.includes('page=51')) return new Promise((resolve) => {
-        resolveProbe = resolve
+      if (firstLoad) return Promise.resolve(rows(3))
+      return new Promise((resolve) => {
+        resolveData = resolve
       })
-      return Promise.resolve(rows(50))
     })
-    const wrapper = mountWrapper(chartFixture())
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart)
     await settle()
     const status = wrapper.find('[role="status"][data-testid="chart-notes"]')
     expect(status.exists()).toBe(true)
     expect(status.text()).toBe('')
 
-    resolveProbe(rows(1))
+    firstLoad = false
+    await wrapper.setProps({ chart: { ...chart, x_axis: { ...chart.x_axis, column_x: 'reg' } } })
+    await settle()
+    resolveData(rows(50))
     await settle()
     const note = status.find('[data-testid="chart-truncation-warning"]')
     expect(note.exists()).toBe(true)
@@ -248,7 +247,7 @@ describe('ChartViewerWrapper data fetching', () => {
     expect(wrapper.find('[role="alert"]').text()).toContain('Une erreur est survenue lors du chargement des données du graphique.')
   })
 
-  it('shows no warning when the 51st group is absent', async () => {
+  it('shows no warning when no group is left', async () => {
     mockApi(50, false)
     const wrapper = mountWrapper(chartFixture())
     await settle()
@@ -333,46 +332,6 @@ describe('ChartViewerWrapper data fetching', () => {
     expect(data[1]).toEqual([{ dep: 'a', m__max: 2 }])
   })
 
-  it('shows the chart before the 51st-group probe answers', async () => {
-    let resolveProbe: (v: unknown) => void = () => {}
-    ofetchMock.mockImplementation((url: string) => {
-      if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
-      if (url.includes('page=51')) return new Promise((resolve) => {
-        resolveProbe = resolve
-      })
-      return Promise.resolve(rows(50))
-    })
-    const wrapper = mountWrapper(chartFixture())
-    await settle()
-    expect(loaderStatus(wrapper)).toBe('success')
-    expect(wrapper.findComponent(ChartViewerStub).props('series').data[0]).toHaveLength(50)
-    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
-    resolveProbe(rows(1))
-    await settle()
-    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(true)
-  })
-
-  it('ignores a stale probe answer', async () => {
-    let resolveProbe: (v: unknown) => void = () => {}
-    ofetchMock.mockImplementation((url: string) => {
-      if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
-      if (url.includes('page=51')) return new Promise((resolve) => {
-        resolveProbe = resolve
-      })
-      return Promise.resolve(url.includes('n__max') ? rows(50) : rows(3))
-    })
-    const chart = chartFixture()
-    const wrapper = mountWrapper(chart)
-    await settle()
-    const next = structuredClone(chart)
-    next.series[0]!.aggregate_y = 'sum'
-    await wrapper.setProps({ chart: next })
-    await settle()
-    resolveProbe(rows(1))
-    await settle()
-    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
-  })
-
   it('refetches when a data field changes', async () => {
     mockApi(3, false)
     const chart = chartFixture()
@@ -390,7 +349,6 @@ describe('ChartViewerWrapper data fetching', () => {
     let resolveA: (v: unknown) => void = () => {}
     ofetchMock.mockImplementation((url: string) => {
       if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
-      if (url.includes('page=51')) return Promise.resolve(tabularResponse([{ dep: 'z', n: 0 }]))
       if (url.includes('n__max')) return new Promise((resolve) => {
         resolveA = resolve
       })
@@ -409,22 +367,9 @@ describe('ChartViewerWrapper data fetching', () => {
     expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
   })
 
-  it('keeps the data and shows no warning when the 51st-group probe fails', async () => {
-    ofetchMock.mockImplementation(async (url: string) => {
-      if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
-      if (url.includes('page=51')) throw new Error('boom')
-      return rows(50)
-    })
-    const wrapper = mountWrapper(chartFixture())
-    await settle()
-    expect(wrapper.findComponent(ChartViewerStub).props('series').data[0]).toHaveLength(50)
-    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
-  })
-
   it('resets the warning when the chart changes to one with fewer groups', async () => {
     ofetchMock.mockImplementation(async (url: string) => {
       if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
-      if (url.includes('page=51')) return rows(1)
       return url.includes('n__max') ? rows(50) : rows(3)
     })
     const chart = chartFixture()
@@ -515,19 +460,14 @@ describe('ChartViewerWrapper data fetching', () => {
     expect(wrapper.findComponent(ChartViewerStub).props('chart').title).toBe('Other')
   })
 
-  it('keeps the truncation warning during a reload until the new probe answers', async () => {
-    let resolveProbe: (v: unknown) => void = () => {}
-    let probes = 0
+  it('keeps the truncation warning during a reload until the new data answers', async () => {
+    let resolveData: (v: unknown) => void = () => {}
     ofetchMock.mockImplementation((url: string) => {
       if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
-      if (url.includes('page=51')) {
-        probes++
-        if (probes === 1) return Promise.resolve(rows(1))
-        return new Promise((resolve) => {
-          resolveProbe = resolve
-        })
-      }
-      return Promise.resolve(rows(50))
+      if (url.includes('n__max')) return Promise.resolve(rows(50))
+      return new Promise((resolve) => {
+        resolveData = resolve
+      })
     })
     const chart = chartFixture()
     const wrapper = mountWrapper(chart)
@@ -538,7 +478,20 @@ describe('ChartViewerWrapper data fetching', () => {
     await wrapper.setProps({ chart: next })
     await settle()
     expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(true)
-    resolveProbe(rows(0))
+    resolveData(rows(50, { next: null }))
+    await settle()
+    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
+  })
+
+  it('drops the truncation warning when no series is left to load', async () => {
+    mockApi(50, true)
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart)
+    await settle()
+    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(true)
+    const next = structuredClone(chart)
+    next.series[0]!.column_y = ''
+    await wrapper.setProps({ chart: next })
     await settle()
     expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
   })
@@ -626,7 +579,7 @@ describe('ChartViewerWrapper load errors', () => {
   })
 })
 
-describe('ChartViewerWrapper truncation note without probe', () => {
+describe('ChartViewerWrapper truncation note', () => {
   beforeEach(() => {
     vi.useFakeTimers()
     ofetchMock.mockReset()
@@ -636,10 +589,9 @@ describe('ChartViewerWrapper truncation note without probe', () => {
     vi.useRealTimers()
   })
 
-  function mockResponses({ page, probe }: { page: TabularDataResponse, probe?: () => unknown }) {
+  function mockResponses({ page }: { page: TabularDataResponse }) {
     ofetchMock.mockImplementation(async (url: string) => {
       if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
-      if (url.includes('page=51')) return probe ? probe() : rows(0)
       return page
     })
   }
@@ -658,7 +610,7 @@ describe('ChartViewerWrapper truncation note without probe', () => {
     return chart
   }
 
-  it('reads the total of a raw series instead of probing', async () => {
+  it('reads the total of a raw series', async () => {
     mockResponses({ page: rows(50, { total: 926 }) })
     const wrapper = mountWrapper(rawChart())
     await settle()
@@ -666,7 +618,7 @@ describe('ChartViewerWrapper truncation note without probe', () => {
     expect(dataCalls()).toHaveLength(1)
   })
 
-  it('shows no note for a raw series of exactly 50 rows, without probing', async () => {
+  it('shows no note for a raw series of exactly 50 rows', async () => {
     mockResponses({ page: rows(50, { total: 50 }) })
     const wrapper = mountWrapper(rawChart())
     await settle()
@@ -674,8 +626,7 @@ describe('ChartViewerWrapper truncation note without probe', () => {
     expect(dataCalls()).toHaveLength(1)
   })
 
-  // api-tabular from the exact-next-link version on
-  it('shows no note for a full aggregated page without a next link, without probing', async () => {
+  it('shows no note for a full aggregated page without a next link', async () => {
     mockResponses({ page: rows(50, { next: null }) })
     const wrapper = mountWrapper(chartFixture())
     await settle()
@@ -683,20 +634,15 @@ describe('ChartViewerWrapper truncation note without probe', () => {
     expect(dataCalls()).toHaveLength(1)
   })
 
-  it('probes a full aggregated page with a next link, and reads a 416 as no further group', async () => {
-    mockResponses({
-      page: rows(50),
-      probe: () => {
-        throw Object.assign(new Error('[GET] /data/: 416 Range Not Satisfiable'), { statusCode: 416 })
-      },
-    })
+  it('shows a note for a full filtered aggregate with a next link', async () => {
+    mockResponses({ page: rows(50) })
     const wrapper = mountWrapper(filteredChart())
     await settle()
-    expect(dataCalls()).toHaveLength(2)
-    expect(warning(wrapper)).toBe(false)
+    expect(dataCalls()).toHaveLength(1)
+    expect(warning(wrapper)).toBe(true)
   })
 
-  it('does not probe a filtered aggregate whose page is not full', async () => {
+  it('shows no note for a filtered aggregate whose page is not full', async () => {
     mockResponses({ page: rows(12) })
     const wrapper = mountWrapper(filteredChart())
     await settle()

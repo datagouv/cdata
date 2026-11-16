@@ -92,7 +92,7 @@ import ChartLoader from './ChartLoader.vue'
 import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
 import { useComponentsConfig } from '../../config'
-import { fetchTabularData, hasMoreGroups, TabularApiError, tabularErrorMessage, useGetProfile, type FetchTabularDataOptions } from '../../functions/tabularApi'
+import { fetchTabularData, TabularApiError, tabularErrorMessage, useGetProfile, type FetchTabularDataOptions } from '../../functions/tabularApi'
 import type { Chart, ChartForApi, ColumnsDefinition } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
 import { watchDebounced } from '@vueuse/shared'
@@ -230,16 +230,6 @@ async function fetchSeriesProfile() {
 
 let latestRequest = 0
 
-type SeriesQuery = FetchTabularDataOptions & { pageSize: number }
-type LoadedSeries = { rows: Array<Record<string, unknown>>, total: number | undefined, next: string | null, options: SeriesQuery }
-
-async function hasGroupsBeyondPage({ rows, total, next, options }: LoadedSeries): Promise<boolean> {
-  const known = groupsBeyondPage({ rowCount: rows.length, aggregated: !!options.aggregation, total, next })
-  if (known !== 'probe') return known
-  // The probe only adds the note: a failure leaves it out.
-  return hasMoreGroups(config, options).catch(() => false)
-}
-
 async function fetchSeriesData() {
   const request = ++latestRequest
   const isStale = () => request !== latestRequest
@@ -247,7 +237,6 @@ async function fetchSeriesData() {
   pendingOperations.value++
   status.value = 'pending'
   error.value = null
-  let loaded: Array<LoadedSeries> = []
 
   try {
     if (props.chart.series.length === 0 || !props.chart.x_axis.column_x) {
@@ -268,7 +257,7 @@ async function fetchSeriesData() {
       })
       .map(async ({ serie, index }) => {
         const xColumn = serie.column_x_name_override ?? props.chart.x_axis.column_x
-        const options: SeriesQuery = {
+        const options: FetchTabularDataOptions = {
           columns: serie.aggregate_y ? undefined : [xColumn, serie.column_y],
           resourceId: serie.resource_id,
           page: 1,
@@ -287,9 +276,12 @@ async function fetchSeriesData() {
         return {
           key: String(index),
           rows: response.data,
-          total: response.meta.total,
-          next: response.links.next,
-          options,
+          moreGroups: groupsBeyondPage({
+            rowCount: response.data.length,
+            aggregated: !!options.aggregation,
+            total: response.meta.total,
+            next: response.links.next,
+          }),
         }
       })
 
@@ -306,7 +298,7 @@ async function fetchSeriesData() {
     ]))
     someSeriesFailed.value = failures.length > 0
     seriesFailureMessage.value = failures.length > 0 ? tabularErrorMessage(failures[0]!.reason, t) : null
-    loaded = results
+    moreGroups.value = results.some(result => result.moreGroups)
   }
   catch (err) {
     if (isStale()) return
@@ -318,13 +310,6 @@ async function fetchSeriesData() {
   finally {
     pendingOperations.value--
   }
-
-  // The truncation warning is only a note: the chart is shown without waiting for it.
-  // The previous one stays until the new answer, so it does not blink.
-  if (loaded.length === 0) return
-  const more = await Promise.all(loaded.map(hasGroupsBeyondPage))
-  if (isStale()) return
-  moreGroups.value = more.some(Boolean)
 }
 
 function retry() {

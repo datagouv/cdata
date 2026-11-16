@@ -71,8 +71,7 @@ test('the assistant creates a chart then updates it without refetching the data'
   await expect.poll(() => dataRequests.length).toBeGreaterThan(dataBeforeCreate)
 
   // Second turn: update_chart only sets the unit, the data is not fetched again.
-  // Let the preview settle: the create fetches page 1, then a full page triggers the
-  // 51st-group probe (page=51, a distinct URL).
+  // Let the preview settle before counting the data requests.
   await page.waitForLoadState('networkidle')
   await page.waitForTimeout(1000)
   const dataBeforeUpdate = dataRequests.length
@@ -91,22 +90,18 @@ test('the assistant creates a chart then updates it without refetching the data'
 
 test('a chart with more than 50 groups shows the truncation warning', async ({ page }) => {
   const rows = Array.from({ length: 50 }, (_, i) => ({ [X_COLUMN]: `Région ${String(i).padStart(2, '0')}`, [`${Y_COLUMN}__max`]: 1000 - i }))
-  // A full page of an aggregate with a next link: only the 51st group can tell.
+  // A full page of an aggregate: api-tabular links it to the next one only when a group is left.
   const dataPages: Array<string | null> = []
   await routeAssistantStream(page, scriptedStream)
   await setupChart(page)
   // setupChart installs its own /data/ mock: ours must come after it to win.
   await page.route('**/api/resources/*/data/*', async (route) => {
-    const pageParam = new URL(route.request().url()).searchParams.get('page')
-    dataPages.push(pageParam)
-    const response = (data: typeof rows, next: string | null) => ({
-      data,
-      links: { profile: '', swagger: '', next, prev: null },
+    dataPages.push(new URL(route.request().url()).searchParams.get('page'))
+    await route.fulfill({ json: {
+      data: rows,
+      links: { profile: '', swagger: '', next: `${route.request().url()}&page=2`, prev: null },
       meta: { page: 1, page_size: 50 },
-    })
-    await route.fulfill({ json: pageParam === '51'
-      ? response(rows.slice(0, 1), null)
-      : response(rows, `${route.request().url()}&page=2`) })
+    } })
   })
 
   await page.getByRole('tab', { name: 'Assistant' }).click()
@@ -117,7 +112,8 @@ test('a chart with more than 50 groups shows the truncation warning', async ({ p
   await expect(page.getByTestId('chart-truncation-warning')).toHaveText(
     `Graphique tronqué : seules les 50 premières valeurs de ${X_COLUMN} sont prises en compte, le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.`,
   )
-  expect(dataPages).toContain('51')
+  // No request for the 51st group.
+  expect(dataPages).not.toContain('51')
 })
 
 test('a chart created by the assistant is saved from the manual tab', async ({ page }) => {

@@ -93,14 +93,10 @@ describe('groupsBeyondPage', () => {
     expect(groupsBeyondPage({ rowCount: full, aggregated: false, total: full, next })).toBe(false)
   })
 
-  // api-tabular sends no total for an aggregate; from the exact-next-link version on,
-  // its next link is only there when a group is left
-  it('knows a full aggregated page without a next link holds every group', () => {
+  // api-tabular sends no total for an aggregate, and a next link only when a group is left
+  it('reads the groups left of an aggregated series from its next link', () => {
     expect(groupsBeyondPage({ rowCount: full, aggregated: true, next: null })).toBe(false)
     expect(groupsBeyondPage({ rowCount: full, aggregated: true })).toBe(false)
-  })
-
-  it('probes a full aggregated page with a next link, which older versions send for any full page', () => {
-    expect(groupsBeyondPage({ rowCount: full, aggregated: true, next })).toBe('probe')
+    expect(groupsBeyondPage({ rowCount: full, aggregated: true, next })).toBe(true)
   })
 })

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { decodeTabularError, fetchTabularData, hasMoreGroups, TabularApiError, tabularErrorMessage } from '~/datagouv-components/src/functions/tabularApi'
+import { decodeTabularError, fetchTabularData, TabularApiError, tabularErrorMessage } from '~/datagouv-components/src/functions/tabularApi'
 import type { PluginConfig } from '~/datagouv-components/src/config'
 import type { TranslationFunction } from '~/datagouv-components/src/composables/useTranslation'
 
@@ -138,26 +138,5 @@ describe('fetchTabularData errors', () => {
     expect(error).toBeInstanceOf(TabularApiError)
     expect((error as TabularApiError).statusCode).toBe(400)
     expect(tabularErrorMessage(error, t)).toBe('La colonne nope n’existe pas dans cette ressource.')
-  })
-
-  it('still reads a 416 as no further group in the 51st-group probe', async () => {
-    ofetchMock.mockRejectedValue(fetchError(416, databaseError('PGRST103', 'Requested range not satisfiable')))
-    await expect(hasMoreGroups(config, { resourceId: 'r', pageSize: 50 })).resolves.toBe(false)
-  })
-})
-
-describe('hasMoreGroups', () => {
-  const config = { tabularApiUrl: 'https://tabular.example.com' } as PluginConfig
-  afterEach(() => ofetchMock.mockReset())
-
-  it('probes the first group past the page the chart fetched', async () => {
-    ofetchMock.mockResolvedValue({ data: [] })
-    await expect(hasMoreGroups(config, { resourceId: 'r', page: 1, pageSize: 20 })).resolves.toBe(false)
-    expect(String(ofetchMock.mock.calls[0]![0])).toContain('page=21&page_size=1')
-  })
-
-  it('lets any other failure through', async () => {
-    ofetchMock.mockRejectedValue(fetchError(500, 'Internal Server Error'))
-    await expect(hasMoreGroups(config, { resourceId: 'r', pageSize: 50 })).rejects.toBeInstanceOf(TabularApiError)
   })
 })

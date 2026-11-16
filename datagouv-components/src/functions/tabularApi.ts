@@ -220,23 +220,6 @@ export function tabularErrorMessage(error: unknown, t: TranslationFunction): str
 }
 
 /**
- * Whether a group exists past the page of `options`: same query, one row per page.
- * Past the last group PostgREST answers an empty page, or a 416 when the offset also
- * passes the rows the filters leave.
- */
-export async function hasMoreGroups(config: PluginConfig, options: FetchTabularDataOptions & { pageSize: number }): Promise<boolean> {
-  const nextRow = (options.page ?? 1) * options.pageSize + 1
-  try {
-    const response = await fetchTabularData(config, { ...options, page: nextRow, pageSize: 1 })
-    return response.data.length > 0
-  }
-  catch (error) {
-    if (error instanceof TabularApiError && error.statusCode === 416) return false
-    throw error
-  }
-}
-
-/**
  * Serialize a filter tree into tabular-api query params.
  * - `Filter` → `column__condition=value` (ANDed with the other params)
  * - root `AndFilters` → one param per child; `OrFilters` children become `or=(...)` params

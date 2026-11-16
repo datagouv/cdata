@@ -36,18 +36,17 @@ export function chartDataKey(chart: Chart | ChartForApi): string {
 /**
  * Whether a series has more X values than the CHART_PAGE_SIZE fetched, from its first
  * page: api-tabular sends the total of a raw query but not of an aggregate, whose next
- * link is exact from the exact-next-link version on and sent for any full page before.
- * 'probe' when only a request for the next group can tell.
+ * link it only sends when the next page has rows.
  */
 export function groupsBeyondPage({ rowCount, aggregated, total, next }: {
   rowCount: number
   aggregated: boolean
   total?: number | undefined
   next?: string | null | undefined
-}): boolean | 'probe' {
+}): boolean {
   if (rowCount < CHART_PAGE_SIZE) return false
   if (!aggregated && total !== undefined) return total > CHART_PAGE_SIZE
-  return next ? 'probe' : false
+  return !!next
 }
 
 export function truncationWarning(xColumn: string, sortBy: XAxisSortBy | null, t: TranslationFunction): string {
