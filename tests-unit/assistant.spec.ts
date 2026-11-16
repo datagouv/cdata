@@ -424,8 +424,16 @@ describe('mapAssistantError', () => {
     expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 401 }))).toContain('Veuillez vous reconnecter')
     expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 413 }))).toBe('La conversation est trop volumineuse.')
     expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 429 }))).toContain('Trop de demandes, réessayez dans un instant.')
-    expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 503 }))).toContain('Assistant non configuré')
+    expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 503 }))).toContain('Assistant indisponible')
     expect(mapAssistantError(new TypeError('fetch failed'))).toContain('Une erreur est survenue')
+  })
+
+  // useChat turns an error event into `new Error(errorText)`.
+  it('shows the localized text of an error event of the stream', () => {
+    const text = 'Le service d’IA reçoit trop de demandes. Réessayez dans quelques instants.'
+    expect(mapAssistantError(new Error(text))).toBe(text)
+    expect(mapAssistantError(new Error(''))).toContain('Une erreur est survenue')
+    expect(mapAssistantError(Object.assign(new Error('The response body is empty.'), { name: 'AI_EmptyResponseBodyError' }))).toContain('Une erreur est survenue')
   })
 })
 

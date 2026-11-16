@@ -62,6 +62,11 @@ export function createChartStream(resourceId: string, output: ReturnType<typeof 
   return toStream(toolCallChunks('create_chart', { config: output.chart }, output, 'Graphique créé.'))
 }
 
+/** A Vercel AI UI message stream that fails, with the server's localized `errorText`. */
+export function errorStream(errorText: string): string {
+  return toStream([{ type: 'start' }, { type: 'error', errorText }])
+}
+
 /** A Vercel AI UI message stream answering with one `update_chart` call setting the Y unit. */
 export function updateChartStream(): string {
   return toStream(toolCallChunks('update_chart', { patch: UPDATE_CHART_OUTPUT.patch }, UPDATE_CHART_OUTPUT, 'Unité ajoutée.'))

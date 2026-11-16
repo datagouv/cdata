@@ -2,7 +2,7 @@ import type { Chart } from '@datagouv/components-next'
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
-import { ASSISTANT_CHAT_PATH, assistantChatStream, createChartOutput, createChartStream, routeAssistantStream } from '../assistantApi'
+import { ASSISTANT_CHAT_PATH, assistantChatStream, createChartOutput, createChartStream, errorStream, routeAssistantStream } from '../assistantApi'
 import { createChart, deleteChart, mockTabular, RESOURCE_ID, setupChart } from './fixtures'
 import data from './data.json' with { type: 'json' }
 
@@ -1187,6 +1187,20 @@ test('assistant waits for a resource before accepting messages', async ({ page }
   await page.getByRole('tab', { name: 'Assistant' }).click()
   await expect(page.locator('#assistant-waiting')).toBeVisible()
   await expect(page.getByLabel('Votre demande')).toBeDisabled()
+})
+
+test('a failed answer shows the server reason, which says whether waiting helps', async ({ page }) => {
+  const reason = 'Le service d\'IA reçoit trop de demandes. Réessayez dans quelques instants.'
+  await routeAssistantStream(page, errorStream(reason))
+  await setupChart(page)
+
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+  // Not sendAssistantMessage: a failed answer gives the message back to the composer,
+  // which that helper waits to see empty.
+  await page.getByLabel('Votre demande').fill('Top 5 des départements')
+  await page.getByRole('button', { name: 'Envoyer' }).click()
+  await expect(page.getByText(reason)).toBeVisible()
+  await expect(page.getByLabel('Votre demande')).toHaveValue('Top 5 des départements')
 })
 
 test('chat message is sent with the selected resource and the conversation survives tab switches', async ({ page }) => {

@@ -202,8 +202,9 @@ export function chartToolResults(messages: unknown[]): ChartToolResult[] {
 /**
  * Map an error surfaced by useChat to a French user-facing message, used as an
  * i18n key by the component ($t returns the key). HTTP failures carry a
- * `statusCode` (APICallError from the transport); anything else is treated as
- * a network/unknown failure.
+ * `statusCode` (APICallError from the transport). An error event of the stream
+ * becomes a plain Error holding the server's text, already localized: it says
+ * whether waiting helps. Anything else is a network or unknown failure.
  */
 export function mapAssistantError(error: unknown): string {
   const statusCode = (error as { statusCode?: unknown } | null)?.statusCode
@@ -211,7 +212,9 @@ export function mapAssistantError(error: unknown): string {
   // The composer caps input at the server limit: a 413 means the history grew too large.
   if (statusCode === 413) return 'La conversation est trop volumineuse.'
   if (statusCode === 429) return 'Trop de demandes, réessayez dans un instant.'
-  if (statusCode === 503) return 'Assistant non configuré pour le moment.'
+  if (statusCode === 503) return 'Assistant indisponible pour le moment.'
+  // A failed fetch is a TypeError, the SDK's own errors have an AI_ name.
+  if (statusCode === undefined && error instanceof Error && error.name === 'Error' && error.message) return error.message
   return 'Une erreur est survenue, veuillez réessayer.'
 }
 
