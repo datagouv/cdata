@@ -553,6 +553,53 @@ describe('ChartViewerWrapper data fetching', () => {
     expect(image).toBe('image of sum')
   })
 
+  it('gives no image at once when the latest chart fails to load', async () => {
+    ofetchMock.mockImplementation(async (url: string) => {
+      if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
+      if (url.includes('n__sum')) throw Object.assign(new Error('400'), { statusCode: 400 })
+      return rows(3)
+    })
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart)
+    await settle()
+    const next = structuredClone(chart)
+    next.series[0]!.aggregate_y = 'sum'
+    await wrapper.setProps({ chart: next })
+    await settle()
+    let image: string | null | undefined
+    void (wrapper.vm as unknown as { capture: () => Promise<string | null> }).capture().then((value) => {
+      image = value
+    })
+    await settle()
+    // Not the 10 s timeout, and not the image of the previous chart.
+    expect(image).toBeNull()
+  })
+
+  it('waits for a fixed chart when the previous one failed, within the debounce', async () => {
+    ofetchMock.mockImplementation(async (url: string) => {
+      if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
+      if (url.includes('n__max')) throw Object.assign(new Error('400'), { statusCode: 400 })
+      return rows(3)
+    })
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart, 300)
+    await vi.advanceTimersByTimeAsync(300)
+    await flushPromises()
+    const next = structuredClone(chart)
+    next.series[0]!.aggregate_y = 'sum'
+    await wrapper.setProps({ chart: next })
+    // Captured before the debounced reload starts: the error is the previous chart's.
+    let image: string | null | undefined
+    void (wrapper.vm as unknown as { capture: () => Promise<string | null> }).capture().then((value) => {
+      image = value
+    })
+    await flushPromises()
+    expect(image).toBeUndefined()
+    await vi.advanceTimersByTimeAsync(300)
+    await settle()
+    expect(image).toBe('image of sum')
+  })
+
   it('gives no image when the latest chart does not load in time', async () => {
     ofetchMock.mockImplementation((url: string) => {
       if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })

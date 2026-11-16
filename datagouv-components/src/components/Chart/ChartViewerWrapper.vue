@@ -158,11 +158,18 @@ const loadedChart = shallowRef<Chart | ChartForApi>(props.chart)
 const displayedChart = computed(() => chartDataKey(props.chart) === chartDataKey(loadedChart.value) ? props.chart : loadedChart.value)
 
 // A save right after an edit would otherwise capture the previous chart, still shown
-// while the debounced reload runs. A chart that does not load in time gets no image.
+// while the debounced reload runs. A chart that fails or does not load in time gets
+// no image.
 const CAPTURE_TIMEOUT = 10_000
 const showsRequestedChart = computed(() => pendingOperations.value === 0 && displayedChart.value === props.chart)
+// The chart whose load failed: an error left by a previous chart, before the debounced
+// reload of the new one starts, must not end the capture.
+const failedChartKey = ref<string | null>(null)
+const requestedChartFailed = computed(() => status.value === 'error' && failedChartKey.value === chartDataKey(props.chart))
+const captureSettled = computed(() => showsRequestedChart.value || requestedChartFailed.value)
 async function capture(): Promise<string | null> {
-  if (!await until(showsRequestedChart).toBe(true, { timeout: CAPTURE_TIMEOUT })) return null
+  await until(captureSettled).toBe(true, { timeout: CAPTURE_TIMEOUT })
+  if (!showsRequestedChart.value) return null
   await nextTick()
   return chartViewerRef.value?.capture() ?? null
 }
@@ -234,6 +241,7 @@ async function fetchSeriesProfile() {
     if (isStale()) return
     error.value = err instanceof Error ? err : new Error('Failed to fetch series profile')
     status.value = 'error'
+    failedChartKey.value = chartDataKey(props.chart)
     console.error(err)
     series.columns = {}
     series.data = {}
@@ -319,6 +327,7 @@ async function fetchSeriesData() {
     if (isStale()) return
     error.value = err instanceof Error ? err : new Error('Failed to fetch series data')
     status.value = 'error'
+    failedChartKey.value = chartDataKey(requestedChart)
     series.data = {}
     resetNotes()
   }
