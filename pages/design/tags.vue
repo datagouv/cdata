@@ -19,33 +19,21 @@
           Tags
         </h2>
         <div class="flex flex-wrap items-center gap-4">
-          <Tag
-            type="secondary"
-            class="cdata-tag"
-            data-testid="components-tag-static"
-          >
+          <Tag data-testid="components-tag-static">
             Mobilité
           </Tag>
           <Tag
-            type="secondary"
             :icon="RiCheckboxCircleLine"
-            class="cdata-tag"
             data-testid="components-tag-icon"
           >
             Données ouvertes
           </Tag>
-          <NuxtLink
-            class="fr-raw-link cdata-tag-link"
+          <Tag
             to="#components-tag-examples"
+            data-testid="components-tag-link"
           >
-            <Tag
-              type="secondary"
-              class="cdata-tag"
-              data-testid="components-tag-link"
-            >
-              Environnement
-            </Tag>
-          </NuxtLink>
+            Environnement
+          </Tag>
         </div>
       </section>
 
@@ -54,44 +42,35 @@
           États interactifs
         </h2>
         <div class="flex flex-wrap items-center gap-4">
-          <span
-            class="fr-tag"
-            data-testid="static-tag"
-          ><span class="cdata-tag__label">Tag de catégorie</span></span>
-          <span
-            class="fr-tag"
+          <Tag data-testid="static-tag">
+            Tag de catégorie
+          </Tag>
+          <Tag
+            :icon="RiInformationLine"
             data-testid="icon-tag"
           >
-            <RiInformationLine
-              class="size-3.5"
-              aria-hidden="true"
-            />
-            <span class="cdata-tag__label">Avec icône</span>
-          </span>
-          <a
-            class="fr-tag"
-            href="#tag-variants"
-          ><span class="cdata-tag__label">Cliquable · lien</span></a>
-          <button
-            class="fr-tag"
+            Avec icône
+          </Tag>
+          <Tag to="#tag-variants">
+            Cliquable · lien
+          </Tag>
+          <Tag
             data-testid="clickable-tag"
-            type="button"
+            @click="() => {}"
           >
-            <span class="cdata-tag__label">Cliquable · bouton</span>
-          </button>
+            Cliquable · bouton
+          </Tag>
           <Toggletip
             :styled-button="false"
-            button-class="fr-tag"
+            button-class=""
             :button-props="{
+              'as': Tag,
+              'icon': RiInformationLine,
               'title': 'Afficher les informations du tag',
               'data-testid': 'toggletip-tag',
             }"
           >
-            <RiInformationLine
-              class="size-3.5"
-              aria-hidden="true"
-            />
-            <span class="cdata-tag__label">Avec infobulle</span>
+            Avec infobulle
             <template #toggletip>
               <section class="flex flex-col gap-3 text-sm/[22px] text-gray-title">
                 <p class="m-0 font-semibold">
@@ -106,40 +85,29 @@
               </section>
             </template>
           </Toggletip>
-          <button
-            class="fr-tag"
+          <Tag
+            :pressed="isSelected"
+            :icon="isSelected ? RiCheckLine : undefined"
             data-testid="selectable-tag"
-            type="button"
-            :aria-pressed="isSelected"
             @click="isSelected = !isSelected"
           >
-            <RiCheckLine
-              v-if="isSelected"
-              class="size-3.5"
-              aria-hidden="true"
-            />
-            <span class="cdata-tag__label">Sélectionnable</span>
-          </button>
-          <button
-            class="fr-tag"
+            Sélectionnable
+          </Tag>
+          <Tag
+            :icon="RiCloseLine"
             data-testid="dismissible-tag"
-            type="button"
             aria-label="Supprimer le tag supprimable"
+            @click="() => {}"
           >
-            <RiCloseLine
-              class="size-3.5"
-              aria-hidden="true"
-            />
-            <span class="cdata-tag__label">Supprimable</span>
-          </button>
-          <button
-            class="fr-tag"
+            Supprimable
+          </Tag>
+          <Tag
             data-testid="disabled-tag"
-            type="button"
             disabled
+            @click="() => {}"
           >
-            <span class="cdata-tag__label">Désactivé</span>
-          </button>
+            Désactivé
+          </Tag>
         </div>
       </section>
 
@@ -166,7 +134,6 @@
             </p>
             <LabelTag
               :badge="hvdBadge"
-              class="cdata-dataset-label-tag"
               data-testid="dataset-label-static"
             />
           </div>
@@ -177,7 +144,6 @@
             <LabelTag
               :badge="hvdBadge"
               url="/datasets/search?badge=hvd"
-              class="cdata-dataset-label-tag"
               data-testid="dataset-label-link"
             />
           </div>
@@ -187,7 +153,6 @@
             </p>
             <LabelTag
               :badge="longBadge"
-              class="cdata-dataset-label-tag"
               data-testid="dataset-label-long"
             />
           </div>
@@ -202,11 +167,10 @@
           <AdminBadge
             v-for="label in cardBusinessLabels"
             :key="label.label"
-            class="!font-medium"
+            medium
             size="sm"
             :type="label.type"
             :icon="label.icon"
-            center-label
           >
             {{ label.label }}
           </AdminBadge>
@@ -228,7 +192,7 @@
         <h2 class="!mb-3">
           Schéma de données
         </h2>
-        <span class="fr-tag"><span class="cdata-tag__label">etalab/schema-irve</span></span>
+        <Tag>etalab/schema-irve</Tag>
       </section>
 
       <section data-testid="table-statuses">

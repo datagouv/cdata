@@ -22,28 +22,22 @@
       class="mt-2 flex flex-wrap gap-2"
       data-testid="selected-tags"
     >
-      <button
+      <TagComponent
         v-for="tag in tags"
         :key="tag.text"
-        class="fr-tag fr-tag--sm"
+        :icon="RiCloseLine"
         :aria-label="t('Supprimer le mot-clé {tag}', { tag: tag.text })"
         :data-testid="`selected-tag-${tag.text}`"
-        type="button"
         @click="removeTag(tag)"
       >
-        <RiCloseLine
-          class="size-3.5"
-          aria-hidden="true"
-          focusable="false"
-        />
-        <span class="cdata-tag__label">{{ tag.text }}</span>
-      </button>
+        {{ tag.text }}
+      </TagComponent>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { SearchableSelect } from '@datagouv/components-next'
+import { SearchableSelect, Tag as TagComponent } from '@datagouv/components-next'
 import { RiCloseLine } from '@remixicon/vue'
 import type { Tag } from '~/types/types'
 

@@ -7,7 +7,7 @@
     target="_blank"
     rel="noopener noreferrer"
     :aria-label="`${statut} — ${t('Voir les données (nouvel onglet)')}`"
-    class="hvd-status-badge-link no-underline fr-raw-link"
+    class="inline-flex rounded fr-raw-link active:bg-transparent hover:*:*:underline hover:*:*:decoration-1 hover:*:*:underline-offset-2 focus-visible:outline-(--border-active-blue-france)"
   >
     <AdminBadge
       :type="type"

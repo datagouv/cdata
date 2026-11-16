@@ -132,8 +132,6 @@ The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for t
   const selectedTags = page.getByTestId('selected-tags')
   await expect(selectedTags.getByRole('button')).toHaveCount(2)
   await expect(selectedTags.getByRole('button')).toHaveText(['test', 'toto'])
-  await expect(selectedTags.getByRole('button').first()).toHaveCSS('font-size', '12px')
-  await expect(selectedTags.getByRole('button').first()).toHaveCSS('min-height', '24px')
 
   // A selected keyword is also dismissible: removing it must keep the model in sync.
   await page.getByRole('button', { name: 'Supprimer le mot-clé test' }).click()
