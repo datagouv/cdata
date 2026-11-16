@@ -29,13 +29,10 @@
               v-if="organization.deleted"
               class="h-10 inline-block ml-1"
             >
-              <AdminBadge
+              <OrganizationBadge
+                :organization
                 class="align-[0.25rem]"
-                type="danger"
-                size="sm"
-              >
-                {{ $t('supprimée') }}
-              </AdminBadge>
+              />
             </span>
           </div>
         </div>
@@ -71,7 +68,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, isOrganizationCertified, OrganizationLogo, PaddedContainer, type Organization } from '@datagouv/components-next'
+import { BrandedButton, isOrganizationCertified, OrganizationLogo, PaddedContainer, type Organization, OrganizationBadge } from '@datagouv/components-next'
 import { RiEyeLine } from '@remixicon/vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'

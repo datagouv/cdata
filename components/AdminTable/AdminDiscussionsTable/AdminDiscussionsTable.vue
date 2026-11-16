@@ -80,12 +80,7 @@
           </p>
         </td>
         <td>
-          <AdminBadge
-            size="xs"
-            :type="getStatus(discussion).type"
-          >
-            {{ getStatus(discussion).label }}
-          </AdminBadge>
+          <DiscussionStatusBadge :thread="discussion" />
         </td>
         <td>
           <p class="m-0 wrap-anywhere line-clamp-3">
@@ -153,8 +148,9 @@ import { AvatarWithName, BrandedButton, FormattedDate } from '@datagouv/componen
 import { RiChatNewLine, RiEyeLine } from '@remixicon/vue'
 import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
+import DiscussionStatusBadge from '~/components/Discussions/DiscussionStatusBadge.vue'
 import type { DiscussionSortedBy, DiscussionSubjectTypes, Thread } from '~/types/discussions'
-import type { AdminBadgeType, SortDirection } from '~/types/types'
+import type { SortDirection } from '~/types/types'
 import { getDiscussionUrl, getSubject, getSubjectTypeIcon, getSubjectTitle } from '~/utils/discussions'
 
 const props = defineProps<{
@@ -201,26 +197,5 @@ function sorted(column: DiscussionSortedBy) {
     return props.sortDirection
   }
   return null
-}
-
-function getStatus(thread: Thread): { label: string, type: AdminBadgeType } {
-  if (thread.closed) {
-    return {
-      label: t('Clos'),
-      type: 'secondary',
-    }
-  }
-
-  if (thread.discussion.length === 1) {
-    return {
-      label: t('Nouveau'),
-      type: 'primary',
-    }
-  }
-
-  return {
-    label: t('Répondu'),
-    type: 'secondary',
-  }
 }
 </script>

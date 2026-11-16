@@ -29,21 +29,10 @@
       >{{ dataset.acronym }}</small>
     </template>
     <template
-      v-if="dataset.private || dataset.archived"
+      v-if="getDatasetStatus(dataset) !== 'public'"
       #badge
     >
-      <ObjectCardBadge
-        v-if="dataset.private"
-        :icon="RiLockLine"
-      >
-        {{ t('Brouillon') }}
-      </ObjectCardBadge>
-      <ObjectCardBadge
-        v-else
-        :icon="RiArchiveLine"
-      >
-        {{ t('Archivé') }}
-      </ObjectCardBadge>
+      <DatasetBadge :dataset />
     </template>
 
     <ObjectCardOwner
@@ -107,24 +96,23 @@
 <script setup lang="ts">
 import type { RouteLocationRaw } from 'vue-router'
 import {
-  RiArchiveLine,
   RiDatabase2Line,
   RiDownloadLine,
   RiEyeLine,
   RiLineChartLine,
-  RiLockLine,
   RiStarLine,
 } from '@remixicon/vue'
 import type { Dataset, DatasetV2 } from '../types/datasets'
 import type { TitleTag } from '../types/ui'
 import { getDescriptionShort } from '../functions/description'
+import { getDatasetStatus } from '../functions/objectStatus'
 import { useTranslation } from '../composables/useTranslation'
+import DatasetBadge from './DatasetBadge.vue'
 import DatasetQualityInline from './DatasetQualityInline.vue'
 import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
 import OrganizationLogo from './OrganizationLogo.vue'
 import ObjectCard from './ObjectCard.vue'
-import ObjectCardBadge from './ObjectCardBadge.vue'
 import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardMetric from './ObjectCardMetric.vue'
 import ObjectCardMetrics from './ObjectCardMetrics.vue'

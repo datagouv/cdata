@@ -1,38 +1,24 @@
 <template>
   <span v-if="!statut">-</span>
-  <CdataLink
-    v-else-if="linksToData && url"
-    :to="url"
-    external
-    target="_blank"
-    rel="noopener noreferrer"
-    :aria-label="`${statut} — ${t('Voir les données (nouvel onglet)')}`"
-    class="inline-flex rounded fr-raw-link active:bg-transparent hover:*:*:underline hover:*:*:decoration-1 hover:*:*:underline-offset-2 focus-visible:outline-(--border-active-blue-france)"
-  >
-    <AdminBadge
-      :type="type"
-      :icon-right="RiExternalLinkLine"
-      size="xs"
-      :no-wrap="false"
-    >
-      {{ statut }}
-    </AdminBadge>
-  </CdataLink>
-  <AdminBadge
+  <Badge
     v-else
-    :type="type"
+    :to="linksToData ? url : null"
+    :external="linksToData && url ? true : undefined"
+    :target="linksToData && url ? '_blank' : undefined"
+    :rel="linksToData && url ? 'noopener noreferrer' : undefined"
+    :aria-label="linksToData && url ? `${statut} — ${t('Voir les données (nouvel onglet)')}` : undefined"
+    :tone
+    :icon-right="linksToData && url ? RiExternalLinkLine : null"
     size="xs"
-    :no-wrap="false"
+    wrap
   >
     {{ statut }}
-  </AdminBadge>
+  </Badge>
 </template>
 
 <script setup lang="ts">
+import { Badge, type BadgeTone } from '@datagouv/components-next'
 import { RiExternalLinkLine } from '@remixicon/vue'
-import CdataLink from '~/components/CdataLink.vue'
-import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
-import type { AdminBadgeType } from '~/types/types'
 
 const { t } = useTranslation()
 
@@ -41,7 +27,7 @@ const { t } = useTranslation()
 defineProps<{
   statut: string | null
   url: string | null
-  type: AdminBadgeType
+  tone: BadgeTone
   linksToData: boolean
 }>()
 </script>

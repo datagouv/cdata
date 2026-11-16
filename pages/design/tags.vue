@@ -162,16 +162,14 @@
           Labels métier des cartes
         </h2>
         <div class="flex flex-wrap items-center gap-4">
-          <AdminBadge
-            v-for="label in cardBusinessLabels"
-            :key="label.label"
-            medium
-            size="sm"
-            :type="label.type"
-            :icon="label.icon"
-          >
-            {{ label.label }}
-          </AdminBadge>
+          <ObjectStatusBadge
+            v-for="status in cardStatuses"
+            :key="status"
+            :status
+          />
+          <AccessTypeBadge access-type="restricted" />
+          <AccessTypeBadge access-type="open_with_account" />
+          <OrganizationTypeBadge type="public-service" />
         </div>
       </section>
 
@@ -206,6 +204,7 @@
               <DatasetBadge
                 v-for="dataset in statusDatasets"
                 :key="dataset.id"
+                size="xs"
                 :dataset
               />
             </div>
@@ -222,23 +221,40 @@
               />
             </div>
           </div>
-          <div
-            v-for="group in tableStatusGroups"
-            :key="group.label"
-            class="space-y-2"
-          >
+          <div class="space-y-2">
             <p class="text-sm font-bold">
-              {{ group.label }}
+              Disponibilité des ressources principales
             </p>
             <div class="flex flex-wrap items-center gap-2">
-              <AdminBadge
-                v-for="status in group.statuses"
-                :key="status.label"
-                size="xs"
-                :type="status.type"
-              >
-                {{ status.label }}
-              </AdminBadge>
+              <ResourceAvailabilityBadge
+                v-for="resource in availabilityResources"
+                :key="resource.id"
+                :resource
+              />
+            </div>
+          </div>
+          <div class="space-y-2">
+            <p class="text-sm font-bold">
+              Disponibilité des ressources communautaires
+            </p>
+            <div class="flex flex-wrap items-center gap-2">
+              <CommunityResourceAvailabilityBadge
+                v-for="communityResource in availabilityCommunityResources"
+                :key="communityResource.id"
+                :community-resource
+              />
+            </div>
+          </div>
+          <div class="space-y-2">
+            <p class="text-sm font-bold">
+              Discussions
+            </p>
+            <div class="flex flex-wrap items-center gap-2">
+              <DiscussionStatusBadge
+                v-for="thread in statusThreads"
+                :key="thread.id"
+                :thread
+              />
             </div>
           </div>
         </div>
@@ -259,7 +275,7 @@
             <HvdStatutBadge
               :statut="null"
               :url="null"
-              type="default"
+              tone="neutral"
               :links-to-data="false"
             />
           </div>
@@ -273,7 +289,7 @@
             <HvdStatutBadge
               statut="Publié"
               :url="null"
-              type="success"
+              tone="success"
               :links-to-data="false"
             />
           </div>
@@ -287,7 +303,7 @@
             <HvdStatutBadge
               statut="Publié"
               url="https://www.data.gouv.fr/datasets/base-adresse-nationale"
-              type="success"
+              tone="success"
               :links-to-data="true"
             />
           </div>
@@ -298,18 +314,18 @@
 </template>
 
 <script setup lang="ts">
-import { LabelTag, Tag, Toggletip, type TranslatedBadge } from '@datagouv/components-next'
-import { RiArchiveLine, RiCheckboxCircleLine, RiCheckLine, RiDeleteBinLine, RiDraftLine, RiGovernmentLine, RiInformationLine, RiLockLine, RiPassValidLine } from '@remixicon/vue'
-import type { Component } from 'vue'
-import AccessTypeBadge from '~/components/AccessTypes/AccessTypeBadge.vue'
-import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
-import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
+import { AccessTypeBadge, DatasetBadge, LabelTag, ObjectStatusBadge, OrganizationTypeBadge, Tag, Toggletip, type CommunityResource, type ObjectStatus, type Resource, type TranslatedBadge } from '@datagouv/components-next'
+import { RiCheckboxCircleLine, RiCheckLine, RiInformationLine } from '@remixicon/vue'
+import CommunityResourceAvailabilityBadge from '~/components/AdminTable/AdminCommunityResourcesTable/CommunityResourceAvailabilityBadge.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import ResourceAvailabilityBadge from '~/components/Datasets/ResourceAvailabilityBadge.vue'
+import DiscussionStatusBadge from '~/components/Discussions/DiscussionStatusBadge.vue'
 import JobBadge from '~/components/Harvesters/JobBadge.vue'
 import HvdStatutBadge from '~/components/SuiviDePublication/HvdStatutBadge.vue'
 import TagsSelect from '~/components/TagsSelect.vue'
+import type { Thread } from '~/types/discussions'
 import type { HarvesterJobPreview, HarvesterJobStatus } from '~/types/harvesters'
-import type { AdminBadgeType, Tag as KeywordTag } from '~/types/types'
+import type { Tag as KeywordTag } from '~/types/types'
 import { exampleDatasets } from '~/utils/design/cardExamples'
 
 const isSelected = ref(false)
@@ -325,14 +341,7 @@ const exampleKeywords: Array<KeywordTag> = [
   { text: 'environnement' },
   { text: 'mobilité' },
 ]
-const cardBusinessLabels: Array<{ label: string, type: AdminBadgeType, icon: Component }> = [
-  { label: 'Brouillon', type: 'secondary', icon: RiDraftLine },
-  { label: 'Archivé', type: 'warning', icon: RiArchiveLine },
-  { label: 'Accès restreint', type: 'warning', icon: RiLockLine },
-  { label: 'Ouvert avec un compte', type: 'yellow', icon: RiPassValidLine },
-  { label: 'Supprimé', type: 'danger', icon: RiDeleteBinLine },
-  { label: 'Service public', type: 'primary', icon: RiGovernmentLine },
-]
+const cardStatuses: Array<ObjectStatus> = ['private', 'archived', 'deleted']
 const [publicDataset, , draftDataset, archivedDataset] = exampleDatasets.map(example => example.data)
 const statusDatasets = [
   publicDataset!,
@@ -351,33 +360,20 @@ const statusJobs: Array<HarvesterJobPreview> = jobStatuses.map(status => ({
   items: [],
   source: { id: 'demo-harvester', class: 'HarvestSource' },
 }))
-// These statuses come from private getStatus functions of their tables: there is no component to render on its own
-const tableStatusGroups: Array<{ label: string, statuses: Array<{ label: string, type: AdminBadgeType }> }> = [
-  {
-    label: 'Disponibilité des ressources principales',
-    statuses: [
-      { label: 'Disponible', type: 'primary' },
-      { label: 'Indisponible', type: 'danger' },
-      { label: 'Inconnu', type: 'warning' },
-    ],
-  },
-  {
-    label: 'Disponibilité des ressources communautaires',
-    statuses: [
-      { label: 'Disponible', type: 'primary' },
-      { label: 'Indisponible', type: 'danger' },
-      { label: 'Pas encore contrôlé', type: 'secondary' },
-    ],
-  },
-  {
-    label: 'Discussions',
-    statuses: [
-      { label: 'Nouveau', type: 'primary' },
-      { label: 'Répondu', type: 'secondary' },
-      { label: 'Clos', type: 'secondary' },
-    ],
-  },
-]
+// The availability and discussion badges only read the fields below: the rest of each object is irrelevant here
+const availabilityResources = [true, false, undefined].map((available, index) => ({
+  id: `demo-resource-${index}`,
+  extras: available === undefined ? {} : { 'check:available': available },
+}) as unknown as Resource)
+const availabilityCommunityResources = [true, false, undefined].map((available, index) => ({
+  id: `demo-community-resource-${index}`,
+  extras: available === undefined ? {} : { 'check:available': available },
+}) as unknown as CommunityResource)
+const statusThreads = [
+  { id: 'demo-thread-new', closed: null, discussion: [{}] },
+  { id: 'demo-thread-answered', closed: null, discussion: [{}, {}] },
+  { id: 'demo-thread-closed', closed: '2026-01-01T00:00:00Z', discussion: [{}, {}] },
+].map(thread => thread as unknown as Thread)
 
 async function suggestExampleTags(query: string): Promise<Array<KeywordTag>> {
   const normalizedQuery = query.toLocaleLowerCase()

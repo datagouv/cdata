@@ -122,25 +122,25 @@
             {{ humanJoin(record.fields.organisation_names) || '-' }}
           </td>
           <td class="whitespace-nowrap">
-            <AdminBadge
+            <Badge
               v-if="record.fields.source_demande_front"
-              :type="sourceBadgeType(record.fields.source_demande_front)"
+              :tone="sourceBadgeType(record.fields.source_demande_front)"
               size="sm"
             >
               {{ record.fields.source_demande_front }}
-            </AdminBadge>
+            </Badge>
             <span v-else>-</span>
           </td>
           <td>
             <div class="flex flex-col gap-1 items-start">
-              <AdminBadge
+              <Badge
                 v-for="value in record.fields.thematique_values"
                 :key="value"
-                type="default"
+                tone="neutral"
                 size="sm"
               >
                 {{ value }}
-              </AdminBadge>
+              </Badge>
               <span v-if="record.fields.thematique_values.length === 0">-</span>
             </div>
           </td>
@@ -153,31 +153,31 @@
               rel="noopener"
               class="no-underline fr-raw-link"
             >
-              <AdminBadge
-                :type="statutBadgeType(record.fields.statut_front)"
+              <Badge
+                :tone="statutBadgeType(record.fields.statut_front)"
                 :icon-right="RiExternalLinkLine"
                 size="sm"
               >
                 {{ record.fields.statut_front }}
-              </AdminBadge>
+              </Badge>
             </CdataLink>
-            <AdminBadge
+            <Badge
               v-else-if="record.fields.statut_front"
-              :type="statutBadgeType(record.fields.statut_front)"
+              :tone="statutBadgeType(record.fields.statut_front)"
               size="sm"
             >
               {{ record.fields.statut_front }}
-            </AdminBadge>
+            </Badge>
             <span v-else>-</span>
           </td>
           <td class="whitespace-nowrap">
-            <AdminBadge
+            <Badge
               v-if="record.fields.restriction_acces"
-              :type="record.fields.restriction_acces === 'Aucune' ? 'success' : 'warning'"
+              :tone="record.fields.restriction_acces === 'Aucune' ? 'success' : 'warning'"
               size="sm"
             >
               {{ record.fields.restriction_acces }}
-            </AdminBadge>
+            </Badge>
             <span v-else>-</span>
           </td>
         </template>
@@ -198,12 +198,12 @@
             :key="statut.value"
           >
             <dt class="inline">
-              <AdminBadge
-                :type="statut.badgeType"
+              <Badge
+                :tone="statut.badgeType"
                 size="sm"
               >
                 {{ statut.label }}
-              </AdminBadge>
+              </Badge>
             </dt>
             <dd class="inline ml-2">
               {{ statut.description }}
@@ -217,17 +217,16 @@
 
 <script setup lang="ts">
 import { RiExternalLinkLine } from '@remixicon/vue'
-import { TranslationT } from '@datagouv/components-next'
+import { TranslationT, Badge } from '@datagouv/components-next'
 import OnboardingHero from '~/components/Onboarding/OnboardingHero.vue'
 import OnboardingSection from '~/components/Onboarding/OnboardingSection.vue'
 import OnboardingTitle from '~/components/Onboarding/OnboardingTitle.vue'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
-import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import GristTableViewer from '~/components/GristTableViewer/GristTableViewer.vue'
 import type { GristFilter, GristRecord } from '~/components/GristTableViewer/GristTableViewer.vue'
-import type { AdminBadgeType } from '~/types/types'
+import type { BadgeTone } from '@datagouv/components-next'
 import { humanJoin } from '~/utils/helpers'
 import { unwrapList } from '~/utils/grist'
 
@@ -316,7 +315,7 @@ type StatutDefinition = {
   value: string
   // Translated label shown in the legend below the table.
   label: string
-  badgeType: AdminBadgeType
+  badgeType: BadgeTone
   // Statuses whose badge links to the published dataset (when the record has an url).
   linksToData: boolean
   description: string
@@ -360,16 +359,16 @@ const statutByValue = new Map(STATUTS.map(statut => [statut.value, statut]))
 // Colours for the "Source de la demande" column. Status colours (red, green, orange)
 // are kept out so they stay tied to the status column; "Demande utilisateur" uses the
 // DSFR decorative teal and "Autre demande" stays neutral grey.
-const SOURCE_BADGE_TYPES: Record<string, AdminBadgeType> = {
+const SOURCE_BADGE_TYPES: Record<string, BadgeTone> = {
   'DINUM': 'primary',
   'Engagements ministériels 2021': 'pink',
   'Demande utilisateur': 'teal',
-  'Autre demande': 'default',
+  'Autre demande': 'neutral',
 }
 
-function sourceBadgeType(source: string | null): AdminBadgeType {
-  if (!source) return 'default'
-  return SOURCE_BADGE_TYPES[source] ?? 'default'
+function sourceBadgeType(source: string | null): BadgeTone {
+  if (!source) return 'neutral'
+  return SOURCE_BADGE_TYPES[source] ?? 'neutral'
 }
 
 const columns = [
@@ -425,9 +424,9 @@ const filters: Array<GristFilter<OuvertureRecord>> = [
   },
 ]
 
-function statutBadgeType(statut: string | null): AdminBadgeType {
-  if (!statut) return 'default'
-  return statutByValue.get(statut)?.badgeType ?? 'default'
+function statutBadgeType(statut: string | null): BadgeTone {
+  if (!statut) return 'neutral'
+  return statutByValue.get(statut)?.badgeType ?? 'neutral'
 }
 
 function statutLinksToData(statut: string | null): boolean {

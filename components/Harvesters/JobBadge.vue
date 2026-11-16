@@ -1,16 +1,16 @@
 <template>
-  <AdminBadge
+  <Badge
     size="xs"
-    :type="status.type"
+    :tone="status.type"
   >
     {{ status.label }}
-  </AdminBadge>
+  </Badge>
 </template>
 
 <script setup lang="ts">
-import { throwOnNever } from '@datagouv/components-next'
+import { throwOnNever, Badge } from '@datagouv/components-next'
 import type { HarvesterJob, HarvesterJobPreview } from '~/types/harvesters'
-import type { AdminBadgeType } from '~/types/types'
+import type { BadgeTone } from '@datagouv/components-next'
 
 const props = defineProps<{
   job: HarvesterJob | HarvesterJobPreview
@@ -18,12 +18,12 @@ const props = defineProps<{
 
 const { t } = useTranslation()
 
-const status = computed<{ label: string, type: AdminBadgeType }>(() => {
+const status = computed<{ label: string, type: BadgeTone }>(() => {
   switch (props.job.status) {
     case 'pending':
       return {
         label: t('En attente'),
-        type: 'secondary',
+        type: 'neutral',
       }
     case 'initializing':
       return {
@@ -33,7 +33,7 @@ const status = computed<{ label: string, type: AdminBadgeType }>(() => {
     case 'initialized':
       return {
         label: t('Initialisé'),
-        type: 'secondary',
+        type: 'neutral',
       }
     case 'processing':
       return {

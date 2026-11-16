@@ -26,14 +26,11 @@
             <template v-else>
               {{ $t('Inconnu') }}
             </template>
-            <AdminBadge
+            <ContactPointRoleBadge
               v-if="getRole(option.role)"
-              size="xs"
-              type="primary"
+              :label="getRole(option.role)!.label"
               class="ml-1"
-            >
-              {{ getRole(option.role)?.label }}
-            </AdminBadge>
+            />
           </span>
           <span v-else>
             {{ t('Nouvelle attribution') }}
@@ -112,12 +109,10 @@
         class="flex items-center gap-1 mb-2"
       >
         {{ t("Rôle:") }}
-        <AdminBadge
+        <ContactPointRoleBadge
+          :label="getRole(contact.role)!.label"
           size="sm"
-          type="primary"
-        >
-          {{ getRole(contact.role)?.label }}
-        </AdminBadge>
+        />
       </p>
       <p
         v-if="contact?.email"
@@ -140,6 +135,7 @@ import { computed } from 'vue'
 import { BrandedButton, SearchableSelect, SelectGroup } from '@datagouv/components-next'
 import type { ContactPoint, ContactPointRole, Organization, OrganizationReference } from '@datagouv/components-next'
 import { RiSaveLine } from '@remixicon/vue'
+import ContactPointRoleBadge from '~/components/ContactPoints/ContactPointRoleBadge.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
 import type { ContactPointInForm, NewContactPoint, PaginatedArray } from '~/types/types'
 

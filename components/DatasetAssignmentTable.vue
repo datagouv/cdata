@@ -48,7 +48,10 @@
           {{ dataset.title }}
         </td>
         <td>
-          <DatasetBadge :dataset />
+          <DatasetBadge
+            size="xs"
+            :dataset
+          />
         </td>
         <td><FormattedDate :date="dataset.created_at" /></td>
         <td><FormattedDate :date="dataset.last_modified" /></td>
@@ -58,11 +61,10 @@
 </template>
 
 <script setup lang="ts">
-import { FormattedDate } from '@datagouv/components-next'
+import { FormattedDate, DatasetBadge } from '@datagouv/components-next'
 import type { DatasetV2 } from '@datagouv/components-next'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
-import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
 
 defineProps<{
   datasets: Array<DatasetV2>

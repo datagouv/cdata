@@ -65,12 +65,7 @@
           </p>
         </td>
         <td>
-          <AdminBadge
-            size="xs"
-            :type="getStatus(communityResource).type"
-          >
-            {{ getStatus(communityResource).label }}
-          </AdminBadge>
+          <CommunityResourceAvailabilityBadge :community-resource />
         </td>
         <td>
           <code class="p-1 font-mono bg-gray-lower text-sm text-gray-medium rounded">{{ communityResource.format }}</code>
@@ -93,11 +88,11 @@
 
 <script setup lang="ts">
 import { FormattedDate, type CommunityResource, type Resource, type SchemaResponseData, toast } from '@datagouv/components-next'
-import AdminBadge from '../../../components/AdminBadge/AdminBadge.vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
-import type { AdminBadgeType, CommunityResourceForm, CommunityResourceSortedBy, ResourceForm, SortDirection } from '~/types/types'
+import CommunityResourceAvailabilityBadge from './CommunityResourceAvailabilityBadge.vue'
+import type { CommunityResourceForm, CommunityResourceSortedBy, ResourceForm, SortDirection } from '~/types/types'
 import FileEditModal from '~/components/Datasets/FileEditModal.vue'
 import FileEditModalFromQueryString from '~/components/Datasets/FileEditModalFromQueryString.vue'
 
@@ -121,28 +116,6 @@ function sorted(column: CommunityResourceSortedBy) {
     return props.sortDirection
   }
   return null
-}
-
-function getStatus(communityResource: CommunityResource): { label: string, type: AdminBadgeType } {
-  const checked = communityResource.extras && 'check:available' in communityResource.extras
-  if (checked && communityResource.extras['check:available'] === false) {
-    return {
-      label: t('Indisponible'),
-      type: 'danger',
-    }
-  }
-  else if (checked) {
-    return {
-      label: t('Disponible'),
-      type: 'primary',
-    }
-  }
-  else {
-    return {
-      label: t('Pas encore contrôlé'),
-      type: 'secondary',
-    }
-  }
 }
 
 const loading = ref(false)

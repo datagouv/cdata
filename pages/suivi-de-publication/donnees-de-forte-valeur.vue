@@ -71,15 +71,15 @@
               v-if="record.fields.thematique_values.length"
               class="flex flex-wrap gap-1"
             >
-              <AdminBadge
+              <Badge
                 v-for="theme in record.fields.thematique_values"
                 :key="theme"
-                type="teal"
+                tone="teal"
                 size="sm"
-                :no-wrap="false"
+                wrap
               >
                 {{ theme }}
-              </AdminBadge>
+              </Badge>
             </div>
             <span v-else>-</span>
           </td>
@@ -93,7 +93,7 @@
             <HvdStatutBadge
               :statut="record.fields.statut_telechargement"
               :url="record.fields.url_telechargement"
-              :type="statutBadgeType(record.fields.statut_telechargement)"
+              :tone="statutBadgeType(record.fields.statut_telechargement)"
               :links-to-data="statutLinksToData(record.fields.statut_telechargement)"
             />
           </td>
@@ -101,7 +101,7 @@
             <HvdStatutBadge
               :statut="record.fields.statut_api"
               :url="record.fields.url_api"
-              :type="statutBadgeType(record.fields.statut_api)"
+              :tone="statutBadgeType(record.fields.statut_api)"
               :links-to-data="statutLinksToData(record.fields.statut_api)"
             />
           </td>
@@ -112,17 +112,16 @@
 </template>
 
 <script setup lang="ts">
-import { TranslationT } from '@datagouv/components-next'
+import { TranslationT, Badge } from '@datagouv/components-next'
 import OnboardingHero from '~/components/Onboarding/OnboardingHero.vue'
 import OnboardingSection from '~/components/Onboarding/OnboardingSection.vue'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
-import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import HvdStatutBadge from '~/components/SuiviDePublication/HvdStatutBadge.vue'
 import GristTableViewer from '~/components/GristTableViewer/GristTableViewer.vue'
 import type { GristFilter, GristRecord } from '~/components/GristTableViewer/GristTableViewer.vue'
-import type { AdminBadgeType } from '~/types/types'
+import type { BadgeTone } from '@datagouv/components-next'
 import { humanJoin } from '~/utils/helpers'
 
 // hvd_name (ensemble) and hvd_category (thématique) are Grist ChoiceList cells,
@@ -224,7 +223,7 @@ const enrichedRecords = computed<Array<HvdRecord>>(() => {
 type StatutDefinition = {
   // Raw Grist value — used both to match records and as the filter option value.
   value: string
-  badgeType: AdminBadgeType
+  badgeType: BadgeTone
   // Statuses whose badge links to the published dataset (when the record has an url).
   linksToData: boolean
 }
@@ -237,14 +236,14 @@ const STATUTS: Array<StatutDefinition> = [
   { value: 'Partiellement disponible', badgeType: 'pink', linksToData: true },
   { value: 'Disponible', badgeType: 'primary', linksToData: true },
   { value: 'Disponible sur data.gouv.fr', badgeType: 'success', linksToData: true },
-  { value: 'Non requis', badgeType: 'default', linksToData: false },
+  { value: 'Non requis', badgeType: 'neutral', linksToData: false },
 ]
 
 const statutByValue = new Map(STATUTS.map(statut => [statut.value, statut]))
 
-function statutBadgeType(statut: string | null): AdminBadgeType {
-  if (!statut) return 'default'
-  return statutByValue.get(statut)?.badgeType ?? 'default'
+function statutBadgeType(statut: string | null): BadgeTone {
+  if (!statut) return 'neutral'
+  return statutByValue.get(statut)?.badgeType ?? 'neutral'
 }
 
 function statutLinksToData(statut: string | null): boolean {

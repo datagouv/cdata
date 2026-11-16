@@ -98,12 +98,12 @@
           class="space-y-1"
         >
           <div>
-            <AdminBadge
-              type="danger"
+            <Badge
+              tone="danger"
               size="sm"
             >
               {{ $t('Erreur') }}
-            </AdminBadge>
+            </Badge>
             {{ error.message }}
           </div>
           <div
@@ -181,12 +181,12 @@
               {{ item.remote_id }}
             </td>
             <td>
-              <AdminBadge
+              <Badge
                 size="xs"
-                :type="getStatus(item).type"
+                :tone="getStatus(item).type"
               >
                 {{ getStatus(item).label }}
-              </AdminBadge>
+              </Badge>
             </td>
             <td>
               <div v-if="preview">
@@ -258,12 +258,12 @@
           class="space-y-1"
         >
           <div>
-            <AdminBadge
-              type="danger"
+            <Badge
+              tone="danger"
               size="sm"
             >
               {{ $t('Erreur') }}
-            </AdminBadge>
+            </Badge>
             {{ error.message }}
           </div>
           <div
@@ -279,12 +279,12 @@
           :key="index"
           class="space-y-1"
         >
-          <AdminBadge
-            type="warning"
+          <Badge
+            tone="warning"
             size="sm"
           >
             {{ $t('Log') }} {{ log.level }}
-          </AdminBadge>
+          </Badge>
           {{ log.message }}
         </div>
       </div>
@@ -293,13 +293,13 @@
 </template>
 
 <script setup lang="ts">
-import { FormattedDate, Pagination, SearchableSelect, Tooltip } from '@datagouv/components-next'
+import { FormattedDate, Pagination, SearchableSelect, Tooltip, Badge } from '@datagouv/components-next'
 import { RiAlertLine, RiArchiveLine, RiCalendarEventLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiEyeOffLine, RiInformationLine } from '@remixicon/vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import JobBadge from '~/components/Harvesters/JobBadge.vue'
 import type { HarvesterJob, HarvesterJobPreview, HarvestItem, HarvestItemStatus } from '~/types/harvesters'
-import type { AdminBadgeType } from '~/types/types'
+import type { BadgeTone } from '@datagouv/components-next'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
@@ -311,20 +311,20 @@ const props = withDefaults(defineProps<{
   items: () => [],
 })
 
-const itemStatusMap: Record<HarvestItemStatus, { label: string, type: AdminBadgeType }> = {
-  pending: { label: t('En attente'), type: 'secondary' },
+const itemStatusMap: Record<HarvestItemStatus, { label: string, type: BadgeTone }> = {
+  pending: { label: t('En attente'), type: 'neutral' },
   started: { label: t('Commencé'), type: 'primary' },
   done: { label: t('Terminé'), type: 'success' },
   failed: { label: t('Échoué'), type: 'danger' },
-  skipped: { label: t('Ignoré'), type: 'secondary' },
-  archived: { label: t('Archivé'), type: 'secondary' },
+  skipped: { label: t('Ignoré'), type: 'neutral' },
+  archived: { label: t('Archivé'), type: 'neutral' },
 }
 
 const itemStatusOptions = Object.entries(itemStatusMap).map(([id, status]) => ({ id: id as HarvestItemStatus, ...status }))
 
 const page = ref(1)
 const pageSize = ref(15)
-const selectedItemStatus = ref<{ id: HarvestItemStatus, label: string, type: AdminBadgeType } | null>(null)
+const selectedItemStatus = ref<{ id: HarvestItemStatus, label: string, type: BadgeTone } | null>(null)
 
 watch(selectedItemStatus, () => {
   page.value = 1
@@ -338,7 +338,7 @@ const { preview, displayedItems, displayedTotal, total, byStatus } = await useJo
   selectedItemStatus,
 )
 
-function getStatus(item: HarvestItem): { label: string, type: AdminBadgeType } {
+function getStatus(item: HarvestItem): { label: string, type: BadgeTone } {
   return itemStatusMap[item.status]
 }
 

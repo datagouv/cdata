@@ -2,7 +2,7 @@ import type { App, Plugin } from 'vue'
 import type { Activity, ActivityKey } from './types/activity.js'
 import type { PaginatedArray } from './types/api.js'
 import type { ContactPoint, ContactPointRole } from './types/contact_point.js'
-import type { Badge, Badges, TranslatedBadge } from './types/badges'
+import type { Badge as BadgeObject, Badges, TranslatedBadge } from './types/badges'
 import type { DatasetReference, Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
 import type { DataserviceReference, NewDataservice, Dataservice } from './types/dataservices'
 import type { AccessType, AccessAudience, AccessAudienceCondition, AccessAudienceType, WithAccessType, AccessTypeForm } from './types/access_types'
@@ -20,7 +20,7 @@ import type { RegisteredSchema, Schema, SchemaDetails, SchemaField, SchemaPath, 
 import type { TopicV2, TopicElement, TopicElementClass, TopicElementRel } from './types/topics'
 import type { CommunityResource, FileResourceFileType, RemoteResourceFileType, ResourceFileType, ResourceGroup, ResourceType, Resource } from './types/resources'
 import type { Site } from './types/site'
-import type { Weight, WellType } from './types/ui'
+import type { BadgeTone, Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
 import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, OrFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm, CombinedSort, ColumnDefinition, ColumnsDefinition } from './types/visualizations'
@@ -30,6 +30,7 @@ import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseCo
 import { useSearchFilter } from './composables/useSearchFilter'
 import type { UseSearchFilterOptions } from './composables/useSearchFilter'
 
+import AccessTypeBadge from './components/AccessTypeBadge.vue'
 import ActivityActor from './components/ActivityList/ActivityActor.vue'
 import ActivityList from './components/ActivityList/ActivityList.vue'
 import UserActivityList from './components/ActivityList/UserActivityList.vue'
@@ -37,14 +38,18 @@ import AnimatedLoader from './components/AnimatedLoader.vue'
 import AppLink from './components/AppLink.vue'
 import Avatar from './components/Avatar.vue'
 import AvatarWithName from './components/AvatarWithName.vue'
+import Badge from './components/Badge.vue'
 import BannerAction from './components/BannerAction.vue'
 import BrandedButton from './components/BrandedButton.vue'
+import ChartBadge from './components/ChartBadge.vue'
 import ChartCard from './components/ChartCard.vue'
 import CopyButton from './components/CopyButton.vue'
+import DataserviceBadge from './components/DataserviceBadge.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
 import DataserviceQuality from './components/DataserviceQuality.vue'
 import DataserviceQualityInline from './components/DataserviceQualityInline.vue'
 import DataserviceQualityTooltipContent from './components/DataserviceQualityTooltipContent.vue'
+import DatasetBadge from './components/DatasetBadge.vue'
 import DatasetCard from './components/DatasetCard.vue'
 import DataStructure from './components/ResourceAccordion/DataStructure.vue'
 import Downloads from './components/ResourceAccordion/Downloads.vue'
@@ -68,7 +73,10 @@ import ExtraAccordion from './components/ExtraAccordion.vue'
 import LabelTag from './components/DatasetLabelTag.vue'
 import LoadingBlock from './components/LoadingBlock.vue'
 import MarkdownViewer from './components/MarkdownViewer.vue'
+import ObjectStatusBadge from './components/ObjectStatusBadge.vue'
+import OrganizationBadge from './components/OrganizationBadge.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
+import OrganizationTypeBadge from './components/OrganizationTypeBadge.vue'
 import ObjectCardOwner from './components/ObjectCardOwner.vue'
 import OrganizationLogo from './components/OrganizationLogo.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
@@ -88,6 +96,7 @@ import ResourceExplorer from './components/ResourceExplorer/ResourceExplorer.vue
 import ResourceExplorerSidebar from './components/ResourceExplorer/ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './components/ResourceExplorer/ResourceExplorerViewer.vue'
 import OpenApiViewer from './components/OpenApiViewer/OpenApiViewer.vue'
+import ReuseBadge from './components/ReuseBadge.vue'
 import ReuseCard from './components/ReuseCard.vue'
 import ReuseDetails from './components/ReuseDetails.vue'
 import SchemaCard from './components/SchemaCard.vue'
@@ -121,6 +130,9 @@ import { useTranslation } from './composables/useTranslation'
 
 export type { SegmentedControlOption } from './components/SegmentedControl.vue'
 
+// Same name as the Badge component on purpose: as a type, `Badge` is the udata badge (spd, hvd, certified…)
+export type Badge = BadgeObject
+
 export { Toaster, toast } from 'vue-sonner'
 
 export * from './composables/useActiveDescendant'
@@ -143,6 +155,7 @@ export * from './functions/markdown'
 export * from './functions/matomo'
 export * from './functions/metrics'
 export * from './functions/never'
+export * from './functions/objectStatus'
 export * from './functions/organizations'
 export * from './functions/owned'
 export * from './functions/previewErrors'
@@ -182,7 +195,7 @@ export type {
   AccessTypeForm,
   Activity,
   ActivityKey,
-  Badge,
+  BadgeTone,
   Badges,
   CommunityResource,
   ContactPoint,
@@ -356,20 +369,25 @@ const datagouv: Plugin<PluginConfig> = {
 export {
   datagouv,
   useComponentsConfig,
+  AccessTypeBadge,
   ActivityActor,
   ActivityList,
   AnimatedLoader,
   AppLink,
   Avatar,
   AvatarWithName,
+  Badge,
   BannerAction,
   BrandedButton,
+  ChartBadge,
   ChartCard,
   CopyButton,
+  DataserviceBadge,
   DataserviceCard,
   DataserviceQuality,
   DataserviceQualityInline,
   DataserviceQualityTooltipContent,
+  DatasetBadge,
   DatasetCard,
   DataStructure,
   Downloads,
@@ -396,7 +414,10 @@ export {
   LoadingBlock,
   Tag,
   MarkdownViewer,
+  ObjectStatusBadge,
+  OrganizationBadge,
   OrganizationCard,
+  OrganizationTypeBadge,
   OrganizationLogo,
   OrganizationNameWithCertificate,
   OwnerType,
@@ -416,6 +437,7 @@ export {
   ObjectCardOwner,
   ResourceIcon,
   ResourceSelector,
+  ReuseBadge,
   ReuseCard,
   ReuseDetails,
   SchemaCard,

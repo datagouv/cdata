@@ -86,22 +86,7 @@
               </td>
               <td>{{ getKindLabel(post.kind) }}</td>
               <td>
-                <AdminBadge
-                  size="xs"
-                  :type="post.published ? 'primary' : 'secondary'"
-                >
-                  <TranslationT
-                    v-if="post.published"
-                    keypath="Publié le {date}"
-                  >
-                    <template #date>
-                      <FormattedDate :date="post.published" />
-                    </template>
-                  </TranslationT>
-                  <template v-else>
-                    {{ t('Brouillon') }}
-                  </template>
-                </AdminBadge>
+                <PostStatusBadge :post />
               </td>
               <td><FormattedDate :date="post.created_at" /></td>
               <td><FormattedDate :date="post.last_modified" /></td>
@@ -168,7 +153,7 @@
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, Pagination, BrandedButton, FormattedDate, TranslationT, SearchableSelect } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, BrandedButton, FormattedDate, SearchableSelect } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 import { RiAddLine, RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
@@ -177,6 +162,7 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
+import PostStatusBadge from '~/components/Admin/PostStatusBadge.vue'
 import type { Post } from '~/types/posts'
 
 const { t } = useTranslation()
