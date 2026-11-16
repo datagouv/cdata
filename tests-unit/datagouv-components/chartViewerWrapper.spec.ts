@@ -30,7 +30,10 @@ function chartFixture(): ChartForApi {
 const ChartViewerStub = defineComponent({
   name: 'ChartViewer',
   props: { chart: { type: Object, required: true }, series: { type: Object, required: true } },
-  setup: () => () => h('div', { class: 'chart-viewer-stub' }),
+  setup: (props, { expose }) => {
+    expose({ capture: () => `image of ${(props.chart as ChartForApi).series[0]?.aggregate_y}` })
+    return () => h('div', { class: 'chart-viewer-stub' })
+  },
 })
 
 function tabularResponse(data: TabularDataResponse['data'], { next = null, total }: { next?: string | null, total?: number } = {}): TabularDataResponse {
@@ -494,6 +497,47 @@ describe('ChartViewerWrapper data fetching', () => {
     await wrapper.setProps({ chart: next })
     await settle()
     expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
+  })
+
+  it('captures the chart only once the data of the latest change is shown', async () => {
+    let resolveData: (v: unknown) => void = () => {}
+    ofetchMock.mockImplementation((url: string) => {
+      if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
+      if (url.includes('n__max')) return Promise.resolve(rows(3))
+      return new Promise((resolve) => {
+        resolveData = resolve
+      })
+    })
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart, 300)
+    await vi.advanceTimersByTimeAsync(300)
+    await flushPromises()
+    const next = structuredClone(chart)
+    next.series[0]!.aggregate_y = 'sum'
+    await wrapper.setProps({ chart: next })
+    const vm = wrapper.vm as unknown as { capture: () => Promise<string | null> }
+    let image: string | null | undefined
+    void vm.capture().then((value) => {
+      image = value
+    })
+    await vi.advanceTimersByTimeAsync(300)
+    await flushPromises()
+    expect(image).toBeUndefined()
+
+    resolveData(rows(3))
+    await settle()
+    expect(image).toBe('image of sum')
+  })
+
+  it('gives no image when the latest chart does not load in time', async () => {
+    ofetchMock.mockImplementation((url: string) => {
+      if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
+      return new Promise(() => {})
+    })
+    const wrapper = mountWrapper(chartFixture())
+    const capture = (wrapper.vm as unknown as { capture: () => Promise<string | null> }).capture()
+    await vi.advanceTimersByTimeAsync(10_000)
+    await expect(capture).resolves.toBeNull()
   })
 
   it('hides the X-sort truncation warning when the limit keeps fewer values than fetched', async () => {

@@ -1179,7 +1179,7 @@ async function saveChart() {
       })
     }
 
-    const imageUrl = chartViewerWrapperRef.value?.capture()
+    const imageUrl = await chartViewerWrapperRef.value?.capture()
     if (imageUrl) {
       const i = await fetch(imageUrl)
       const imageBlob = await i.blob()

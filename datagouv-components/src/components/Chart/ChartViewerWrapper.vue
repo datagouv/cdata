@@ -85,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue'
 import { RiAlertLine, RiErrorWarningLine, RiRefreshLine } from '@remixicon/vue'
 import BrandedButton from '../BrandedButton.vue'
 import ChartLoader from './ChartLoader.vue'
@@ -95,7 +95,7 @@ import { useComponentsConfig } from '../../config'
 import { fetchTabularData, TabularApiError, tabularErrorMessage, useGetProfile, type FetchTabularDataOptions } from '../../functions/tabularApi'
 import type { Chart, ChartForApi, ColumnsDefinition } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
-import { watchDebounced } from '@vueuse/shared'
+import { until, watchDebounced } from '@vueuse/shared'
 import { buildColumnsFromProfile } from '../../functions/charts'
 import { CHART_PAGE_SIZE, chartDataKey, chartRequestSortDirection, groupsBeyondPage, truncationWarning } from '../../functions/chartData'
 
@@ -106,11 +106,6 @@ const props = defineProps<{
 const { t } = useTranslation()
 const chartViewerRef = ref<InstanceType<typeof ChartViewer> | null>(null)
 
-function capture(): string | null {
-  return chartViewerRef.value?.capture() ?? null
-}
-
-defineExpose({ capture })
 const config = useComponentsConfig()
 const getProfile = useGetProfile()
 
@@ -161,6 +156,18 @@ function resetNotes() {
 // would otherwise be looked up in the previous rows and draw empty axes.
 const loadedChart = shallowRef<Chart | ChartForApi>(props.chart)
 const displayedChart = computed(() => chartDataKey(props.chart) === chartDataKey(loadedChart.value) ? props.chart : loadedChart.value)
+
+// A save right after an edit would otherwise capture the previous chart, still shown
+// while the debounced reload runs. A chart that does not load in time gets no image.
+const CAPTURE_TIMEOUT = 10_000
+const showsRequestedChart = computed(() => pendingOperations.value === 0 && displayedChart.value === props.chart)
+async function capture(): Promise<string | null> {
+  if (!await until(showsRequestedChart).toBe(true, { timeout: CAPTURE_TIMEOUT })) return null
+  await nextTick()
+  return chartViewerRef.value?.capture() ?? null
+}
+
+defineExpose({ capture })
 
 // With an X order the limit keeps the first values of the fetched extract,
 // which are right; a Y order ranks only that extract, so it still warns.
