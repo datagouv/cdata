@@ -29,7 +29,7 @@
           <Tag
             type="secondary"
             :icon="RiCheckboxCircleLine"
-            class="cdata-tag cdata-icon-offset-y-1"
+            class="cdata-tag"
             data-testid="components-tag-icon"
           >
             Données ouvertes
@@ -63,7 +63,7 @@
             data-testid="icon-tag"
           >
             <RiInformationLine
-              class="size-3.5 cdata-icon-offset-y-1"
+              class="size-3.5"
               aria-hidden="true"
             />
             Avec icône
@@ -88,7 +88,7 @@
             }"
           >
             <RiInformationLine
-              class="size-3.5 cdata-icon-offset-y-1"
+              class="size-3.5"
               aria-hidden="true"
             />
             Avec infobulle
@@ -115,7 +115,7 @@
           >
             <RiCheckLine
               v-if="isSelected"
-              class="size-3.5 cdata-icon-offset-y-1"
+              class="size-3.5"
               aria-hidden="true"
             />
             Sélectionnable
@@ -127,7 +127,7 @@
             aria-label="Supprimer le tag supprimable"
           >
             <RiCloseLine
-              class="size-3.5 cdata-icon-offset-y-1"
+              class="size-3.5"
               aria-hidden="true"
             />
             Supprimable

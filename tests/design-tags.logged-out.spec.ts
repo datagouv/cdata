@@ -14,7 +14,8 @@ test('shows every compact tag state', async ({ page }) => {
   for (const tag of [staticTag, clickableTag, selectableTag, disabledTag]) {
     await expect(tag).toHaveCSS('font-size', '12px')
     await expect(tag).toHaveCSS('font-weight', '400')
-    await expect(tag).toHaveCSS('line-height', '18px')
+    await expect(tag).toHaveCSS('line-height', '24px')
+    await expect(tag).toHaveCSS('height', '24px')
     await expect(tag).toHaveCSS('min-height', '24px')
     await expect(tag).toHaveCSS('border-top-width', '1px')
   }
@@ -26,7 +27,7 @@ test('shows every compact tag state', async ({ page }) => {
   await expect(iconTag).toHaveCSS('padding-left', '6px')
   await expect(iconTag.locator('svg')).toHaveCSS('width', '14px')
   await expect(iconTag.locator('svg')).toHaveCSS('height', '14px')
-  await expect(iconTag.locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 1)')
+  await expect(iconTag.locator('svg')).toHaveCSS('transform', 'none')
 
   const restBackground = await clickableTag.evaluate(element => getComputedStyle(element).backgroundColor)
   await clickableTag.hover()
@@ -39,7 +40,7 @@ test('shows every compact tag state', async ({ page }) => {
   await expect(selectableTag.locator('svg')).toHaveCount(1)
   await expect(selectableTag.locator('svg')).toHaveCSS('width', '14px')
   await expect(selectableTag).toHaveCSS('padding-left', '6px')
-  await expect(selectableTag.locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 1)')
+  await expect(selectableTag.locator('svg')).toHaveCSS('transform', 'none')
   expect(await selectableTag.evaluate(element => element.firstElementChild?.tagName.toLowerCase())).toBe('svg')
   expect(await selectableTag.evaluate(element => getComputedStyle(element, '::after').content)).toBe('none')
   const selectedBackground = await selectableTag.evaluate(element => getComputedStyle(element).backgroundColor)
@@ -67,7 +68,7 @@ test('opens and closes a tag toggletip', async ({ page }) => {
   await expect(tag.locator('svg')).toHaveCount(1)
   expect(await tag.evaluate(element => element.firstElementChild?.tagName.toLowerCase())).toBe('svg')
   await expect(tag).toHaveCSS('padding-left', '6px')
-  await expect(tag.locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 1)')
+  await expect(tag.locator('svg')).toHaveCSS('transform', 'none')
   await tag.focus()
   await expect(tag).toHaveCSS('outline-style', 'solid')
 
@@ -95,7 +96,23 @@ test('shows the business labels used by cards', async ({ page }) => {
   await expect(cardBadges.first()).toHaveCSS('min-height', '24px')
   await expect(cardBadges.first()).toHaveCSS('font-weight', '500')
   await expect(cardBadges.first().locator('svg')).toHaveCSS('width', '14px')
-  await expect(cardBadges.first().locator('.admin-badge__label')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
+  await expect(cardBadges.first()).toHaveCSS('height', '24px')
+  await expect(cardBadges.first()).toHaveCSS('line-height', '24px')
+  await expect(cardBadges.first().locator('.admin-badge__label')).toHaveCSS('transform', 'none')
+
+  const geometry = await cardBadges.first().evaluate((element) => {
+    const badge = element.getBoundingClientRect()
+    const label = element.querySelector('.admin-badge__label')?.getBoundingClientRect()
+    const icon = element.querySelector('svg')?.getBoundingClientRect()
+    const badgeCenter = badge.top + badge.height / 2
+
+    return {
+      labelCenterDelta: label ? label.top + label.height / 2 - badgeCenter : null,
+      iconCenterDelta: icon ? icon.top + icon.height / 2 - badgeCenter : null,
+    }
+  })
+  expect(geometry.labelCenterDelta).toBeCloseTo(0, 5)
+  expect(geometry.iconCenterDelta).toBeCloseTo(0, 5)
 
   for (const [cardLabel, tableStatus] of [['Brouillon', 'Brouillon'], ['Archivé', 'Archivé'], ['Accès restreint', 'Archivé'], ['Supprimé', 'Supprimé'], ['Service public', 'Public']]) {
     const cardBadge = cardBadges.filter({ hasText: cardLabel })
@@ -112,12 +129,8 @@ test('shows the business labels used by cards', async ({ page }) => {
   const draftIcon = cardBadges.filter({ hasText: 'Brouillon' }).locator('svg')
   const restrictedIcon = cardBadges.filter({ hasText: 'Accès restreint' }).locator('svg')
   expect(await draftIcon.innerHTML()).not.toBe(await restrictedIcon.innerHTML())
-  await expect(draftIcon).toHaveAttribute('data-optical-offset-y', '1')
-  await expect(cardBadges.filter({ hasText: 'Archivé' }).locator('svg')).toHaveAttribute('data-optical-offset-y', '1')
-  await expect(restrictedIcon).toHaveAttribute('data-optical-offset-y', '0')
-  await expect(accountCardBadge.locator('svg')).toHaveAttribute('data-optical-offset-y', '1')
-  await expect(cardBadges.filter({ hasText: 'Supprimé' }).locator('svg')).toHaveAttribute('data-optical-offset-y', '1')
-  await expect(cardBadges.filter({ hasText: 'Service public' }).locator('svg')).toHaveAttribute('data-optical-offset-y', '1')
+  await expect(draftIcon).toHaveCSS('transform', 'none')
+  await expect(restrictedIcon).toHaveCSS('transform', 'none')
 })
 
 test('shows API access types with the account-only yellow tone', async ({ page }) => {
@@ -139,8 +152,8 @@ test('shows API access types with the account-only yellow tone', async ({ page }
   await expect(restrictedBadge).toHaveCSS('font-weight', '500')
   await expect(accountBadge.locator('svg')).toHaveCSS('width', '14px')
   await expect(restrictedBadge.locator('svg')).toHaveCSS('width', '14px')
-  await expect(accountBadge.locator('svg')).toHaveAttribute('data-optical-offset-y', '1')
-  await expect(restrictedBadge.locator('svg')).toHaveAttribute('data-optical-offset-y', '0')
+  await expect(accountBadge.locator('svg')).toHaveCSS('transform', 'none')
+  await expect(restrictedBadge.locator('svg')).toHaveCSS('transform', 'none')
   await expect(accountBadge).not.toHaveCSS('background-color', await restrictedBadge.evaluate(element => getComputedStyle(element).backgroundColor))
 })
 
@@ -159,10 +172,10 @@ test('shows the statuses used in tables', async ({ page }) => {
   await expect(badges).toHaveCount(18)
   await expect(badges.first()).toHaveCSS('min-height', '20px')
   await expect(badges.first()).toHaveCSS('font-weight', '400')
-  await expect(badges.first()).toHaveCSS('line-height', '16px')
+  await expect(badges.first()).toHaveCSS('line-height', '20px')
   await expect(badges.first()).toHaveCSS('padding-top', '1px')
   await expect(badges.first()).toHaveCSS('padding-bottom', '1px')
-  await expect(badges.first().locator(':scope > span')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
+  await expect(badges.first().locator(':scope > span')).toHaveCSS('transform', 'none')
 })
 
 test('shows the data schema badge', async ({ page }) => {
@@ -180,13 +193,13 @@ test('shows component tags with a stroke, including the linked variant', async (
     await expect(tag).toHaveCSS('border-top-width', '1px')
     await expect(tag).toHaveCSS('min-height', '24px')
     await expect(tag).toHaveCSS('font-weight', '400')
-    await expect(tag).toHaveCSS('line-height', '18px')
+    await expect(tag).toHaveCSS('line-height', '24px')
     await expect(tag).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
   }
 
   await expect(iconTag.locator('svg')).toHaveCSS('width', '14px')
   await expect(iconTag.locator('svg')).toHaveCSS('height', '14px')
-  await expect(iconTag.locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 1)')
+  await expect(iconTag.locator('svg')).toHaveCSS('transform', 'none')
   await expect(iconTag.locator(':scope > span')).toHaveCSS('margin-top', '0px')
 
   const link = linkedTag.locator('..')
@@ -202,13 +215,13 @@ test('shows and removes multiple TagsSelect values', async ({ page }) => {
   await expect(selectedTags.getByRole('button')).toHaveCount(3)
   await expect(selectedTags.getByRole('button').first()).toHaveCSS('font-size', '12px')
   await expect(selectedTags.getByRole('button').first()).toHaveCSS('font-weight', '400')
-  await expect(selectedTags.getByRole('button').first()).toHaveCSS('line-height', '18px')
+  await expect(selectedTags.getByRole('button').first()).toHaveCSS('line-height', '24px')
   await expect(selectedTags.getByRole('button').first()).toHaveCSS('min-height', '24px')
   await expect(selectedTags.getByRole('button').first().locator('svg')).toHaveCSS('width', '14px')
   expect(await selectedTags.getByRole('button').first().evaluate(element => element.firstElementChild?.tagName.toLowerCase())).toBe('svg')
   await expect(selectedTags.getByRole('button').first()).toHaveCSS('padding-left', '6px')
   await expect(selectedTags.getByRole('button').first().locator('svg')).toHaveCSS('height', '14px')
-  await expect(selectedTags.getByRole('button').first().locator('svg')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 1)')
+  await expect(selectedTags.getByRole('button').first().locator('svg')).toHaveCSS('transform', 'none')
 
   await page.getByRole('button', { name: 'Supprimer le mot-clé transport' }).click()
   await expect(selectedTags.getByRole('button')).toHaveCount(2)

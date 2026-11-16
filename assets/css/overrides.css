@@ -46,7 +46,8 @@
   gap: 0.25rem;
   font-size: 0.75rem;
   font-weight: 400;
-  line-height: 1.125rem;
+  line-height: 1.5rem;
+  height: 1.5rem;
   min-height: 1.5rem;
   padding: 0.125rem 0.5rem;
   border: 1px solid var(--border-default-grey);
@@ -56,9 +57,8 @@
 }
 
 /*
- * Keep one 14 px icon frame. Optical offsets are declared by each icon usage:
- * SVG drawings have different centres of visual weight even when their
- * mathematical boxes are identical.
+ * Keep one 14 px icon frame. The text line box fills the 24 px tag and flex
+ * alignment centres the icon inside that same box, without vertical offsets.
  */
 .fr-tag:has(> svg:first-child) {
   padding-inline-start: 0.375rem;
@@ -69,14 +69,6 @@
   flex: none;
   width: 0.875rem !important;
   height: 0.875rem !important;
-  transform: translate(
-    var(--cdata-icon-offset-x, 0),
-    var(--cdata-icon-offset-y, 0)
-  );
-}
-
-.cdata-icon-offset-y-1 {
-  --cdata-icon-offset-y: 1px;
 }
 
 @layer utilities {
@@ -89,10 +81,6 @@
     flex: none;
     width: 0.875rem !important;
     height: 0.875rem !important;
-    transform: translate(
-      var(--cdata-icon-offset-x, 0),
-      var(--cdata-icon-offset-y, 0)
-    );
   }
 
   /* The shared Tag currently lifts its text by 1 px; undo it locally so both
@@ -111,10 +99,11 @@
   .cdata-tag,
   .cdata-dataset-information .fr-raw-link > span {
     box-sizing: border-box;
+    height: 1.5rem;
     min-height: 1.5rem;
     border: 1px solid var(--border-default-grey) !important;
     font-weight: 400 !important;
-    line-height: 1.125rem !important;
+    line-height: 1.5rem !important;
     background-color: transparent !important;
   }
 
