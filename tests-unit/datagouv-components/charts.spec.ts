@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildColumnsFromProfile, chartContentToForm, formatYAxisValue, toChartApi, toChartForm } from '~/datagouv-components/src/functions/charts'
+import { buildColumnsFromProfile, chartContentToForm, formatYAxisValue, hasMixedSeries, toChartApi, toChartForm } from '~/datagouv-components/src/functions/charts'
 import type { ChartContent } from '~/datagouv-components/src/functions/charts'
 import type { Chart, GenericFilter } from '~/datagouv-components/src/types/visualizations'
 import type { TabularProfile } from '~/datagouv-components/src/components/TabularExplorer/types'
@@ -173,7 +173,7 @@ describe('chartContentToForm', () => {
       x_axis: { column_x: 'region', type: 'discrete', limit: 5, sort_combined: 'axis_y-desc' },
       y_axis: { label: '', min: null, max: 10, unit: '', unit_position: 'suffix' },
       series: [
-        { type: 'line', column_y: 'montant', aggregate_y: 'sum', resource_id: 'res-1', column_x_name_override: null, filters: null },
+        { type: 'line', column_y: 'montant', aggregate_y: 'sum', resource_id: 'res-1', column_x_name_override: null, filters: filter },
         // The form counts the X column: a count series is pointed at it.
         { type: 'line', column_y: 'region', aggregate_y: 'count', resource_id: 'res-1', column_x_name_override: null, filters: null },
       ],
@@ -207,6 +207,28 @@ describe('chartContentToForm', () => {
 
   it('has no chart type without a series', () => {
     expect(chartContentToForm({ ...content, series: [] }).chart_type).toBeNull()
+  })
+})
+
+describe('hasMixedSeries', () => {
+  const filter: GenericFilter = { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Bretagne' }
+  const serie = { type: 'line', filters: filter } as const
+
+  it('accepts series of one type and one filter, like the assistant creates', () => {
+    expect(hasMixedSeries({ series: [] })).toBe(false)
+    expect(hasMixedSeries({ series: [serie] })).toBe(false)
+    expect(hasMixedSeries({ series: [serie, { ...serie, filters: { ...filter } }] })).toBe(false)
+  })
+
+  it('tells series of another type or filter, that the form would overwrite', () => {
+    expect(hasMixedSeries({ series: [serie, { ...serie, type: 'histogram' }] })).toBe(true)
+    expect(hasMixedSeries({ series: [serie, { ...serie, filters: null }] })).toBe(true)
+    expect(hasMixedSeries({ series: [serie, { ...serie, filters: { ...filter, value: 'Normandie' } }] })).toBe(true)
+  })
+
+  it('reads the series of a loaded form, which keep their own', () => {
+    const chart = { ...baseChart, series: [{ ...serie, column_y: 'm' }, { ...serie, column_y: 'n', type: 'histogram' }] } as unknown as Chart
+    expect(hasMixedSeries(toChartForm(chart))).toBe(true)
   })
 })
 

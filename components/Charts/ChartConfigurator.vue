@@ -702,11 +702,24 @@
               class="shrink-0 border-t border-gray-default bg-white py-3 px-6"
               data-testid="chart-save-footer"
             >
+              <SimpleBanner
+                v-if="mixedSeries"
+                id="chart-mixed-series"
+                type="warning"
+                class="mb-3 !py-2"
+                data-testid="chart-mixed-series"
+              >
+                <p class="mb-0 text-xs">
+                  {{ $t('Les séries de ce graphique n’ont pas toutes le même type ou le même filtre : le formulaire, qui applique un type et un filtre à toutes les séries, ne peut pas l’enregistrer sans les écraser.') }}
+                </p>
+              </SimpleBanner>
               <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
                 <BrandedButton
                   type="submit"
                   form="chart-form"
                   class="shrink-0"
+                  :disabled="mixedSeries"
+                  :aria-describedby="mixedSeries ? 'chart-mixed-series' : undefined"
                 >
                   {{ $t('Sauvegarder le graphique') }}
                 </BrandedButton>
@@ -739,7 +752,7 @@
 
 <script setup lang="ts">
 import type { Resource, PaginatedArray, ChartForm, Chart, Filter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
-import { CHART_PAGE_SIZE, buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, SearchableSelect, SimpleBanner, Listbox, useTranslation } from '@datagouv/components-next'
+import { CHART_PAGE_SIZE, buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, hasMixedSeries, SearchableSelect, SimpleBanner, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, nextTick, reactive, ref, useTemplateRef, watch } from 'vue'
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/vue'
@@ -832,6 +845,8 @@ const requiredFields = computed(() => [
 const missingFields = computed(() => requiredFields.value.filter(field => getFirstError(field.key)))
 // The footer warning only follows a refused save, not the inline errors of a blurred field.
 const saveBlocked = ref(false)
+// A chart created through the API may have them; the assistant gives every series one type and one filter.
+const mixedSeries = computed(() => hasMixedSeries(form.value))
 // Cleared on the values, not on the errors: touch() empties a field's errors while it revalidates.
 watch(() => requiredFields.value.map(field => form.value[field.key]), async () => {
   if (saveBlocked.value && await validate()) saveBlocked.value = false
@@ -1136,6 +1151,7 @@ function focusFirstMissingField() {
 }
 
 async function saveChart() {
+  if (mixedSeries.value) return
   if (!await validate()) {
     saveBlocked.value = true
     focusFirstMissingField()

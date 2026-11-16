@@ -44,7 +44,7 @@ describe('applyChartToolResult', () => {
     expect(form.chart_type).toBe('histogram')
     expect(form.filter).toEqual(filter)
     expect(form.x_axis).toEqual({ column_x: 'year', type: 'date', limit: 10, sort_combined: 'axis_x-asc' })
-    expect(form.series).toEqual([{ type: 'histogram', column_y: 'amount', aggregate_y: '', resource_id: 'res-1', filters: null, column_x_name_override: null }])
+    expect(form.series).toEqual([{ type: 'histogram', column_y: 'amount', aggregate_y: '', resource_id: 'res-1', filters: filter, column_x_name_override: null }])
     expect(form.y_axis).toEqual({ label: '', unit: '€', unit_position: 'suffix', min: 0, max: null })
   })
 

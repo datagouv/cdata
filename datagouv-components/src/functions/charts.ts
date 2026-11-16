@@ -13,9 +13,21 @@ export const CHART_IMAGE_HEIGHT = 320
 export type ChartContent = Pick<Chart, 'title' | 'description' | 'x_axis' | 'y_axis' | 'series'>
 
 /**
- * The form fields of a chart content. The form has one filter shared by every
- * series, read from the first one, and its own copy of it. A count series counts
- * the X column by convention: its column_y is pointed at it.
+ * Whether the series differ in type or filters. The form edits one type and one filter,
+ * applied to every series on save: it would overwrite those of such a chart.
+ */
+export function hasMixedSeries(chart: { series: Array<Pick<DataSeries, 'type' | 'filters'>> }): boolean {
+  const [first, ...others] = chart.series
+  if (!first) return false
+  const filters = JSON.stringify(first.filters ?? null)
+  return others.some(serie => serie.type !== first.type || JSON.stringify(serie.filters ?? null) !== filters)
+}
+
+/**
+ * The form fields of a chart content. The form has one type and one filter shared by
+ * every series, read from the first one, and its own copy of the filter; the series
+ * keep theirs only to tell a chart with mixed series. A count series counts the X
+ * column by convention: its column_y is pointed at it.
  */
 export function chartContentToForm(chart: ChartContent) {
   const seriesFilter: GenericFilter | null = chart.series[0]?.filters ?? null
@@ -45,7 +57,7 @@ export function chartContentToForm(chart: ChartContent) {
       aggregate_y: serie.aggregate_y || '',
       resource_id: serie.resource_id,
       column_x_name_override: serie.column_x_name_override,
-      filters: null,
+      filters: serie.filters ?? null,
     })),
     chart_type: chart.series[0]?.type ?? null,
     filter: seriesFilter ? JSON.parse(JSON.stringify(seriesFilter)) as GenericFilter : null,
