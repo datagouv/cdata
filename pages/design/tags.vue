@@ -93,10 +93,10 @@
             />
             Avec infobulle
             <template #toggletip>
-              <section class="flex flex-col gap-2 text-sm/[22px] text-gray-title">
-                <h3 class="m-0 text-base/6 font-semibold">
+              <section class="flex flex-col gap-3 text-sm/[22px] text-gray-title">
+                <p class="m-0 font-semibold">
                   Informations du tag
-                </h3>
+                </p>
                 <p
                   class="m-0"
                   data-testid="toggletip-tag-content"
