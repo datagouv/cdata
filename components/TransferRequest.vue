@@ -59,7 +59,6 @@
           color="primary"
           size="xs"
           :icon="RiCheckLine"
-          :aria-controls="modalId"
           @click="isOpen = true"
         >
           {{ $t('Accepter') }}
@@ -69,7 +68,6 @@
           color="danger"
           size="xs"
           :icon="RiCloseLine"
-          :aria-controls="modalId"
           @click="isOpen = true"
         >
           {{ $t('Refuser') }}
