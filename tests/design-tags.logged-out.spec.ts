@@ -28,6 +28,7 @@ test('shows every compact tag state', async ({ page }) => {
   await expect(iconTag.locator('svg')).toHaveCSS('width', '14px')
   await expect(iconTag.locator('svg')).toHaveCSS('height', '14px')
   await expect(iconTag.locator('svg')).toHaveCSS('transform', 'none')
+  await expect(iconTag.locator('.cdata-tag__label')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
 
   const restBackground = await clickableTag.evaluate(element => getComputedStyle(element).backgroundColor)
   await clickableTag.hover()
@@ -69,6 +70,7 @@ test('opens and closes a tag toggletip', async ({ page }) => {
   expect(await tag.evaluate(element => element.firstElementChild?.tagName.toLowerCase())).toBe('svg')
   await expect(tag).toHaveCSS('padding-left', '6px')
   await expect(tag.locator('svg')).toHaveCSS('transform', 'none')
+  await expect(tag.locator('.cdata-tag__label')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
   await tag.focus()
   await expect(tag).toHaveCSS('outline-style', 'solid')
 
@@ -154,6 +156,7 @@ test('shows API access types with the account-only yellow tone', async ({ page }
   await expect(restrictedBadge.locator('svg')).toHaveCSS('width', '14px')
   await expect(accountBadge.locator('svg')).toHaveCSS('transform', 'none')
   await expect(restrictedBadge.locator('svg')).toHaveCSS('transform', 'none')
+  await expect(accountBadge.locator('.admin-badge__label')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
   await expect(accountBadge).not.toHaveCSS('background-color', await restrictedBadge.evaluate(element => getComputedStyle(element).backgroundColor))
 })
 
@@ -175,7 +178,7 @@ test('shows the statuses used in tables', async ({ page }) => {
   await expect(badges.first()).toHaveCSS('line-height', '20px')
   await expect(badges.first()).toHaveCSS('padding-top', '1px')
   await expect(badges.first()).toHaveCSS('padding-bottom', '1px')
-  await expect(badges.first().locator(':scope > span')).toHaveCSS('transform', 'none')
+  await expect(badges.first().locator(':scope > span')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
 })
 
 test('shows the data schema badge', async ({ page }) => {
@@ -200,7 +203,7 @@ test('shows component tags with a stroke, including the linked variant', async (
   await expect(iconTag.locator('svg')).toHaveCSS('width', '14px')
   await expect(iconTag.locator('svg')).toHaveCSS('height', '14px')
   await expect(iconTag.locator('svg')).toHaveCSS('transform', 'none')
-  await expect(iconTag.locator(':scope > span')).toHaveCSS('margin-top', '0px')
+  await expect(iconTag.locator(':scope > span')).toHaveCSS('margin-top', '-1px')
 
   const link = linkedTag.locator('..')
   const restBackground = await linkedTag.evaluate(element => getComputedStyle(element).backgroundColor)
@@ -222,6 +225,7 @@ test('shows and removes multiple TagsSelect values', async ({ page }) => {
   await expect(selectedTags.getByRole('button').first()).toHaveCSS('padding-left', '6px')
   await expect(selectedTags.getByRole('button').first().locator('svg')).toHaveCSS('height', '14px')
   await expect(selectedTags.getByRole('button').first().locator('svg')).toHaveCSS('transform', 'none')
+  await expect(selectedTags.getByRole('button').first().locator('.cdata-tag__label')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
 
   await page.getByRole('button', { name: 'Supprimer le mot-clé transport' }).click()
   await expect(selectedTags.getByRole('button')).toHaveCount(2)
@@ -240,6 +244,9 @@ test('shows DatasetLabelTag with and without a link', async ({ page }) => {
   await expect(linkedLabel).toHaveCSS('min-height', '24px')
   await expect(linkedLabel.locator('img')).toHaveCSS('width', '14px')
   await expect(linkedLabel.locator('img')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)')
+  await expect(linkedLabel).toHaveCSS('padding-top', '1px')
+  await expect(linkedLabel).toHaveCSS('padding-bottom', '3px')
+  await expect(linkedLabel.locator('img')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, 1)')
 
   const restBackground = await linkedLabel.evaluate(element => getComputedStyle(element).backgroundColor)
   await linkedLabel.hover()
@@ -257,6 +264,7 @@ test('shows HvdStatutBadge with and without a data URL', async ({ page }) => {
   await expect(staticBadge).toHaveCSS('min-height', '20px')
   await expect(staticBadge).toHaveCSS('color', await completedTableBadge.evaluate(element => getComputedStyle(element).color))
   await expect(staticBadge).toHaveCSS('background-color', await completedTableBadge.evaluate(element => getComputedStyle(element).backgroundColor))
+  await expect(staticBadge.locator('.admin-badge__label')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
 
   const linkedBadge = page.getByTestId('hvd-status-link').locator('a')
   await expect(linkedBadge).toHaveAttribute('target', '_blank')

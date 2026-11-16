@@ -36,7 +36,7 @@
           aria-hidden="true"
           focusable="false"
         />
-        {{ tag.text }}
+        <span class="cdata-tag__label">{{ tag.text }}</span>
       </button>
     </div>
   </div>

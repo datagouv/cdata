@@ -71,6 +71,10 @@
   height: 0.875rem !important;
 }
 
+.fr-tag > .cdata-tag__label {
+  transform: translateY(-0.0625rem);
+}
+
 @layer utilities {
   .cdata-tag:has(> svg:first-child) {
     padding-inline-start: 0.375rem !important;
@@ -83,11 +87,7 @@
     height: 0.875rem !important;
   }
 
-  /* The shared Tag currently lifts its text by 1 px; undo it locally so both
-   * flex items use the same visual centre as the Design Lab proposal. */
-  .cdata-tag > span.-mt-px {
-    margin-top: 0 !important;
-  }
+  /* The shared Tag's -1 px label offset is the optical alignment used by cdata. */
 }
 
 /*
@@ -194,7 +194,7 @@
   .cdata-dataset-label-tag {
     box-sizing: border-box;
     min-height: 1.5rem;
-    padding: 0.125rem 0.5rem !important;
+    padding: 0.0625rem 0.5rem 0.1875rem !important;
     border: 1px solid var(--border-default-grey) !important;
     border-radius: 999px !important;
     font-size: 0.75rem !important;
@@ -221,6 +221,7 @@
     height: 0.875rem;
     object-fit: contain;
     flex-shrink: 0;
+    transform: translateY(0.0625rem);
   }
 
   .datagouv-components .cdata-dataset-label-tag > img.bg-white {

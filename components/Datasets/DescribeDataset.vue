@@ -716,7 +716,7 @@
                       type="button"
                       @click="removeZone(zone)"
                     >
-                      {{ zone.name }}
+                      <span class="cdata-tag__label">{{ zone.name }}</span>
                     </button>
                   </div>
                 </div>

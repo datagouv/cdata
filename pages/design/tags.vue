@@ -57,7 +57,7 @@
           <span
             class="fr-tag"
             data-testid="static-tag"
-          >Tag de catégorie</span>
+          ><span class="cdata-tag__label">Tag de catégorie</span></span>
           <span
             class="fr-tag"
             data-testid="icon-tag"
@@ -66,18 +66,18 @@
               class="size-3.5"
               aria-hidden="true"
             />
-            Avec icône
+            <span class="cdata-tag__label">Avec icône</span>
           </span>
           <a
             class="fr-tag"
             href="#tag-variants"
-          >Cliquable · lien</a>
+          ><span class="cdata-tag__label">Cliquable · lien</span></a>
           <button
             class="fr-tag"
             data-testid="clickable-tag"
             type="button"
           >
-            Cliquable · bouton
+            <span class="cdata-tag__label">Cliquable · bouton</span>
           </button>
           <Toggletip
             :styled-button="false"
@@ -91,7 +91,7 @@
               class="size-3.5"
               aria-hidden="true"
             />
-            Avec infobulle
+            <span class="cdata-tag__label">Avec infobulle</span>
             <template #toggletip>
               <section class="flex flex-col gap-3 text-sm/[22px] text-gray-title">
                 <p class="m-0 font-semibold">
@@ -118,7 +118,7 @@
               class="size-3.5"
               aria-hidden="true"
             />
-            Sélectionnable
+            <span class="cdata-tag__label">Sélectionnable</span>
           </button>
           <button
             class="fr-tag"
@@ -130,7 +130,7 @@
               class="size-3.5"
               aria-hidden="true"
             />
-            Supprimable
+            <span class="cdata-tag__label">Supprimable</span>
           </button>
           <button
             class="fr-tag"
@@ -138,7 +138,7 @@
             type="button"
             disabled
           >
-            Désactivé
+            <span class="cdata-tag__label">Désactivé</span>
           </button>
         </div>
       </section>
@@ -206,6 +206,7 @@
             size="sm"
             :type="label.type"
             :icon="label.icon"
+            center-label
           >
             {{ label.label }}
           </AdminBadge>
@@ -227,7 +228,7 @@
         <h2 class="!mb-3">
           Schéma de données
         </h2>
-        <span class="fr-tag">etalab/schema-irve</span>
+        <span class="fr-tag"><span class="cdata-tag__label">etalab/schema-irve</span></span>
       </section>
 
       <section data-testid="table-statuses">

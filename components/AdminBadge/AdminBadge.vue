@@ -3,6 +3,7 @@
     class="admin-badge inline-flex items-center"
     :class="[colors, { 'whitespace-nowrap': noWrap }]"
     :data-size="size"
+    :data-center-label="centerLabel || undefined"
   >
     <component
       :is="icon"
@@ -37,8 +38,10 @@ const props = withDefaults(defineProps<{
   iconRight?: Component
   noWrap?: boolean
   iconSize?: string
+  centerLabel?: boolean
 }>(), {
   noWrap: true,
+  centerLabel: false,
 })
 
 const colors = computed(() => {
@@ -88,6 +91,11 @@ const iconSize = computed(() => props.iconSize || 'size-3.5')
   align-items: center;
   height: 100%;
   line-height: inherit;
+  transform: translateY(-0.0625rem);
+}
+
+.admin-badge[data-center-label="true"] .admin-badge__label {
+  transform: none;
 }
 
 .admin-badge__icon {
