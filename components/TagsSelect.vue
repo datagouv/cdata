@@ -32,7 +32,7 @@
         @click="removeTag(tag)"
       >
         <RiCloseLine
-          class="size-3"
+          class="size-3.5"
           aria-hidden="true"
           focusable="false"
         />
