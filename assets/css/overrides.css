@@ -56,7 +56,7 @@
 }
 
 /*
- * Keep one 14 px icon frame and vertically center it with the 18 px text line.
+ * Keep one 12 px icon frame and vertically center it with the 18 px text line.
  * The visible glyphs sit slightly below the mathematical centre of that line,
  * so move every icon down by one whole pixel as a single optical correction.
  * A whole pixel keeps the compact SVGs sharp and avoids per-icon offsets.
@@ -67,8 +67,8 @@
 
 .fr-tag > svg:first-child {
   flex: none;
-  width: 0.875rem;
-  height: 0.875rem;
+  width: 0.75rem !important;
+  height: 0.75rem !important;
   transform: translateY(1px);
 }
 
@@ -79,8 +79,8 @@
 
   .cdata-tag > svg:first-child {
     flex: none;
-    width: 0.875rem !important;
-    height: 0.875rem !important;
+    width: 0.75rem !important;
+    height: 0.75rem !important;
     transform: translateY(1px);
   }
 
@@ -102,6 +102,8 @@
     box-sizing: border-box;
     min-height: 1.5rem;
     border: 1px solid var(--border-default-grey) !important;
+    font-weight: 400 !important;
+    line-height: 1.125rem !important;
   }
 
   .cdata-tag-link:hover > .cdata-tag,

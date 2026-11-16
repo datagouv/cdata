@@ -69,7 +69,7 @@ const iconSize = computed(() => props.iconSize || 'size-3.5')
   border: 1px solid color-mix(in srgb, currentColor 20%, transparent);
   border-radius: 0.375rem;
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.125rem;
   text-transform: none;
   vertical-align: middle;
