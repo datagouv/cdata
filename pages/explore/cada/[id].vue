@@ -132,15 +132,14 @@
               <h3 class="text-sm text-gray-500 uppercase mb-2">
                 {{ $t('Mots-clés') }}
               </h3>
-              <div class="flex flex-wrap gap-1.5">
-                <CdataLink
+              <div class="flex flex-wrap gap-2">
+                <Tag
                   v-for="tag in tags"
                   :key="tag"
                   :to="{ path: '/explore/cada', query: { tag: tag } }"
-                  class="fr-badge fr-badge--sm"
                 >
                   {{ tag }}
-                </CdataLink>
+                </Tag>
               </div>
             </div>
           </aside>
@@ -162,7 +161,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, fetchTabularData, FormattedDate, LoadingBlock, useComponentsConfig } from '@datagouv/components-next'
+import { BrandedButton, fetchTabularData, FormattedDate, LoadingBlock, Tag, useComponentsConfig } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 

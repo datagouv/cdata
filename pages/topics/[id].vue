@@ -82,15 +82,14 @@
 
           <div
             v-if="topic.tags.length"
-            class="flex flex-wrap gap-0.5"
+            class="flex flex-wrap gap-2"
           >
-            <span
+            <Tag
               v-for="tag in topic.tags"
               :key="tag"
-              class="text-xs px-2 py-1 rounded-xl bg-gray-default"
             >
               {{ tag }}
-            </span>
+            </Tag>
           </div>
         </header>
       </div>
@@ -115,7 +114,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, FormattedDate, getDescriptionShort, LoadingBlock, OrganizationLogo, OrganizationNameWithCertificate, type TopicV2, TranslationT } from '@datagouv/components-next'
+import { Avatar, FormattedDate, getDescriptionShort, LoadingBlock, OrganizationLogo, OrganizationNameWithCertificate, Tag, type TopicV2, TranslationT } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import type { Thread } from '~/types/discussions'
