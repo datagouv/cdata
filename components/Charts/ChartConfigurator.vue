@@ -1152,54 +1152,62 @@ function focusFirstMissingField() {
   missingFields.value[0]?.input?.focus()
 }
 
-async function saveChart() {
-  // A second click before the first answer would create a second chart.
-  if (saving.value || mixedSeries.value) return
-  if (!await validate()) {
-    saveBlocked.value = true
-    focusFirstMissingField()
-    return
+/** The image of the preview, or null when it cannot be captured (failed or slow preview). */
+async function captureChartImage(): Promise<Blob | null> {
+  try {
+    const imageUrl = await chartViewerWrapperRef.value?.capture()
+    return imageUrl ? await (await fetch(imageUrl)).blob() : null
   }
-  saveBlocked.value = false
+  catch (error) {
+    console.error('Failed to capture the chart image:', error)
+    return null
+  }
+}
 
-  const chartForApi = toChartApi(form.value)
-  const update = savedChart.value?.id
+async function saveChart() {
+  // Set before the first await: a second click while validating would pass the guard
+  // too, and create a second chart.
+  if (saving.value || mixedSeries.value) return
   saving.value = true
   try {
-    if (update) {
-      savedChart.value = await $api<Chart>(`/api/1/visualizations/${savedChart.value!.id}/`, {
-        method: 'PATCH',
-        body: JSON.stringify(chartForApi),
-      })
+    if (!await validate()) {
+      saveBlocked.value = true
+      focusFirstMissingField()
+      return
     }
-    else {
-      savedChart.value = await $api<Chart>('/api/1/visualizations/', {
-        method: 'POST',
-        body: JSON.stringify(chartForApi),
-      })
+    saveBlocked.value = false
+
+    const chartForApi = toChartApi(form.value)
+    const update = savedChart.value?.id
+    try {
+      savedChart.value = update
+        ? await $api<Chart>(`/api/1/visualizations/${update}/`, { method: 'PATCH', body: JSON.stringify(chartForApi) })
+        : await $api<Chart>('/api/1/visualizations/', { method: 'POST', body: JSON.stringify(chartForApi) })
+    }
+    catch {
+      // $api already shows the error in a toast.
+      return
     }
 
-    const imageUrl = await chartViewerWrapperRef.value?.capture()
-    if (imageUrl) {
-      const i = await fetch(imageUrl)
-      const imageBlob = await i.blob()
+    const image = await captureChartImage()
+    if (image) {
       const formData = new FormData()
-      formData.set('file', imageBlob, 'image.png')
-      await $fileApi(`/api/1/visualizations/${savedChart.value.id}/image/`, {
-        method: 'POST',
-        body: formData,
-      })
+      formData.set('file', image, 'image.png')
+      try {
+        await $fileApi(`/api/1/visualizations/${savedChart.value.id}/image/`, { method: 'POST', body: formData })
+      }
+      catch {
+        // $fileApi already shows the error in a toast; the chart itself is saved.
+      }
     }
-  }
-  catch {
-    // $api and $fileApi already show the error in a toast.
-    return
+    else {
+      toast.warning(t('Le graphique est enregistré sans image : son aperçu n’a pas pu être capturé.'))
+    }
+    toast.success(update ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
   }
   finally {
     saving.value = false
   }
-
-  toast.success(update ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
 }
 
 function addGroup() {

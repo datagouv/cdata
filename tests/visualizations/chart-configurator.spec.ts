@@ -1349,6 +1349,77 @@ test('styles fields stay within the panel and only the summary looks clickable',
   await expect(styles.locator('summary')).toHaveCSS('cursor', 'pointer')
 })
 
+test.describe('a chart whose series differ in type or filter', () => {
+  const serie = { column_y: 'valeur', aggregate_y: 'sum', resource_id: RESOURCE_ID, column_x_name_override: null }
+  const filter = { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Bretagne' }
+
+  test('cannot be saved from the form, which would overwrite them', async ({ page }) => {
+    await page.route('**/assistant/chat/**', route => route.abort())
+    const chart = await createChart(page.request, {
+      title: 'Séries mixtes',
+      series: [
+        { ...serie, type: 'histogram', filters: filter },
+        { ...serie, type: 'line', aggregate_y: 'max', filters: null },
+      ],
+    } as never)
+    try {
+      await mockTabular(page)
+      await page.goto(`/admin/beta/charts/${chart.id}`)
+      await expect(page.getByTestId('chart-mixed-series')).toBeVisible()
+      const save = page.getByRole('button', { name: 'Sauvegarder le graphique' })
+      await expect(save).toBeDisabled()
+      await expect(save).toHaveAttribute('aria-describedby', 'chart-mixed-series')
+    }
+    finally {
+      await deleteChart(page.request, chart.id)
+    }
+  })
+
+  test('can be saved when its series share one type and one filter', async ({ page }) => {
+    await page.route('**/assistant/chat/**', route => route.abort())
+    const shared = { ...serie, type: 'histogram', filters: filter }
+    const chart = await createChart(page.request, { title: 'Séries homogènes', series: [shared, { ...shared, aggregate_y: 'max' }] } as never)
+    try {
+      await mockTabular(page)
+      await page.goto(`/admin/beta/charts/${chart.id}`)
+      await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeEnabled()
+      await expect(page.getByTestId('chart-mixed-series')).toHaveCount(0)
+    }
+    finally {
+      await deleteChart(page.request, chart.id)
+    }
+  })
+})
+
+test('a double click on save creates one chart, with its image', async ({ page }) => {
+  await page.route('**/assistant/chat/**', route => route.abort())
+  const posts = trackChartCreations(page)
+  const images: Array<string> = []
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && new URL(request.url()).pathname.endsWith('/image/')) images.push(request.url())
+  })
+  await setupChart(page)
+  await page.getByRole('tab', { name: 'Édition manuelle' }).click()
+  await page.getByLabel('Titre').fill('Double clic')
+  await page.getByLabel('Description').fill('Vérification du double clic.')
+  // Every chart created is deleted, a second one too should the guard regress.
+  const createdIds: Array<Promise<string>> = []
+  page.on('response', (response) => {
+    if (new URL(response.url()).pathname === '/api/1/visualizations/' && response.request().method() === 'POST' && response.ok()) {
+      createdIds.push(response.json().then((chart: { id: string }) => chart.id))
+    }
+  })
+  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).dblclick()
+  try {
+    await expect(page.getByText('Graphique sauvegardé !')).toBeVisible()
+    expect(posts).toHaveLength(1)
+    expect(images).toHaveLength(1)
+  }
+  finally {
+    for (const id of await Promise.all(createdIds)) await deleteChart(page.request, id)
+  }
+})
+
 test.describe('when a chart of several series changes resource', () => {
   // The save is answered with a 400 so that no chart is created.
   test.use({ allowedConsoleMessages: ['the server responded with a status of 400'] })
