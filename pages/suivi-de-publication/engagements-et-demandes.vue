@@ -93,14 +93,15 @@
                 v-if="record.fields.type_values.length > 0"
                 class="flex flex-wrap gap-1 -ml-1.5"
               >
-                <span
+                <Badge
                   v-for="value in record.fields.type_values"
                   :key="value"
-                  class="fr-badge fr-badge--sm fr-badge--no-icon"
-                  :class="typeBadgeClass(value)"
+                  size="xs"
+                  :tone="typeBadgeTone(value)"
+                  data-testid="request-type"
                 >
                   {{ value }}
-                </span>
+                </Badge>
               </div>
               <CdataLink
                 v-if="record.fields.url && statutLinksToData(record.fields.statut_front)"
@@ -433,12 +434,12 @@ function statutLinksToData(statut: string | null): boolean {
   return Boolean(statut && statutByValue.get(statut)?.linksToData)
 }
 
-function typeBadgeClass(type: string): string {
+function typeBadgeTone(type: string): BadgeTone {
   switch (type) {
-    case 'API': return 'fr-badge--green-menthe'
-    case 'Téléchargement': return 'fr-badge--blue-ecume'
-    case 'Code source': return 'fr-badge--purple-glycine'
-    default: return ''
+    case 'API': return 'teal'
+    case 'Téléchargement': return 'primary'
+    case 'Code source': return 'pink'
+    default: return 'neutral'
   }
 }
 

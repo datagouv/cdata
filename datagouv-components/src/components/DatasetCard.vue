@@ -29,10 +29,17 @@
       >{{ dataset.acronym }}</small>
     </template>
     <template
-      v-if="getDatasetStatus(dataset) !== 'public'"
+      v-if="getDatasetStatus(dataset) !== 'public' || dataset.access_type !== 'open'"
       #badge
     >
-      <DatasetBadge :dataset />
+      <DatasetBadge
+        v-if="getDatasetStatus(dataset) !== 'public'"
+        :dataset
+      />
+      <AccessTypeBadge
+        v-else
+        :access-type="dataset.access_type"
+      />
     </template>
 
     <ObjectCardOwner
@@ -107,6 +114,7 @@ import type { TitleTag } from '../types/ui'
 import { getDescriptionShort } from '../functions/description'
 import { getDatasetStatus } from '../functions/objectStatus'
 import { useTranslation } from '../composables/useTranslation'
+import AccessTypeBadge from './AccessTypeBadge.vue'
 import DatasetBadge from './DatasetBadge.vue'
 import DatasetQualityInline from './DatasetQualityInline.vue'
 import Avatar from './Avatar.vue'
