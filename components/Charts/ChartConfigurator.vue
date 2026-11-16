@@ -718,6 +718,7 @@
                   type="submit"
                   form="chart-form"
                   class="shrink-0"
+                  :loading="saving"
                   :disabled="mixedSeries"
                   :aria-describedby="mixedSeries ? 'chart-mixed-series' : undefined"
                 >
@@ -845,6 +846,7 @@ const requiredFields = computed(() => [
 const missingFields = computed(() => requiredFields.value.filter(field => getFirstError(field.key)))
 // The footer warning only follows a refused save, not the inline errors of a blurred field.
 const saveBlocked = ref(false)
+const saving = ref(false)
 // A chart created through the API may have them; the assistant gives every series one type and one filter.
 const mixedSeries = computed(() => hasMixedSeries(form.value))
 // Cleared on the values, not on the errors: touch() empties a field's errors while it revalidates.
@@ -1151,7 +1153,8 @@ function focusFirstMissingField() {
 }
 
 async function saveChart() {
-  if (mixedSeries.value) return
+  // A second click before the first answer would create a second chart.
+  if (saving.value || mixedSeries.value) return
   if (!await validate()) {
     saveBlocked.value = true
     focusFirstMissingField()
@@ -1161,6 +1164,7 @@ async function saveChart() {
 
   const chartForApi = toChartApi(form.value)
   const update = savedChart.value?.id
+  saving.value = true
   try {
     if (update) {
       savedChart.value = await $api<Chart>(`/api/1/visualizations/${savedChart.value!.id}/`, {
@@ -1190,6 +1194,9 @@ async function saveChart() {
   catch {
     // $api and $fileApi already show the error in a toast.
     return
+  }
+  finally {
+    saving.value = false
   }
 
   toast.success(update ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
