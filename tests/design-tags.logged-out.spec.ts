@@ -95,6 +95,7 @@ test('shows the business labels used by cards', async ({ page }) => {
   await expect(cardBadges.first()).toHaveCSS('min-height', '24px')
   await expect(cardBadges.first()).toHaveCSS('font-weight', '500')
   await expect(cardBadges.first().locator('svg')).toHaveCSS('width', '14px')
+  await expect(cardBadges.first().locator('.admin-badge__label')).toHaveCSS('transform', 'matrix(1, 0, 0, 1, 0, -1)')
 
   for (const [cardLabel, tableStatus] of [['Brouillon', 'Brouillon'], ['Archivé', 'Archivé'], ['Accès restreint', 'Archivé'], ['Supprimé', 'Supprimé'], ['Service public', 'Public']]) {
     const cardBadge = cardBadges.filter({ hasText: cardLabel })

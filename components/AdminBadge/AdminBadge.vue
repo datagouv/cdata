@@ -130,7 +130,7 @@ const rightIconStyle = computed(() => ({
   line-height: 1rem;
 }
 
-.admin-badge[data-size="xs"] > .admin-badge__label {
+.admin-badge__label {
   transform: translateY(-0.0625rem);
 }
 
