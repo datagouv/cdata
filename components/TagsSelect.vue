@@ -25,8 +25,7 @@
       <TagComponent
         v-for="tag in tags"
         :key="tag.text"
-        :icon="RiCloseLine"
-        :aria-label="t('Supprimer le mot-clé {tag}', { tag: tag.text })"
+        dismissible
         :data-testid="`selected-tag-${tag.text}`"
         @click="removeTag(tag)"
       >
@@ -38,7 +37,6 @@
 
 <script setup lang="ts">
 import { SearchableSelect, Tag as TagComponent } from '@datagouv/components-next'
-import { RiCloseLine } from '@remixicon/vue'
 import type { Tag } from '~/types/types'
 
 const props = defineProps<{

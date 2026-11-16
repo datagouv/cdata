@@ -90,7 +90,7 @@ test('shows and removes multiple TagsSelect values', async ({ page }) => {
   const selectedTags = page.getByTestId('selected-tags')
   await expect(selectedTags.getByRole('button')).toHaveCount(3)
 
-  await page.getByRole('button', { name: 'Supprimer le mot-clé transport' }).click()
+  await page.getByRole('button', { name: 'Supprimer transport' }).click()
   await expect(selectedTags.getByRole('button')).toHaveCount(2)
   await expect(selectedTags).not.toContainText('transport')
 })

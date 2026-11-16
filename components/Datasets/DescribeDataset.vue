@@ -712,8 +712,7 @@
                     <TagComponent
                       v-for="zone in form.spatial_zones"
                       :key="zone.id"
-                      :icon="RiCloseLine"
-                      :aria-label="t('Supprimer la zone {zone}', { zone: zone.name })"
+                      dismissible
                       @click="removeZone(zone)"
                     >
                       {{ zone.name }}
@@ -790,7 +789,7 @@
 <script setup lang="ts">
 import { BrandedButton, Tooltip, AI_SUGGESTION_MIN_DESCRIPTION_LENGTH, DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH, SearchableSelect } from '@datagouv/components-next'
 import { SimpleBanner, Tag as TagComponent, type Badge, type License } from '@datagouv/components-next'
-import { RiAddLine, RiCloseLine, RiStarFill, RiSparklingLine } from '@remixicon/vue'
+import { RiAddLine, RiStarFill, RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'

@@ -131,12 +131,13 @@ The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for t
   await clickOutside(page)
   const selectedTags = page.getByTestId('selected-tags')
   await expect(selectedTags.getByRole('button')).toHaveCount(2)
-  await expect(selectedTags.getByRole('button')).toHaveText(['test', 'toto'])
+  // Each tag button reads "Supprimer <keyword>": the verb is visually hidden text
+  await expect(selectedTags.getByRole('button')).toHaveText(['Supprimer test', 'Supprimer toto'])
 
   // A selected keyword is also dismissible: removing it must keep the model in sync.
-  await page.getByRole('button', { name: 'Supprimer le mot-clé test' }).click()
+  await page.getByRole('button', { name: 'Supprimer test' }).click()
   await expect(selectedTags.getByRole('button')).toHaveCount(1)
-  await expect(selectedTags.getByRole('button')).toHaveText(['toto'])
+  await expect(selectedTags.getByRole('button')).toHaveText(['Supprimer toto'])
   await page.getByTestId('searchable-select-licence').click()
   await page.getByText('Other (Public Domain)').click()
   await clickOutside(page)

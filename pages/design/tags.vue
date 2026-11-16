@@ -94,10 +94,8 @@
             Sélectionnable
           </Tag>
           <Tag
-            :icon="RiCloseLine"
+            dismissible
             data-testid="dismissible-tag"
-            aria-label="Supprimer le tag supprimable"
-            @click="() => {}"
           >
             Supprimable
           </Tag>
@@ -277,7 +275,7 @@
 
 <script setup lang="ts">
 import { LabelTag, Tag, Toggletip, type TranslatedBadge } from '@datagouv/components-next'
-import { RiArchiveLine, RiCheckboxCircleLine, RiCheckLine, RiCloseLine, RiDeleteBinLine, RiDraftLine, RiGovernmentLine, RiInformationLine, RiLockLine, RiPassValidLine } from '@remixicon/vue'
+import { RiArchiveLine, RiCheckboxCircleLine, RiCheckLine, RiDeleteBinLine, RiDraftLine, RiGovernmentLine, RiInformationLine, RiLockLine, RiPassValidLine } from '@remixicon/vue'
 import type { Component } from 'vue'
 import AccessTypeBadge from '~/components/AccessTypes/AccessTypeBadge.vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
