@@ -111,6 +111,12 @@ test('shows the business labels used by cards', async ({ page }) => {
   const draftIcon = cardBadges.filter({ hasText: 'Brouillon' }).locator('svg')
   const restrictedIcon = cardBadges.filter({ hasText: 'Accès restreint' }).locator('svg')
   expect(await draftIcon.innerHTML()).not.toBe(await restrictedIcon.innerHTML())
+  await expect(draftIcon).toHaveAttribute('data-optical-offset-y', '1')
+  await expect(cardBadges.filter({ hasText: 'Archivé' }).locator('svg')).toHaveAttribute('data-optical-offset-y', '1')
+  await expect(restrictedIcon).toHaveAttribute('data-optical-offset-y', '0')
+  await expect(accountCardBadge.locator('svg')).toHaveAttribute('data-optical-offset-y', '1')
+  await expect(cardBadges.filter({ hasText: 'Supprimé' }).locator('svg')).toHaveAttribute('data-optical-offset-y', '1')
+  await expect(cardBadges.filter({ hasText: 'Service public' }).locator('svg')).toHaveAttribute('data-optical-offset-y', '1')
 })
 
 test('shows API access types with the account-only yellow tone', async ({ page }) => {
@@ -132,6 +138,8 @@ test('shows API access types with the account-only yellow tone', async ({ page }
   await expect(restrictedBadge).toHaveCSS('font-weight', '500')
   await expect(accountBadge.locator('svg')).toHaveCSS('width', '14px')
   await expect(restrictedBadge.locator('svg')).toHaveCSS('width', '14px')
+  await expect(accountBadge.locator('svg')).toHaveAttribute('data-optical-offset-y', '1')
+  await expect(restrictedBadge.locator('svg')).toHaveAttribute('data-optical-offset-y', '0')
   await expect(accountBadge).not.toHaveCSS('background-color', await restrictedBadge.evaluate(element => getComputedStyle(element).backgroundColor))
 })
 

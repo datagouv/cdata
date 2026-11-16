@@ -9,10 +9,13 @@
       v-if="icon"
       class="admin-badge__icon"
       :class="iconSize"
+      :style="leftIconStyle"
+      :data-optical-offset-x="leftIconOffset.x"
+      :data-optical-offset-y="leftIconOffset.y"
       aria-hidden="true"
       focusable="false"
     />
-    <span>
+    <span class="admin-badge__label">
       <slot />
     </span>
     <component
@@ -20,6 +23,9 @@
       v-if="iconRight"
       class="admin-badge__icon"
       :class="iconSize"
+      :style="rightIconStyle"
+      :data-optical-offset-x="rightIconOffset.x"
+      :data-optical-offset-y="rightIconOffset.y"
       aria-hidden="true"
       focusable="false"
     />
@@ -35,6 +41,10 @@ const props = withDefaults(defineProps<{
   size: 'xs' | 'sm'
   icon?: Component
   iconRight?: Component
+  iconOffsetX?: -1 | 0 | 1
+  iconOffsetY?: -1 | 0 | 1
+  iconRightOffsetX?: -1 | 0 | 1
+  iconRightOffsetY?: -1 | 0 | 1
   noWrap?: boolean
   iconSize?: string
 }>(), {
@@ -57,6 +67,45 @@ const colors = computed(() => {
 })
 
 const iconSize = computed(() => props.iconSize || 'size-3.5')
+
+type OpticalOffset = { x: -1 | 0 | 1, y: -1 | 0 | 1 }
+
+// Remix icons share a 24 px canvas, but their visible weight does not always
+// share its mathematical centre. These small, measured adjustments keep the
+// 14 px glyphs aligned optically with the compact 12 px label.
+const opticalOffsets: Record<string, OpticalOffset> = {
+  RiArchiveLine: { x: 0, y: 1 },
+  RiDeleteBinLine: { x: 0, y: 1 },
+  RiDraftLine: { x: 0, y: 1 },
+  RiExternalLinkLine: { x: 0, y: 1 },
+  RiGovernmentLine: { x: 0, y: 1 },
+  RiPassValidLine: { x: 0, y: 1 },
+  // The lock glyph is bottom-heavy, so flex centring already aligns it with
+  // the text without the downward adjustment used by the other icons.
+  RiLockLine: { x: 0, y: 0 },
+}
+
+function componentName(component?: Component): string {
+  if (component && typeof component === 'object' && 'name' in component)
+    return String(component.name ?? '')
+  return ''
+}
+
+function resolveOffset(component: Component | undefined, x: -1 | 0 | 1 | undefined, y: -1 | 0 | 1 | undefined): OpticalOffset {
+  const measured = opticalOffsets[componentName(component)] ?? { x: 0, y: 0 }
+  return { x: x ?? measured.x, y: y ?? measured.y }
+}
+
+const leftIconOffset = computed(() => resolveOffset(props.icon, props.iconOffsetX, props.iconOffsetY))
+const rightIconOffset = computed(() => resolveOffset(props.iconRight, props.iconRightOffsetX, props.iconRightOffsetY))
+const leftIconStyle = computed(() => ({
+  '--admin-badge-icon-offset-x': `${leftIconOffset.value.x}px`,
+  '--admin-badge-icon-offset-y': `${leftIconOffset.value.y}px`,
+}))
+const rightIconStyle = computed(() => ({
+  '--admin-badge-icon-offset-x': `${rightIconOffset.value.x}px`,
+  '--admin-badge-icon-offset-y': `${rightIconOffset.value.y}px`,
+}))
 </script>
 
 <style scoped>
@@ -81,12 +130,23 @@ const iconSize = computed(() => props.iconSize || 'size-3.5')
   line-height: 1rem;
 }
 
-.admin-badge[data-size="xs"] > span,
-.admin-badge[data-size="xs"] > .admin-badge__icon {
+.admin-badge[data-size="xs"] > .admin-badge__label {
   transform: translateY(-0.0625rem);
 }
 
+.admin-badge[data-size="xs"] > .admin-badge__icon {
+  transform: translate(
+    var(--admin-badge-icon-offset-x),
+    calc(-0.0625rem + var(--admin-badge-icon-offset-y))
+  );
+}
+
 .admin-badge__icon {
+  display: block;
+  transform: translate(
+    var(--admin-badge-icon-offset-x),
+    var(--admin-badge-icon-offset-y)
+  );
   flex-shrink: 0;
 }
 </style>

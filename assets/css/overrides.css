@@ -56,20 +56,27 @@
 }
 
 /*
- * Keep one 14 px icon frame and vertically center it with the 18 px text line.
- * The visible glyphs sit slightly below the mathematical centre of that line,
- * so move every icon down by one whole pixel as a single optical correction.
- * A whole pixel keeps the compact SVGs sharp and avoids per-icon offsets.
+ * Keep one 14 px icon frame. Optical offsets are declared by each icon usage:
+ * SVG drawings have different centres of visual weight even when their
+ * mathematical boxes are identical.
  */
 .fr-tag:has(> svg:first-child) {
   padding-inline-start: 0.375rem;
 }
 
 .fr-tag > svg:first-child {
+  display: block;
   flex: none;
   width: 0.875rem !important;
   height: 0.875rem !important;
-  transform: translateY(1px);
+  transform: translate(
+    var(--cdata-icon-offset-x, 0),
+    var(--cdata-icon-offset-y, 0)
+  );
+}
+
+.cdata-icon-offset-y-1 {
+  --cdata-icon-offset-y: 1px;
 }
 
 @layer utilities {
@@ -78,10 +85,14 @@
   }
 
   .cdata-tag > svg:first-child {
+    display: block;
     flex: none;
     width: 0.875rem !important;
     height: 0.875rem !important;
-    transform: translateY(1px);
+    transform: translate(
+      var(--cdata-icon-offset-x, 0),
+      var(--cdata-icon-offset-y, 0)
+    );
   }
 
   /* The shared Tag currently lifts its text by 1 px; undo it locally so both
