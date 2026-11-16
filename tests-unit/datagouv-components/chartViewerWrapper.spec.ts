@@ -452,6 +452,30 @@ describe('ChartViewerWrapper data fetching', () => {
     expect(viewer().props('series').data[0]).toEqual([{ dep: 'a', n__sum: 5 }])
   })
 
+  it('keeps the profile of the current resource when the previous one answers last', async () => {
+    const OTHER_ID = '11111111-2222-4333-8444-555555555555'
+    const profile = (name: string) => ({ profile: { header: [name], columns: { [name]: { python_type: 'int' } } } })
+    let resolveFirst: (v: unknown) => void = () => {}
+    ofetchMock.mockImplementation((url: string) => {
+      if (url.includes(`${RESOURCE_ID}/profile/`)) return new Promise((resolve) => {
+        resolveFirst = resolve
+      })
+      if (url.includes(`${OTHER_ID}/profile/`)) return Promise.resolve(profile('other'))
+      return Promise.resolve(rows(3))
+    })
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart)
+    await settle()
+    const next = structuredClone(chart)
+    next.series[0]!.resource_id = OTHER_ID
+    await wrapper.setProps({ chart: next })
+    await settle()
+    resolveFirst(profile('first'))
+    await settle()
+    const columns = wrapper.findComponent(ChartViewerStub).props('series').columns
+    expect(Object.keys(columns)).toEqual([OTHER_ID])
+  })
+
   it('passes a presentation-only change to the viewer right away', async () => {
     mockApi(3, false)
     const chart = chartFixture()

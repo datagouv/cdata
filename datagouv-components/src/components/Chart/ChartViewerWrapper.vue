@@ -194,7 +194,12 @@ const resourceIds = computed(() => {
     .map(s => s.resource_id))]
 })
 
+let latestProfileRequest = 0
+
 async function fetchSeriesProfile() {
+  // The profile of a resource left for another could answer last.
+  const request = ++latestProfileRequest
+  const isStale = () => request !== latestProfileRequest
   pendingOperations.value++
   status.value = 'pending'
   error.value = null
@@ -215,7 +220,9 @@ async function fetchSeriesProfile() {
         }
       })
 
-    const results = (await Promise.allSettled(fetchPromises))
+    const settled = await Promise.allSettled(fetchPromises)
+    if (isStale()) return
+    const results = settled
       .filter(r => r.status === 'fulfilled')
       .map(r => r.value)
     series.columns = Object.fromEntries(results.map(result => [
@@ -224,6 +231,7 @@ async function fetchSeriesProfile() {
     ]))
   }
   catch (err) {
+    if (isStale()) return
     error.value = err instanceof Error ? err : new Error('Failed to fetch series profile')
     status.value = 'error'
     console.error(err)
