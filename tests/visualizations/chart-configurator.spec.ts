@@ -1269,6 +1269,8 @@ test('test_a_tool_result_is_applied_only_once', async ({ page }) => {
   await expect(page.getByLabel('Titre')).toHaveValue(ASSISTANT_CHART_TITLE)
   await expect(page.getByLabel('Nombre de valeurs')).toHaveValue('5')
   await expect(page.locator('#x-axis-sort-combined .input')).toContainText('n_cum_dose1 - Descendant')
+  // Named by its label and by the selected sort.
+  await expect(page.getByRole('button', { name: /^Trier par\s+n_cum_dose1 - Descendant/ })).toBeVisible()
 
   await page.getByLabel('Titre').fill('Titre modifié à la main')
   for (let i = 0; i < 2; i++) {

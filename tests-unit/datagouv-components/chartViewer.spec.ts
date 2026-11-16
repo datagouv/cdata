@@ -262,6 +262,24 @@ describe('ChartViewer rendering', () => {
     single.wrapper.unmount()
   })
 
+  it('describes only the series drawn when the first one failed', async () => {
+    const chart = chartConfig([{ column_y: 'nb', type: 'histogram' }, { column_y: 'rate', type: 'line' }])
+    // The wrapper keeps only the series that loaded: here the second one.
+    const wrapper = mount(ChartViewer, { props: { chart, series: { data: { 1: DATA[RESOURCE_ID]! }, columns: COLUMNS } } })
+    await flushPromises()
+    expect(wrapper.find('[role="img"]').attributes('aria-label')).toBe('Graphique en courbes : year en abscisse, rate en ordonnée, 2 valeurs.')
+    wrapper.unmount()
+  })
+
+  it('counts the values kept by the limit', async () => {
+    const chart = chartConfig([{ column_y: 'nb', type: 'line' }])
+    chart.x_axis.limit = 1
+    const wrapper = mount(ChartViewer, { props: { chart, series: { data: { 0: DATA[RESOURCE_ID]! }, columns: COLUMNS } } })
+    await flushPromises()
+    expect(wrapper.find('[role="img"]').attributes('aria-label')).toContain('nb en ordonnée, 1 valeur.')
+    wrapper.unmount()
+  })
+
   // The sentence is translated: its lists must not be joined in the browser language.
   it('joins the lists of its description like the rest of the sentence on an English browser', async () => {
     const language = vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US')

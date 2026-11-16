@@ -467,13 +467,10 @@
                           </select>
                         </div>
                         <div class="min-w-0">
-                          <label
-                            for="x-axis-sort-combined"
-                            class="fr-label"
-                          >{{ $t('Trier par') }}</label>
                           <Listbox
                             id="x-axis-sort-combined"
                             v-model="sortProxy"
+                            :label="$t('Trier par')"
                             class="w-full"
                             :options="sortOptions"
                             :display-value="(opt) => formatColumnLabel(opt) || $t('Sélectionnez une option')"

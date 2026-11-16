@@ -199,16 +199,25 @@
             :maxlength="MAX_INPUT_LENGTH"
             class="min-h-0 w-full flex-1 resize-none border-0 bg-transparent text-[11px] leading-5 text-new-gray-dark outline-none placeholder:text-gray-medium"
             :aria-label="$t('Votre demande')"
+            :aria-describedby="input.length >= COUNTER_THRESHOLD ? 'assistant-input-counter' : undefined"
             :disabled="waiting || busy"
             :placeholder="$t('Décrivez le graphique souhaité…')"
             @keydown.enter="handleEnter"
           />
           <footer class="flex items-center justify-end gap-2">
+            <!-- Read with the field it describes. -->
             <span
               v-if="input.length >= COUNTER_THRESHOLD"
+              id="assistant-input-counter"
               class="mr-auto text-[11px] tabular-nums"
               :class="input.length >= MAX_INPUT_LENGTH ? 'text-new-error' : 'text-new-gray-medium'"
-            >{{ input.length.toLocaleString('fr-FR') }} / {{ MAX_INPUT_LENGTH.toLocaleString('fr-FR') }}</span>
+            >{{ input.length.toLocaleString('fr-FR') }} / {{ MAX_INPUT_LENGTH.toLocaleString('fr-FR') }}<span class="sr-only"> {{ $t('caractères') }}</span></span>
+            <!-- RGAA 7.5: announced when a threshold is first crossed, not on every keystroke. -->
+            <span
+              class="sr-only"
+              role="status"
+              data-testid="chat-length-status"
+            >{{ lengthNotice }}</span>
             <button
               v-if="busy"
               type="button"
@@ -276,6 +285,25 @@ const MAX_INPUT_LENGTH = 4000
 const COUNTER_THRESHOLD = 3600
 
 const input = ref('')
+// 0 below the counter threshold, 1 past it, 2 at the limit.
+const lengthLevel = computed(() => input.value.length >= MAX_INPUT_LENGTH ? 2 : input.value.length >= COUNTER_THRESHOLD ? 1 : 0)
+// Changed only when a higher level is reached: editing at the limit would otherwise
+// announce the two notices in turn.
+const lengthNotice = ref('')
+let announcedLevel = 0
+watch(lengthLevel, (level) => {
+  const max = MAX_INPUT_LENGTH.toLocaleString('fr-FR')
+  if (level === 0) {
+    announcedLevel = 0
+    lengthNotice.value = ''
+  }
+  else if (level > announcedLevel) {
+    announcedLevel = level
+    lengthNotice.value = level === 2
+      ? t('Limite de {max} caractères atteinte.', { max })
+      : t('Votre demande approche de la limite de {max} caractères.', { max })
+  }
+})
 const textareaRef = ref<HTMLTextAreaElement | null>(null)
 const messagesContainerRef = ref<HTMLElement | null>(null)
 // Latched on each scroll event: the user keeps the auto-scroll only while

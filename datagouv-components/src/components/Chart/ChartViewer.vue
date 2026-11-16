@@ -410,17 +410,23 @@ function listOf(items: Array<string>): string {
   return `${items.slice(0, -1).join(', ')} ${t('et')} ${items.at(-1)}`
 }
 
+// Describes what is drawn: a series that failed is left out, and the values are those
+// kept by the limit and by the alignment on the first series.
 const description = computed(() => {
-  const series = props.chart.series.filter(s => s.type)
-  const types = [...new Set(series.map(s => s.type === 'histogram' ? t('en barres') : t('en courbes')))]
-  const firstRows = props.series.data['0'] ?? []
-  const limit = props.chart.x_axis.limit
-  const valueCount = limit != null ? Math.min(limit, firstRows.length) : firstRows.length
+  const option = echartsOption.value
+  const drawn = option?.series ?? []
+  const sources = (option?.dataset ?? []).map(dataset => (dataset.source as Array<unknown>).length)
+  const types = drawn.length > 0
+    ? drawn.map(s => s.type === 'bar' ? t('en barres') : t('en courbes'))
+    : props.chart.series.filter(s => s.type).map(s => s.type === 'histogram' ? t('en barres') : t('en courbes'))
+  const labels = drawn.length > 0
+    ? drawn.map(s => String(s.name))
+    : props.chart.series.filter(s => s.type).map(s => seriesLabel(s, t))
   return t('Graphique {types} : {x} en abscisse, {y} en ordonnée, aucune valeur. | Graphique {types} : {x} en abscisse, {y} en ordonnée, {n} valeur. | Graphique {types} : {x} en abscisse, {y} en ordonnée, {n} valeurs.', {
-    types: listOf(types),
+    types: listOf([...new Set(types)]),
     x: props.chart.x_axis.column_x ?? '',
-    y: listOf(series.map(s => seriesLabel(s, t))),
-    n: valueCount,
+    y: listOf(labels),
+    n: Math.max(0, ...sources),
   })
 })
 

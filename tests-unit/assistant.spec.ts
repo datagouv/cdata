@@ -748,6 +748,28 @@ describe('ChatPanel', () => {
     expect(counter!.classes()).toContain('text-new-error')
   })
 
+  it('describes the field by the counter and announces each limit once', async () => {
+    const wrapper = mountPanel('resource-1')
+    const textarea = wrapper.find('textarea#assistant-input')
+    const notice = () => wrapper.find('[data-testid="chat-length-status"]').text()
+    const max = (4000).toLocaleString('fr-FR')
+
+    expect(textarea.attributes('aria-describedby')).toBeUndefined()
+    await textarea.setValue('a'.repeat(3601))
+    expect(textarea.attributes('aria-describedby')).toBe('assistant-input-counter')
+    expect(wrapper.find('#assistant-input-counter').text()).toContain('caractères')
+    expect(notice()).toBe(`Votre demande approche de la limite de ${max} caractères.`)
+
+    await textarea.setValue('a'.repeat(4000))
+    expect(notice()).toBe(`Limite de ${max} caractères atteinte.`)
+    // Editing at the limit keeps the notice: nothing new is announced.
+    await textarea.setValue('a'.repeat(3999))
+    expect(notice()).toBe(`Limite de ${max} caractères atteinte.`)
+
+    await textarea.setValue('court')
+    expect(notice()).toBe('')
+  })
+
   describe('thinking indicator', () => {
     const question = { id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Question' }] }
 
