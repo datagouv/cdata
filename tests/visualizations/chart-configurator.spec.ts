@@ -1348,3 +1348,65 @@ test('styles fields stay within the panel and only the summary looks clickable',
   await expect(styles).toHaveCSS('cursor', 'auto')
   await expect(styles.locator('summary')).toHaveCSS('cursor', 'pointer')
 })
+
+test.describe('when a chart of several series changes resource', () => {
+  // The save is answered with a 400 so that no chart is created.
+  test.use({ allowedConsoleMessages: ['the server responded with a status of 400'] })
+
+  test('opening a chart whose series read two resources keeps each on its own', async ({ page }) => {
+    await page.route('**/assistant/chat/**', route => route.abort())
+    const info = await (await page.request.get(`${API_BASE_URL}/api/2/datasets/resources/${RESOURCE_ID}/`)).json() as { dataset_id: string }
+    const resources = await (await page.request.get(`${API_BASE_URL}/api/2/datasets/${info.dataset_id}/resources/?page_size=50`)).json() as { data: Array<{ id: string }> }
+    const other = resources.data.map(resource => resource.id).find(id => id !== RESOURCE_ID)
+    expect(other, 'the fixture dataset has another resource').toBeDefined()
+    const serie = { type: 'histogram', column_y: 'valeur', aggregate_y: 'sum', column_x_name_override: null, filters: null }
+    const chart = await createChart(page.request, {
+      title: 'Deux ressources',
+      series: [{ ...serie, resource_id: RESOURCE_ID }, { ...serie, resource_id: other }],
+    } as never)
+    try {
+      await mockTabular(page)
+      let saved: { series: Array<{ resource_id: string }> } | null = null
+      await page.route(url => url.pathname === `/api/1/visualizations/${chart.id}/`, async (route) => {
+        if (route.request().method() !== 'PATCH') return route.fallback()
+        saved = route.request().postDataJSON()
+        await route.fulfill({ status: 400, json: { message: 'Not saved by this test' } })
+      })
+      await page.goto(`/admin/beta/charts/${chart.id}`)
+      const save = page.getByRole('button', { name: 'Sauvegarder le graphique' })
+      await expect(save).toBeEnabled()
+      await save.click()
+      await expect.poll(() => saved).not.toBeNull()
+      expect(saved!.series.map(s => s.resource_id)).toEqual([RESOURCE_ID, other])
+    }
+    finally {
+      await deleteChart(page.request, chart.id)
+    }
+  })
+
+  test('changing resource moves every series of the chart to it', async ({ page }) => {
+    const output = createChartOutput(RESOURCE_ID)
+    output.chart.series.push({ ...output.chart.series[0]!, aggregate_y: 'sum' })
+    await routeAssistantStream(page, createChartStream(RESOURCE_ID, output))
+    await withSecondTabularResource(page)
+    await setupChart(page)
+    await page.getByRole('tab', { name: 'Assistant' }).click()
+    await sendAssistantMessage(page, 'Premières doses, maximum et somme')
+    await expect(page.getByTestId('assistant-panel').locator('article').last()).toContainText('Graphique créé.')
+
+    await page.getByRole('tab', { name: 'Édition manuelle' }).click()
+    const secondResourceId = await otherResourceId(page)
+    await page.getByLabel('Choix de la ressource').selectOption(secondResourceId)
+
+    // Answered here: the series are read from the request, no chart is created.
+    let saved: { series: Array<{ resource_id: string }> } | null = null
+    await page.route(url => url.pathname === '/api/1/visualizations/', async (route) => {
+      if (route.request().method() !== 'POST') return route.fallback()
+      saved = route.request().postDataJSON()
+      await route.fulfill({ status: 400, json: { message: 'Not saved by this test' } })
+    })
+    await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+    await expect.poll(() => saved).not.toBeNull()
+    expect(saved!.series.map(serie => serie.resource_id)).toEqual([secondResourceId, secondResourceId])
+  })
+})

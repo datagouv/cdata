@@ -1268,8 +1268,13 @@ watch(dataset, async (newDataset) => {
   }
 }, { immediate: true })
 
-watch(selectedResource, async (r) => {
+watch(selectedResource, async (r, previous) => {
   if (r) {
+    // Opening a chart sets the resource from an empty one: its series stay where they are.
+    // A resource chosen afterwards takes along the series of the previous one.
+    const moved = previous
+      ? form.value.series.filter(serie => serie.resource_id === previous)
+      : []
     if (form.value.series.length === 0) {
       form.value.series.push({
         type: 'histogram',
@@ -1281,7 +1286,7 @@ watch(selectedResource, async (r) => {
       })
     }
     else {
-      form.value.series[0].resource_id = r
+      for (const serie of moved) serie.resource_id = r
     }
     sourceLoading.value = true
     try {
@@ -1308,6 +1313,13 @@ watch(selectedResource, async (r) => {
       }
       if (currentYColumn && !columnNames.includes(currentYColumn)) {
         form.value.series[0].column_y = ''
+      }
+      // A moved series must not keep a column of its previous resource.
+      for (const serie of moved) {
+        if (serie.column_y && !columnNames.includes(serie.column_y)) serie.column_y = ''
+        if (serie.column_x_name_override && !columnNames.includes(serie.column_x_name_override)) {
+          serie.column_x_name_override = null
+        }
       }
     }
     else {
