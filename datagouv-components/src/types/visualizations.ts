@@ -96,5 +96,6 @@ export type ChartForm = Omit<ChartForApi, 'x_axis' | 'series' | 'owner' | 'organ
   filter: GenericFilter | null
 }
 
-export type ColumnDefinition = { name: string, type: ColumnType, min?: number, max?: number }
+/** `values`: distinct values in the profile, a missing value counting as one. */
+export type ColumnDefinition = { name: string, type: ColumnType, min?: number, max?: number, values?: number }
 export type ColumnsDefinition = Record<string, Array<ColumnDefinition>>

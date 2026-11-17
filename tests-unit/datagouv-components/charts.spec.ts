@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildColumnsFromProfile, chartContentToForm, formatYAxisValue, hasMixedSeries, toChartApi, toChartForm } from '~/datagouv-components/src/functions/charts'
+import { buildColumnsFromProfile, chartContentToForm, defaultXColumn, formatYAxisValue, hasMixedSeries, toChartApi, toChartForm } from '~/datagouv-components/src/functions/charts'
 import type { ChartContent } from '~/datagouv-components/src/functions/charts'
 import type { Chart, GenericFilter } from '~/datagouv-components/src/types/visualizations'
 import type { TabularProfile } from '~/datagouv-components/src/components/TabularExplorer/types'
@@ -273,11 +273,25 @@ describe('buildColumnsFromProfile', () => {
   it('includes normalized min/max from the profile', () => {
     const columns = buildColumnsFromProfile(profile)
     expect(columns).toEqual([
-      { name: 'year', type: 'number', min: 2018, max: 2023 },
-      { name: 'rate', type: 'number', min: 0, max: 49.5 },
-      { name: 'label', type: 'categorical' },
-      { name: 'created_at', type: 'date', min: new Date('2018-01-01T00:00:00.000Z').getTime(), max: new Date('2023-12-31T23:59:59.000Z').getTime() },
+      { name: 'year', type: 'number', min: 2018, max: 2023, values: 6 },
+      { name: 'rate', type: 'number', min: 0, max: 49.5, values: 10 },
+      { name: 'label', type: 'categorical', values: 3 },
+      { name: 'created_at', type: 'date', min: new Date('2018-01-01T00:00:00.000Z').getTime(), max: new Date('2023-12-31T23:59:59.000Z').getTime(), values: 5 },
     ])
+  })
+
+  it('counts a missing value as one more value', () => {
+    const withMissing: { profile: TabularProfile } = {
+      profile: { ...profile.profile, profile: { ...profile.profile.profile, label: { tops: [], nb_distinct: 3, nb_missing_values: 7 } } },
+    }
+    expect(buildColumnsFromProfile(withMissing).find(column => column.name === 'label')?.values).toBe(4)
+  })
+
+  it('does not trust a count of 0, which the profile gives when it did not count', () => {
+    const uncounted: { profile: TabularProfile } = {
+      profile: { ...profile.profile, profile: { ...profile.profile.profile, label: { tops: [], nb_distinct: 0, nb_missing_values: 0 } } },
+    }
+    expect(buildColumnsFromProfile(uncounted).find(column => column.name === 'label')?.values).toBeUndefined()
   })
 
   it('keeps a year column as a number, the only numeric type the chart stack knows', () => {
@@ -291,7 +305,7 @@ describe('buildColumnsFromProfile', () => {
       },
     }
     const columns = buildColumnsFromProfile(yearFormatProfile)
-    expect(columns.find(c => c.name === 'year')).toEqual({ name: 'year', type: 'number', min: 2018, max: 2023 })
+    expect(columns.find(c => c.name === 'year')).toMatchObject({ name: 'year', type: 'number', min: 2018, max: 2023 })
   })
 
   it('drops non-numeric min/max values', () => {
@@ -306,7 +320,7 @@ describe('buildColumnsFromProfile', () => {
     }
     const columns = buildColumnsFromProfile(invalidProfile)
     const yearColumn = columns.find(c => c.name === 'year')
-    expect(yearColumn).toEqual({ name: 'year', type: 'number', min: undefined, max: 2023 })
+    expect(yearColumn).toMatchObject({ name: 'year', type: 'number', min: undefined, max: 2023 })
   })
 
   it('returns undefined min/max for date columns when the profile does not provide them', () => {
@@ -321,7 +335,7 @@ describe('buildColumnsFromProfile', () => {
     }
     const columns = buildColumnsFromProfile(profileWithoutDateBounds)
     const createdAtColumn = columns.find(c => c.name === 'created_at')
-    expect(createdAtColumn).toEqual({ name: 'created_at', type: 'date', min: undefined, max: undefined })
+    expect(createdAtColumn).toMatchObject({ name: 'created_at', type: 'date', min: undefined, max: undefined })
   })
 
   // Non-CSV resources (parquet…) are indexed without csv-detective: the profile
@@ -378,5 +392,23 @@ describe('formatYAxisValue', () => {
 
   it('puts a prefix unit before the value', () => {
     expect(formatYAxisValue(1500, 'fr', { unit: '€', unit_position: 'prefix' })).toBe(`€ 1,5${NBSP}k`)
+  })
+})
+
+describe('defaultXColumn', () => {
+  it('skips the columns with more values than a chart fetches, so the default chart is not truncated', () => {
+    expect(defaultXColumn([
+      { name: '__id', type: 'number', values: 3 },
+      { name: 'id', type: 'categorical', values: 1806 },
+      { name: 'region', type: 'categorical', values: 18 },
+    ])?.name).toBe('region')
+  })
+
+  it('falls back to the first column when none fits, or when the profile gives no counts', () => {
+    expect(defaultXColumn([
+      { name: '__id', type: 'number' },
+      { name: 'id', type: 'categorical', values: 1806 },
+      { name: 'label', type: 'categorical' },
+    ])?.name).toBe('id')
   })
 })

@@ -1,6 +1,7 @@
 import type { Chart, ChartForm, ChartForApi, DataSeries, GenericFilter, ColumnDefinition, YAxis } from '../types/visualizations'
 import type { ColumnType, TabularProfile } from '../components/TabularExplorer/types'
 import type { TranslationFunction } from '../composables/useTranslation'
+import { CHART_PAGE_SIZE } from './chartData'
 import { resolveColumnType } from './tabular'
 
 // Size of the saved chart image: twice the 224×160 media box of ChartCard (ObjectCard
@@ -124,8 +125,24 @@ export function buildColumnsFromProfile(profile: { profile: TabularProfile }): A
       type: colType,
       min: normalizeProfileNumber(colProfile?.min, colType),
       max: normalizeProfileNumber(colProfile?.max, colType),
+      // The profile gives 0 when it did not count them (long or unique texts)
+      values: colProfile?.nb_distinct ? colProfile.nb_distinct + (colProfile.nb_missing_values > 0 ? 1 : 0) : undefined,
     }
   })
+}
+
+/** Whether all the values of `column` fit in the groups a chart fetches. */
+export function fitsInChart(column: ColumnDefinition): boolean {
+  return column.values !== undefined && column.values <= CHART_PAGE_SIZE
+}
+
+/**
+ * X column of a new chart: the first one that fits in a chart, so that the default count
+ * chart is not truncated; the first column when none does.
+ */
+export function defaultXColumn(columns: Array<ColumnDefinition>): ColumnDefinition | undefined {
+  const candidates = columns.filter(column => column.name !== '__id')
+  return candidates.find(fitsInChart) ?? candidates[0]
 }
 
 function normalizeProfileNumber(value: number | string | undefined, type: ColumnType): number | undefined {

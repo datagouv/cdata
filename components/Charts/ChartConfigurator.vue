@@ -749,7 +749,7 @@
 
 <script setup lang="ts">
 import type { Resource, PaginatedArray, ChartForm, Chart, Filter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
-import { CHART_PAGE_SIZE, buildTypeConfig, buildColumnsFromProfile, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, hasMixedSeries, SearchableSelect, SimpleBanner, Listbox, useTranslation } from '@datagouv/components-next'
+import { CHART_PAGE_SIZE, buildTypeConfig, buildColumnsFromProfile, defaultXColumn, fitsInChart, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, hasMixedSeries, SearchableSelect, SimpleBanner, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, nextTick, reactive, ref, useTemplateRef, watch } from 'vue'
 import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/vue'
@@ -777,6 +777,7 @@ type SortOption = {
   icon: Component | null
 }
 
+const DEFAULT_LIMIT_WITHOUT_FITTING_COLUMN = 10
 // The chart fetches at most CHART_PAGE_SIZE groups: a larger limit would show nothing more.
 const CHART_MAX_LIMIT = CHART_PAGE_SIZE
 
@@ -1026,13 +1027,14 @@ const onChartResult = createChartResultHandler(() => form.value, () => selectedR
 
 function ensureSeriesHasColumnX(resourceId: string) {
   if (!form.value.x_axis.column_x) {
-    const resourceColumns = columns.value[resourceId]
-    if (resourceColumns?.length) {
-      const nonIdColumns = resourceColumns.filter(c => c.name !== '__id')
-      if (nonIdColumns.length > 0) {
-        const column = nonIdColumns[0]
-        form.value.x_axis.column_x = column.name
-        form.value.x_axis.type = getDefaultXAxisType(column.type)
+    const column = defaultXColumn(columns.value[resourceId] ?? [])
+    if (column) {
+      form.value.x_axis.column_x = column.name
+      form.value.x_axis.type = getDefaultXAxisType(column.type)
+      // Too many values for one chart: its first ones in X order are exact, hence no truncation warning
+      if (!fitsInChart(column) && form.value.x_axis.limit == null && !form.value.x_axis.sort_combined) {
+        form.value.x_axis.sort_combined = 'axis_x-asc'
+        form.value.x_axis.limit = DEFAULT_LIMIT_WITHOUT_FITTING_COLUMN
       }
     }
   }
