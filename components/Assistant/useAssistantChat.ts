@@ -8,7 +8,6 @@ import { buildChatBody, type AssistantVisualization } from '~/utils/assistant'
 export function useAssistantChat(resourceId: Ref<string | null>, visualization: () => AssistantVisualization | null) {
   const runtimeConfig = useRuntimeConfig()
   const apiBase = runtimeConfig.public.apiBase as string
-  const assistantApiBase = (runtimeConfig.public.assistantApiBase as string) || apiBase
   const devApiKey = runtimeConfig.public.devApiKey as string | undefined
   const { locale } = useTranslation()
 
@@ -16,7 +15,7 @@ export function useAssistantChat(resourceId: Ref<string | null>, visualization: 
     // The transport does its own fetch, outside $api: mirror its authentication
     // and lang parameter (plugins/api.ts).
     transport: new DefaultChatTransport({
-      api: `${assistantApiBase}/api/1/assistant/chat/?lang=${encodeURIComponent(locale)}`,
+      api: `${apiBase}/api/1/assistant/chat/?lang=${encodeURIComponent(locale)}`,
       headers: devApiKey ? { 'X-API-KEY': devApiKey } : {},
       credentials: devApiKey ? undefined : 'include',
       prepareSendMessagesRequest({ messages, id, trigger, messageId }) {

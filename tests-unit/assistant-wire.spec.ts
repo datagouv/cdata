@@ -73,19 +73,6 @@ describe('useAssistantChat wire contract', () => {
     expect(transport.credentials).toBeUndefined()
   })
 
-  it('uses the configured assistant API base when provided', () => {
-    vi.stubGlobal('useRuntimeConfig', () => ({
-      public: {
-        apiBase: 'https://api.example',
-        assistantApiBase: 'https://assistant.example',
-      },
-    }))
-
-    useAssistantChat(ref(null), () => null)
-
-    expect(capturedTransport().api).toBe('https://assistant.example/api/1/assistant/chat/?lang=fr')
-  })
-
   it('starts a new conversation by stopping the stream and clearing the history and the error', () => {
     const chat = useAssistantChat(ref('resource-1'), () => null)
 

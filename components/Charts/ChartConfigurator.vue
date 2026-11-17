@@ -15,7 +15,7 @@
             {{ $t('Source de données') }}
           </h2>
           <p class="mb-0 mt-0.5 text-[11px] leading-4 text-new-gray-medium">
-            {{ $t('Contexte commun à la prévisualisation et à l’assistant') }}
+            {{ assistantEnabled ? $t('Contexte commun à la prévisualisation et à l’assistant') : $t('Données de la prévisualisation') }}
           </p>
         </div>
         <div class="flex min-w-0 flex-1 flex-col gap-4 lg:flex-row lg:items-center">
@@ -202,15 +202,18 @@
             >
               {{ initialChart ? $t('Modifier la visualisation') : $t('Créer une visualisation') }}
             </h2>
-            <p class="mb-0 mt-0.5 text-[11px] leading-4 text-new-gray-medium">
+            <p
+              v-if="assistantEnabled"
+              class="mb-0 mt-0.5 text-[11px] leading-4 text-new-gray-medium"
+            >
               {{ initialChart ? $t('Assistant de modification de visualisation') : $t('Assistant de création de visualisation') }}
             </p>
           </div>
           <TabGroup
             as="div"
             class="flex flex-col lg:min-h-0 lg:flex-1"
-            :selected-index="selectedTab"
-            @change="selectedTab = $event"
+            :selected-index="tabs.findIndex(tab => tab.key === selectedTab)"
+            @change="selectedTab = tabs[$event]!.key"
           >
             <TabList
               class="flex h-11 shrink-0 items-stretch gap-5 border-b border-gray-default px-6"
@@ -218,7 +221,7 @@
             >
               <Tab
                 v-for="tab in tabs"
-                :key="tab.label"
+                :key="tab.key"
                 v-slot="{ selected }"
                 as="template"
               >
@@ -238,6 +241,7 @@
 
             <TabPanels class="flex flex-col lg:min-h-0 lg:flex-1">
               <TabPanel
+                v-if="assistantEnabled"
                 :unmount="false"
                 class="flex flex-col py-4 px-6 focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-new-primary lg:min-h-0 lg:flex-1"
                 data-testid="assistant-panel"
@@ -694,7 +698,7 @@
 
             <!-- Only in the manual tab, where the title and description are filled; kept out of its scroll area. -->
             <div
-              v-if="selectedResource && isAdmin && selectedTab === MANUAL_TAB"
+              v-if="selectedResource && isAdmin && selectedTab === 'manual'"
               class="shrink-0 border-t border-gray-default bg-white py-3 px-6"
               data-testid="chart-save-footer"
             >
@@ -820,15 +824,14 @@ const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref<string>('')
 const chartViewerWrapperRef = ref<InstanceType<typeof ChartViewerWrapper> | null>(null)
 const sourceLoading = ref(false)
-// No front config tells whether the assistant is enabled: it opens a new chart,
-// while an existing chart is usually tweaked by hand.
-const ASSISTANT_TAB = 0
-const MANUAL_TAB = 1
+const assistantEnabled = Boolean(runtimeConfig.public.assistantEnabled)
+type EditorTab = 'assistant' | 'manual'
 const tabs = computed(() => [
-  { label: t('Assistant'), icon: RiSparklingLine },
-  { label: t('Édition manuelle'), icon: RiSettings3Line },
-] satisfies Array<{ label: string, icon: Component }>)
-const selectedTab = ref(props.initialChart ? MANUAL_TAB : ASSISTANT_TAB)
+  ...(assistantEnabled ? [{ key: 'assistant' as const, label: t('Assistant'), icon: RiSparklingLine }] : []),
+  { key: 'manual' as const, label: t('Édition manuelle'), icon: RiSettings3Line },
+] satisfies Array<{ key: EditorTab, label: string, icon: Component }>)
+// The assistant opens a new chart, while an existing chart is usually tweaked by hand.
+const selectedTab = ref<EditorTab>(props.initialChart || !assistantEnabled ? 'manual' : 'assistant')
 
 const { touch, isTouched, getFirstError, validate } = useForm(form, {
   title: [required()],

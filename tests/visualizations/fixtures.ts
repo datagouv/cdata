@@ -10,8 +10,6 @@ import data from './data.json' with { type: 'json' }
 
 // API calls go straight to the backend: the frontend (baseURL) does not proxy them
 export const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
-// Same fallback as useAssistantChat
-const ASSISTANT_API_BASE = (process.env.NUXT_PUBLIC_ASSISTANT_API_BASE || API_BASE_URL).replace(/\/$/, '')
 // Real resource from the test DB: bailleurs_sociaux_region.csv in "Logements sociaux et bailleurs par région"
 export const RESOURCE_ID = '63f39717-e5c9-4d70-a0d5-544773c1d742'
 
@@ -172,7 +170,7 @@ export async function sendAssistantMessage(page: Page, prompt: string) {
   }).toPass()
   const request = await requestPromise
   const url = new URL(request.url())
-  expect(`${url.origin}${url.pathname}`).toBe(`${ASSISTANT_API_BASE}${ASSISTANT_CHAT_PATH}`)
+  expect(`${url.origin}${url.pathname}`).toBe(`${API_BASE_URL.replace(/\/$/, '')}${ASSISTANT_CHAT_PATH}`)
   expect(url.searchParams.get('lang')).toBe('fr')
   return request
 }
