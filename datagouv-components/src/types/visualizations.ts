@@ -96,10 +96,5 @@ export type ChartForm = Omit<ChartForApi, 'x_axis' | 'series' | 'owner' | 'organ
   filter: GenericFilter | null
 }
 
-export type ColumnDefinition = {
-  name: string
-  type: ColumnType
-  min?: number
-  max?: number
-}
+export type ColumnDefinition = { name: string, type: ColumnType, min?: number, max?: number }
 export type ColumnsDefinition = Record<string, Array<ColumnDefinition>>

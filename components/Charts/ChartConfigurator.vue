@@ -141,7 +141,6 @@
               <div
                 v-if="!hasChart"
                 class="flex flex-col items-center justify-center h-full py-24"
-                data-testid="no-chart-blank-state"
               >
                 <span class="grid size-14 place-items-center rounded-full bg-gray-lower text-new-gray-medium-clic">
                   <RiBarChartBoxLine

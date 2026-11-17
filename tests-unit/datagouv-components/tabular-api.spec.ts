@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { buildFilterQuery, fetchTabularData } from '~/datagouv-components/src/functions/tabularApi'
-import { conditionOperand, encodeConditionColumn, encodeConditionValue, encodeTabularParam, tabularInList } from '~/datagouv-components/src/functions/tabular'
+import { encodeConditionValue, tabularInList } from '~/datagouv-components/src/functions/tabular'
 import type { PluginConfig } from '~/datagouv-components/src/config'
 import type { AndFilters, Filter, OrFilters } from '~/datagouv-components/src/types/visualizations'
 
@@ -134,25 +134,6 @@ describe('encodeConditionValue', () => {
     ['50%E9', '%2250%2525E9%22'],
   ])('%s → %s', (value, encoded) => {
     expect(encodeConditionValue(value)).toBe(encoded)
-  })
-})
-
-describe('encodeTabularParam', () => {
-  it.each(Object.entries(COLUMNS))('encodes %s like a top-level filter does', (column, { param }) => {
-    expect(encodeTabularParam(column)).toBe(param)
-  })
-})
-
-describe('encodeConditionColumn', () => {
-  it.each(Object.entries(COLUMNS))('encodes %s like a condition does', (column, { condition }) => {
-    expect(encodeConditionColumn(column)).toBe(condition)
-  })
-})
-
-describe('conditionOperand', () => {
-  // The inner layer of encodeConditionValue: ufo or URLSearchParams add the outer one.
-  it.each(['Paris, 1er', 'dit "X"', 'a\\b', '50%E9', 'Nb. habitants', '#1', 'l\'été'])('is %s one URL layer short of encodeConditionValue', (value) => {
-    expect(encodeURIComponent(conditionOperand(value))).toBe(encodeConditionValue(value))
   })
 })
 

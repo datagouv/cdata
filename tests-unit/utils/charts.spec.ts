@@ -101,8 +101,4 @@ describe('getSerieColumnYOptions', () => {
   it('offers every column for raw values', () => {
     expect(getSerieColumnYOptions('none', COLUMNS).map(c => c.name)).toEqual(['region', 'logements', 'taux'])
   })
-
-  it('offers no column for count', () => {
-    expect(getSerieColumnYOptions('count', COLUMNS)).toEqual([])
-  })
 })

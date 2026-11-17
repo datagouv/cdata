@@ -73,3 +73,10 @@ export const escapeCsvValue = (value: string | number | null | undefined): strin
   }
   return stringValue
 }
+
+/** « a, b et c », joined with the translated « et »: Intl.ListFormat would follow the browser language. */
+export const humanJoin = (items: Array<string>): string => {
+  if (items.length <= 1) return items.join('')
+  const { t } = useTranslation()
+  return `${items.slice(0, -1).join(', ')} ${t('et')} ${items.at(-1)}`
+}

@@ -5,7 +5,7 @@
     aria-hidden="true"
     data-testid="assistant-responding"
   >
-    <AssistantSpinner class="text-[11px]" />
+    <AssistantSpinner />
     <span
       class="assistant-shimmer"
       :data-text="$t('Réponse en cours…')"

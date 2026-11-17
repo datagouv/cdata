@@ -19,7 +19,6 @@ export function getSerieCalculation(serie: Pick<DataSeriesForm, 'aggregate_y'>):
 }
 
 export function getSerieColumnYOptions(calculation: SerieCalculation, columns: Array<ColumnDefinition>): Array<ColumnDefinition> {
-  if (calculation === 'count') return []
   if (calculation === 'none') return columns
   return columns.filter(column => column.type === 'number')
 }

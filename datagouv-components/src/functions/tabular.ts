@@ -399,7 +399,7 @@ function percentEncode(char: string): string {
 }
 
 /** A column name or value of a top-level param (`column__condition=value`, `columns=`…), inner layer. */
-export function tabularParamInner(value: string): string {
+function tabularParamInner(value: string): string {
   return encodeURIComponent(value)
 }
 
@@ -424,7 +424,7 @@ export function conditionColumn(column: string): string {
 }
 
 /** A value of an `or(...)` / `and(...)` condition, inner layer: quoted, PostgREST reads it whole. */
-export function conditionOperand(value: string): string {
+function conditionOperand(value: string): string {
   return `"${conditionColumn(value)}"`
 }
 

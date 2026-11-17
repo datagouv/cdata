@@ -17,6 +17,7 @@ import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import { CHART_IMAGE_HEIGHT, CHART_IMAGE_WIDTH, formatYAxisValue, seriesLabel } from '../../functions/charts'
 import { CHART_PAGE_SIZE } from '../../functions/chartData'
 import { useFormatDate } from '../../functions/dates'
+import { humanJoin } from '../../functions/helpers'
 import type { Chart, ColumnDefinition, ColumnsDefinition, XAxis, XAxisForm, ChartForApi } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
 
@@ -164,7 +165,7 @@ function xAxisBounds(plotted: Array<PlottedSeries>): { min: number | undefined, 
 
 const echartsOption = computed(() => {
   const seriesCount = props.chart.series.length
-  if (!props.chart.series || seriesCount === 0) return
+  if (seriesCount === 0) return
 
   let referenceXs: Array<unknown> | null = null
   const xKey = (x: unknown) => x instanceof Date ? x.getTime() : String(x)
@@ -245,22 +246,15 @@ const echartsOption = computed(() => {
     // column: the other series are reordered and cut to the first series' X
     // values (a missing X gives an empty point) so they stay aligned.
     const limit = props.chart.x_axis.limit
-    if (s.filters || rawData.length >= CHART_PAGE_SIZE || (limit != null && limit < sortedData.length)) valuesLeftOut = true
-    let limitedData: Array<Record<string, unknown>>
+    const limited = limit != null && limit < sortedData.length
+    if (s.filters || rawData.length >= CHART_PAGE_SIZE || limited) valuesLeftOut = true
+    let limitedData = limited ? sortedData.slice(0, limit) : sortedData
     if (!referenceXs) {
-      limitedData = limit != null && limit < sortedData.length
-        ? sortedData.slice(0, limit)
-        : sortedData
       referenceXs = limitedData.map(row => row[xColumn])
     }
     else if (sortBy === 'axis_y') {
       const byX = new Map(sortedData.map(row => [xKey(row[xColumn]), row]))
       limitedData = referenceXs.map(x => byX.get(xKey(x)) ?? { [xColumn]: x })
-    }
-    else {
-      limitedData = limit != null && limit < sortedData.length
-        ? sortedData.slice(0, limit)
-        : sortedData
     }
 
     const lineOptions = s.type === 'histogram'
@@ -403,13 +397,6 @@ const echartsOption = computed(() => {
   >
 })
 
-// Joined with the translated « et », like the rest of the sentence: Intl.ListFormat
-// would follow the browser language.
-function listOf(items: Array<string>): string {
-  if (items.length <= 1) return items.join('')
-  return `${items.slice(0, -1).join(', ')} ${t('et')} ${items.at(-1)}`
-}
-
 // Describes what is drawn: a series that failed is left out, and the values are those
 // kept by the limit and by the alignment on the first series.
 const description = computed(() => {
@@ -423,9 +410,9 @@ const description = computed(() => {
     ? drawn.map(s => String(s.name))
     : props.chart.series.filter(s => s.type).map(s => seriesLabel(s, t))
   return t('Graphique {types} : {x} en abscisse, {y} en ordonnée, aucune valeur. | Graphique {types} : {x} en abscisse, {y} en ordonnée, {n} valeur. | Graphique {types} : {x} en abscisse, {y} en ordonnée, {n} valeurs.', {
-    types: listOf([...new Set(types)]),
+    types: humanJoin([...new Set(types)]),
     x: props.chart.x_axis.column_x ?? '',
-    y: listOf(labels),
+    y: humanJoin(labels),
     n: Math.max(0, ...sources),
   })
 })

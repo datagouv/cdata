@@ -11,9 +11,7 @@
         ref="floatingReference"
         class="relative w-full cursor-default overflow-hidden bg-white text-left sm:text-sm"
       >
-        <ListboxButton
-          class="input shadow-input text-sm flex items-center gap-2"
-        >
+        <ListboxButton class="input shadow-input text-sm flex items-center gap-2">
           <slot name="button">
             <div class="w-full flex items-center justify-between gap-2">
               <!-- min-h-lh: an empty value keeps the button at its usual height. -->

@@ -26,17 +26,10 @@
         {{ waiting ? $t('Assistant d’exploration de données') : $t('Assistant de visualisation') }}
       </h3>
       <p
-        v-if="waiting"
-        id="assistant-waiting"
+        :id="waiting ? 'assistant-waiting' : undefined"
         class="m-0 mt-1 text-[13px] leading-5 text-new-gray-medium"
       >
-        {{ $t('Chargez une ressource pour permettre à l’assistant de comprendre sa structure.') }}
-      </p>
-      <p
-        v-else
-        class="m-0 mt-1 text-[13px] leading-5 text-new-gray-medium"
-      >
-        {{ $t('Décrivez le graphique souhaité ou posez une question sur ces données.') }}
+        {{ waiting ? $t('Chargez une ressource pour permettre à l’assistant de comprendre sa structure.') : $t('Décrivez le graphique souhaité ou posez une question sur ces données.') }}
       </p>
       <ul
         v-if="!waiting"
@@ -351,10 +344,6 @@ watch(messages, (value) => {
     for (const result of chartToolResults([message])) emit('chart-result', result)
   }
 })
-
-// First paint of the conversation also scrolls (messages go from none to some).
-nearBottom.value = true
-scrollMessagesToBottom()
 
 const waiting = computed(() => !props.resourceId)
 // 'error' is not busy: a failed request leaves the status on 'error' until the

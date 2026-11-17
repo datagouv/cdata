@@ -65,10 +65,7 @@
         </p>
       </div>
     </div>
-    <div
-      role="status"
-      data-testid="chart-series-notes"
-    >
+    <div role="status">
       <p
         v-if="blockStatus === 'success' && someSeriesFailed"
         class="flex items-start gap-1.5 px-4 pb-3 mt-1 mb-0 text-xs text-gray-medium"
@@ -345,11 +342,7 @@ function retry() {
 // profile only depends on the resources.
 watch(() => resourceIds.value.join(','), fetchSeriesProfile, { immediate: true })
 
-watchDebounced([
-  () => chartDataKey(props.chart),
-], async () => {
-  await fetchSeriesData()
-}, { debounce: config.searchDebounce ?? 300, immediate: true })
+watchDebounced(() => chartDataKey(props.chart), fetchSeriesData, { debounce: config.searchDebounce ?? 300, immediate: true })
 
 watch(pendingOperations, (count) => {
   if (count === 0) {

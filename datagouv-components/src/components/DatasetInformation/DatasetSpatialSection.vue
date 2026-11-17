@@ -32,6 +32,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useTranslation } from '../../composables/useTranslation'
+import { humanJoin } from '../../functions/helpers'
 import type { DatasetV2WithFullObject } from '../../types/datasets'
 import DescriptionList from '../DescriptionList.vue'
 import DescriptionListTerm from '../DescriptionListTerm.vue'
@@ -48,12 +49,4 @@ const zonesDisplay = computed(() => {
   const names = props.dataset.spatial.zones.map(z => z.name)
   return humanJoin(names)
 })
-
-function humanJoin(source: Array<string>): string {
-  const array = [...source]
-  if (!array.length) return ''
-  if (array.length === 1) return array[0]!
-  const last = array.pop()!
-  return `${array.join(', ')} ${t('et')} ${last}`
-}
 </script>

@@ -1,5 +1,5 @@
 import { isRecord } from '@datagouv/components-next'
-import type { ChartForApi, ChartForm, ColumnDefinition, DataSeries, DataSeriesType, GenericFilter, SortDirection, XAxis, TranslationFunction, XAxisSortBy, XAxisType, YAxis } from '@datagouv/components-next'
+import type { ChartContent, ChartForApi, ChartForm, ColumnDefinition, DataSeries, DataSeriesType, GenericFilter, XAxis, TranslationFunction, YAxis } from '@datagouv/components-next'
 import { humanJoin } from '~/utils/helpers'
 
 /**
@@ -118,36 +118,6 @@ export function buildChatBody(
 }
 
 /**
- * Chart produced by udata's `create_chart` tool (`output.chart`).
- */
-export type ChartToolChart = {
-  title: string
-  description: string
-  x_axis: {
-    column_x: string
-    type: XAxisType
-    sort_x_by: XAxisSortBy
-    sort_x_direction: SortDirection
-    limit: number | null
-  }
-  y_axis: {
-    label: string | null
-    unit: string | null
-    unit_position: YAxis['unit_position']
-    min: number | null
-    max: number | null
-  }
-  series: Array<{
-    type: DataSeriesType
-    column_y: string
-    aggregate_y: 'avg' | 'sum' | 'count' | 'min' | 'max' | null
-    resource_id: string
-    column_x_name_override: null
-    filters: GenericFilter | null
-  }>
-}
-
-/**
  * Partial chart change produced by udata's `update_chart` tool (`output.patch`).
  */
 export type ChartUpdatePatch = {
@@ -157,8 +127,9 @@ export type ChartUpdatePatch = {
   y_axis?: Partial<YAxis>
 }
 
+/** `chart` is the output of udata's `create_chart` tool, `patch` that of `update_chart`. */
 export type ChartToolResult
-  = | { toolCallId: string, kind: 'create', chart: ChartToolChart }
+  = | { toolCallId: string, kind: 'create', chart: ChartContent }
     | { toolCallId: string, kind: 'update', patch: ChartUpdatePatch }
 
 /**
@@ -186,7 +157,7 @@ export function chartToolResults(messages: unknown[]): ChartToolResult[] {
         results.push({
           toolCallId: part.toolCallId,
           kind: 'create',
-          chart: chart as unknown as ChartToolChart,
+          chart: chart as unknown as ChartContent,
         })
       }
       else if (part.type === 'tool-update_chart') {
