@@ -45,6 +45,9 @@ describe('GameOfLifeLoader', () => {
   })
 
   it('renders on the server as an empty, hidden canvas', async () => {
+    // As on the server: touching the browser APIs outside onMounted would throw.
+    vi.stubGlobal('window', undefined)
+    vi.stubGlobal('document', undefined)
     const html = await renderToString(createSSRApp(GameOfLifeLoader))
 
     expect(html).toMatch(/^<canvas[^>]*aria-hidden="true"/)

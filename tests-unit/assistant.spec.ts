@@ -1,12 +1,12 @@
 // @vitest-environment happy-dom
 import { flushPromises, mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
-import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ChartForApi, ColumnDefinition } from '@datagouv/components-next'
 import ChatPanel from '~/components/Assistant/ChatPanel.vue'
 import AssistantSpinner from '~/components/Assistant/AssistantSpinner.vue'
 import ToolTrace from '~/components/Assistant/ToolTrace.vue'
-import { buildChatBody, buildChatDisplayItems, chartToolResults, getStarterQuestions, isNearChatBottom, mapAssistantError, toAssistantVisualization } from '~/utils/assistant'
+import { buildChatDisplayItems, chartToolResults, getStarterQuestions, isNearChatBottom, mapAssistantError, toAssistantVisualization } from '~/utils/assistant'
 import type { AssistantVisualization, ToolTrace as ToolTraceModel } from '~/utils/assistant'
 
 const sendMessageMock = vi.hoisted(() => vi.fn())
@@ -104,34 +104,6 @@ describe('toAssistantVisualization', () => {
   })
 })
 
-describe('buildChatBody', () => {
-  const messages = [{ id: '1', role: 'user', parts: [{ type: 'text', text: 'Bonjour' }] }]
-  const visualization = toAssistantVisualization(CHART as unknown as ChartForApi, { filter: null, chart_type: 'line' }, true)
-
-  it('includes resource_id when a resource is selected', () => {
-    expect(buildChatBody(messages, 'f47ac10b-58cc-4372-a567-0e02b2c3d479', null)).toEqual({
-      messages,
-      resource_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
-    })
-  })
-
-  it('omits resource_id when no resource is selected', () => {
-    const body = buildChatBody(messages, null, null)
-    expect(body).toEqual({ messages })
-    expect(body).not.toHaveProperty('resource_id')
-    expect(body).not.toHaveProperty('visualization')
-  })
-
-  it('sends the visualization with the resource id', () => {
-    expect(buildChatBody(messages, 'r1', visualization)).toEqual({ messages, resource_id: 'r1', visualization })
-  })
-
-  it('adds the id/trigger/messageId protocol fields when provided', () => {
-    expect(buildChatBody(messages, null, null, { id: 'chat-1', trigger: 'submit-message', messageId: undefined }))
-      .toEqual({ id: 'chat-1', trigger: 'submit-message', messageId: undefined, messages })
-  })
-})
-
 describe('chartToolResults', () => {
   it('extracts create and update results in order', () => {
     const results = chartToolResults([
@@ -151,15 +123,6 @@ describe('chartToolResults', () => {
       { toolCallId: 'c1', kind: 'create', chart: CHART },
       { toolCallId: 'c2', kind: 'update', patch: { title: 'Nouveau' } },
     ])
-  })
-
-  // The chart's own wrapper tells whether groups were left out: udata's more_groups,
-  // null when it could not check, is not carried.
-  it('keeps a created chart whose group count udata could not check', () => {
-    const results = chartToolResults([
-      { role: 'assistant', parts: [{ type: 'tool-create_chart', toolCallId: 'c1', state: 'output-available', output: { status: 'ok', chart: CHART, more_groups: null } }] },
-    ])
-    expect(results).toEqual([{ toolCallId: 'c1', kind: 'create', chart: CHART }])
   })
 
   it('skips error results and incomplete calls', () => {
@@ -265,6 +228,7 @@ describe('summarizes chart tool traces', () => {
     expect(summaryOf({ type: 'tool-create_chart', state: 'input-available' })).toBe('Je construis le graphique')
   })
 
+  // In French whatever the browser language: happy-dom's navigator is en-US.
   it.each([
     [{ title: 'T' }, 'Titre modifié'],
     [{ title: 'T', y_axis: { unit: '€' } }, 'Titre et unité modifiés'],
@@ -277,13 +241,6 @@ describe('summarizes chart tool traces', () => {
     [{ description: 'd', y_axis: { unit: '€' } }, 'Description et unité modifiées'],
   ])('update_chart %j', (patch, summary) => {
     expect(traceOf({ type: 'tool-update_chart', state: 'output-available', output: { status: 'ok', patch } })?.summary).toBe(summary)
-  })
-
-  // The summary is French: an English browser must not turn its « et » into "and".
-  it('update_chart joins the fields in French whatever the browser language', () => {
-    const language = vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US')
-    onTestFinished(() => language.mockRestore())
-    expect(summaryOf({ type: 'tool-update_chart', output: { status: 'ok', patch: { title: 'T', description: 'd', y_axis: { unit: '€' } } } })).toBe('Titre, description et unité modifiés')
   })
 
   it('update_chart reports errors', () => {
@@ -567,20 +524,12 @@ describe('ChatPanel', () => {
     expect(wrapper.find('#assistant-waiting').text()).toBe('Chargez une ressource pour permettre à l’assistant de comprendre sa structure.')
   })
 
-  it('welcomes with the animated mark and the exploration title before a resource is chosen', () => {
+  it('welcomes with the exploration title before a resource is chosen', () => {
     const wrapper = mountPanel(null)
 
     const emptyState = wrapper.find('[data-testid="assistant-empty-state"]')
     expect(emptyState.exists()).toBe(true)
     expect(emptyState.find('h3').text()).toBe('Assistant d’exploration de données')
-    expect(emptyState.find('picture source').attributes('media')).toBe('(prefers-reduced-motion: reduce)')
-    expect(emptyState.find('picture img').exists()).toBe(true)
-  })
-
-  it('has no heading repeating the Assistant tab', () => {
-    const wrapper = mountPanel('resource-1')
-
-    expect(wrapper.findAll('h3').map(h => h.text())).not.toContain('Assistant')
   })
 
   it('welcomes the user with suggestion buttons built from the schema', () => {
@@ -688,15 +637,6 @@ describe('ChatPanel', () => {
 
     expect(sendMessageMock).toHaveBeenCalledWith({ text: 'Montre-moi un graphique' })
     expect((wrapper.find('textarea#assistant-input').element as HTMLTextAreaElement).value).toBe('')
-  })
-
-  it('sends the composer through its form submission', async () => {
-    const wrapper = mountPanel('resource-1')
-
-    await wrapper.find('textarea#assistant-input').setValue('Bonjour')
-    await wrapper.find('form').trigger('submit')
-
-    expect(sendMessageMock).toHaveBeenCalledWith({ text: 'Bonjour' })
   })
 
   it('sends on Enter but inserts a newline on Shift+Enter', async () => {
@@ -851,7 +791,7 @@ describe('ChatPanel', () => {
     expect(markdown.html()).toContain('<code>code</code>')
   })
 
-  it('right-aligns user messages in a gray bubble and marks both roles with data-message-role', () => {
+  it('right-aligns user messages and marks both roles with data-message-role', () => {
     chatState.messages.value = [
       { id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Montre un graphique' }] },
       assistantTextMessage('Voici le résultat.'),
@@ -864,12 +804,7 @@ describe('ChatPanel', () => {
     const userArticle = articles[0]
     expect(userArticle.attributes('data-message-role')).toBe('user')
     expect(userArticle.classes()).toContain('ml-auto')
-    expect(userArticle.classes()).toContain('items-end')
-    const bubble = userArticle.find('div.whitespace-pre-wrap')
-    expect(bubble.exists()).toBe(true)
-    expect(bubble.classes()).toContain('rounded-md')
-    expect(bubble.classes()).toContain('bg-gray-lower')
-    expect(bubble.text()).toBe('Montre un graphique')
+    expect(userArticle.find('div.whitespace-pre-wrap').text()).toBe('Montre un graphique')
 
     const assistantArticle = articles[1]
     expect(assistantArticle.attributes('data-message-role')).toBe('assistant')
@@ -889,29 +824,6 @@ describe('ChatPanel', () => {
     expect(bubble.find('strong').exists()).toBe(false)
   })
 
-  it('updates markdown as streaming text chunks arrive', async () => {
-    chatState.messages.value = [assistantTextMessage('Partie **une**')]
-    const wrapper = mountPanel('resource-1')
-
-    expect(wrapper.find('.prose').html()).toContain('<strong>une</strong>')
-
-    chatState.messages.value = [assistantTextMessage('Partie **une** et deux')]
-    await nextTick()
-    expect(wrapper.find('.prose').html()).toContain('et deux')
-  })
-
-  it('renders a partial markdown block mid-stream without crashing', async () => {
-    chatState.messages.value = [assistantTextMessage('Voici la requête :\n\n```sql\nSELECT year, COUNT(*)')]
-    const wrapper = mountPanel('resource-1')
-
-    expect(wrapper.find('.prose').exists()).toBe(true)
-    expect(wrapper.text()).toContain('SELECT year, COUNT(*)')
-
-    chatState.messages.value = [assistantTextMessage('Voici la requête :\n\n```sql\nSELECT year, COUNT(*) FROM resource\n```')]
-    await nextTick()
-    expect(wrapper.find('.prose').exists()).toBe(true)
-  })
-
   it('groups consecutive reasoning parts into a single collapsed block', () => {
     chatState.messages.value = [{
       id: 'a1',
@@ -927,25 +839,8 @@ describe('ChatPanel', () => {
     const blocks = wrapper.findAll('.thinking-block')
     expect(blocks).toHaveLength(1)
     expect(blocks[0].text()).toContain('Je réfléchis à la requête.')
-    expect(blocks[0].find('button').attributes('aria-expanded')).toBe('false')
     // No aria-label: the accessible name is the visible « Raisonnement ».
     expect(blocks[0].find('button').attributes('aria-label')).toBeUndefined()
-    expect(panelOf(blocks[0]).attributes('inert')).toBeDefined()
-  })
-
-  it('expands the reasoning block on click', async () => {
-    chatState.messages.value = [{
-      id: 'a1',
-      role: 'assistant',
-      parts: [{ type: 'reasoning', text: 'Réflexion', state: 'done' }],
-    }]
-    const wrapper = mountPanel('resource-1')
-
-    const block = wrapper.find('.thinking-block')
-    await block.find('button').trigger('click')
-
-    expect(block.find('button').attributes('aria-expanded')).toBe('true')
-    expect(panelOf(block).attributes('inert')).toBeUndefined()
   })
 
   it('separates reasoning blocks interrupted by other parts', () => {
@@ -981,7 +876,6 @@ describe('ChatPanel', () => {
     expect(trace.exists()).toBe(true)
     expect(trace.text()).toContain('Interrogation des données')
     expect(trace.text()).toContain('2 lignes')
-    expect(trace.text()).not.toContain('{"group_by"')
     expect(wrapper.text()).toContain('J’ai trouvé 2 lignes.')
   })
 

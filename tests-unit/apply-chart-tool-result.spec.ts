@@ -1,8 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { toChartApi } from '~/datagouv-components/src/functions/charts'
-import type { ChartForm, GenericFilter } from '@datagouv/components-next'
+import type { ChartContent, ChartForm, GenericFilter } from '@datagouv/components-next'
 import { applyChartToolResult, createChartResultHandler } from '~/components/Charts/applyChartToolResult'
-import type { ChartToolChart, ChartToolResult } from '~/utils/assistant'
+import type { ChartToolResult } from '~/utils/assistant'
 
 const filter = { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Bretagne' } as unknown as GenericFilter
 
@@ -21,7 +20,7 @@ function makeForm(): ChartForm {
   } as unknown as ChartForm
 }
 
-function makeChart(overrides: Partial<ChartToolChart> = {}): ChartToolChart {
+function makeChart(overrides: Partial<ChartContent> = {}): ChartContent {
   return {
     title: 'New',
     description: 'New description',
@@ -29,39 +28,13 @@ function makeChart(overrides: Partial<ChartToolChart> = {}): ChartToolChart {
     y_axis: { label: null, unit: '€', unit_position: 'suffix', min: 0, max: null },
     series: [{ type: 'histogram', column_y: 'amount', aggregate_y: null, resource_id: 'res-1', column_x_name_override: null, filters: filter }],
     ...overrides,
-  } as ChartToolChart
+  } as ChartContent
 }
 
 const create = (chart = makeChart()): ChartToolResult => ({ toolCallId: 't', kind: 'create', chart })
 const update = (patch: Extract<ChartToolResult, { kind: 'update' }>['patch']): ChartToolResult => ({ toolCallId: 't', kind: 'update', patch })
 
 describe('applyChartToolResult', () => {
-  it('replaces the structure on create', () => {
-    const form = makeForm()
-    applyChartToolResult(form, create())
-    expect(form.title).toBe('New')
-    expect(form.description).toBe('New description')
-    expect(form.chart_type).toBe('histogram')
-    expect(form.filter).toEqual(filter)
-    expect(form.x_axis).toEqual({ column_x: 'year', type: 'date', limit: 10, sort_combined: 'axis_x-asc' })
-    expect(form.series).toEqual([{ type: 'histogram', column_y: 'amount', aggregate_y: '', resource_id: 'res-1', filters: filter, column_x_name_override: null }])
-    expect(form.y_axis).toEqual({ label: '', unit: '€', unit_position: 'suffix', min: 0, max: null })
-  })
-
-  it('maps the sort to sort_combined', () => {
-    const form = makeForm()
-    const chart = makeChart()
-    chart.x_axis.sort_x_by = 'axis_y'
-    chart.x_axis.sort_x_direction = 'desc'
-    applyChartToolResult(form, create(chart))
-    expect(form.x_axis.sort_combined).toBe('axis_y-desc')
-    const none = makeChart()
-    none.x_axis.sort_x_by = null as never
-    none.x_axis.sort_x_direction = null as never
-    applyChartToolResult(form, create(none))
-    expect(form.x_axis.sort_combined).toBe('')
-  })
-
   it('patches only the given fields on update', () => {
     const form = makeForm()
     applyChartToolResult(form, update({ title: 'Patched', type: 'histogram', y_axis: { unit: '%', max: null } }))
@@ -75,44 +48,15 @@ describe('applyChartToolResult', () => {
     expect(form.y_axis.unit).toBe('')
   })
 
-  it('points count series at the x column', () => {
-    const form = makeForm()
-    const chart = makeChart()
-    chart.x_axis.column_x = 'reg'
-    chart.series = [{ ...chart.series[0]!, column_y: 'dep', aggregate_y: 'count' }]
-    applyChartToolResult(form, create(chart))
-    expect(form.series[0]!.column_y).toBe('reg')
-    expect(form.series[0]!.aggregate_y).toBe('count')
-  })
-
-  it('keeps the owner and privacy', () => {
+  // The conversion itself is tested with chartContentToForm (charts.spec.ts).
+  it('replaces the content on create, but not the owner, privacy and extras', () => {
     const form = makeForm()
     applyChartToolResult(form, create())
+    expect(form.title).toBe('New')
+    expect(form.series[0]!.resource_id).toBe('res-1')
     expect(form.owned).toEqual({ owner: 'user-1', organization: null })
     expect(form.private).toBe(true)
     expect(form.extras).toEqual({ keep: 'me' })
-  })
-
-  it('does not share the filter object with the result', () => {
-    const form = makeForm()
-    const result = create()
-    applyChartToolResult(form, result)
-    expect(form.filter).not.toBe(filter)
-    expect(form.filter).toEqual(filter)
-  })
-
-  it('round-trips through toChartApi', () => {
-    const form = makeForm()
-    const chart = makeChart()
-    chart.series.push({ ...chart.series[0]!, column_y: 'other', filters: null })
-    applyChartToolResult(form, create(chart))
-    const api = toChartApi(form)
-    expect(api.x_axis.limit).toBe(10)
-    expect(api.series).toHaveLength(2)
-    for (const serie of api.series) {
-      expect(serie.type).toBe('histogram')
-      expect(serie.filters).toEqual(filter)
-    }
   })
 })
 

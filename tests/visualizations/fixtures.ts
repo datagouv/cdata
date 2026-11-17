@@ -4,11 +4,14 @@ import { expect } from '@playwright/test'
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { clickOutside } from '../helpers'
+import { ASSISTANT_CHAT_PATH } from '../assistantApi'
 import profile from './profile.json' with { type: 'json' }
 import data from './data.json' with { type: 'json' }
 
 // API calls go straight to the backend: the frontend (baseURL) does not proxy them
-const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
+export const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
+// Same fallback as useAssistantChat
+const ASSISTANT_API_BASE = (process.env.NUXT_PUBLIC_ASSISTANT_API_BASE || API_BASE_URL).replace(/\/$/, '')
 // Real resource from the test DB: bailleurs_sociaux_region.csv in "Logements sociaux et bailleurs par région"
 export const RESOURCE_ID = '63f39717-e5c9-4d70-a0d5-544773c1d742'
 
@@ -153,4 +156,23 @@ export async function createChart(request: APIRequestContext, options: CreateCha
 
 export async function deleteChart(request: APIRequestContext, id: string): Promise<void> {
   await request.delete(`${API_BASE_URL}/api/1/visualizations/${id}/`)
+}
+
+/** Sends `prompt` from the assistant composer and returns the chat request, checking its endpoint. */
+export async function sendAssistantMessage(page: Page, prompt: string) {
+  const requestPromise = page.waitForRequest(request =>
+    request.url().includes(ASSISTANT_CHAT_PATH) && request.method() === 'POST',
+  )
+  await page.getByLabel('Votre demande').fill(prompt)
+  // The panel ignores a send within a second of the previous one: retry until the
+  // composer is cleared, which only happens once the message is sent.
+  await expect(async () => {
+    await page.getByRole('button', { name: 'Envoyer' }).click()
+    await expect(page.getByLabel('Votre demande')).toHaveValue('', { timeout: 500 })
+  }).toPass()
+  const request = await requestPromise
+  const url = new URL(request.url())
+  expect(`${url.origin}${url.pathname}`).toBe(`${ASSISTANT_API_BASE}${ASSISTANT_CHAT_PATH}`)
+  expect(url.searchParams.get('lang')).toBe('fr')
+  return request
 }

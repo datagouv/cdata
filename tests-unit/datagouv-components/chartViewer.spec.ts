@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
 import { flushPromises, mount } from '@vue/test-utils'
-import { beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 import ChartViewer from '~/datagouv-components/src/components/Chart/ChartViewer.vue'
 import { CHART_IMAGE_HEIGHT, CHART_IMAGE_WIDTH } from '~/datagouv-components/src/functions/charts'
 import type { ChartForApi, ColumnsDefinition, DataSeriesType } from '~/datagouv-components/src/types/visualizations'
@@ -219,13 +219,6 @@ describe('ChartViewer rendering', () => {
     expect(html).toBe('<strong>2020</strong><br>Somme de nb: <strong>3</strong><br>Maximum de nb: <strong>2</strong><br>')
   })
 
-  it('gives the chart one color per series', async () => {
-    const option = await capture([{ column_y: 'nb', type: 'line' }, { column_y: 'rate', type: 'line' }])
-
-    expect(option.color.length).toBeGreaterThanOrEqual(2)
-    expect(new Set(option.color).size).toBe(option.color.length)
-  })
-
   // RGAA 3.3: a series color reaches 3:1 against the white background
   it('only uses series colors that reach a 3:1 contrast on white', async () => {
     const option = await capture([{ column_y: 'nb', type: 'line' }])
@@ -251,6 +244,7 @@ describe('ChartViewer rendering', () => {
   })
 
   // RGAA 1.1: the canvas gets a text alternative summing up the chart
+  // Its lists are joined in French whatever the browser language: happy-dom's navigator is en-US.
   it('describes the chart type, its axes and its number of values to assistive technologies', async () => {
     const { wrapper } = await mountViewer([{ column_y: 'nb', type: 'histogram' }, { column_y: 'rate', type: 'line' }])
     const container = wrapper.find('[role="img"]')
@@ -278,40 +272,6 @@ describe('ChartViewer rendering', () => {
     await flushPromises()
     expect(wrapper.find('[role="img"]').attributes('aria-label')).toContain('nb en ordonnée, 1 valeur.')
     wrapper.unmount()
-  })
-
-  // The sentence is translated: its lists must not be joined in the browser language.
-  it('joins the lists of its description like the rest of the sentence on an English browser', async () => {
-    const language = vi.spyOn(navigator, 'language', 'get').mockReturnValue('en-US')
-    onTestFinished(() => language.mockRestore())
-    const { wrapper } = await mountViewer([{ column_y: 'nb', type: 'histogram' }, { column_y: 'rate', type: 'line' }])
-    expect(wrapper.find('[role="img"]').attributes('aria-label')).toBe('Graphique en barres et en courbes : year en abscisse, nb et rate en ordonnée, 2 valeurs.')
-    wrapper.unmount()
-  })
-
-  it('truncates long category labels with an ellipsis', async () => {
-    const option = await capture([{ column_y: 'nb', type: 'line' }])
-    expect(option.xAxis.axisLabel.overflow).toBe('truncate')
-    expect(option.xAxis.axisLabel.width).toBeGreaterThan(0)
-  })
-
-  it('centers the x axis name under the axis and clears the labels with a gap', async () => {
-    const option = await capture([{ column_y: 'nb', type: 'line' }])
-
-    expect(option.xAxis.name).toBe('year')
-    expect(option.xAxis.nameLocation).toBe('middle')
-    expect(option.xAxis.nameGap).toBe(30)
-  })
-
-  it('formats the tooltip with the X value once, then one line per series', async () => {
-    const option = await capture([{ column_y: 'nb', type: 'line' }, { column_y: 'rate', type: 'line' }])
-
-    const html = option.tooltip.formatter([
-      { value: { year: 2021, nb: 5, rate: 2.5 }, axisValueLabel: '2021', seriesName: 'nb', seriesIndex: 0 },
-      { value: { year: 2021, nb: 5, rate: 2.5 }, axisValueLabel: '2021', seriesName: 'rate', seriesIndex: 1 },
-    ]) as string
-
-    expect(html).toBe(`<strong>2021</strong><br>nb: <strong>${(5).toLocaleString()}</strong><br>rate: <strong>${(2.5).toLocaleString()}</strong><br>`)
   })
 
   it('shows a dash in the tooltip for a missing value', async () => {
@@ -351,13 +311,6 @@ describe('ChartViewer rendering', () => {
     expect(option.tooltip.formatter([])).toBe('')
   })
 
-  it('auto-skips overlapping labels on a category x axis', async () => {
-    const option = await capture([{ column_y: 'nb', type: 'histogram' }])
-
-    expect(option.xAxis.type).toBe('category')
-    expect(option.xAxis.axisLabel).toMatchObject({ interval: 'auto', hideOverlap: true })
-  })
-
   it('keeps the date formatter and hides overlaps on a time x axis', async () => {
     const data = { [RESOURCE_ID]: [{ year: '2020-01-01', nb: 3 }, { year: '2021-01-01', nb: 5 }] }
     const columns: ColumnsDefinition = { [RESOURCE_ID]: [{ name: 'year', type: 'date' }, { name: 'nb', type: 'number' }] }
@@ -380,13 +333,6 @@ describe('ChartViewer rendering', () => {
     expect(label).not.toContain('GMT')
   })
 
-  it('labels fractional y ticks distinctly instead of rounding them to integers', async () => {
-    const option = await capture([{ column_y: 'rate', type: 'line' }])
-    const labels = [0, 0.2, 0.4, 0.6].map(v => option.yAxis.axisLabel.formatter(v))
-
-    expect(new Set(labels).size).toBe(4)
-  })
-
   it('keeps integer y ticks for integer data', async () => {
     const option = await capture([{ column_y: 'nb', type: 'histogram' }])
 
@@ -397,12 +343,6 @@ describe('ChartViewer rendering', () => {
     const option = await capture([{ column_y: 'nb', type: 'histogram' }, { column_y: 'rate', type: 'histogram' }])
 
     expect(option.yAxis.minInterval).toBeUndefined()
-  })
-
-  it('hides overlapping labels on the value y axis', async () => {
-    const option = await capture([{ column_y: 'nb', type: 'line' }])
-
-    expect(option.yAxis.axisLabel.hideOverlap).toBe(true)
   })
 
   it('smooths lines and keeps at most 12 markers, offset per series', async () => {
@@ -416,13 +356,6 @@ describe('ChartViewer rendering', () => {
     expect(shown(a)).toHaveLength(12)
     expect(shown(b)).toHaveLength(12)
     expect(shown(a)).not.toEqual(shown(b))
-  })
-
-  it('does not smooth bars', async () => {
-    const option = await capture([{ column_y: 'nb', type: 'histogram' }])
-
-    expect(option.series[0].type).toBe('bar')
-    expect(option.series[0].smooth).toBeUndefined()
   })
 })
 

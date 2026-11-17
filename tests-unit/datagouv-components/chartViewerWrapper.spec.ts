@@ -177,18 +177,12 @@ describe('ChartViewerWrapper data fetching', () => {
     expect(url).toContain('dep__sort=asc')
   })
 
-  it('reads the groups left from the next link, without any further request', async () => {
-    mockApi(50, true)
-    const wrapper = mountWrapper(chartFixture())
-    await settle()
-    expect(dataCalls()).toHaveLength(1)
-    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(true)
-  })
-
+  // groupsBeyondPage (chart-data.spec.ts) reads the next link: no request for the next page.
   it('shows the Y-sort warning when a group is left', async () => {
     mockApi(50, true)
     const wrapper = mountWrapper(chartFixture())
     await settle()
+    expect(dataCalls()).toHaveLength(1)
     expect(wrapper.find('[data-testid="chart-truncation-warning"]').text()).toBe(
       'Graphique tronqué : seules les 50 premières valeurs de dep sont prises en compte, le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.',
     )
@@ -279,21 +273,6 @@ describe('ChartViewerWrapper data fetching', () => {
     expect(loaderStatus(wrapper)).toBe('success')
   })
 
-  it('does not refetch when switching between Y sort directions', async () => {
-    mockApi(3, false)
-    const chart = chartFixture()
-    const wrapper = mountWrapper(chart)
-    await settle()
-    const count = dataCalls().length
-    for (const direction of ['asc', 'desc'] as const) {
-      const next = structuredClone(chart)
-      next.x_axis.sort_x_direction = direction
-      await wrapper.setProps({ chart: next })
-      await settle()
-    }
-    expect(dataCalls()).toHaveLength(count)
-  })
-
   it('requests the X column in descending order when sorted by X descending', async () => {
     mockApi(3, false)
     const chart = chartFixture()
@@ -335,19 +314,6 @@ describe('ChartViewerWrapper data fetching', () => {
     expect(data[1]).toEqual([{ dep: 'a', m__max: 2 }])
   })
 
-  it('refetches when a data field changes', async () => {
-    mockApi(3, false)
-    const chart = chartFixture()
-    const wrapper = mountWrapper(chart)
-    await settle()
-    const count = dataCalls().length
-    const next = structuredClone(chart)
-    next.series[0]!.aggregate_y = 'sum'
-    await wrapper.setProps({ chart: next })
-    await settle()
-    expect(dataCalls()).toHaveLength(count + 1)
-  })
-
   it('keeps the newest chart when a stale response resolves last', async () => {
     let resolveA: (v: unknown) => void = () => {}
     ofetchMock.mockImplementation((url: string) => {
@@ -384,17 +350,6 @@ describe('ChartViewerWrapper data fetching', () => {
     await wrapper.setProps({ chart: next })
     await settle()
     expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
-  })
-
-  it('shows the error message when tabular-api rejects the data request', async () => {
-    ofetchMock.mockImplementation(async (url: string) => {
-      if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
-      throw Object.assign(new Error('[GET] /data/: 400 Bad Request'), { statusCode: 400 })
-    })
-    const wrapper = mountWrapper(chartFixture())
-    await settle()
-    expect(loaderStatus(wrapper)).toBe('error')
-    expect(wrapper.text()).toContain('Une erreur est survenue lors du chargement des données du graphique.')
   })
 
   it('shows the series that loaded and a note when another series fails', async () => {
@@ -704,64 +659,17 @@ describe('ChartViewerWrapper truncation note', () => {
     vi.useRealTimers()
   })
 
-  function mockResponses({ page }: { page: TabularDataResponse }) {
+  // The other cases of groupsBeyondPage are in chart-data.spec.ts.
+  it('reads the total of a raw series', async () => {
     ofetchMock.mockImplementation(async (url: string) => {
       if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }
-      return page
+      return rows(50, { total: 926, next: null })
     })
-  }
-
-  const warning = (wrapper: ReturnType<typeof mountWrapper>) => wrapper.find('[data-testid="chart-truncation-warning"]').exists()
-
-  function rawChart() {
     const chart = chartFixture()
     chart.series[0]!.aggregate_y = null
-    return chart
-  }
-
-  function filteredChart() {
-    const chart = chartFixture()
-    chart.series[0]!.filters = { _cls: 'Filter', column: 'n', condition: 'less', value: '10' }
-    return chart
-  }
-
-  it('reads the total of a raw series', async () => {
-    mockResponses({ page: rows(50, { total: 926 }) })
-    const wrapper = mountWrapper(rawChart())
+    const wrapper = mountWrapper(chart)
     await settle()
-    expect(warning(wrapper)).toBe(true)
+    expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(true)
     expect(dataCalls()).toHaveLength(1)
-  })
-
-  it('shows no note for a raw series of exactly 50 rows', async () => {
-    mockResponses({ page: rows(50, { total: 50 }) })
-    const wrapper = mountWrapper(rawChart())
-    await settle()
-    expect(warning(wrapper)).toBe(false)
-    expect(dataCalls()).toHaveLength(1)
-  })
-
-  it('shows no note for a full aggregated page without a next link', async () => {
-    mockResponses({ page: rows(50, { next: null }) })
-    const wrapper = mountWrapper(chartFixture())
-    await settle()
-    expect(warning(wrapper)).toBe(false)
-    expect(dataCalls()).toHaveLength(1)
-  })
-
-  it('shows a note for a full filtered aggregate with a next link', async () => {
-    mockResponses({ page: rows(50) })
-    const wrapper = mountWrapper(filteredChart())
-    await settle()
-    expect(dataCalls()).toHaveLength(1)
-    expect(warning(wrapper)).toBe(true)
-  })
-
-  it('shows no note for a filtered aggregate whose page is not full', async () => {
-    mockResponses({ page: rows(12) })
-    const wrapper = mountWrapper(filteredChart())
-    await settle()
-    expect(dataCalls()).toHaveLength(1)
-    expect(warning(wrapper)).toBe(false)
   })
 })

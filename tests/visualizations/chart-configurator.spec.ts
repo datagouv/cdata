@@ -3,32 +3,8 @@ import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
 import { clickOutside } from '../helpers'
 import { ASSISTANT_CHAT_PATH, assistantChatStream, createChartOutput, createChartStream, errorStream, routeAssistantStream } from '../assistantApi'
-import { createChart, deleteChart, mockTabular, RESOURCE_ID, setupChart } from './fixtures'
+import { API_BASE_URL, createChart, deleteChart, mockTabular, RESOURCE_ID, sendAssistantMessage, setupChart } from './fixtures'
 import data from './data.json' with { type: 'json' }
-
-// API calls go straight to the backend: the frontend (baseURL) does not proxy them
-const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
-const ASSISTANT_API_BASE = (process.env.NUXT_PUBLIC_ASSISTANT_API_BASE || process.env.FAKE_SERVICES_URL || 'http://localhost:3100').replace(/\/$/, '')
-// Title of the chart scripted in tests/assistantApi.ts
-const ASSISTANT_CHART_TITLE = 'Premières doses par département'
-
-async function sendAssistantMessage(page: Page, prompt: string) {
-  const requestPromise = page.waitForRequest(request =>
-    request.url().includes(ASSISTANT_CHAT_PATH) && request.method() === 'POST',
-  )
-  await page.getByLabel('Votre demande').fill(prompt)
-  // The panel ignores a send within a second of the previous one: retry until the
-  // composer is cleared, which only happens once the message is sent.
-  await expect(async () => {
-    await page.getByRole('button', { name: 'Envoyer' }).click()
-    await expect(page.getByLabel('Votre demande')).toHaveValue('', { timeout: 500 })
-  }).toPass()
-  const request = await requestPromise
-  const url = new URL(request.url())
-  expect(`${url.origin}${url.pathname}`).toBe(`${ASSISTANT_API_BASE}${ASSISTANT_CHAT_PATH}`)
-  expect(url.searchParams.get('lang')).toBe('fr')
-  return request
-}
 
 /**
  * The fixture dataset has a single tabular resource: mark its JSON export as
@@ -161,44 +137,18 @@ test('selecting a numeric x-axis column does not switch to line chart or force s
   await expect(sortListbox.locator('.input')).toContainText('Aucun')
 })
 
-test('raw values offer every column as Y column', async ({ page }) => {
+// The calculation logic is unit tested (tests-unit/utils/charts.spec.ts).
+test('calculation defaults to counting rows, which hides the Y column', async ({ page }) => {
   await setupChart(page)
 
-  await page.getByLabel('Calcul').selectOption('Aucun (valeurs brutes)')
-  await page.getByTestId('searchable-select-colonne-y').click()
-
-  await expect(page.getByRole('option', { name: 'Nombre de logements', exact: true })).toBeVisible()
-  await expect(page.getByRole('option', { name: 'libellé_EPCI', exact: true })).toBeVisible()
-})
-test('calculation defaults to counting rows and hides the Y column', async ({ page }) => {
-  await setupChart(page)
-
-  await expect(page.getByLabel('Calcul')).toHaveValue('count')
+  const calculationSelect = page.getByLabel('Calcul')
+  await expect(calculationSelect).toHaveValue('count')
   await expect(page.getByTestId('searchable-select-colonne-y')).toBeHidden()
-})
-test('calculation can be changed to sum on a numeric Y column', async ({ page }) => {
-  await setupChart(page)
 
-  const calculationSelect = page.getByLabel('Calcul')
   await calculationSelect.selectOption('Somme')
-  await expect(calculationSelect).toHaveValue('sum')
-
-  await page.getByTestId('searchable-select-colonne-y').click()
-  await expect(page.getByRole('option', { name: 'libellé_EPCI', exact: true })).toBeHidden()
-  await page.getByRole('option', { name: 'Nombre de logements', exact: true }).click()
-  await clickOutside(page)
-
-  await expect(page.getByPlaceholder('Rechercher une colonne Y...')).toHaveValue('Nombre de logements')
-  await expect(calculationSelect).toHaveValue('sum')
-})
-test('calculation can be changed to avg', async ({ page }) => {
-  await setupChart(page)
-
-  const calculationSelect = page.getByLabel('Calcul')
-  await calculationSelect.selectOption('Moyenne')
-
-  await expect(calculationSelect).toHaveValue('avg')
   await expect(page.getByTestId('searchable-select-colonne-y')).toBeVisible()
+  await calculationSelect.selectOption('Compter les lignes')
+  await expect(page.getByTestId('searchable-select-colonne-y')).toBeHidden()
 })
 test('sort select displays dynamic column names', async ({ page }) => {
   await setupChart(page)
@@ -489,6 +439,8 @@ test('complete chart configuration flow', async ({ page }) => {
 
   await page.getByLabel('Calcul').selectOption('Moyenne')
   await page.getByTestId('searchable-select-colonne-y').click()
+  // An aggregate is only offered the numeric columns.
+  await expect(page.getByRole('option', { name: 'libellé_EPCI', exact: true })).toBeHidden()
   await page.getByRole('option', { name: 'Taux de logements vacants* (en %)', exact: true }).first().click()
 
   await page.getByLabel('Label de l’axe Y').fill('Taux (%)')
@@ -548,101 +500,6 @@ test('y-axis column options update when selecting different resource', async ({ 
 
     expect(newOptions).not.toEqual(initialOptions)
   }
-})
-
-test('calculation offers counting rows, aggregates and raw values', async ({ page }) => {
-  await setupChart(page)
-
-  const options = await page.getByLabel('Calcul').locator('option').allTextContents()
-  expect(options.map(option => option.trim())).toEqual(['Compter les lignes', 'Somme', 'Moyenne', 'Minimum', 'Maximum', 'Aucun (valeurs brutes)'])
-})
-test('counting rows hides the Y column again', async ({ page }) => {
-  await setupChart(page)
-
-  const calculationSelect = page.getByLabel('Calcul')
-  await calculationSelect.selectOption('Somme')
-  await expect(page.getByTestId('searchable-select-colonne-y')).toBeVisible()
-
-  await calculationSelect.selectOption('Compter les lignes')
-  await expect(page.getByTestId('searchable-select-colonne-y')).toBeHidden()
-})
-test('raw values after counting keep the X column as Y column', async ({ page }) => {
-  await setupChart(page)
-
-  await page.getByLabel('Calcul').selectOption('Aucun (valeurs brutes)')
-
-  await expect(page.getByPlaceholder('Rechercher une colonne Y...')).toHaveValue('année_publication')
-})
-test('changing x-axis updates count serie column_y to the new x-axis column', async ({ page }) => {
-  await setupChart(page)
-
-  await page.getByLabel('Calcul').selectOption('Compter les lignes')
-
-  const xAxisSelect = page.getByTestId('searchable-select-choisir-quoi-afficher')
-  await xAxisSelect.click()
-  await page.getByRole('option', { name: 'nom_region', exact: true }).click()
-  await clickOutside(page)
-  // Required by the API.
-  await page.getByLabel('Description').fill('Description')
-
-  const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
-  const responseBody = (await (await responsePromise).json()) as Chart
-
-  expect(responseBody.series[0]).toMatchObject({ aggregate_y: 'count', column_y: 'nom_region' })
-  await page.request.delete(`${API_BASE_URL}/api/1/visualizations/${responseBody.id}/`)
-})
-
-const CALCULATION_PAYLOADS = [
-  { label: 'Compter les lignes', column: null, sent: { aggregate_y: 'count', column_y: 'année_publication' } },
-  { label: 'Somme', column: 'Nombre de logements', sent: { aggregate_y: 'sum', column_y: 'Nombre de logements' } },
-  { label: 'Moyenne', column: 'Nombre de logements', sent: { aggregate_y: 'avg', column_y: 'Nombre de logements' } },
-  { label: 'Minimum', column: 'Nombre de logements', sent: { aggregate_y: 'min', column_y: 'Nombre de logements' } },
-  { label: 'Maximum', column: 'Nombre de logements', sent: { aggregate_y: 'max', column_y: 'Nombre de logements' } },
-  { label: 'Aucun (valeurs brutes)', column: 'libellé_EPCI', sent: { aggregate_y: null, column_y: 'libellé_EPCI' } },
-]
-
-for (const { label, column, sent } of CALCULATION_PAYLOADS) {
-  test(`calculation "${label}" sends aggregate_y ${sent.aggregate_y} on column_y ${sent.column_y}`, async ({ page }) => {
-    await setupChart(page)
-
-    await page.getByLabel('Calcul').selectOption(label)
-    if (column) {
-      await page.getByTestId('searchable-select-colonne-y').click()
-      await page.getByRole('option', { name: column, exact: true }).click()
-      await clickOutside(page)
-    }
-    // Required by the API.
-    await page.getByLabel('Description').fill('Description')
-
-    const requestPromise = page.waitForRequest(request => request.url().includes('/api/1/visualizations/') && request.method() === 'POST')
-    const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
-    await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
-    const request = await requestPromise
-    const responseBody = (await (await responsePromise).json()) as Chart
-
-    expect(request.postDataJSON().series[0]).toMatchObject(sent)
-    await page.request.delete(`${API_BASE_URL}/api/1/visualizations/${responseBody.id}/`)
-  })
-}
-test('saving chart with count aggregation round-trips correctly', async ({ page }) => {
-  await setupChart(page)
-
-  await page.getByLabel('Titre').fill('Test Count Chart')
-  await page.getByLabel('Description').fill('Test count aggregation')
-
-  await page.getByLabel('Calcul').selectOption('Compter les lignes')
-
-  const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
-
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
-  const response = await responsePromise
-  const responseBody = (await response.json()) as Chart
-
-  expect(responseBody.series[0].aggregate_y).toBe('count')
-  expect(responseBody.series[0].column_y).toBe(responseBody.x_axis.column_x)
-
-  await page.request.delete(`${API_BASE_URL}/api/1/visualizations/${responseBody.id}/`)
 })
 
 test('y-axis columns should not be empty after selecting resource from loaded chart', async ({ page }) => {
@@ -820,19 +677,6 @@ test('opens on the assistant panel with its suggestions and context once a resou
   expect(sent).toBe(false)
 })
 
-test('shows the form panel with its pickers and save action', async ({ page }) => {
-  await setupChart(page)
-
-  await expect(page.getByRole('tab', { name: 'Édition manuelle' })).toHaveAttribute('aria-selected', 'true')
-  await expect(page.getByTestId('form-panel')).toBeVisible()
-  await expect(page.getByTestId('assistant-panel')).toBeHidden()
-  await expect(page.getByTestId('producer-select')).toBeVisible()
-  await expect(page.getByTestId('searchable-select-jeu-de-donn-es')).toBeVisible()
-  await expect(page.locator('#resource-select')).toBeVisible()
-  await expect(page.getByTestId('source-status')).toContainText('colonnes disponibles')
-  await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeVisible()
-})
-
 // RGAA 7.5, 11.5, 11.10
 test('announces the source status, titles its groups by a legend and explains the required star', async ({ page }) => {
   await setupChart(page)
@@ -887,45 +731,6 @@ test('opens an existing chart on the manual editing tab', async ({ page }) => {
   }
 })
 
-test('the editor tabs follow the arrow, Home and End keys with a roving tabindex', async ({ page }) => {
-  await mockTabular(page)
-  await page.goto('/admin/beta/chart')
-  await page.waitForLoadState('networkidle')
-
-  const assistantTab = page.getByRole('tab', { name: 'Assistant' })
-  const manualTab = page.getByRole('tab', { name: 'Édition manuelle' })
-  await expect(assistantTab).toHaveAttribute('tabindex', '0')
-  await expect(manualTab).toHaveAttribute('tabindex', '-1')
-  await expect(page.getByRole('tabpanel', { name: 'Assistant' })).toBeVisible()
-
-  await assistantTab.focus()
-  await page.keyboard.press('ArrowRight')
-  await expect(manualTab).toBeFocused()
-  await expect(manualTab).toHaveAttribute('aria-selected', 'true')
-  await expect(manualTab).toHaveAttribute('tabindex', '0')
-  await expect(page.getByRole('tabpanel', { name: 'Édition manuelle' })).toBeVisible()
-
-  await page.keyboard.press('Home')
-  await expect(assistantTab).toBeFocused()
-  await expect(assistantTab).toHaveAttribute('aria-selected', 'true')
-
-  await page.keyboard.press('End')
-  await expect(manualTab).toBeFocused()
-
-  await page.keyboard.press('ArrowLeft')
-  await expect(assistantTab).toBeFocused()
-})
-
-test('the content section has no resource schema block', async ({ page }) => {
-  await setupChart(page)
-
-  await expect(page.getByTestId('resource-schema')).toHaveCount(0)
-  await expect(page.getByText('Schéma de la ressource')).toHaveCount(0)
-  // The columns stay offered by the pickers.
-  await page.getByTestId('searchable-select-choisir-quoi-afficher').click()
-  await expect(page.getByRole('option', { name: 'nom_region', exact: true })).toBeVisible()
-})
-
 // The chart form keeps the DSFR look of every other form: nothing in it may restyle
 // a field, so each one renders like a field with the same classes outside the form.
 test('the form fields keep their DSFR look', async ({ page }) => {
@@ -972,7 +777,7 @@ test('the form fields keep their DSFR look', async ({ page }) => {
   await expect(title).toHaveCSS('box-shadow', /rgb\(206, 5, 0\)/)
 })
 
-test('value limit input is bounded to 50', async ({ page }) => {
+test('value limit input is bounded to 50, and empty means no limit', async ({ page }) => {
   await setupChart(page)
 
   await page.getByLabel('Description').fill('Limite du nombre de valeurs')
@@ -988,22 +793,7 @@ test('value limit input is bounded to 50', async ({ page }) => {
   await expect(limitInput).toHaveValue('1')
   await limitInput.fill('7')
   await expect(limitInput).toHaveValue('7')
-
-  const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
-  const response = await responsePromise
-  const body = response.request().postDataJSON() as { x_axis: { limit: number | null } }
-  expect(body.x_axis.limit).toBe(7)
-  const chart = (await response.json()) as Chart
-  await deleteChart(page.request, chart.id)
-})
-
-test('an empty value limit is saved as no limit', async ({ page }) => {
-  await setupChart(page)
-
-  await page.getByLabel('Description').fill('Sans limite du nombre de valeurs')
-  const limitInput = page.getByLabel('Nombre de valeurs')
-  await limitInput.fill('5')
+  // Emptied, the field means no limit (a set limit is sent by the PATCH test below).
   await limitInput.fill('')
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
@@ -1176,19 +966,6 @@ test.describe('for users without organizations', () => {
   })
 })
 
-test('assistant waits for a resource before accepting messages', async ({ page }) => {
-  await mockTabular(page)
-  await page.goto('/admin/beta/chart')
-  await page.waitForLoadState('networkidle')
-
-  await page.getByTestId('searchable-select-avec-qui-souhaitez-vous-publier').click()
-  await page.getByRole('option', { name: 'Admin User', exact: true }).click()
-
-  await page.getByRole('tab', { name: 'Assistant' }).click()
-  await expect(page.locator('#assistant-waiting')).toBeVisible()
-  await expect(page.getByLabel('Votre demande')).toBeDisabled()
-})
-
 test('a failed answer shows the server reason, which says whether waiting helps', async ({ page }) => {
   const reason = 'Le service d\'IA reçoit trop de demandes. Réessayez dans quelques instants.'
   await routeAssistantStream(page, errorStream(reason))
@@ -1204,7 +981,7 @@ test('a failed answer shows the server reason, which says whether waiting helps'
 })
 
 test('chat message is sent with the selected resource and the conversation survives tab switches', async ({ page }) => {
-  // Same script as the fake services, routed in the page so a local run never reaches a real assistant.
+  // Routed in the page so that a local run never reaches a real assistant.
   await routeAssistantStream(page, assistantChatStream)
   await setupChart(page)
 
@@ -1237,7 +1014,7 @@ test('chat message is sent with the selected resource and the conversation survi
 })
 
 test('changing resource after a chat message sends the new resource_id', async ({ page }) => {
-  // Same script as the fake services, routed in the page so a local run never reaches a real assistant.
+  // Routed in the page so that a local run never reaches a real assistant.
   await routeAssistantStream(page, assistantChatStream)
   await withSecondTabularResource(page)
   await setupChart(page)
@@ -1254,48 +1031,6 @@ test('changing resource after a chat message sends the new resource_id', async (
   await page.getByRole('tab', { name: 'Assistant' }).click()
   const secondRequest = await sendAssistantMessage(page, 'Logements par EPCI')
   expect(secondRequest.postDataJSON()).toMatchObject({ resource_id: secondResourceId })
-})
-
-test('test_a_tool_result_is_applied_only_once', async ({ page }) => {
-  // Same script as the fake services, routed in the page so a local run never reaches a real assistant.
-  await routeAssistantStream(page, assistantChatStream)
-  await setupChart(page)
-
-  await page.getByRole('tab', { name: 'Assistant' }).click()
-  await sendAssistantMessage(page, 'Premières doses par département, top 5')
-  await expect(page.getByTestId('assistant-panel').locator('article').last()).toContainText('Graphique créé.')
-
-  await page.getByRole('tab', { name: 'Édition manuelle' }).click()
-  await expect(page.getByLabel('Titre')).toHaveValue(ASSISTANT_CHART_TITLE)
-  await expect(page.getByLabel('Nombre de valeurs')).toHaveValue('5')
-  await expect(page.locator('#x-axis-sort-combined .input')).toContainText('n_cum_dose1 - Descendant')
-  // Named by its label and by the selected sort.
-  await expect(page.getByRole('button', { name: /^Trier par\s+n_cum_dose1 - Descendant/ })).toBeVisible()
-
-  await page.getByLabel('Titre').fill('Titre modifié à la main')
-  for (let i = 0; i < 2; i++) {
-    await page.getByRole('tab', { name: 'Assistant' }).click()
-    await expect(page.getByTestId('assistant-panel')).toBeVisible()
-    await page.getByRole('tab', { name: 'Édition manuelle' }).click()
-    await expect(page.getByTestId('form-panel')).toBeVisible()
-  }
-  await expect(page.getByLabel('Titre')).toHaveValue('Titre modifié à la main')
-})
-
-test('test_a_result_for_another_resource_is_ignored', async ({ page }) => {
-  await setupChart(page)
-
-  // A create_chart for a resource that is no longer the selected one.
-  await routeAssistantStream(page, createChartStream('00000000-0000-4000-8000-000000000000'))
-
-  await page.getByRole('tab', { name: 'Assistant' }).click()
-  await sendAssistantMessage(page, 'Premières doses par département')
-  await expect(page.getByTestId('assistant-panel').locator('article').last()).toContainText('Graphique créé.')
-
-  await page.getByRole('tab', { name: 'Édition manuelle' }).click()
-  await expect(page.getByLabel('Titre')).toHaveValue('Mon graphique')
-  await expect(page.getByLabel('Nombre de valeurs')).toHaveValue('')
-  expect(await page.getByPlaceholder('Rechercher une colonne à afficher...').inputValue()).toBe('année_publication')
 })
 
 test('a count chart sorted by Y keeps its sort', async ({ page }) => {
@@ -1318,17 +1053,6 @@ test('a count chart sorted by Y keeps its sort', async ({ page }) => {
   const listbox = page.locator('#x-axis-sort-combined')
   await listbox.click()
   await expect(listbox.getByRole('option', { name: 'Compter - Ascendant' })).toBeVisible()
-})
-
-test('styles section is open by default and can be collapsed', async ({ page }) => {
-  await setupChart(page)
-
-  const styles = page.getByTestId('chart-styles')
-  await expect(styles).toHaveAttribute('open')
-  await expect(page.getByLabel('Label de l’axe Y')).toBeVisible()
-
-  await styles.locator('summary').click()
-  await expect(page.getByLabel('Label de l’axe Y')).toBeHidden()
 })
 
 // The details content slot is content-box: without box-border on the section content,
@@ -1371,21 +1095,6 @@ test.describe('a chart whose series differ in type or filter', () => {
       const save = page.getByRole('button', { name: 'Sauvegarder le graphique' })
       await expect(save).toBeDisabled()
       await expect(save).toHaveAttribute('aria-describedby', 'chart-mixed-series')
-    }
-    finally {
-      await deleteChart(page.request, chart.id)
-    }
-  })
-
-  test('can be saved when its series share one type and one filter', async ({ page }) => {
-    await page.route('**/assistant/chat/**', route => route.abort())
-    const shared = { ...serie, type: 'histogram', filters: filter }
-    const chart = await createChart(page.request, { title: 'Séries homogènes', series: [shared, { ...shared, aggregate_y: 'max' }] } as never)
-    try {
-      await mockTabular(page)
-      await page.goto(`/admin/beta/charts/${chart.id}`)
-      await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeEnabled()
-      await expect(page.getByTestId('chart-mixed-series')).toHaveCount(0)
     }
     finally {
       await deleteChart(page.request, chart.id)

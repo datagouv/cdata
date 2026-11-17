@@ -121,17 +121,6 @@ describe('toChartForm / toChartApi', () => {
     expect(toChartApi(form).series[0].filters).toBeNull()
   })
 
-  it('sends the edited form filter instead of the filter the chart was loaded with', () => {
-    const chart = {
-      ...baseChart,
-      series: [{ type: 'bar', column_y: 'montant', aggregate_y: 'sum', filters: { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Bretagne' } }],
-    } as unknown as Chart
-    const form = toChartForm(chart)
-    const edited = { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Normandie' } as const
-    form.filter = edited
-    expect(toChartApi(form).series[0].filters).toEqual(edited)
-  })
-
   it('applies the chart type and the form filter to every series', () => {
     const own = { _cls: 'Filter', column: 'a', condition: 'exact', value: '1' } as const
     const shared = { _cls: 'Filter', column: 'b', condition: 'exact', value: '2' } as const

@@ -74,21 +74,22 @@ export function updateChartStream(): string {
 
 /**
  * Scripted conversation: the first turn creates a chart for the request's
- * resource, every later turn updates it.
+ * resource (with `createStream`, by default `createChartStream`), every later turn updates it.
  */
-export function assistantChatStream(body: AssistantChatBody): string {
+export function assistantChatStream(
+  body: AssistantChatBody,
+  createStream: (body: AssistantChatBody) => string = body => createChartStream(body.resource_id ?? ''),
+): string {
   const userTurns = (body.messages ?? []).filter(message => message.role === 'user').length
-  return userTurns <= 1 ? createChartStream(body.resource_id ?? '') : updateChartStream()
+  return userTurns <= 1 ? createStream(body) : updateChartStream()
 }
 
 /**
  * Answers the chat request of `page` with `stream` (or with the stream `stream`
- * returns for the request body) instead of the fake services' script.
+ * returns for the request body).
  */
 export async function routeAssistantStream(page: Page, stream: string | ((body: AssistantChatBody) => string)) {
-  // Matched on the path alone, whatever the origin and the query string (`?lang=`):
-  // a server started without NUXT_PUBLIC_ASSISTANT_API_BASE sends the chat to the
-  // real assistant, which a missed route would reach.
+  // Matched on the path alone, whatever the origin and the query string (`?lang=`)
   await page.route(url => url.pathname === ASSISTANT_CHAT_PATH, async (route) => {
     const origin = route.request().headers()['origin'] ?? '*'
     const cors = {

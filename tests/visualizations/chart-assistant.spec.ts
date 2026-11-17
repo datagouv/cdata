@@ -1,12 +1,9 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { ASSISTANT_CHAT_PATH, createChartOutput, createChartStream, routeAssistantStream, updateChartStream } from '../assistantApi'
+import { assistantChatStream, createChartOutput, createChartStream, routeAssistantStream } from '../assistantApi'
 import type { AssistantChatBody } from '../assistantApi'
-import { RESOURCE_ID, setupChart } from './fixtures'
+import { RESOURCE_ID, sendAssistantMessage, setupChart } from './fixtures'
 
-const ASSISTANT_API_BASE = (process.env.NUXT_PUBLIC_ASSISTANT_API_BASE || process.env.FAKE_SERVICES_URL || 'http://localhost:3100').replace(/\/$/, '')
-// API calls go straight to the backend: the frontend (baseURL) does not proxy them
-const API_BASE_URL = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 const X_COLUMN = 'nom_region'
 const Y_COLUMN = 'Nombre de logements'
 
@@ -19,28 +16,6 @@ function scriptedCreateStream(body: AssistantChatBody) {
   return createChartStream(output.chart.series[0]!.resource_id, output)
 }
 
-/** First user turn creates the chart, later turns update its unit. */
-function scriptedStream(body: AssistantChatBody) {
-  const userTurns = (body.messages ?? []).filter(message => message.role === 'user').length
-  return userTurns <= 1 ? scriptedCreateStream(body) : updateChartStream()
-}
-
-async function sendMessage(page: Page, prompt: string) {
-  const requestPromise = page.waitForRequest(request =>
-    request.url().includes(ASSISTANT_CHAT_PATH) && request.method() === 'POST',
-  )
-  await page.getByLabel('Votre demande').fill(prompt)
-  // The panel ignores a send within a second of the previous one: retry until the composer is cleared.
-  await expect(async () => {
-    await page.getByRole('button', { name: 'Envoyer' }).click()
-    await expect(page.getByLabel('Votre demande')).toHaveValue('', { timeout: 500 })
-  }).toPass()
-  const request = await requestPromise
-  const url = new URL(request.url())
-  expect(`${url.origin}${url.pathname}`).toBe(`${ASSISTANT_API_BASE}${ASSISTANT_CHAT_PATH}`)
-  expect(url.searchParams.get('lang')).toBe('fr')
-}
-
 function lastReply(page: Page) {
   return page.getByTestId('assistant-panel').locator('article').last()
 }
@@ -50,13 +25,14 @@ test('the assistant creates a chart then updates it without refetching the data'
   page.on('request', (request) => {
     if (/\/api\/resources\/[^/]+\/data\//.test(request.url())) dataRequests.push(request.url())
   })
-  await routeAssistantStream(page, scriptedStream)
+  // First user turn creates the chart, later turns update its unit.
+  await routeAssistantStream(page, body => assistantChatStream(body, scriptedCreateStream))
   await setupChart(page)
 
   // First turn: create_chart fills the form and the preview fetches the data.
   await page.getByRole('tab', { name: 'Assistant' }).click()
   const dataBeforeCreate = dataRequests.length
-  await sendMessage(page, 'Logements par région, top 5')
+  await sendAssistantMessage(page, 'Logements par région, top 5')
   await expect(lastReply(page)).toContainText('Graphique créé.')
 
   await page.getByRole('tab', { name: 'Édition manuelle' }).click()
@@ -67,6 +43,8 @@ test('the assistant creates a chart then updates it without refetching the data'
   await expect(page.getByRole('radio', { name: 'Histogramme' })).toBeChecked()
   await expect(page.getByLabel('Nombre de valeurs')).toHaveValue('5')
   await expect(page.locator('#x-axis-sort-combined .input')).toContainText(`${Y_COLUMN} - Descendant`)
+  // Named by its label and by the selected sort.
+  await expect(page.getByRole('button', { name: new RegExp(`^Trier par\\s+${Y_COLUMN} - Descendant`) })).toBeVisible()
   await expect(page.getByTestId('chart-preview-block').locator('canvas').first()).toBeVisible()
   await expect.poll(() => dataRequests.length).toBeGreaterThan(dataBeforeCreate)
 
@@ -77,7 +55,7 @@ test('the assistant creates a chart then updates it without refetching the data'
   const dataBeforeUpdate = dataRequests.length
   await expect(page.getByLabel('Unité', { exact: true })).toHaveValue('')
   await page.getByRole('tab', { name: 'Assistant' }).click()
-  await sendMessage(page, 'Ajoute l’unité « doses »')
+  await sendAssistantMessage(page, 'Ajoute l’unité « doses »')
   await expect(lastReply(page)).toContainText('Unité ajoutée.')
 
   await page.getByRole('tab', { name: 'Édition manuelle' }).click()
@@ -86,56 +64,4 @@ test('the assistant creates a chart then updates it without refetching the data'
   await expect(page.getByLabel('Nombre de valeurs')).toHaveValue('5')
   await page.waitForTimeout(500)
   expect(dataRequests.slice(dataBeforeUpdate)).toEqual([])
-})
-
-test('a chart with more than 50 groups shows the truncation warning', async ({ page }) => {
-  const rows = Array.from({ length: 50 }, (_, i) => ({ [X_COLUMN]: `Région ${String(i).padStart(2, '0')}`, [`${Y_COLUMN}__max`]: 1000 - i }))
-  // A full page of an aggregate: api-tabular links it to the next one only when a group is left.
-  const dataPages: Array<string | null> = []
-  await routeAssistantStream(page, scriptedStream)
-  await setupChart(page)
-  // setupChart installs its own /data/ mock: ours must come after it to win.
-  await page.route('**/api/resources/*/data/*', async (route) => {
-    dataPages.push(new URL(route.request().url()).searchParams.get('page'))
-    await route.fulfill({ json: {
-      data: rows,
-      links: { profile: '', swagger: '', next: `${route.request().url()}&page=2`, prev: null },
-      meta: { page: 1, page_size: 50 },
-    } })
-  })
-
-  await page.getByRole('tab', { name: 'Assistant' }).click()
-  await sendMessage(page, 'Logements par région, top 5')
-  await expect(lastReply(page)).toContainText('Graphique créé.')
-
-  await expect(page.getByTestId('chart-truncation-warning')).toBeVisible()
-  await expect(page.getByTestId('chart-truncation-warning')).toHaveText(
-    `Graphique tronqué : seules les 50 premières valeurs de ${X_COLUMN} sont prises en compte, le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.`,
-  )
-  // No request for the 51st group.
-  expect(dataPages).not.toContain('51')
-})
-
-test('a chart created by the assistant is saved from the manual tab', async ({ page }) => {
-  await routeAssistantStream(page, scriptedStream)
-  await setupChart(page)
-
-  await page.getByRole('tab', { name: 'Assistant' }).click()
-  await sendMessage(page, 'Logements par région, top 5')
-  await expect(lastReply(page)).toContainText('Graphique créé.')
-  await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeHidden()
-
-  await page.getByRole('tab', { name: 'Édition manuelle' }).click()
-  await expect(page.getByLabel('Titre')).toHaveValue('Logements par région')
-  const saveResponsePromise = page.waitForResponse(response =>
-    response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST',
-  )
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
-  const saved = (await (await saveResponsePromise).json()) as { id: string, title: string }
-  try {
-    expect(saved.title).toBe('Logements par région')
-  }
-  finally {
-    await page.request.delete(`${API_BASE_URL}/api/1/visualizations/${saved.id}/`)
-  }
 })

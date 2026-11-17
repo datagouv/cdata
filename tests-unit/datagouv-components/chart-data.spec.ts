@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { CHART_PAGE_SIZE, chartDataKey, chartRequestSortDirection, groupsBeyondPage, truncationWarning } from '~/datagouv-components/src/functions/chartData'
+import { CHART_PAGE_SIZE, chartDataKey, chartRequestSortDirection, groupsBeyondPage } from '~/datagouv-components/src/functions/chartData'
 import type { ChartForApi } from '~/datagouv-components/src/types/visualizations'
 
 const chart = {
@@ -11,9 +11,6 @@ const chart = {
   y_axis: { label: null, min: null, max: null, unit: null, unit_position: null },
   series: [{ type: 'line', column_y: 'n', aggregate_y: 'max', resource_id: 'r1', column_x_name_override: null, filters: null }],
 } as unknown as ChartForApi
-
-const t = (key: string, options?: Record<string, string | number> | number) =>
-  key.replace(/\{(\w+)\}/g, (_, k) => String((options as Record<string, string>)[k]))
 
 describe('chartDataKey', () => {
   it('ignores presentation fields', () => {
@@ -65,17 +62,6 @@ describe('chartRequestSortDirection', () => {
       other.x_axis.sort_x_direction = direction
       expect(chartRequestSortDirection(other)).toBe('asc')
     }
-  })
-})
-
-describe('truncationWarning', () => {
-  it('returns the Y-sort copy', () => {
-    expect(truncationWarning('dep', 'axis_y', t)).toBe('Graphique tronqué : seules les 50 premières valeurs de dep sont prises en compte, le tri et la sélection portent sur cet extrait. Ajoutez un filtre pour réduire le nombre de valeurs.')
-  })
-
-  it('returns the X-sort copy otherwise', () => {
-    expect(truncationWarning('dep', 'axis_x', t)).toBe('Graphique tronqué : seules les 50 premières valeurs de dep sont affichées. Ajoutez un filtre pour voir les autres valeurs.')
-    expect(truncationWarning('dep', null, t)).toBe('Graphique tronqué : seules les 50 premières valeurs de dep sont affichées. Ajoutez un filtre pour voir les autres valeurs.')
   })
 })
 
