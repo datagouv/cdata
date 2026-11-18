@@ -107,7 +107,7 @@ const props = defineProps<{
   resource: Resource
   resources?: Resource[]
   resourceTo?: (resource: Resource) => RouteLocationRaw
-  exploreTo?: (resource: Resource) => string
+  exploreTo?: (resource: Resource) => string | RouteLocationRaw
   // Overrides the "Copier le lien" target.
   resourceExternalUrl?: (resource: Resource) => string
   replace?: boolean

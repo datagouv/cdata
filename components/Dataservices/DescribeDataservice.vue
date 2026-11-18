@@ -592,7 +592,7 @@
           </div>
         </fieldset>
         <div class="fr-grid-row fr-grid-row--right">
-          <ModalClient
+          <Modal
             :title="$t(`Êtes vous-sûr de vouloir publier cette API sans documentation OpenAPI/Swagger ?`)"
             size="lg"
             :opened="openConfirmModal"
@@ -625,7 +625,7 @@
                 />
               </div>
             </template>
-          </ModalClient>
+          </Modal>
           <slot
             name="button"
             :form="formId"
@@ -647,7 +647,7 @@ import CdataLink from '~/components/CdataLink.vue'
 import ContactPointSelect from '~/components/ContactPointSelect.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
 import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
-import ModalClient from '../Modal/Modal.client.vue'
+import Modal from '../Modal/Modal.vue'
 import type { DataserviceForm } from '~/types/types'
 
 const props = withDefaults(defineProps<{

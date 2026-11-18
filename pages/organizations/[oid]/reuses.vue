@@ -43,7 +43,10 @@
           :key="reuse.id"
           class="p-0"
         >
-          <ReuseHorizontalCard :reuse />
+          <ReuseCard
+            :reuse
+            horizontal
+          />
         </li>
       </ul>
       <Pagination
@@ -59,7 +62,7 @@
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, ReuseHorizontalCard, Pagination, defaultReuseSortOptions, type ReuseV2, type Organization, type PaginatedArray } from '@datagouv/components-next'
+import { LoadingBlock, ReuseCard, Pagination, defaultReuseSortOptions, type ReuseV2, type Organization, type PaginatedArray } from '@datagouv/components-next'
 import { useRouteQuery } from '@vueuse/router'
 
 const props = defineProps<{

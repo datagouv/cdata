@@ -119,12 +119,12 @@
           v-if="imagePreview"
           class="text-center"
         >
-          <NuxtImg
+          <img
             :src="imagePreview"
             class="border mx-auto max-h-40 aspect-video"
             loading="lazy"
             alt=""
-          />
+          >
         </div>
       </div>
     </fieldset>

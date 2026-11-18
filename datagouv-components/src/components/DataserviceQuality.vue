@@ -35,10 +35,6 @@
         :message="t('Documentation métier manquante')"
       />
       <QualityItemWarning
-        :quality-item="quality.license"
-        :message="t('Licence non renseignée')"
-      />
-      <QualityItemWarning
         :quality-item="quality.has_contact_point"
         :message="t('Point de contact non renseigné')"
       />

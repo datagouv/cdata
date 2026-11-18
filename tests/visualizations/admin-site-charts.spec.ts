@@ -76,11 +76,12 @@ test.describe('with charts', () => {
 
   test('private chart card displays a draft badge', async ({ page }) => {
     const card = page.locator('article').filter({ hasText: privateChart.title })
-    await expect(card.locator('.fr-badge')).toHaveText('Brouillon')
+    await expect(card.getByText('Brouillon', { exact: true })).toBeVisible()
   })
 
   test('deleted chart card displays a deleted badge, taking precedence over the draft badge', async ({ page }) => {
     const card = page.locator('article').filter({ hasText: deletedChart.title })
-    await expect(card.locator('.fr-badge')).toHaveText('Supprimé')
+    await expect(card.getByText('Supprimé', { exact: true })).toBeVisible()
+    await expect(card.getByText('Brouillon', { exact: true })).toHaveCount(0)
   })
 })

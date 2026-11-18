@@ -73,7 +73,7 @@
       @cancel="removeFirstNewFile"
     />
 
-    <FileEditModalFromQueryStringClient
+    <FileEditModalFromQueryString
       v-if="canEdit && dataset"
       :schemas="schemas ?? []"
       :dataset
@@ -213,7 +213,7 @@ import AdminTable from '../AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../AdminTable/Table/AdminTableTh.vue'
 import UploadResourceModal from './UploadResourceModal.vue'
 import FileEditModal from './FileEditModal.vue'
-import FileEditModalFromQueryStringClient from './FileEditModalFromQueryString.client.vue'
+import FileEditModalFromQueryString from './FileEditModalFromQueryString.vue'
 import { geopfEligibilityRefreshKey } from './geopfEligibilityRefreshKey'
 import type { AdminBadgeType, CommunityResourceForm, PaginatedArray, ResourceForm } from '~/types/types'
 

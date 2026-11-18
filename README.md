@@ -30,7 +30,7 @@ If you want to fork cdata, you must :
 
 Before setting up the project, make sure you have the following installed:
 
-- **Node.js** (version 18 or higher) - [Download here](https://nodejs.org/)
+- **Node.js** (the version in [`.nvmrc`](.nvmrc), selected by `nvm use`) - [Download here](https://nodejs.org/)
 - **pnpm** (see [installation methods](https://pnpm.io/installation))
 
 You can check your versions with:
@@ -98,6 +98,7 @@ This project uses [pnpm](https://pnpm.io/) instead of npm mostly for security re
 - `NUXT_PUBLIC_SENTRY_DSN`: Sentry DSN for error tracking
 - `NUXT_TEMPLATE_CACHE_DURATION`: Duration for template caching
 - `NUXT_SITE_URL`: Site URL (used for OG tags, sitemap, etc.)
+- `NUXT_APP_SECRET`: secret of at least 32 characters signing the OG image URLs. Required in production, where OG images answer 500 without it. Must be the same on every instance, otherwise an instance refuses the URLs signed by another.
 - `NUXT_SESSION_COOKIE_NAME` / `NUXT_REMEMBER_COOKIE_NAME`: names of the udata session cookies (`SESSION_COOKIE_NAME` and `REMEMBER_COOKIE_NAME` on the backend, defaults `session` and `remember_token`). A request carrying none of them is anonymous and skips the `/api/1/me` call, so a mismatch logs every visitor out.
 
 You can work on `cdata` without a local `udata` backend by pointing to https://demo.data.gouv.fr directly. Create a `.env` file at the root of the project:
@@ -209,13 +210,27 @@ pnpm run lint:fix      # Automatically fix ESLint issues and format code
 
 > **TODO:** Consider adding Prettier to the main project for more consistent code formatting across the entire codebase.
 
-#### Pre-commit Hooks
+#### Pre-commit Hook (optional)
 
-The project uses [husky](https://typicode.github.io/husky/) and [lint-staged](https://github.com/okonet/lint-staged) to run linting before each commit:
+An optional pre-commit hook based on [husky](https://typicode.github.io/husky/) and [lint-staged](https://github.com/lint-staged/lint-staged) is available. It is **not installed automatically**: linting is enforced by the CI anyway.
+
+Once enabled, it runs before each commit:
 
 - **Automatic linting**: ESLint runs on all staged `.js`, `.ts`, `.vue`, `.jsx`, `.tsx` files
 - **Auto-fix**: Fixable issues are automatically corrected
 - **Commit blocking**: Unfixable errors prevent the commit until resolved
+
+To enable it, run once in your clone:
+
+```bash
+pnpm exec husky
+```
+
+To disable it (including if it was installed automatically by a previous version of the project):
+
+```bash
+git config --unset core.hooksPath
+```
 
 The pre-commit setup is configured in:
 - `package.json`: lint-staged configuration
