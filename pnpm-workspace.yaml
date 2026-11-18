@@ -25,6 +25,10 @@ overrides:
   glob@13: ^14.0.2
   # micromark-extension-math 3.1 (via @milkdown/crepe) depends on katex 0.16 (GHSA-238p-pmpm-9mq7).
   katex@0.16: ^0.19.1
+  # @typescript-eslint/typescript-estree 8.72 and readdir-glob 3.0 (via nitropack's archiver)
+  # depend on minimatch ^10.2.2, fixed in 11 only (GHSA-g3hv-75wg-m249). Both only use
+  # `minimatch()` and `Minimatch`, which 11 still exports.
+  minimatch@10: ^11.0.8
 
 # The Panoramax control of geopf only renders <pnx-viewer> and leaves loading the viewer
 # to the app, which never uses that control: without this, pnpm installs the viewer and
