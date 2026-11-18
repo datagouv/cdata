@@ -51,10 +51,12 @@ overrides:
   source-map-js: ^1.2.2
   serialize-javascript: ^7.1.3
   katex: ^0.18.2
-  node-forge: ^1.4.1
+  node-forge: ^1.4.3
   undici@6: ^6.29.1
   glob@10: ^14.0.2
   glob@13: ^14.0.2
+  minimatch@10: ^11.0.1
+  fast-xml-parser: ^5.12.0
 
 # The Panoramax control of geopf only renders <pnx-viewer> and leaves loading the viewer
 # to the app, which never uses that control: without this, pnpm installs the viewer and

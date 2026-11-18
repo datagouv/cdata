@@ -69,7 +69,7 @@
     "hast-util-to-string": "^3.0.1",
     "leaflet": "^1.9.4",
     "lodash-es": "^4.18.1",
-    "nuxt": "~4.6.3",
+    "nuxt": "~4.6.4",
     "nuxt-og-image": "^7.0.7",
     "ofetch": "^1.5.1",
     "papaparse": "^5.7.0",
