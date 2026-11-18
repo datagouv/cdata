@@ -1,5 +1,11 @@
 <template>
   <form :action="`${config.public.apiBase}${ACTION_PATHS[action]}`">
+    <input
+      v-if="next"
+      type="hidden"
+      name="next"
+      :value="next"
+    >
     <div class="fr-connect-group flex flex-col items-center">
       <button class="fr-connect">
         <span class="fr-connect__login">{{ label }}</span>
@@ -27,6 +33,8 @@ const ACTION_PATHS = {
 defineProps<{
   label: string
   action: keyof typeof ACTION_PATHS
+  // The page to land back on once signed in: udata redirects there after ProConnect.
+  next?: string
 }>()
 
 const config = useRuntimeConfig()

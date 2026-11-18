@@ -25,6 +25,22 @@ test.describe('Login page', () => {
     await expect(page).toHaveURL(`${baseURL}/datasets/search`)
   })
 
+  test('hands the next param to udata when signing in with ProConnect', async ({ page }) => {
+    let requested: URL | undefined
+    // Stop at udata: the round-trip itself goes through ProConnect.
+    await page.route('**/api/1/proconnect/**', (route) => {
+      requested = new URL(route.request().url())
+      return route.abort()
+    })
+    await page.goto('/login?next=%2Foauth%2Fauthorize%3Fclient_id%3Dabc')
+    await page.waitForLoadState('networkidle')
+
+    await page.getByRole('button', { name: 'Se connecter avec ProConnect' }).click()
+
+    await expect.poll(() => requested?.pathname).toBe('/api/1/proconnect/login/')
+    expect(requested?.searchParams.get('next')).toBe('/oauth/authorize?client_id=abc')
+  })
+
   test('shows an error with a wrong password and stays on the login page', async ({ page }) => {
     await page.goto('/login')
     await page.waitForLoadState('networkidle')
