@@ -5,12 +5,14 @@
     :role="hasImage ? undefined : 'img'"
     :aria-label="hasImage ? undefined : alt"
   >
+    <!-- Chart images are captured at the card ratio: contain shows older ones, saved at other ratios, whole. -->
     <img
       v-if="hasImage"
       :src="src!"
       :alt="alt || ''"
       loading="lazy"
-      class="block size-full object-cover"
+      class="block size-full"
+      :class="kind === 'chart' ? 'object-contain' : 'object-cover'"
       @error="failed = true"
     >
     <component

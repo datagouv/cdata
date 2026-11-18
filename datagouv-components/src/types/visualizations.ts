@@ -33,6 +33,7 @@ export type XAxis = {
   sort_x_by: XAxisSortBy | null
   sort_x_direction: SortDirection | null
   type: XAxisType
+  limit: number | null
 }
 
 export type CombinedSort = '' | 'axis_x-asc' | 'axis_x-desc' | 'axis_y-asc' | 'axis_y-desc'
@@ -95,5 +96,6 @@ export type ChartForm = Omit<ChartForApi, 'x_axis' | 'series' | 'owner' | 'organ
   filter: GenericFilter | null
 }
 
-export type ColumnDefinition = { name: string, type: ColumnType, min?: number, max?: number }
+/** `values`: distinct values in the profile, a missing value counting as one. */
+export type ColumnDefinition = { name: string, type: ColumnType, min?: number, max?: number, values?: number }
 export type ColumnsDefinition = Record<string, Array<ColumnDefinition>>

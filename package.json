@@ -31,6 +31,7 @@
     "*.{js,ts,vue,jsx,tsx}": "eslint --fix"
   },
   "dependencies": {
+    "@ai-sdk/vue": "^4.0.159",
     "@datagouv/components-next": "workspace:*",
     "@e965/xlsx": "^0.20.3",
     "@floating-ui/vue": "^2.0.1",
@@ -61,6 +62,7 @@
     "@vueuse/integrations": "^14.4.0",
     "@vueuse/nuxt": "^14.4.0",
     "@vueuse/router": "^14.4.0",
+    "ai": "^7.0.159",
     "bowser": "^2.14.1",
     "culori": "^4.0.2",
     "dompurify": "^3.4.17",
@@ -82,7 +84,8 @@
     "vue-content-loader": "^2.0.1",
     "vue-router": "^5.4.0",
     "vue3-text-clamp": "^0.1.2",
-    "yaml": "^2.9.1"
+    "yaml": "^2.9.1",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
@@ -100,6 +103,8 @@
     "@types/node": "^24.19.1",
     "@types/sortablejs": "^1.15.9",
     "@vitejs/plugin-vue": "^6.0.9",
+    "@vue/test-utils": "^2.5.1",
+    "happy-dom": "^21.0.4",
     "husky": "^9.1.7",
     "lightningcss": "^1.33.0",
     "lint-staged": "^17.6.0",

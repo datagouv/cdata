@@ -154,7 +154,7 @@ async function getTableInfos(page: number, sortConfig?: SortConfig | null) {
       // Update existing rows
       rows.value = response.data
       columns.value = Object.keys(response.data[0]).filter(item => item !== '__id')
-      rowCount.value = response.meta.total
+      rowCount.value = response.meta.total ?? 0
       currentPage.value = page
       loading.value = false
     }

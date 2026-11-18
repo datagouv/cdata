@@ -33,6 +33,7 @@ const chart = ref<ChartForm>({
   x_axis: {
     column_x: '',
     type: 'discrete',
+    limit: null,
     sort_combined: '',
   },
   y_axis: {
