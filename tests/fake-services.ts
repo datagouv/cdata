@@ -4,9 +4,14 @@
 // hand every request of the page to Playwright and turns its HTTP cache off, and cannot reach
 // the requests the Nuxt server makes itself.
 //
+// Also serves udata its schema catalog (SCHEMA_CATALOG_URL in .github/e2e/udata.cfg), recorded
+// from https://schema.data.gouv.fr/schemas/schemas.json: udata checks the schema of each
+// resource it saves against the catalog, and refuses the save when the catalog does not answer.
+//
 // With FAKE_SERVICES_RECORD set, the Tabular API requests go to the real API and are recorded
 // as fixtures (tests/tabularFixtures.ts): run the suite once that way after a change of the
 // requests the app makes.
+import { readFileSync } from 'node:fs'
 import { createServer } from 'node:http'
 import { MATOMO_SCRIPT } from './matomo.ts'
 import { CORS_HEADERS, metricsApiResponse } from './metricsApi.ts'
@@ -39,11 +44,15 @@ async function tabularResponse(url: URL): Promise<TabularFixture> {
   return { request, status: 404, contentType: 'text/plain', body: `No fixture for ${request}` }
 }
 
+const SCHEMA_CATALOG = { contentType: 'application/json', body: readFileSync(new URL('fixtures/schemas.json', import.meta.url), 'utf8') }
+
 createServer(async (request, response) => {
   const url = new URL(request.url ?? '/', origin)
   const { status = 200, contentType, body }: { status?: number, contentType: string, body: string } = url.pathname.startsWith(`${TABULAR_PREFIX}/`)
     ? await tabularResponse(url)
-    : url.pathname === '/matomo.js' ? MATOMO_SCRIPT : metricsApiResponse(url)
+    : url.pathname === '/schemas.json'
+      ? SCHEMA_CATALOG
+      : url.pathname === '/matomo.js' ? MATOMO_SCRIPT : metricsApiResponse(url)
   response.writeHead(status, { 'Content-Type': contentType, ...CORS_HEADERS })
   response.end(body)
 }).listen(new URL(origin).port)
