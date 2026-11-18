@@ -25,11 +25,6 @@
         :message-failed="t('Documentation métier manquante')"
       />
       <QualityItem
-        :passed="quality.license"
-        :message-passed="t('Licence renseignée')"
-        :message-failed="t('Licence non renseignée')"
-      />
-      <QualityItem
         :passed="quality.has_contact_point"
         :message-passed="t('Point de contact renseigné')"
         :message-failed="t('Point de contact non renseigné')"
