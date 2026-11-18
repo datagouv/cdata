@@ -66,11 +66,13 @@
               :value="data.scopes.join(' ')"
             >
 
+            <!-- The token is fetched in the browser: until it's there, udata would reject the form -->
             <BrandedButton
               class="w-full"
               color="primary"
               type="submit"
               name="accept"
+              :disabled="!csrf_response"
             >
               {{ $t('Accepter') }}
             </BrandedButton>
@@ -79,6 +81,7 @@
               color="secondary"
               type="submit"
               name="decline"
+              :disabled="!csrf_response"
             >
               {{ $t('Refuser') }}
             </BrandedButton>

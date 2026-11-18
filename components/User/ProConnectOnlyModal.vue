@@ -10,6 +10,7 @@
         size="xs"
         :icon="RiShieldCheckLine"
         :disabled="disabled || loading"
+        :loading="pending"
         v-bind="attrs"
         v-on="listeners"
       >
@@ -73,21 +74,15 @@ const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const me = useMe()
 
-// The request lives in the URL, as for the 2FA setup: when the switch requires a fresh
-// session, the agent is sent to /verify with this URL as `next`, and comes back to the
-// confirmation rather than to a page where they would have to start it again.
-const route = useRoute()
-const router = useRouter()
-const isOpen = computed({
-  get: () => route.query.proconnect_only === 'confirm',
-  set: (open) => {
-    if (!open) errorMessage.value = null
-    router.replace({ query: { ...route.query, proconnect_only: open ? 'confirm' : undefined } })
-  },
+const { isOpen, pending } = useFreshSessionModal('proconnect_only', 'confirm', async () => {
+  await $api('/api/1/me/fresh/')
 })
 
 const loading = ref(false)
 const errorMessage = ref<string | null>(null)
+watch(isOpen, (open) => {
+  if (!open) errorMessage.value = null
+})
 
 async function switchToProConnectOnly(close: () => void) {
   loading.value = true
@@ -99,7 +94,8 @@ async function switchToProConnectOnly(close: () => void) {
     close()
   }
   catch (e) {
-    // A 401 has already sent the agent to /verify, with this page's URL as `next`.
+    // The session may have gone stale since the modal opened: a 401 has already sent the
+    // agent to /verify or /login, with this page's URL as `next`.
     if (e instanceof FetchError && e.statusCode === 401) return
     errorMessage.value = e instanceof FetchError && e.statusCode === 403
       ? t('Connectez-vous avec ProConnect et sa double authentification (clé de sécurité, application d\'authentification) pour activer cette option.')

@@ -1,25 +1,7 @@
 <template>
   <div>
-    <SimpleBanner
-      v-if="newlyCreatedToken"
-      type="warning"
-      class="mb-4"
-    >
-      <div class="font-bold mb-1">
-        {{ $t("Copiez ce token maintenant, il ne sera plus affiché.") }}
-      </div>
-      <div class="flex items-center gap-2">
-        <code class="text-sm break-all">{{ newlyCreatedToken }}</code>
-        <CopyButton
-          :label="$t('Copier le token')"
-          :copied-label="$t('Token copié')"
-          :text="newlyCreatedToken"
-        />
-      </div>
-    </SimpleBanner>
-
     <div
-      v-if="tokens.length === 0 && !newlyCreatedToken"
+      v-if="tokens.length === 0"
       class="text-sm text-gray-500 mb-4"
     >
       {{ $t("Aucun token API. Créez-en un pour accéder à l'API.") }}
@@ -93,7 +75,7 @@
     </div>
 
     <div class="mt-4">
-      <CreateApiTokenModal @created="onTokenCreated" />
+      <CreateApiTokenModal />
     </div>
 
     <Modal
@@ -144,9 +126,9 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, CopyButton, FormattedDate, SimpleBanner, toast, TranslationT } from '@datagouv/components-next'
+import { BrandedButton, FormattedDate, toast, TranslationT } from '@datagouv/components-next'
 import { RiDeleteBin6Line } from '@remixicon/vue'
-import type { ApiToken, ApiTokenCreated } from '~/types/api-tokens'
+import type { ApiToken } from '~/types/api-tokens'
 import CreateApiTokenModal from './CreateApiTokenModal.vue'
 import Modal from '~/components/Modal/Modal.vue'
 
@@ -154,18 +136,12 @@ const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const tokens = ref<ApiToken[]>([])
-const newlyCreatedToken = ref<string | null>(null)
 const revoking = ref(false)
 const tokenToRevoke = ref<ApiToken | null>(null)
 const userAgentsModalList = ref<string[] | null>(null)
 
 async function fetchTokens() {
   tokens.value = await $api<ApiToken[]>('/api/1/me/api_tokens/')
-}
-
-async function onTokenCreated(created: ApiTokenCreated) {
-  newlyCreatedToken.value = created.token
-  await fetchTokens()
 }
 
 async function revokeToken(token: ApiToken) {

@@ -20,8 +20,13 @@ export default defineConfig({
     'import.meta.client': 'false',
   },
   test: {
-    include: ['tests-unit/**/*.spec.ts'],
     environment: 'node',
     setupFiles: ['./tests-unit/setup.ts'],
+    projects: [
+      { extends: true, test: { name: 'unit', include: ['tests-unit/**/*.spec.ts'] } },
+      // Calls the real Tabular API: run on a schedule (.github/workflows/tabular-api-contract.yml),
+      // not on each change, which cannot break it and should not fail on the API being slow
+      { extends: true, test: { name: 'contract', include: ['tests-contract/**/*.spec.ts'] } },
+    ],
   },
 })

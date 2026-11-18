@@ -42,7 +42,7 @@ export const exampleDatasets = [
   { label: 'Brouillon · organisation non cliquable', data: { ...dataset, id: 'demo-dataset-draft', title: 'Budget participatif — édition 2026', private: true }, organizationUrl: null },
   { label: 'Archivé · sans description', data: { ...dataset, id: 'demo-dataset-archived', title: 'Archives des comptages routiers', archived: true, description: '', description_short: '', organization: exampleOrganizations[2]!.data }, organizationUrl: page },
 ]
-const apiQuality: NonNullable<Dataservice['quality']> = { score: 1, has_description: true, has_machine_documentation: true, has_technical_documentation: true, has_business_documentation: true, license: true, has_contact_point: true, has_base_api_url: true, availability_documented: true, rate_limiting_documented: true, access_conditions_clear: true }
+const apiQuality: NonNullable<Dataservice['quality']> = { score: 1, has_description: true, has_machine_documentation: true, has_technical_documentation: true, has_business_documentation: true, has_contact_point: true, has_base_api_url: true, availability_documented: true, rate_limiting_documented: true, access_conditions_clear: true }
 const dataservice: Dataservice = {
   ...owner, ...access, acronym: '', archived_at: null, availability: 99.9, base_api_url: null, contact_points: [], created_at: date, datasets: { href: '', rel: 'subsection', total: 2, type: 'GET' },
   deleted_at: null, description, featured: false, machine_documentation_url: null, technical_documentation_url: null, business_documentation_url: null, extras: {}, format: '', harvest: null,
