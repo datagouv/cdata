@@ -81,7 +81,7 @@ export type Chart = Owned & {
   extras: Record<string, unknown>
   permissions: { delete: boolean, edit: boolean, read: boolean }
   metrics: {
-    views: number
+    views: number | null
   }
 }
 

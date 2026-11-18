@@ -85,8 +85,8 @@
       <ObjectCardMetrics class="max-[480px]:hidden">
         <ObjectCardMetric
           :icon="RiEyeLine"
-          :value="dataservice.metrics.views"
-          :label="t('{n} vues | {n} vue | {n} vues', dataservice.metrics.views)"
+          :value="dataservice.metrics.views ?? 0"
+          :label="t('{n} vues | {n} vue | {n} vues', dataservice.metrics.views ?? 0)"
         />
         <ObjectCardMetric
           :icon="RiStarLine"

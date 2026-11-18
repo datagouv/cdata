@@ -91,9 +91,9 @@ export type Dataset = BaseDataset & {
     discussions: number
     discussions_open: number
     followers: number
-    resources_downloads: number
+    resources_downloads: number | null
     reuses: number
-    views: number
+    views: number | null
   }
   harvest: Harvest
   extras: Record<string, unknown>

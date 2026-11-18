@@ -106,7 +106,7 @@
                 {{ summarize(dataservice.metrics.discussions) }}
               </td>
               <td class="font-mono text-right">
-                {{ summarize(dataservice.metrics.views) }}
+                {{ summarize(dataservice.metrics.views ?? 0) }}
               </td>
               <td class="font-mono text-right">
                 {{ summarize(dataservice.metrics.followers) }}

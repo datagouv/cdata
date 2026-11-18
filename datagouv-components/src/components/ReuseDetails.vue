@@ -4,8 +4,8 @@
     <ObjectCardMetrics>
       <ObjectCardMetric
         :icon="RiEyeLine"
-        :value="reuse.metrics.views"
-        :label="t('{n} vues | {n} vue | {n} vues', reuse.metrics.views)"
+        :value="reuse.metrics.views ?? 0"
+        :label="t('{n} vues | {n} vue | {n} vues', reuse.metrics.views ?? 0)"
       />
       <ObjectCardMetric
         :icon="RiStarLine"

@@ -43,7 +43,7 @@ export type Reuse = BaseReuse & {
     discussions: number
     discussions_open: number
     followers: number
-    views: number
+    views: number | null
   }
   slug: string
   page: ReuseReference['page']

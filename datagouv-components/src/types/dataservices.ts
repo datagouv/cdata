@@ -75,7 +75,7 @@ export type Dataservice = Owned & WithAccessType & {
     discussions_open: number
     followers: number
     reuses: number
-    views: number
+    views: number | null
   }
   permissions: { edit: boolean, delete: boolean }
   private: boolean

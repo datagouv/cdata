@@ -105,7 +105,7 @@
                 {{ summarize(reuse.metrics.discussions) }}
               </td>
               <td class="font-mono text-right">
-                {{ summarize(reuse.metrics.views) }}
+                {{ summarize(reuse.metrics.views ?? 0) }}
               </td>
               <td class="font-mono text-right">
                 {{ summarize(reuse.metrics.followers) }}

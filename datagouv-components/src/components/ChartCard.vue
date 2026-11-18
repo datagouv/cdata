@@ -58,8 +58,8 @@
     <ObjectCardMeta class="mt-1 max-[480px]:hidden">
       <ObjectCardMetric
         :icon="RiEyeLine"
-        :value="chart.metrics.views"
-        :label="t('{n} vues | {n} vue | {n} vues', chart.metrics.views)"
+        :value="chart.metrics.views ?? 0"
+        :label="t('{n} vues | {n} vue | {n} vues', chart.metrics.views ?? 0)"
       />
     </ObjectCardMeta>
     <ObjectCardShortDescription

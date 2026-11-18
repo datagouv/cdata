@@ -74,13 +74,13 @@
       <ObjectCardMetrics class="max-[480px]:hidden">
         <ObjectCardMetric
           :icon="RiEyeLine"
-          :value="dataset.metrics.views"
-          :label="t('{n} vues | {n} vue | {n} vues', dataset.metrics.views)"
+          :value="dataset.metrics.views ?? 0"
+          :label="t('{n} vues | {n} vue | {n} vues', dataset.metrics.views ?? 0)"
         />
         <ObjectCardMetric
           :icon="RiDownloadLine"
-          :value="dataset.metrics.resources_downloads"
-          :label="t('{n} téléchargements des ressources | {n} téléchargement des ressources | {n} téléchargements des ressources', dataset.metrics.resources_downloads)"
+          :value="dataset.metrics.resources_downloads ?? 0"
+          :label="t('{n} téléchargements des ressources | {n} téléchargement des ressources | {n} téléchargements des ressources', dataset.metrics.resources_downloads ?? 0)"
         />
         <ObjectCardMetric
           :icon="RiLineChartLine"

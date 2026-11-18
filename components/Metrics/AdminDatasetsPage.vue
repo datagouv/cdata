@@ -146,7 +146,7 @@
                 {{ summarize(dataset.metrics.discussions) }}
               </td>
               <td class="font-mono text-right">
-                {{ summarize(dataset.metrics.views) }}
+                {{ summarize(dataset.metrics.views ?? 0) }}
               </td>
               <td class="font-mono text-right">
                 {{ summarize(dataset.metrics.resources_downloads ?? 0) }}
