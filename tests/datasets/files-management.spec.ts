@@ -68,18 +68,14 @@ test.describe('Dataset files management', () => {
     await expect(page.locator('tbody tr').first()).toContainText(`Ressource renommée ${uniqueId}`)
   })
 
-  test('editing a remote file without format asks for the format instead of crashing', async ({ page, request }) => {
+  test('can edit a remote file that has no format', async ({ page, request }) => {
     const dataset = await createDataset(request, `Test files management ${Date.now()}`, 'Dataset de test E2E')
     createdDatasets.push(dataset.id)
-    // The API accepts remote resources without format, the edit form requires one
-    await createRemoteResource(request, dataset.id, 'Ressource sans format', { format: '' })
+    // The API accepts remote resources without format, as harvesters create them
+    const resource = await createRemoteResource(request, dataset.id, 'Ressource sans format', { format: '' })
 
     const pageErrors: Array<Error> = []
     page.on('pageerror', error => pageErrors.push(error))
-    const updates: Array<string> = []
-    page.on('request', (sentRequest) => {
-      if (sentRequest.method() === 'PUT') updates.push(sentRequest.url())
-    })
 
     await gotoHydrated(page, `/admin/datasets/${dataset.id}/files`)
 
@@ -88,8 +84,10 @@ test.describe('Dataset files management', () => {
     await dialog.getByLabel('Titre *', { exact: true }).fill('Ressource renommée')
     await dialog.getByRole('button', { name: 'Valider' }).click()
 
-    await expect(dialog.getByText('Le champ est requis.')).toBeVisible()
-    expect(updates).toEqual([])
+    await expect(page.getByText('Fichier mis à jour !')).toBeVisible()
+    const saved = await (await request.get(`${API_BASE}/api/1/datasets/${dataset.id}/resources/${resource.id}/`)).json()
+    expect(saved.title).toBe('Ressource renommée')
+    expect(saved.format).toBeNull()
     expect(pageErrors).toEqual([])
   })
 

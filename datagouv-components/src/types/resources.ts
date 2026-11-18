@@ -30,7 +30,7 @@ export type Resource = {
   geopf: GeopfResourceMetadata | null
   filesize: number | null
   filetype: ResourceFileType
-  format: string
+  format: string | null
   mime: string
   internal: Record<string, unknown>
   last_modified: string
