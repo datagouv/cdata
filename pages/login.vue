@@ -86,6 +86,7 @@
         <ProConnectButton
           :label="$t('Se connecter avec')"
           action="login"
+          :next="next"
         />
       </div>
     </div>
@@ -123,6 +124,7 @@ const errors = ref<FieldsErrors>({})
 const me = useMe()
 
 const route = useRoute()
+const next = computed(() => (Array.isArray(route.query.next) ? route.query.next[0] : route.query.next) || undefined)
 
 onMounted(() => {
   if (route.query.next) {
