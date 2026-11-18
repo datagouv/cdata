@@ -46,23 +46,20 @@
     <template #footer="{ close }">
       <div class="w-full">
         <div class="w-full flex gap-4">
-          <!-- Confirmation modal only if file has changed -->
+          <BrandedButton
+            type="submit"
+            color="primary"
+            :form="formId"
+            :loading
+          >
+            {{ t('Valider') }}
+          </BrandedButton>
+
           <ModalWithButton
-            v-if="hasTabularApi && hasFileChanged"
+            v-model="confirmOpen"
             :title="$t('Êtes-vous sûr de vouloir modifier cette ressource ?')"
             size="lg"
           >
-            <template #button="{ attrs, listeners }">
-              <BrandedButton
-                color="primary"
-                :form="formId"
-                :loading
-                v-bind="attrs"
-                v-on="listeners"
-              >
-                {{ t('Valider') }}
-              </BrandedButton>
-            </template>
             <div
               v-if="hasTabularApi"
               class="fr-mt-4w"
@@ -97,17 +94,6 @@
               </div>
             </template>
           </ModalWithButton>
-
-          <!-- Simple validation button if file hasn't changed -->
-          <BrandedButton
-            v-else
-            color="primary"
-            :form="formId"
-            :loading
-            @click="confirmSubmit(close)"
-          >
-            {{ t('Valider') }}
-          </BrandedButton>
 
           <BrandedButton
             color="secondary"
@@ -322,11 +308,18 @@ const removeQueryString = () => {
   // console.log('[FileEditModal] Modal closed - form and hasFileChanged reset')
 }
 
+const confirmOpen = ref(false)
+
 const submit = (close: () => void) => {
+  if (hasTabularApi.value && hasFileChanged.value) {
+    confirmOpen.value = true
+    return
+  }
   emit('submit', close, resourceForm.value)
 }
 
 const confirmSubmit = (close: () => void) => {
+  confirmOpen.value = false
   emit('submit', close, resourceForm.value)
 }
 
