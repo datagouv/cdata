@@ -5,16 +5,21 @@ import { allTabularFixtures, REAL_TABULAR_API, REAL_TABULAR_API_TIMEOUT } from '
 // This checks the real API still answers each recorded request the same way, structure only:
 // the data behind it is republished from time to time, which must not fail anything.
 
-// A gateway error means the API did not answer at all, so it says nothing about the contract:
-// the request is sent again instead of failing the CI on an overloaded API.
+// A gateway error, a timeout or a dropped connection means the API did not answer at all, so it
+// says nothing about the contract: the request is sent again instead of failing on an overloaded API.
 const GATEWAY_ERRORS = [502, 503, 504]
 const ATTEMPTS = 3
 const DELAY_BETWEEN_ATTEMPTS = 2_000
 
 async function fetchRealApi(request: string): Promise<Response> {
   for (let attempt = 1; ; attempt++) {
-    const response = await fetch(new URL(request, REAL_TABULAR_API), { signal: AbortSignal.timeout(REAL_TABULAR_API_TIMEOUT) })
-    if (!GATEWAY_ERRORS.includes(response.status) || attempt === ATTEMPTS) return response
+    try {
+      const response = await fetch(new URL(request, REAL_TABULAR_API), { signal: AbortSignal.timeout(REAL_TABULAR_API_TIMEOUT) })
+      if (!GATEWAY_ERRORS.includes(response.status) || attempt === ATTEMPTS) return response
+    }
+    catch (error) {
+      if (attempt === ATTEMPTS) throw error
+    }
     await new Promise(resolve => setTimeout(resolve, DELAY_BETWEEN_ATTEMPTS))
   }
 }

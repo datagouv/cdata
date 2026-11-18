@@ -81,7 +81,9 @@ test('the ProConnect button asks udata for a reauthentication, not a login', asy
     requested = new URL(route.request().url())
     return route.abort()
   })
-  await page.goto('/verify')
+  // Submitting the form leaves the page: the modules still loading would be cancelled, which
+  // Firefox reports in the console
+  await gotoHydrated(page, '/verify')
 
   await page.getByRole('button', { name: 'S’identifier avec ProConnect' }).click()
 

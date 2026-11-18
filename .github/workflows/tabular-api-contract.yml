@@ -1,0 +1,33 @@
+name: Tabular API contract
+
+# Checks the real Tabular API still answers like the fixtures the E2E tests replay
+# (tests-contract/tabular-api.spec.ts). A change to cdata cannot break this, the API can: it runs
+# on a schedule rather than on each PR, where a slow API would fail unrelated changes.
+on:
+  schedule:
+    - cron: "0 5 * * 1-5"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Use Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24.x"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Check the Tabular API contract
+        run: pnpm run test:contract
