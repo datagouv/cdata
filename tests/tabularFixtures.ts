@@ -1,5 +1,5 @@
 // Responses of the real Tabular API, recorded once and replayed by tests/fake-services.ts so
-// that no E2E test depends on it. tests-unit/tabular-api-contract.spec.ts checks the real API
+// that no E2E test depends on it. tests-contract/tabular-api.spec.ts checks the real API
 // still answers each recorded request with the same structure.
 import { createHash } from 'node:crypto'
 import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
