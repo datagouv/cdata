@@ -127,8 +127,8 @@ const route = useRoute()
 const next = computed(() => (Array.isArray(route.query.next) ? route.query.next[0] : route.query.next) || undefined)
 
 onMounted(() => {
-  if (route.query.next) {
-    sessionStorage.setItem('next', route.query.next as string)
+  if (next.value) {
+    sessionStorage.setItem('next', next.value)
   }
 })
 
@@ -155,9 +155,9 @@ const connect = async () => {
       toast.success(t('Vous êtes maintenant connecté.'))
       await loadMe(me)
 
-      const next = sessionStorage.getItem('next')
-      if (next) {
-        navigateTo(next)
+      const storedNext = sessionStorage.getItem('next')
+      if (storedNext) {
+        navigateTo(storedNext)
       }
       else {
         await navigateTo('/')
