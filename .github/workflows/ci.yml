@@ -198,6 +198,17 @@ jobs:
       - name: Configure udata
         run: cp .github/e2e/udata.cfg ${{ env.UDATA_WORKING_DIR }}/udata.cfg
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
+      # Serves udata the schema catalog the fixtures' resources are checked against
+      - name: Start fake services
+        run: |
+          node tests/fake-services.ts &
+          timeout 30 bash -c 'until curl -sf "$FAKE_SERVICES_URL/schemas.json" > /dev/null; do sleep 1; done'
+
       - name: Initialize udata
         working-directory: ${{ env.UDATA_WORKING_DIR }}
         run: |
