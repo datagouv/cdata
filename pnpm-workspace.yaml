@@ -17,44 +17,14 @@ ignoredBuiltDependencies:
   - unrs-resolver
 
 overrides:
-  shell-quote: ^1.11.0
-  flatted: ^3.4.2
-  browserslist: ^4.28.7
-  "@humanfs/node": ^0.16.8
-  "@xmldom/xmldom": ^0.9.12
-  axios: ^1.16.0
-  lodash: ^4.18.1
-  ws: ^8.21.0
-  fast-uri: ^3.1.9
-  tar: ^7.5.21
-  protocol-buffers-schema: ^3.6.1
-  brace-expansion@1: ^1.1.21
-  brace-expansion@2: ^2.1.7
-  brace-expansion@5: ^5.0.12
-  postcss: ^8.5.23
-  postcss-selector-parser@6: ^7.1.6
-  postcss-selector-parser@7: ^7.1.6
-  sharp: ^0.35.5
-  ajv@8.17.1: ^8.18.0
-  "@babel/core": ^7.29.6
-  esbuild: ^0.28.1
-  launch-editor: ^2.14.1
-  js-yaml@3: ^3.15.1
-  js-yaml@4: ^4.3.1
-  nanoid@3: ^3.3.17
-  dompurify: ^3.4.17
-  # Single Vue for the whole workspace: without it the root importer (Nuxt) and
-  # datagouv-components resolve different patches, and vue-tsc in
-  # datagouv-components sees two unrelated @vue/runtime-core identities.
-  vue: ^3.5.43
-  devalue: ^5.9.4
-  source-map-js: ^1.2.2
-  serialize-javascript: ^7.1.3
-  katex: ^0.18.2
-  node-forge: ^1.4.1
-  undici@6: ^6.29.1
-  glob@10: ^14.0.2
+  # Security fixes that the parent's own range excludes (pnpm audit, 2026-11):
+  # drop each one once the parent allows the patched version.
+  # @tailwindcss/typography 0.5.20 pins 6.0.10 (GHSA-rj75-hqrm-r3gf).
+  postcss-selector-parser@6: ^6.1.5
+  # @sentry/bundler-plugins 10.78 depends on glob 13, fixed in 14 only (GHSA-3g3m-2fjr-6pw4).
   glob@13: ^14.0.2
+  # micromark-extension-math 3.1 (via @milkdown/crepe) depends on katex 0.16 (GHSA-238p-pmpm-9mq7).
+  katex@0.16: ^0.19.1
 
 # The Panoramax control of geopf only renders <pnx-viewer> and leaves loading the viewer
 # to the app, which never uses that control: without this, pnpm installs the viewer and

@@ -83,7 +83,6 @@ export type SelectGroupProps = {
   isValid?: boolean
   label: string
   hideLabel?: boolean
-  modelValue?: string | boolean | null
   options: Array<SelectOption>
   required?: boolean
   validText?: string
@@ -98,7 +97,6 @@ const props = withDefaults(defineProps<SelectGroupProps>(), {
   hasError: false,
   hintText: '',
   isValid: false,
-  modelValue: undefined,
   required: false,
   validText: '',
   hideLabel: false,

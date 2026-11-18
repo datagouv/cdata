@@ -92,6 +92,11 @@ jobs:
       - name: Install cdata dependencies
         run: pnpm install
 
+      # A partial update (one package bumped, the rest kept from the lockfile) leaves two
+      # copies of a package that one version could serve: two Vue runtimes, for instance.
+      - name: Check the lockfile has no duplicate that could be merged
+        run: pnpm dedupe --check
+
       - name: Run lint
         run: pnpm run lint
 
