@@ -36,7 +36,6 @@ export type DataserviceQuality = {
   has_machine_documentation: boolean
   has_technical_documentation: boolean
   has_business_documentation: boolean
-  license: boolean
   has_contact_point: boolean
   has_base_api_url: boolean
   availability_documented: boolean
