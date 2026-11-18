@@ -113,7 +113,7 @@ describe('chartToolResults', () => {
         role: 'assistant',
         parts: [
           { type: 'tool-create_chart', toolCallId: 'c1', state: 'output-available', input: {}, output: { status: 'ok', chart: CHART, more_groups: true } },
-          { type: 'tool-query_data', toolCallId: 'q1', state: 'output-available', input: {}, output: 'a | b' },
+          { type: 'tool-query_data', toolCallId: 'q1', state: 'output-available', input: {}, output: { status: 'ok', table: 'a | b', rows: 0, total: 0, more_groups: false } },
           { type: 'tool-update_chart', toolCallId: 'c2', state: 'output-available', input: {}, output: { status: 'ok', patch: { title: 'Nouveau' } } },
         ],
       },
@@ -180,11 +180,22 @@ describe('buildChatDisplayItems', () => {
     ])).toEqual([{ kind: 'thinking', text: 'ab' }, { kind: 'text', text: 'Bonjour' }])
   })
 
-  it('carries a string tool output on the trace and truncates it', () => {
-    expect(traceOf({ type: 'tool-query_data', state: 'output-available', output: 'col1 | col2\nval1 | val2' })?.output).toBe('col1 | col2\nval1 | val2')
-    const trace = traceOf({ type: 'tool-query_data', state: 'output-available', output: 'x'.repeat(2001) })
+  it('carries the query_data table on the trace and truncates it', () => {
+    const query = (table: string) => traceOf({ type: 'tool-query_data', state: 'output-available', output: { status: 'ok', table, rows: 1, total: 1, more_groups: false } })
+    expect(query('col1 | col2\nval1 | val2')?.output).toBe('col1 | col2\nval1 | val2')
+    const trace = query('x'.repeat(2001))
     expect(trace?.output).toHaveLength(2001)
     expect(trace?.output?.endsWith('…')).toBe(true)
+  })
+
+  it('carries the query_data errors on the trace', () => {
+    expect(traceOf({ type: 'tool-query_data', state: 'output-available', output: { status: 'error', errors: ['Unknown column: x.', 'Other.'] } })?.output)
+      .toBe('Unknown column: x. ; Other.')
+  })
+
+  it('only carries the query_data output', () => {
+    expect(traceOf({ type: 'tool-other', state: 'output-available', output: 'year: int' })?.output).toBeNull()
+    expect(traceOf({ type: 'tool-create_chart', state: 'output-available', output: { status: 'ok', chart: CHART } })?.output).toBeNull()
   })
 
   it('shows the error text of a failed tool', () => {
@@ -201,25 +212,23 @@ describe('summarizes chart tool traces', () => {
   })
 
   it.each([
-    ['one data row', 'col1 | col2\nval1 | val2', '1 ligne'],
-    ['several rows', 'col1 | col2\nval1 | val2\nval3 | val4\nval5 | val6', '3 lignes'],
-    ['an empty result', 'Requête exécutée avec succès, aucune ligne retournée.', 'Aucune ligne'],
-    ['a header-only table', 'col1 | col2', 'Aucune ligne'],
-    ['more groups', 'a | b\n1 | 2\nPlus de 50 groupes : seuls les 50 premiers sont pris en compte.', '1 ligne, plus de 50 valeurs'],
-    ['a truncated table', 'a\n1\n2\nRésultat tronqué : 90 lignes au total, 2 premières lignes affichées.', '90 lignes'],
-    ['a refusal', 'Requête refusée : la limite de 3 requêtes par question est atteinte.', 'Requête non exécutée'],
-    ['an invalid query', 'Requête invalide : groupby demande un agrégat.', 'Requête non exécutée'],
-    ['an unknown column', 'Colonne inconnue : foo.', 'Requête non exécutée'],
-    ['an unavailable service', 'Le service tabulaire est indisponible.', 'Requête non exécutée'],
-    ['no active resource', 'Aucune ressource active : ouvrez une ressource dans le data studio.', 'Requête non exécutée'],
-    ['an unknown resource', 'Ressource introuvable : aucune ressource visible ne correspond à cet identifiant.', 'Requête non exécutée'],
-    ['a refused action', 'Action refusée : la limite de 5 appels d’outils par tour est atteinte.', 'Requête non exécutée'],
+    ['one row', { status: 'ok', table: 'a\n1', rows: 1, total: 1, more_groups: false }, '1 ligne'],
+    ['several rows', { status: 'ok', table: 'a\n1\n2\n3', rows: 3, total: 3, more_groups: false }, '3 lignes'],
+    ['a truncated table', { status: 'ok', table: 'a\n1\n2', rows: 2, total: 2187, more_groups: false }, `${(2187).toLocaleString('fr-FR')} lignes`],
+    ['an aggregate with more groups', { status: 'ok', table: 'a | b\n1 | 2', rows: 50, total: null, more_groups: true }, '50 lignes, plus de 50 valeurs'],
+    ['an empty result', { status: 'ok', table: 'a', rows: 0, total: 0, more_groups: false }, 'Aucune ligne'],
+    ['an error', { status: 'error', errors: ['Unknown column: x.'] }, 'Requête non exécutée'],
   ])('query_data: %s', (_case, output, summary) => {
     expect(summaryOf({ type: 'tool-query_data', output })).toBe(summary)
   })
 
-  it('query_data falls back to the static summary for a non-string output', () => {
-    expect(summaryOf({ type: 'tool-query_data', output: { rowCount: 3 } })).toBe('Je calcule la réponse à partir des données')
+  it.each([
+    ['a text output', 'a | b'],
+    ['no row count', { status: 'ok', table: 'a' }],
+    ['a string row count', { status: 'ok', table: 'a', rows: '3', total: null }],
+    ['an unknown status', { status: 'pending', rows: 3 }],
+  ])('query_data falls back to the static summary for %s', (_case, output) => {
+    expect(summaryOf({ type: 'tool-query_data', output })).toBe('Je calcule la réponse à partir des données')
   })
 
   it('create_chart', () => {
@@ -447,7 +456,6 @@ describe('ToolTrace', () => {
     error: false,
     errorText: null,
     output: null,
-    details: [{ label: 'Lignes', value: '12' }],
   }
 
   function mountTrace() {
@@ -849,7 +857,7 @@ describe('ChatPanel', () => {
       role: 'assistant',
       parts: [
         { type: 'reasoning', text: 'D’abord.', state: 'done' },
-        { type: 'tool-query_data', state: 'output-available', input: {}, output: 'n\n1' },
+        { type: 'tool-query_data', state: 'output-available', input: {}, output: { status: 'ok', table: 'n\n1', rows: 1, total: 1, more_groups: false } },
         { type: 'reasoning', text: 'Ensuite.', state: 'done' },
       ],
     }]
@@ -866,7 +874,7 @@ describe('ChatPanel', () => {
       id: 'a1',
       role: 'assistant',
       parts: [
-        { type: 'tool-query_data', state: 'output-available', input: { group_by: 'year' }, output: 'year | nb\n2020 | 3\n2021 | 4' },
+        { type: 'tool-query_data', state: 'output-available', input: { group_by: 'year' }, output: { status: 'ok', table: 'year | nb\n2020 | 3\n2021 | 4', rows: 2, total: null, more_groups: false } },
         { type: 'text', text: 'J’ai trouvé 2 lignes.' },
       ],
     }]
@@ -899,7 +907,6 @@ describe('ChatPanel', () => {
       parts: [
         { type: 'tool-get_dataset_metadata', state: 'output-available', input: {}, output: { title: 'Mon jeu', organization: 'Ministère', license: 'LOOL' } },
         { type: 'tool-inspect_schema', state: 'output-available', input: {}, output: { columns: ['year', 'rate'], rowCount: 42 } },
-        { type: 'tool-request_clarification', state: 'output-available', input: { question: 'Quelle année ?' }, output: {} },
       ],
     }]
     const wrapper = mountPanel('resource-1')
@@ -909,8 +916,6 @@ describe('ChatPanel', () => {
     expect(text).toContain('Je consulte la fiche du jeu de données')
     expect(text).toContain('Inspection du schéma')
     expect(text).toContain('Je vérifie les colonnes et les types disponibles')
-    expect(text).toContain('Demande de clarification')
-    expect(text).toContain('Je précise ce qui est ambigu')
   })
 
   it('renders one card per tool call, in arrival order, without merging calls to the same tool', () => {
@@ -919,9 +924,9 @@ describe('ChatPanel', () => {
       role: 'assistant',
       parts: [
         { type: 'tool-query_data', state: 'output-error', input: {}, errorText: 'boom' },
-        { type: 'tool-query_data', state: 'output-available', input: {}, output: 'n\n1' },
+        { type: 'tool-query_data', state: 'output-available', input: {}, output: { status: 'ok', table: 'n\n1', rows: 1, total: 1, more_groups: false } },
         { type: 'tool-inspect_schema', state: 'output-available', input: {}, output: { columns: ['year'], rowCount: 1 } },
-        { type: 'tool-query_data', state: 'output-available', input: {}, output: 'n\n2' },
+        { type: 'tool-query_data', state: 'output-available', input: {}, output: { status: 'ok', table: 'n\n2', rows: 1, total: 1, more_groups: false } },
       ],
     }]
     const wrapper = mountPanel('resource-1')

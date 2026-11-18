@@ -189,15 +189,12 @@ export function mapAssistantError(error: unknown): string {
   return 'Une erreur est survenue, veuillez réessayer.'
 }
 
-export type ToolTraceDetail = { label: string, value: string }
-
 export type ToolTrace = {
   label: string
   summary: string
   error: boolean
   errorText: string | null
   output: string | null
-  details: ToolTraceDetail[]
 }
 
 export type ChatDisplayItem
@@ -207,7 +204,7 @@ export type ChatDisplayItem
 
 // Fixed French copy of the assistant UI, used as i18n keys by the components
 // ($t returns the key when no catalog entry exists): ToolTrace renders
-// $t(trace.label) and $t(detail.label), ChatPanel renders
+// $t(trace.label), ChatPanel renders
 // $t(mapAssistantError(error)). The literals stay here so an extraction tool
 // can find them. trace.summary is shown as is: it mixes this copy with dynamic
 // values (row counts, server errors), which are never translated.
@@ -217,7 +214,6 @@ const TOOL_LABELS: Record<string, { label: string, summary: string }> = {
   'tool-query_data': { label: 'Interrogation des données', summary: 'Je calcule la réponse à partir des données' },
   'tool-create_chart': { label: 'Création du graphique', summary: 'Je construis le graphique' },
   'tool-update_chart': { label: 'Modification du graphique', summary: 'Je modifie le graphique' },
-  'tool-request_clarification': { label: 'Demande de clarification', summary: 'Je précise ce qui est ambigu' },
 }
 
 const FALLBACK_TOOL_LABEL = { label: 'Opération', summary: 'Je poursuis l’analyse' }
@@ -225,19 +221,11 @@ const QUERY_RUNNING_SUMMARY = 'Exécution en cours'
 const QUERY_NOT_RUN_SUMMARY = 'Requête non exécutée'
 const QUERY_MORE_GROUPS_SUMMARY = 'plus de 50 valeurs'
 const CHART_CREATED_SUMMARY = 'Graphique créé'
-// Openings of udata's query_data refusals: those outputs are plain sentences,
-// not result tables.
-const QUERY_NOT_RUN_RE = /^(Requête refusée|Requête invalide|Colonne inconnue|Le service tabulaire est indisponible|Aucune ressource active|Ressource introuvable|Action refusée)/
-const QUERY_EMPTY_RE = /^Requête exécutée avec succès, aucune ligne/
-const QUERY_MORE_GROUPS_RE = /Plus de 50 groupes/
-// Matches the trailing notice of udata's rendered results.
-const QUERY_TRUNCATED_RE = /^Résultat tronqué : (\d+)/
 
 // The tool part failed without an errorText from the SDK.
 const TOOL_ERROR_FALLBACK = 'Échec de l’opération'
-const DETAIL_TRUNCATE_AT = 200
-// udata returns query results as plain text tables; keep the trace readable
-// without letting a huge result string bloat the DOM.
+// query_data results carry a plain text table; keep the trace readable
+// without letting a huge result bloat the DOM.
 const OUTPUT_TRUNCATE_AT = 2000
 
 function truncateAt(value: string, limit: number): string {
@@ -249,28 +237,31 @@ function formatRowCount(count: number): string {
   return count === 1 ? '1 ligne' : `${count.toLocaleString('fr-FR')} lignes`
 }
 
-// Result tables are a header line, one line per row, then optional notices
-// (truncation carrying the total, « Plus de 50 groupes »).
-function countResultRows(output: string): number {
-  if (QUERY_EMPTY_RE.test(output)) return 0
-  const lines = output.split('\n').filter(line => line.trim() !== '' && !QUERY_MORE_GROUPS_RE.test(line))
-  const truncated = lines[lines.length - 1]?.match(QUERY_TRUNCATED_RE)
-  if (truncated) return Number(truncated[1])
-  return Math.max(0, lines.length - 1) // minus the header
-}
-
-function buildQuerySummary(part: Record<string, unknown>): string {
-  if (part.state !== 'output-available') return QUERY_RUNNING_SUMMARY
-  if (typeof part.output !== 'string' || !part.output) return TOOL_LABELS['tool-query_data']!.summary
-  if (QUERY_NOT_RUN_RE.test(part.output)) return QUERY_NOT_RUN_SUMMARY
-  const rows = formatRowCount(countResultRows(part.output))
-  return QUERY_MORE_GROUPS_RE.test(part.output) ? `${rows}, ${QUERY_MORE_GROUPS_SUMMARY}` : rows
-}
-
 function toolErrors(output: unknown): string | null {
   if (!isRecord(output) || output.status !== 'error') return null
   const errors = Array.isArray(output.errors) ? output.errors.filter((e): e is string => typeof e === 'string') : []
   return errors.length ? errors.join(' ; ') : TOOL_ERROR_FALLBACK
+}
+
+// `total` is the exact row count, known only without an aggregate; `rows` is
+// what the table shows.
+function buildQuerySummary(part: Record<string, unknown>): string {
+  if (part.state !== 'output-available') return QUERY_RUNNING_SUMMARY
+  const output = part.output
+  if (!isRecord(output)) return TOOL_LABELS['tool-query_data']!.summary
+  if (output.status === 'error') return QUERY_NOT_RUN_SUMMARY
+  const count = typeof output.total === 'number' ? output.total : output.rows
+  if (output.status !== 'ok' || typeof count !== 'number') return TOOL_LABELS['tool-query_data']!.summary
+  const rows = formatRowCount(count)
+  return output.more_groups === true ? `${rows}, ${QUERY_MORE_GROUPS_SUMMARY}` : rows
+}
+
+// query_data shows its result table, or its errors when the query was not run.
+// Chart tools' outputs are summarized only.
+function buildToolOutput(type: string, output: unknown): string | null {
+  if (type !== 'tool-query_data' || !isRecord(output)) return null
+  const text = output.status === 'error' ? toolErrors(output) : output.table
+  return typeof text === 'string' && text ? truncateAt(text, OUTPUT_TRUNCATE_AT) : null
 }
 
 function buildCreateSummary(part: Record<string, unknown>): string {
@@ -314,14 +305,6 @@ function buildSummary(type: string, part: Record<string, unknown>, fallback: str
   return fallback
 }
 
-function buildToolDetails(type: string, input: unknown): ToolTraceDetail[] {
-  if (type !== 'tool-request_clarification' || !isRecord(input)) return []
-  const question = input.question
-  return typeof question === 'string' && question
-    ? [{ label: 'Question', value: truncateAt(question, DETAIL_TRUNCATE_AT) }]
-    : []
-}
-
 function buildToolTrace(type: string, part: Record<string, unknown>): ToolTrace {
   const labels = TOOL_LABELS[type] ?? FALLBACK_TOOL_LABEL
   const error = part.state === 'output-error'
@@ -334,10 +317,7 @@ function buildToolTrace(type: string, part: Record<string, unknown>): ToolTrace 
     summary: error ? errorText! : buildSummary(type, part, labels.summary),
     error,
     errorText,
-    // String outputs (udata's text tools) pass through; object outputs
-    // (chart tools) are summarized only.
-    output: typeof part.output === 'string' && part.output ? truncateAt(part.output, OUTPUT_TRUNCATE_AT) : null,
-    details: buildToolDetails(type, part.input),
+    output: buildToolOutput(type, part.output),
   }
 }
 
