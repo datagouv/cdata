@@ -150,6 +150,7 @@
               v-if="record.fields.statut_front"
               :label="record.fields.statut_front"
               :url="statutLinksToData(record.fields.statut_front) ? record.fields.url : null"
+              :link-label="t('Voir les données')"
               :tone="statutBadgeType(record.fields.statut_front)"
               size="sm"
             />

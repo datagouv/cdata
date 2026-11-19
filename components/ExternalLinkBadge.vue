@@ -6,7 +6,7 @@
     external
     target="_blank"
     rel="noopener noreferrer"
-    :aria-label="`${label} (${t('nouvel onglet')})`"
+    :aria-label="linkLabel ? `${label} — ${linkLabel} (${t('nouvel onglet')})` : `${label} (${t('nouvel onglet')})`"
     :icon-right="RiExternalLinkLine"
     :tone
     :size
@@ -32,6 +32,8 @@ defineProps<{
   label: string
   // Without an url, the badge is a plain label
   url: string | null
+  // Where the link leads, for screen readers: a status badge does not say it on its own
+  linkLabel?: string
   tone?: BadgeTone
   size?: 'xs' | 'sm'
   wrap?: boolean

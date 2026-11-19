@@ -94,6 +94,7 @@
               v-if="record.fields.statut_telechargement"
               :label="record.fields.statut_telechargement"
               :url="statutLinksToData(record.fields.statut_telechargement) ? record.fields.url_telechargement : null"
+              :link-label="t('Voir les données')"
               :tone="statutBadgeType(record.fields.statut_telechargement)"
               size="xs"
               wrap
@@ -105,6 +106,7 @@
               v-if="record.fields.statut_api"
               :label="record.fields.statut_api"
               :url="statutLinksToData(record.fields.statut_api) ? record.fields.url_api : null"
+              :link-label="t('Voir les données')"
               :tone="statutBadgeType(record.fields.statut_api)"
               size="xs"
               wrap
