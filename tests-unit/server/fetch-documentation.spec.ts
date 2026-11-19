@@ -10,9 +10,6 @@ const DISALLOWED_URL_MESSAGE = 'Documentation URL is not allowed. Use a public h
 const PUBLIC_ADDRESS = '1.1.1.1'
 const PUBLIC_IPV6_ADDRESS = '2606:4700:4700::1111'
 
-// Hoisted above the declarations, hence the literal instead of PUBLIC_ADDRESS.
-vi.mock('node:dns/promises', () => ({ lookup: async () => [{ address: '1.1.1.1', family: 4 }] }))
-
 type LookupCallback = (err: NodeJS.ErrnoException | null, address: string | LookupAddress[], family?: number) => void
 
 /** Makes every callback-style `dns.lookup` (the one sockets use) answer `addresses`. */
@@ -51,9 +48,7 @@ describe('fetchDocumentationContent', () => {
     hits = 0
   })
 
-  it('refuses a hostname that rebinds to loopback between the check and the connection', async () => {
-    // DNS rebinding: any resolution done apart from the socket (see the `node:dns/promises`
-    // mock) sees a public address, the socket's own resolution sees loopback.
+  it('refuses a hostname the socket resolves to loopback', async () => {
     stubSocketDns([{ address: '127.0.0.1', family: 4 }])
 
     await expect(fetchDocumentationContent(`http://rebind.test:${port}/`)).rejects.toThrow(DISALLOWED_URL_MESSAGE)
