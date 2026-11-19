@@ -175,9 +175,6 @@ function assertSafeDocumentationUrl(urlString: string): URL {
   if (proto !== 'http:' && proto !== 'https:') {
     throw new Error(DISALLOWED_URL_MESSAGE)
   }
-  if (!parsed.hostname) {
-    throw new Error(DISALLOWED_URL_MESSAGE)
-  }
   return parsed
 }
 
