@@ -12,7 +12,12 @@
       aria-hidden="true"
       focusable="false"
     />
-    <span class="min-w-0 [text-box:trim-both_cap_alphabetic]">
+    <!-- A single-line label too long for its container ends with an ellipsis instead of overflowing the badge.
+      Clipping on x only: hidden would also clip y and cut the glyphs the text-box trim lets overflow -->
+    <span
+      class="min-w-0 [text-box:trim-both_cap_alphabetic]"
+      :class="{ 'overflow-x-clip text-ellipsis': !wrap }"
+    >
       <slot />
     </span>
     <component

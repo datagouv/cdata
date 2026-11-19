@@ -3,6 +3,7 @@
     v-if="license"
     :to="license.url || null"
     class="font-mono"
+    :title="license.title"
   >
     {{ license.title }}
   </Badge>
