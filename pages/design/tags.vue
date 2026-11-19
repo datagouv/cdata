@@ -113,10 +113,7 @@
           TagsSelect
         </h2>
         <div class="max-w-xl">
-          <TagsSelect
-            v-model="selectedKeywords"
-            :suggest="suggestExampleTags"
-          />
+          <TagsSelect v-model="selectedKeywords" />
         </div>
       </section>
 
@@ -306,13 +303,6 @@ const selectedKeywords = ref<Array<KeywordTag>>([
   { text: 'données-ouvertes' },
   { text: 'accessibilité' },
 ])
-const exampleKeywords: Array<KeywordTag> = [
-  { text: 'transport' },
-  { text: 'données-ouvertes' },
-  { text: 'accessibilité' },
-  { text: 'environnement' },
-  { text: 'mobilité' },
-]
 const cardStatuses: Array<ObjectStatus> = ['private', 'archived', 'deleted']
 const [publicDataset, , draftDataset, archivedDataset] = exampleDatasets.map(example => example.data)
 const statusDatasets = [
@@ -342,11 +332,6 @@ const statusThreads = [
   { id: 'demo-thread-answered', closed: null, discussion: [{}, {}] },
   { id: 'demo-thread-closed', closed: '2026-01-01T00:00:00Z', discussion: [{}, {}] },
 ].map(thread => thread as unknown as Thread)
-
-async function suggestExampleTags(query: string): Promise<Array<KeywordTag>> {
-  const normalizedQuery = query.toLocaleLowerCase()
-  return exampleKeywords.filter(tag => tag.text.includes(normalizedQuery))
-}
 
 const hvdBadge: TranslatedBadge = {
   kind: 'hvd',
