@@ -8,11 +8,12 @@ test.beforeEach(async ({ page }) => {
 // Rendering (sizes, alignment, colours) is checked on screenshots of each section, behaviour by interacting
 const screenshotOptions = { maxDiffPixelRatio: 0.01 }
 
-test('renders every tag and badge section', async ({ page }) => {
-  for (const section of ['components-tag-examples', 'tag-variants', 'tags-select-example', 'dataset-label-examples', 'badge-tones', 'card-business-labels', 'access-type-badges', 'schema-badge', 'table-statuses', 'external-link-badge-examples']) {
+// One test per section: a mismatch must not hide the sections after it
+for (const section of ['components-tag-examples', 'tag-variants', 'tags-select-example', 'dataset-label-examples', 'badge-tones', 'card-business-labels', 'access-type-badges', 'schema-badge', 'table-statuses', 'external-link-badge-examples']) {
+  test(`renders the ${section} section`, async ({ page }) => {
     await expect(page.getByTestId(section)).toHaveScreenshot(`${section}.png`, screenshotOptions)
-  }
-})
+  })
+}
 
 test('renders the hover and pressed states of interactive tags', async ({ page }) => {
   const variants = page.getByTestId('tag-variants')
