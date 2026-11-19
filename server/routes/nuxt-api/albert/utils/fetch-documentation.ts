@@ -4,7 +4,7 @@
  */
 
 import { fetch, type Response } from 'undici'
-import { isForbiddenFetchHostError, publicFetchDispatcher } from '~/server/utils/public-fetch'
+import { ForbiddenFetchHostError, publicFetchDispatcher } from '~/server/utils/public-fetch'
 
 const FETCH_TIMEOUT_MS = 15_000
 
@@ -245,7 +245,7 @@ async function fetchDocumentationResponse(
       })
     }
     catch (err) {
-      if (isForbiddenFetchHostError(err)) {
+      if (err instanceof TypeError && err.cause instanceof ForbiddenFetchHostError) {
         throw new Error(DISALLOWED_URL_MESSAGE, { cause: err })
       }
       throw err

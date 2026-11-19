@@ -82,17 +82,3 @@ export const publicFetchDispatcher = new Agent({
     connectThroughPublicOnlyLookup(options, callback)
   },
 })
-
-/**
- * Whether `error` (a fetch failure) was caused by `publicOnlyLookup` refusing the host.
- */
-export function isForbiddenFetchHostError(error: unknown): boolean {
-  let current: unknown = error
-  while (current instanceof Error) {
-    if (current instanceof ForbiddenFetchHostError) {
-      return true
-    }
-    current = current.cause
-  }
-  return false
-}
