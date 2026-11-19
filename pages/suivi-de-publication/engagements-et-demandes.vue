@@ -97,7 +97,7 @@
                   v-for="value in record.fields.type_values"
                   :key="value"
                   size="xs"
-                  :tone="typeBadgeTone(value)"
+                  :tone="typeTone(value)"
                   data-testid="request-type"
                 >
                   {{ value }}
@@ -125,7 +125,7 @@
           <td class="whitespace-nowrap">
             <Badge
               v-if="record.fields.source_demande_front"
-              :tone="sourceBadgeType(record.fields.source_demande_front)"
+              :tone="sourceTone(record.fields.source_demande_front)"
               size="sm"
             >
               {{ record.fields.source_demande_front }}
@@ -151,7 +151,7 @@
               :label="record.fields.statut_front"
               :url="statutLinksToData(record.fields.statut_front) ? record.fields.url : null"
               :link-label="t('Voir les données')"
-              :tone="statutBadgeType(record.fields.statut_front)"
+              :tone="statutTone(record.fields.statut_front)"
               size="sm"
             />
             <span v-else>-</span>
@@ -185,7 +185,7 @@
           >
             <dt class="inline">
               <Badge
-                :tone="statut.badgeType"
+                :tone="statut.tone"
                 size="sm"
               >
                 {{ statut.label }}
@@ -301,7 +301,7 @@ type StatutDefinition = {
   value: string
   // Translated label shown in the legend below the table.
   label: string
-  badgeType: BadgeTone
+  tone: BadgeTone
   // Statuses whose badge links to the published dataset (when the record has an url).
   linksToData: boolean
   description: string
@@ -313,28 +313,28 @@ const STATUTS: Array<StatutDefinition> = [
   {
     value: 'Non disponible',
     label: t('Non disponible'),
-    badgeType: 'danger',
+    tone: 'danger',
     linksToData: false,
     description: t('les données ne sont pas publiées sur {site}.', { site: config.public.title }),
   },
   {
     value: 'En cours',
     label: t('En cours'),
-    badgeType: 'primary',
+    tone: 'primary',
     linksToData: false,
     description: t('les données sont en cours de publication sur {site}.', { site: config.public.title }),
   },
   {
     value: 'Disponible',
     label: t('Disponible'),
-    badgeType: 'success',
+    tone: 'success',
     linksToData: true,
     description: t('les données sont publiées sur {site}.', { site: config.public.title }),
   },
   {
     value: 'Mise à jour requise',
     label: t('Mise à jour requise'),
-    badgeType: 'warning',
+    tone: 'warning',
     linksToData: true,
     description: t('le jeu de données est disponible sur {site}, mais une mise à jour est attendue (ajout d\'un nouveau millésime, correction d\'une erreur, enrichissement des données publiées…).', { site: config.public.title }),
   },
@@ -345,16 +345,16 @@ const statutByValue = new Map(STATUTS.map(statut => [statut.value, statut]))
 // Colours for the "Source de la demande" column. Status colours (red, green, orange)
 // are kept out so they stay tied to the status column; "Demande utilisateur" uses the
 // DSFR decorative teal and "Autre demande" stays neutral grey.
-const SOURCE_BADGE_TYPES: Record<string, BadgeTone> = {
+const SOURCE_TONES: Record<string, BadgeTone> = {
   'DINUM': 'primary',
   'Engagements ministériels 2021': 'pink',
   'Demande utilisateur': 'teal',
   'Autre demande': 'neutral',
 }
 
-function sourceBadgeType(source: string | null): BadgeTone {
+function sourceTone(source: string | null): BadgeTone {
   if (!source) return 'neutral'
-  return SOURCE_BADGE_TYPES[source] ?? 'neutral'
+  return SOURCE_TONES[source] ?? 'neutral'
 }
 
 const columns = [
@@ -410,16 +410,16 @@ const filters: Array<GristFilter<OuvertureRecord>> = [
   },
 ]
 
-function statutBadgeType(statut: string | null): BadgeTone {
+function statutTone(statut: string | null): BadgeTone {
   if (!statut) return 'neutral'
-  return statutByValue.get(statut)?.badgeType ?? 'neutral'
+  return statutByValue.get(statut)?.tone ?? 'neutral'
 }
 
 function statutLinksToData(statut: string | null): boolean {
   return Boolean(statut && statutByValue.get(statut)?.linksToData)
 }
 
-function typeBadgeTone(type: string): BadgeTone {
+function typeTone(type: string): BadgeTone {
   switch (type) {
     case 'API': return 'teal'
     case 'Téléchargement': return 'primary'

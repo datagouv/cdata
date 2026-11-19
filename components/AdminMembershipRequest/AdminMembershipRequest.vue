@@ -95,7 +95,7 @@
   <!-- Membership request (by a user) -->
   <BannerNotif
     v-else
-    type="primary"
+    tone="primary"
     :icon="RiUserAddLine"
     :badge="$t(`Demande de rattachement`)"
     :date="new Date(request.created)"

@@ -1,7 +1,7 @@
 <template>
   <Badge
     size="xs"
-    :tone="status.type"
+    :tone="status.tone"
   >
     {{ status.label }}
   </Badge>
@@ -18,42 +18,44 @@ const props = defineProps<{
 
 const { t } = useTranslation()
 
-const status = computed<{ label: string, type: BadgeTone }>(() => {
+type StatusDisplay = { label: string, tone: BadgeTone }
+
+const status = computed<StatusDisplay>(() => {
   switch (props.job.status) {
     case 'pending':
       return {
         label: t('En attente'),
-        type: 'neutral',
+        tone: 'neutral',
       }
     case 'initializing':
       return {
         label: t(`En cours d'initialisation`),
-        type: 'primary',
+        tone: 'primary',
       }
     case 'initialized':
       return {
         label: t('Initialisé'),
-        type: 'neutral',
+        tone: 'neutral',
       }
     case 'processing':
       return {
         label: t('En traitement'),
-        type: 'primary',
+        tone: 'primary',
       }
     case 'done':
       return {
         label: t('Terminé'),
-        type: 'success',
+        tone: 'success',
       }
     case 'done-errors':
       return {
         label: t('Terminé avec des erreurs'),
-        type: 'warning',
+        tone: 'warning',
       }
     case 'failed':
       return {
         label: t('Échoué'),
-        type: 'danger',
+        tone: 'danger',
       }
     default:
       return throwOnNever(props.job.status, 'Unknown job status')

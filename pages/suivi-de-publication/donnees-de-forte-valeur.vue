@@ -95,7 +95,7 @@
               :label="record.fields.statut_telechargement"
               :url="statutLinksToData(record.fields.statut_telechargement) ? record.fields.url_telechargement : null"
               :link-label="t('Voir les données')"
-              :tone="statutBadgeType(record.fields.statut_telechargement)"
+              :tone="statutTone(record.fields.statut_telechargement)"
               size="xs"
               wrap
             />
@@ -107,7 +107,7 @@
               :label="record.fields.statut_api"
               :url="statutLinksToData(record.fields.statut_api) ? record.fields.url_api : null"
               :link-label="t('Voir les données')"
-              :tone="statutBadgeType(record.fields.statut_api)"
+              :tone="statutTone(record.fields.statut_api)"
               size="xs"
               wrap
             />
@@ -231,7 +231,7 @@ const enrichedRecords = computed<Array<HvdRecord>>(() => {
 type StatutDefinition = {
   // Raw Grist value — used both to match records and as the filter option value.
   value: string
-  badgeType: BadgeTone
+  tone: BadgeTone
   // Statuses whose badge links to the published dataset (when the record has an url).
   linksToData: boolean
 }
@@ -239,19 +239,19 @@ type StatutDefinition = {
 // Single source of truth for the statuses: drives the badge colours, the
 // "links to data" behaviour and the filter ordering. Order = progression order.
 const STATUTS: Array<StatutDefinition> = [
-  { value: 'Non disponible', badgeType: 'danger', linksToData: false },
-  { value: 'Planifié', badgeType: 'warning', linksToData: false },
-  { value: 'Partiellement disponible', badgeType: 'pink', linksToData: true },
-  { value: 'Disponible', badgeType: 'primary', linksToData: true },
-  { value: 'Disponible sur data.gouv.fr', badgeType: 'success', linksToData: true },
-  { value: 'Non requis', badgeType: 'neutral', linksToData: false },
+  { value: 'Non disponible', tone: 'danger', linksToData: false },
+  { value: 'Planifié', tone: 'warning', linksToData: false },
+  { value: 'Partiellement disponible', tone: 'pink', linksToData: true },
+  { value: 'Disponible', tone: 'primary', linksToData: true },
+  { value: 'Disponible sur data.gouv.fr', tone: 'success', linksToData: true },
+  { value: 'Non requis', tone: 'neutral', linksToData: false },
 ]
 
 const statutByValue = new Map(STATUTS.map(statut => [statut.value, statut]))
 
-function statutBadgeType(statut: string | null): BadgeTone {
+function statutTone(statut: string | null): BadgeTone {
   if (!statut) return 'neutral'
-  return statutByValue.get(statut)?.badgeType ?? 'neutral'
+  return statutByValue.get(statut)?.tone ?? 'neutral'
 }
 
 function statutLinksToData(statut: string | null): boolean {

@@ -183,7 +183,7 @@
             <td>
               <Badge
                 size="xs"
-                :tone="getStatus(item).type"
+                :tone="getStatus(item).tone"
               >
                 {{ getStatus(item).label }}
               </Badge>
@@ -311,20 +311,22 @@ const props = withDefaults(defineProps<{
   items: () => [],
 })
 
-const itemStatusMap: Record<HarvestItemStatus, { label: string, type: BadgeTone }> = {
-  pending: { label: t('En attente'), type: 'neutral' },
-  started: { label: t('Commencé'), type: 'primary' },
-  done: { label: t('Terminé'), type: 'success' },
-  failed: { label: t('Échoué'), type: 'danger' },
-  skipped: { label: t('Ignoré'), type: 'neutral' },
-  archived: { label: t('Archivé'), type: 'neutral' },
+type StatusDisplay = { label: string, tone: BadgeTone }
+
+const itemStatusMap: Record<HarvestItemStatus, StatusDisplay> = {
+  pending: { label: t('En attente'), tone: 'neutral' },
+  started: { label: t('Commencé'), tone: 'primary' },
+  done: { label: t('Terminé'), tone: 'success' },
+  failed: { label: t('Échoué'), tone: 'danger' },
+  skipped: { label: t('Ignoré'), tone: 'neutral' },
+  archived: { label: t('Archivé'), tone: 'neutral' },
 }
 
 const itemStatusOptions = Object.entries(itemStatusMap).map(([id, status]) => ({ id: id as HarvestItemStatus, ...status }))
 
 const page = ref(1)
 const pageSize = ref(15)
-const selectedItemStatus = ref<{ id: HarvestItemStatus, label: string, type: BadgeTone } | null>(null)
+const selectedItemStatus = ref<StatusDisplay & { id: HarvestItemStatus } | null>(null)
 
 watch(selectedItemStatus, () => {
   page.value = 1
@@ -338,7 +340,7 @@ const { preview, displayedItems, displayedTotal, total, byStatus } = await useJo
   selectedItemStatus,
 )
 
-function getStatus(item: HarvestItem): { label: string, type: BadgeTone } {
+function getStatus(item: HarvestItem): StatusDisplay {
   return itemStatusMap[item.status]
 }
 

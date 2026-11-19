@@ -3,7 +3,7 @@
     <Badge
       class="absolute top-0 left-2.5 -translate-y-1/2"
       size="sm"
-      :tone="type"
+      :tone
       :icon
     >
       {{ badge }}
@@ -49,7 +49,7 @@ import { FormattedDate, Badge } from '@datagouv/components-next'
 import type { Component } from 'vue'
 
 defineProps<{
-  type: 'warning' | 'primary'
+  tone: 'warning' | 'primary'
   icon: Component
   badge: string
   date: Date
