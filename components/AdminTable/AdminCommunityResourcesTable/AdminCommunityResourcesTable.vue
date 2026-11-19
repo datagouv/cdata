@@ -14,9 +14,6 @@
         >
           {{ t("Titre de la ressource") }}
         </AdminTableTh>
-        <AdminTableTh class="w-44">
-          {{ t("Statut") }}
-        </AdminTableTh>
         <AdminTableTh class="w-14">
           {{ t("Format") }}
         </AdminTableTh>
@@ -65,9 +62,6 @@
           </p>
         </td>
         <td>
-          <CommunityResourceAvailabilityBadge :community-resource />
-        </td>
-        <td>
           <code class="p-1 font-mono bg-gray-lower text-sm text-gray-medium rounded">{{ communityResource.format }}</code>
         </td>
         <td><FormattedDate :date="communityResource.created_at" /></td>
@@ -91,7 +85,6 @@ import { FormattedDate, type CommunityResource, type Resource, type SchemaRespon
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
-import CommunityResourceAvailabilityBadge from './CommunityResourceAvailabilityBadge.vue'
 import type { CommunityResourceForm, CommunityResourceSortedBy, ResourceForm, SortDirection } from '~/types/types'
 import FileEditModal from '~/components/Datasets/FileEditModal.vue'
 import FileEditModalFromQueryString from '~/components/Datasets/FileEditModalFromQueryString.vue'

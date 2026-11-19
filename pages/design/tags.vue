@@ -223,25 +223,13 @@
           </div>
           <div class="space-y-2">
             <p class="text-sm font-bold">
-              Disponibilité des ressources principales
+              Disponibilité des ressources
             </p>
             <div class="flex flex-wrap items-center gap-2">
               <ResourceAvailabilityBadge
                 v-for="resource in availabilityResources"
                 :key="resource.id"
                 :resource
-              />
-            </div>
-          </div>
-          <div class="space-y-2">
-            <p class="text-sm font-bold">
-              Disponibilité des ressources communautaires
-            </p>
-            <div class="flex flex-wrap items-center gap-2">
-              <CommunityResourceAvailabilityBadge
-                v-for="communityResource in availabilityCommunityResources"
-                :key="communityResource.id"
-                :community-resource
               />
             </div>
           </div>
@@ -314,9 +302,8 @@
 </template>
 
 <script setup lang="ts">
-import { AccessTypeBadge, DatasetBadge, LabelTag, ObjectStatusBadge, OrganizationTypeBadge, Tag, Toggletip, type CommunityResource, type ObjectStatus, type Resource, type TranslatedBadge } from '@datagouv/components-next'
+import { AccessTypeBadge, DatasetBadge, LabelTag, ObjectStatusBadge, OrganizationTypeBadge, Tag, Toggletip, type ObjectStatus, type Resource, type TranslatedBadge } from '@datagouv/components-next'
 import { RiCheckboxCircleLine, RiCheckLine, RiInformationLine } from '@remixicon/vue'
-import CommunityResourceAvailabilityBadge from '~/components/AdminTable/AdminCommunityResourcesTable/CommunityResourceAvailabilityBadge.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ResourceAvailabilityBadge from '~/components/Datasets/ResourceAvailabilityBadge.vue'
 import DiscussionStatusBadge from '~/components/Discussions/DiscussionStatusBadge.vue'
@@ -365,10 +352,6 @@ const availabilityResources = [true, false, undefined].map((available, index) =>
   id: `demo-resource-${index}`,
   extras: available === undefined ? {} : { 'check:available': available },
 }) as unknown as Resource)
-const availabilityCommunityResources = [true, false, undefined].map((available, index) => ({
-  id: `demo-community-resource-${index}`,
-  extras: available === undefined ? {} : { 'check:available': available },
-}) as unknown as CommunityResource)
 const statusThreads = [
   { id: 'demo-thread-new', closed: null, discussion: [{}] },
   { id: 'demo-thread-answered', closed: null, discussion: [{}, {}] },

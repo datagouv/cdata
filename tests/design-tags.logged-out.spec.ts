@@ -68,11 +68,11 @@ test('shows API access types, with an icon only on the restricted ones', async (
 test('shows the statuses used in tables', async ({ page }) => {
   const statuses = page.getByTestId('table-statuses')
 
-  for (const context of ['Publication des objets', 'Traitements', 'Disponibilité des ressources principales', 'Disponibilité des ressources communautaires', 'Discussions']) {
+  for (const context of ['Publication des objets', 'Traitements', 'Disponibilité des ressources', 'Discussions']) {
     await expect(statuses.getByText(context, { exact: true })).toBeVisible()
   }
 
-  for (const text of ['Public', 'Brouillon', 'Archivé', 'Supprimé', 'En attente', 'En cours d\'initialisation', 'Initialisé', 'En traitement', 'Terminé', 'Terminé avec des erreurs', 'Échoué', 'Inconnu', 'Pas encore contrôlé', 'Nouveau', 'Répondu', 'Clos']) {
+  for (const text of ['Public', 'Brouillon', 'Archivé', 'Supprimé', 'En attente', 'En cours d\'initialisation', 'Initialisé', 'En traitement', 'Terminé', 'Terminé avec des erreurs', 'Échoué', 'Inconnu', 'Nouveau', 'Répondu', 'Clos']) {
     await expect(statuses.getByText(text, { exact: true })).toBeVisible()
   }
 })
