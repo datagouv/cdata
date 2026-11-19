@@ -4,14 +4,14 @@
     v-if="request.kind === 'invitation'"
     class="relative bg-white shadow rounded-sm p-5 mt-3"
   >
-    <AdminBadge
+    <Badge
       class="absolute top-0 left-2.5 -translate-y-1/2"
       size="sm"
-      type="secondary"
+      tone="neutral"
       :icon="RiMailSendLine"
     >
       {{ $t('Invitation envoyée') }}
-    </AdminBadge>
+    </Badge>
 
     <div class="flex flex-wrap justify-between gap-5">
       <div class="space-y-1">
@@ -50,12 +50,11 @@
               class="text-sm text-gray-medium"
             >
               {{ t('Rôle proposé :') }}
-              <AdminBadge
-                size="xs"
-                :type="getRoleBadgeType(request.role)"
-              >
-                {{ roleLabel }}
-              </AdminBadge>
+              <MemberRoleBadge
+                v-if="request.role"
+                :role="request.role"
+                :label="roleLabel"
+              />
             </div>
           </div>
         </div>
@@ -96,7 +95,7 @@
   <!-- Membership request (by a user) -->
   <BannerNotif
     v-else
-    type="primary"
+    tone="primary"
     :icon="RiUserAddLine"
     :badge="$t(`Demande de rattachement`)"
     :date="new Date(request.created)"
@@ -198,12 +197,12 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, FormattedDate } from '@datagouv/components-next'
+import { Avatar, BrandedButton, FormattedDate, Badge } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiCheckLine, RiMailLine, RiMailSendLine, RiUserAddLine } from '@remixicon/vue'
 import InputGroup from '../InputGroup/InputGroup.vue'
 import ModalWithButton from '../Modal/ModalWithButton.vue'
-import AdminBadge from '../AdminBadge/AdminBadge.vue'
+import MemberRoleBadge from '../Organization/MemberRoleBadge.vue'
 import type { PendingMembershipRequest } from '~/types/types'
 
 const props = defineProps<{

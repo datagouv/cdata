@@ -5,6 +5,7 @@ import type { Page } from '@playwright/test'
 
 const searchPages = {
   organizations: '/organizations',
+  datasets: '/datasets/search',
   dataservices: '/dataservices/search',
   reuses: '/reuses/search',
 }
@@ -31,6 +32,21 @@ test('narrow cards keep long titles below status badges', async ({ page }) => {
   expect(badgeBox).not.toBeNull()
   expect(titleBox!.y).toBeGreaterThanOrEqual(badgeBox!.y + badgeBox!.height)
   expect(titleBox!.width).toBeGreaterThan(200)
+})
+
+test('a public dataset card shows its access type unless it is open', async ({ page }) => {
+  const dataset = { ...exampleDatasets[0]!.data, id: 'demo-dataset-restricted', title: 'Données accessibles sur habilitation', access_type: 'restricted' as const }
+  await search(page, 'datasets', dataset, dataset.title)
+  const card = page.getByRole('article').filter({ has: page.getByRole('heading', { name: dataset.title }) })
+  await expect(card.getByText('Accès restreint', { exact: true })).toBeVisible()
+})
+
+test('a draft dataset card shows its status rather than its access type', async ({ page }) => {
+  const dataset = { ...exampleDatasets[0]!.data, id: 'demo-dataset-draft-restricted', title: 'Brouillon accessible sur habilitation', private: true, access_type: 'restricted' as const }
+  await search(page, 'datasets', dataset, dataset.title)
+  const card = page.getByRole('article').filter({ has: page.getByRole('heading', { name: dataset.title }) })
+  await expect(card.getByText('Brouillon', { exact: true })).toBeVisible()
+  await expect(card.getByText('Accès restreint', { exact: true })).toHaveCount(0)
 })
 
 test('certification is described on the focused organization link', async ({ page }) => {

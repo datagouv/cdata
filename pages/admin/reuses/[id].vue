@@ -37,7 +37,10 @@
       <div class="text-sm text-mentionGrey space-y-1.5 mb-5">
         <p class="space-x-1">
           <span>{{ $t('Statut') }}:</span>
-          <ReuseBadge :reuse />
+          <ReuseBadge
+            size="xs"
+            :reuse
+          />
         </p>
         <div class="space-x-1">
           <RiBarChartBoxLine class="inline size-3" />
@@ -105,10 +108,9 @@
 </template>
 
 <script setup lang="ts">
-import { ActivityActor, BrandedButton, summarize, FormattedDate, Tooltip, getActivityTranslation } from '@datagouv/components-next'
+import { ActivityActor, BrandedButton, summarize, FormattedDate, Tooltip, getActivityTranslation, ReuseBadge } from '@datagouv/components-next'
 import type { Activity, Reuse } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiEyeLine, RiStarLine } from '@remixicon/vue'
-import ReuseBadge from '~/components/AdminBadge/ReuseBadge.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'

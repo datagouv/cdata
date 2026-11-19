@@ -1,16 +1,16 @@
 <template>
-  <AdminBadge
+  <Badge
     size="xs"
-    :type="status.type"
+    :tone="status.tone"
   >
     {{ status.label }}
-  </AdminBadge>
+  </Badge>
 </template>
 
 <script setup lang="ts">
-import { throwOnNever } from '@datagouv/components-next'
+import { throwOnNever, Badge } from '@datagouv/components-next'
 import type { HarvesterJob, HarvesterJobPreview } from '~/types/harvesters'
-import type { AdminBadgeType } from '~/types/types'
+import type { BadgeTone } from '@datagouv/components-next'
 
 const props = defineProps<{
   job: HarvesterJob | HarvesterJobPreview
@@ -18,42 +18,44 @@ const props = defineProps<{
 
 const { t } = useTranslation()
 
-const status = computed<{ label: string, type: AdminBadgeType }>(() => {
+type StatusDisplay = { label: string, tone: BadgeTone }
+
+const status = computed<StatusDisplay>(() => {
   switch (props.job.status) {
     case 'pending':
       return {
         label: t('En attente'),
-        type: 'secondary',
+        tone: 'neutral',
       }
     case 'initializing':
       return {
         label: t(`En cours d'initialisation`),
-        type: 'primary',
+        tone: 'primary',
       }
     case 'initialized':
       return {
         label: t('Initialisé'),
-        type: 'secondary',
+        tone: 'neutral',
       }
     case 'processing':
       return {
         label: t('En traitement'),
-        type: 'primary',
+        tone: 'primary',
       }
     case 'done':
       return {
         label: t('Terminé'),
-        type: 'success',
+        tone: 'success',
       }
     case 'done-errors':
       return {
         label: t('Terminé avec des erreurs'),
-        type: 'warning',
+        tone: 'warning',
       }
     case 'failed':
       return {
         label: t('Échoué'),
-        type: 'danger',
+        tone: 'danger',
       }
     default:
       return throwOnNever(props.job.status, 'Unknown job status')

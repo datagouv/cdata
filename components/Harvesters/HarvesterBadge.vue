@@ -1,49 +1,49 @@
 <template>
   <span>
-    <AdminBadge
+    <Badge
       v-if="harvester.deleted"
       size="xs"
-      type="danger"
+      tone="danger"
     >
       {{ $t('Supprimé') }}
-    </AdminBadge>
-    <AdminBadge
+    </Badge>
+    <Badge
       v-else-if="!harvester.active"
       size="xs"
-      type="danger"
+      tone="danger"
     >
       {{ $t('Inactif') }}
-    </AdminBadge>
-    <AdminBadge
+    </Badge>
+    <Badge
       v-else-if="harvester.validation.state === 'refused'"
       size="xs"
-      type="danger"
+      tone="danger"
     >
       {{ $t('Refusé') }}
-    </AdminBadge>
-    <AdminBadge
+    </Badge>
+    <Badge
       v-else-if="harvester.validation.state === 'pending'"
       size="xs"
-      type="warning"
+      tone="warning"
     >
       {{ $t('En attente de validation') }}
-    </AdminBadge>
+    </Badge>
     <JobBadge
       v-else-if="harvester.last_job"
       :job="harvester.last_job"
     />
-    <AdminBadge
+    <Badge
       v-else
       size="xs"
-      type="secondary"
+      tone="neutral"
     >
       {{ $t(`Aucun job pour l'instant`) }}
-    </AdminBadge>
+    </Badge>
   </span>
 </template>
 
 <script setup lang="ts">
-import AdminBadge from '../AdminBadge/AdminBadge.vue'
+import { Badge } from '@datagouv/components-next'
 import JobBadge from './JobBadge.vue'
 import type { HarvesterSource } from '~/types/harvesters'
 

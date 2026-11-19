@@ -49,18 +49,18 @@
     <div v-if="isProducer">
       —
     </div>
-    <AdminBadge
+    <Badge
       v-if="isProducer"
       size="xs"
-      type="primary"
+      tone="primary"
     >
       {{ $t('Producteur') }}
-    </AdminBadge>
+    </Badge>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Avatar, FormattedDate, OrganizationLogo, TranslationT } from '@datagouv/components-next'
+import { Avatar, FormattedDate, OrganizationLogo, TranslationT, Badge } from '@datagouv/components-next'
 import type { Comment, DiscussionSubjectTypes } from '~/types/discussions'
 import { isProducerOfSubject } from '~/utils/discussions'
 

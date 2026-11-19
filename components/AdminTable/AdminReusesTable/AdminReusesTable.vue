@@ -51,7 +51,10 @@
           </AdminContentWithTooltip>
         </td>
         <td>
-          <ReuseBadge :reuse />
+          <ReuseBadge
+            size="xs"
+            :reuse
+          />
         </td>
         <td>
           <div v-if="reuse.id in activities">
@@ -102,14 +105,13 @@
 </template>
 
 <script setup lang="ts">
-import { ActivityActor, BrandedButton, summarize, FormattedDate } from '@datagouv/components-next'
+import { ActivityActor, BrandedButton, summarize, FormattedDate, ReuseBadge } from '@datagouv/components-next'
 import type { Activity, Reuse, ReuseV2 } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import type { ReuseSortedBy, SortDirection } from '~/types/types'
-import ReuseBadge from '~/components/AdminBadge/ReuseBadge.vue'
 
 const props = withDefaults(defineProps<{
   activities?: Record<string, Activity>

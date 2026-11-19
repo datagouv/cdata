@@ -144,9 +144,10 @@
         />
       </div>
     </div>
-    <p
+    <Badge
       v-if="lastValue && lastMonth"
-      class="mt-2 gap-1 font-normal normal-case fr-badge fr-badge--no-icon fr-badge--success"
+      tone="success"
+      class="mt-2"
     >
       <strong>
         + {{ summarize(lastValue, 2) }}
@@ -156,13 +157,14 @@
         :date="lastMonth"
         :options="{ dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }"
       />
-    </p>
+    </Badge>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { ContentLoader } from 'vue-content-loader'
+import Badge from './Badge.vue'
 import FormattedDate from './FormattedDate.vue'
 import { summarize } from '../functions/helpers'
 import { useTranslation } from '../composables/useTranslation'

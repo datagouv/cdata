@@ -86,9 +86,9 @@
               </td>
               <td>{{ getKindLabel(post.kind) }}</td>
               <td>
-                <AdminBadge
+                <Badge
                   size="xs"
-                  :type="post.published ? 'primary' : 'secondary'"
+                  :tone="post.published ? 'primary' : 'neutral'"
                 >
                   <TranslationT
                     v-if="post.published"
@@ -101,7 +101,7 @@
                   <template v-else>
                     {{ t('Brouillon') }}
                   </template>
-                </AdminBadge>
+                </Badge>
               </td>
               <td><FormattedDate :date="post.created_at" /></td>
               <td><FormattedDate :date="post.last_modified" /></td>
@@ -168,7 +168,7 @@
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, Pagination, BrandedButton, FormattedDate, TranslationT, SearchableSelect } from '@datagouv/components-next'
+import { Badge, LoadingBlock, Pagination, BrandedButton, FormattedDate, SearchableSelect, TranslationT } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref, watch } from 'vue'
 import { RiAddLine, RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'

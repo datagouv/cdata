@@ -707,17 +707,16 @@
                   </SearchableSelect>
                   <div
                     v-if="form.spatial_zones.length"
-                    class="mt-2 flex flex-wrap"
+                    class="mt-2 flex flex-wrap gap-2"
                   >
-                    <button
+                    <TagComponent
                       v-for="zone in form.spatial_zones"
                       :key="zone.id"
-                      class="fr-tag fr-tag--sm fr-tag--dismiss  mr-2 mb-2"
-                      type="button"
+                      dismissible
                       @click="removeZone(zone)"
                     >
                       {{ zone.name }}
-                    </button>
+                    </TagComponent>
                   </div>
                 </div>
               </div>
@@ -789,7 +788,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, Tooltip, AI_SUGGESTION_MIN_DESCRIPTION_LENGTH, DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH, SearchableSelect } from '@datagouv/components-next'
-import { SimpleBanner, type Badge, type License } from '@datagouv/components-next'
+import { SimpleBanner, Tag as TagComponent, type Badge, type License } from '@datagouv/components-next'
 import { RiAddLine, RiStarFill, RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'

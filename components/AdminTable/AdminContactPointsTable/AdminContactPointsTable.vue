@@ -33,12 +33,12 @@
           {{ contactPoint.name }}
         </td>
         <td>
-          <AdminBadge
+          <Badge
+            v-if="getRoleLabel(contactPoint)"
             size="xs"
-            type="secondary"
           >
             {{ getRoleLabel(contactPoint) }}
-          </AdminBadge>
+          </Badge>
         </td>
         <td>
           {{ contactPoint.email }}
@@ -123,10 +123,9 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SelectGroup, toast } from '@datagouv/components-next'
+import { Badge, BrandedButton, SelectGroup, toast } from '@datagouv/components-next'
 import type { ContactPoint, ContactPointRole, Organization } from '@datagouv/components-next'
 import { RiPencilLine } from '@remixicon/vue'
-import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 

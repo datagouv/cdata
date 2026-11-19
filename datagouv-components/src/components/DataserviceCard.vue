@@ -26,35 +26,17 @@
       {{ dataservice.title }}
     </template>
     <template
-      v-if="dataservice.private || dataservice.archived_at || dataservice.access_type === 'restricted' || dataservice.access_type === 'open_with_account'"
+      v-if="getDataserviceStatus(dataservice) !== 'public' || dataservice.access_type !== 'open'"
       #badge
     >
-      <ObjectCardBadge
-        v-if="dataservice.private"
-        :icon="RiLockLine"
-      >
-        {{ t('Brouillon') }}
-      </ObjectCardBadge>
-      <ObjectCardBadge
-        v-else-if="dataservice.archived_at"
-        :icon="RiArchiveLine"
-      >
-        {{ t('Archivé') }}
-      </ObjectCardBadge>
-      <ObjectCardBadge
-        v-else-if="dataservice.access_type === 'restricted'"
-        :icon="RiLockLine"
-        tone="warning"
-      >
-        {{ t('Accès restreint') }}
-      </ObjectCardBadge>
-      <ObjectCardBadge
-        v-else-if="dataservice.access_type === 'open_with_account'"
-        :icon="RiPassValidLine"
-        tone="yellow"
-      >
-        {{ t('Ouvert avec un compte') }}
-      </ObjectCardBadge>
+      <DataserviceBadge
+        v-if="getDataserviceStatus(dataservice) !== 'public'"
+        :dataservice
+      />
+      <AccessTypeBadge
+        v-else
+        :access-type="dataservice.access_type"
+      />
     </template>
 
     <ObjectCardOwner
@@ -108,23 +90,22 @@
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
 import {
-  RiArchiveLine,
   RiEyeLine,
-  RiLockLine,
-  RiPassValidLine,
   RiSparklingLine,
   RiStarLine,
   RiTerminalLine,
 } from '@remixicon/vue'
 import { useComponentsConfig } from '../config'
+import { getDataserviceStatus } from '../functions/objectStatus'
 import type { Dataservice } from '../types/dataservices'
 import type { TitleTag } from '../types/ui'
 import { useTranslation } from '../composables/useTranslation'
+import AccessTypeBadge from './AccessTypeBadge.vue'
+import DataserviceBadge from './DataserviceBadge.vue'
 import OrganizationLogo from './OrganizationLogo.vue'
 import Avatar from './Avatar.vue'
 import Placeholder from './Placeholder.vue'
 import ObjectCard from './ObjectCard.vue'
-import ObjectCardBadge from './ObjectCardBadge.vue'
 import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardMetric from './ObjectCardMetric.vue'
 import ObjectCardMetrics from './ObjectCardMetrics.vue'

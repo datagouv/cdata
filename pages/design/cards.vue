@@ -88,7 +88,10 @@
       </LoadingBlock>
     </div>
 
-    <h2 class="mb-3">
+    <h2
+      id="chart"
+      class="mb-3"
+    >
       Chart
     </h2>
     <div class="not-prose grid gap-4 md:grid-cols-2">
