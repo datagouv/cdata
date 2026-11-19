@@ -4,7 +4,7 @@
  */
 
 import { fetch, type Response } from 'undici'
-import { isForbiddenFetchHostError, isForbiddenIpLiteral, publicFetchDispatcher } from '~/server/utils/public-fetch'
+import { isForbiddenFetchHostError, publicFetchDispatcher } from '~/server/utils/public-fetch'
 
 const FETCH_TIMEOUT_MS = 15_000
 
@@ -162,10 +162,7 @@ const NAMED_HTML_ENTITIES: Record<string, string> = {
   bull: '\u2022',
 }
 
-/**
- * Hostnames are checked at connection time by `publicFetchDispatcher`; only what the
- * socket never resolves (scheme, IP literals) is checked here.
- */
+/** Hosts are checked at connection time by `publicFetchDispatcher`, only the scheme is checked here. */
 function assertSafeDocumentationUrl(urlString: string): URL {
   let parsed: URL
   try {
@@ -178,7 +175,7 @@ function assertSafeDocumentationUrl(urlString: string): URL {
   if (proto !== 'http:' && proto !== 'https:') {
     throw new Error(DISALLOWED_URL_MESSAGE)
   }
-  if (!parsed.hostname || isForbiddenIpLiteral(parsed.hostname)) {
+  if (!parsed.hostname) {
     throw new Error(DISALLOWED_URL_MESSAGE)
   }
   return parsed

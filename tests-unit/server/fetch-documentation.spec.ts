@@ -1,9 +1,10 @@
 import dns, { type LookupAddress } from 'node:dns'
 import { createServer, type Server } from 'node:http'
 import type { AddressInfo } from 'node:net'
+import { fetch } from 'undici'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { fetchDocumentationContent } from '~/server/routes/nuxt-api/albert/utils/fetch-documentation'
-import { isForbiddenIpLiteral, publicOnlyLookup } from '~/server/utils/public-fetch'
+import { isForbiddenAddress, publicFetchDispatcher, publicOnlyLookup } from '~/server/utils/public-fetch'
 
 const DISALLOWED_URL_MESSAGE = 'Documentation URL is not allowed. Use a public http(s) URL.'
 const PUBLIC_ADDRESS = '1.1.1.1'
@@ -86,7 +87,39 @@ describe('fetchDocumentationContent', () => {
   })
 })
 
-describe('isForbiddenIpLiteral', () => {
+describe('publicFetchDispatcher', () => {
+  let server: Server
+  let port: number
+  let hits = 0
+
+  beforeAll(async () => {
+    server = createServer((_req, res) => {
+      hits++
+      res.end('internal secret')
+    })
+    await new Promise<void>(resolve => server.listen(0, '::', resolve))
+    port = (server.address() as AddressInfo).port
+  })
+
+  afterAll(async () => {
+    await new Promise(resolve => server.close(resolve))
+  })
+
+  afterEach(() => {
+    hits = 0
+  })
+
+  it.each(['127.0.0.1', '[::1]'])('refuses the private IP literal %s on its own, without the caller checking the URL', async (host) => {
+    const error = await fetch(`http://${host}:${port}/`, { dispatcher: publicFetchDispatcher }).catch(err => err)
+
+    expect(error).toBeInstanceOf(TypeError)
+    expect((error as TypeError).cause).toBeInstanceOf(Error)
+    expect(((error as TypeError).cause as Error).name).toBe('ForbiddenFetchHostError')
+    expect(hits).toBe(0)
+  })
+})
+
+describe('isForbiddenAddress', () => {
   it.each([
     '0.0.0.0',
     '10.0.0.1',
@@ -104,7 +137,6 @@ describe('isForbiddenIpLiteral', () => {
     '255.255.255.255',
     '::',
     '::1',
-    '[::1]',
     '::7f00:1', // IPv4-compatible
     '::ffff:127.0.0.1',
     '::ffff:7f00:1',
@@ -124,23 +156,18 @@ describe('isForbiddenIpLiteral', () => {
     'fec0::1', // site-local
     'ff02::1',
   ])('refuses %s', (address) => {
-    expect(isForbiddenIpLiteral(address)).toBe(true)
+    expect(isForbiddenAddress(address)).toBe(true)
   })
 
   it.each([
     PUBLIC_ADDRESS,
     '8.8.8.8',
     PUBLIC_IPV6_ADDRESS,
-    `[${PUBLIC_IPV6_ADDRESS}]`,
     '::ffff:1.1.1.1',
     '64:ff9b::101:101', // NAT64 of 1.1.1.1
     '2002:101:101::1', // 6to4 of 1.1.1.1
   ])('accepts %s', (address) => {
-    expect(isForbiddenIpLiteral(address)).toBe(false)
-  })
-
-  it('leaves hostnames to the connection-time lookup', () => {
-    expect(isForbiddenIpLiteral('localhost')).toBe(false)
+    expect(isForbiddenAddress(address)).toBe(false)
   })
 })
 

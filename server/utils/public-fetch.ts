@@ -10,7 +10,7 @@
 
 import dns from 'node:dns'
 import net, { BlockList, type LookupFunction } from 'node:net'
-import { Agent } from 'undici'
+import { Agent, buildConnector } from 'undici'
 
 /** IPv4 ranges that are not globally reachable (IANA IPv4 special-purpose registry), plus multicast. */
 const NON_GLOBAL_IPV4 = new BlockList()
@@ -93,7 +93,7 @@ function embeddedIpv4(address: string): string | null {
 }
 
 /** Whether `address` (a valid IPv4 or IPv6 address, no brackets) must not be fetched. */
-function isForbiddenAddress(addressWithZone: string): boolean {
+export function isForbiddenAddress(addressWithZone: string): boolean {
   // A zone index (fe80::1%eth0) only scopes a link-local address, it never makes one public.
   const address = addressWithZone.split('%')[0]
   const family = net.isIP(address)
@@ -143,21 +143,22 @@ export const publicOnlyLookup: LookupFunction = (hostname, options, callback) =>
   })
 }
 
-/**
- * Dispatcher for fetches of user-supplied URLs. Each connection, redirects included, resolves
- * through `publicOnlyLookup`.
- */
-export const publicFetchDispatcher = new Agent({ connect: { lookup: publicOnlyLookup } })
+const connectThroughPublicOnlyLookup = buildConnector({ lookup: publicOnlyLookup })
 
 /**
- * Sockets skip the DNS lookup for IP literals, so `publicOnlyLookup` never sees them:
- * they must be checked on the URL before fetching.
- * @param hostname - `URL.hostname` (already punycode for IDN, IPv6 in brackets)
+ * Dispatcher for fetches of user-supplied URLs: every connection, redirects included, is to a
+ * public address. Sockets skip the DNS lookup for IP literals, so `publicOnlyLookup` never sees
+ * them: the connector checks them itself.
  */
-export function isForbiddenIpLiteral(hostname: string): boolean {
-  const unbracketed = hostname.startsWith('[') && hostname.endsWith(']') ? hostname.slice(1, -1) : hostname
-  return net.isIP(unbracketed) !== 0 && isForbiddenAddress(unbracketed)
-}
+export const publicFetchDispatcher = new Agent({
+  connect: (options, callback) => {
+    if (net.isIP(options.hostname) && isForbiddenAddress(options.hostname)) {
+      callback(new ForbiddenFetchHostError(options.hostname), null)
+      return
+    }
+    connectThroughPublicOnlyLookup(options, callback)
+  },
+})
 
 /**
  * Whether `error` (a fetch failure) was caused by `publicOnlyLookup` refusing the host.
