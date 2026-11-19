@@ -39,6 +39,19 @@ test.describe('when the two-factor setup requires a fresh session', () => {
     await expect(page.getByRole('dialog', { name: 'Authentification deux facteurs' })).toBeVisible()
     await expect(page.getByTestId('totp-key')).not.toBeEmpty()
   })
+
+  test('going back from the reauthentication lands on the profile, without the modal', async ({ page }) => {
+    await page.route('**/tf-setup?*', route => route.fulfill({ status: 401, json: { response: { reauth_required: true } } }))
+    await gotoHydrated(page, '/')
+    await gotoHydrated(page, '/admin/me/profile')
+    await page.getByRole('button', { name: 'Configurer l\'authentification deux facteurs' }).click()
+    await expect(page.getByRole('heading', { level: 1, name: 'Confirmer votre identité' })).toBeVisible()
+
+    await page.goBack()
+
+    await expect(page).toHaveURL(/\/admin\/me\/profile$/)
+    await expect(page.getByRole('button', { name: 'Configurer l\'authentification deux facteurs' })).toBeVisible()
+  })
 })
 
 test.describe('when the email change requires a fresh session', () => {
@@ -60,7 +73,7 @@ test.describe('when the email change requires a fresh session', () => {
     await expect(dialog.getByLabel('Nouvelle adresse email *', { exact: true })).toBeVisible()
   })
 
-  test('going back from the reauthentication does not send to it again', async ({ page }) => {
+  test('going back from the reauthentication lands on the profile, without the modal', async ({ page }) => {
     await page.route('**/change-email?*', route => route.fulfill({ status: 401, json: { response: { reauth_required: true } } }))
     await gotoHydrated(page, '/')
     await gotoHydrated(page, '/admin/me/profile')
@@ -69,8 +82,8 @@ test.describe('when the email change requires a fresh session', () => {
 
     await page.goBack()
 
-    await expect(page).not.toHaveURL(/\/verify/)
-    await expect(page).not.toHaveURL(/change_email=/)
+    await expect(page).toHaveURL(/\/admin\/me\/profile$/)
+    await expect(page.getByRole('button', { name: 'Modifier l\'adresse email' })).toBeVisible()
   })
 })
 
