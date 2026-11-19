@@ -27,12 +27,9 @@
             />
             <span
               v-if="organization.deleted"
-              class="h-10 inline-block ml-1"
+              class="h-10 inline-block ml-1 align-[0.15rem]"
             >
-              <OrganizationBadge
-                :organization
-                class="align-[0.25rem]"
-              />
+              <OrganizationBadge :organization />
             </span>
           </div>
         </div>
