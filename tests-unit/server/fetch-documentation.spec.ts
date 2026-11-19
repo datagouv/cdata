@@ -60,6 +60,14 @@ describe('fetchDocumentationContent', () => {
     expect(hits).toBe(0)
   })
 
+  it('refuses a hostname resolving to loopback over https too', async () => {
+    // The lookup reaches TLS sockets through a different Node call than plain ones.
+    stubSocketDns([{ address: '127.0.0.1', family: 4 }])
+
+    await expect(fetchDocumentationContent(`https://rebind.test:${port}/`)).rejects.toThrow(DISALLOWED_URL_MESSAGE)
+    expect(hits).toBe(0)
+  })
+
   it('refuses a hostname resolving to the unspecified IPv6 address', async () => {
     stubSocketDns([{ address: '::', family: 6 }])
 
