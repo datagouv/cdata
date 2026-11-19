@@ -160,8 +160,8 @@ importers:
         specifier: ^6.7.1
         version: 6.7.1
       undici:
-        specifier: ^8.11.2
-        version: 8.12.4
+        specifier: ^6.29.1
+        version: 6.29.1
       unhead:
         specifier: ^3.4.3
         version: 3.4.3(esbuild@0.28.2)(rolldown@1.2.19)(rollup@4.68.3)(vite@8.3.8(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(sass-embedded@1.108.2)(sass@1.108.2)(terser@5.51.2)(yaml@2.9.1))
