@@ -2,8 +2,8 @@
   <Badge
     :size
     :tone="display.tone"
-    :icon="display.icon"
-    medium
+    :icon="bare ? null : display.icon"
+    :medium="!bare"
   >
     {{ display.label }}
   </Badge>
@@ -21,6 +21,8 @@ import Badge from './Badge.vue'
 const props = withDefaults(defineProps<{
   accessType: AccessType
   size?: 'xs' | 'sm'
+  // Table cells show the bare label, like the other statuses next to it
+  bare?: boolean
 }>(), {
   size: 'sm',
 })

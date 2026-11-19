@@ -59,7 +59,11 @@
           />
         </td>
         <td>
-          <AccessTypeBadge :access-type="dataservice.access_type" />
+          <AccessTypeBadge
+            :access-type="dataservice.access_type"
+            size="xs"
+            bare
+          />
         </td>
         <td><FormattedDate :date="dataservice.created_at" /></td>
         <td>
