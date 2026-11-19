@@ -4,7 +4,7 @@ import type { AddressInfo } from 'node:net'
 import { fetch } from 'undici'
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from 'vitest'
 import { fetchDocumentationContent } from '~/server/routes/nuxt-api/albert/utils/fetch-documentation'
-import { isForbiddenAddress, publicFetchDispatcher, publicOnlyLookup } from '~/server/utils/public-fetch'
+import { ForbiddenFetchHostError, isForbiddenAddress, publicFetchDispatcher, publicOnlyLookup } from '~/server/utils/public-fetch'
 
 const DISALLOWED_URL_MESSAGE = 'Documentation URL is not allowed. Use a public http(s) URL.'
 const PUBLIC_ADDRESS = '1.1.1.1'
@@ -121,8 +121,7 @@ describe('publicFetchDispatcher', () => {
     const error = await fetch(`http://${host}:${port}/`, { dispatcher: publicFetchDispatcher }).catch(err => err)
 
     expect(error).toBeInstanceOf(TypeError)
-    expect((error as TypeError).cause).toBeInstanceOf(Error)
-    expect(((error as TypeError).cause as Error).name).toBe('ForbiddenFetchHostError')
+    expect((error as TypeError).cause).toBeInstanceOf(ForbiddenFetchHostError)
     expect(hits).toBe(0)
   })
 })
@@ -210,7 +209,6 @@ describe('publicOnlyLookup', () => {
     const error = await new Promise((resolve) => {
       publicOnlyLookup('private.test', { all: true }, err => resolve(err))
     })
-    expect(error).toBeInstanceOf(Error)
-    expect((error as Error).name).toBe('ForbiddenFetchHostError')
+    expect(error).toBeInstanceOf(ForbiddenFetchHostError)
   })
 })
