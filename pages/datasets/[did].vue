@@ -48,7 +48,9 @@
       <PendingReportsBanner
         v-if="dataset"
         :subject="{ class: 'Dataset', value: dataset }"
+        with-object-actions
         class="mt-4"
+        @refresh="refresh"
       />
     </div>
     <LoadingBlock
@@ -537,7 +539,7 @@ const { height: sidebarHeight } = useElementSize(sidebar)
 const { height: headerHeight } = useElementSize(header)
 
 const url = computed(() => `/api/2/datasets/${route.params.did}/`)
-const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
+const { data: dataset, status, refresh } = await useAPI<DatasetV2WithFullObject>(url, {
   headers: {
     'X-Get-Datasets-Full-Objects': 'True',
   },

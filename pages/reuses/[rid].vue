@@ -52,7 +52,9 @@
       <PendingReportsBanner
         v-if="reuse"
         :subject="{ class: 'Reuse', value: reuse }"
+        with-object-actions
         class="mt-4"
+        @refresh="refresh"
       />
     </div>
     <LoadingBlock
@@ -195,7 +197,7 @@ const route = useRoute()
 const config = useRuntimeConfig()
 
 const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
-const { data: reuse, status } = await useAPI<Reuse>(url, { showErrorPage: true, redirectOnSlug: 'rid' })
+const { data: reuse, status, refresh } = await useAPI<Reuse>(url, { showErrorPage: true, redirectOnSlug: 'rid' })
 
 const title = computed(() => `Réutilisation - ${reuse.value?.title} | ${config.public.title}`)
 const description = computed(() => normalizeSeoDescription(reuse.value ? getDescriptionShort(reuse.value) : undefined))

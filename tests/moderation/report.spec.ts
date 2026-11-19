@@ -86,6 +86,9 @@ test.describe('Report and moderation', () => {
 
     const banner = page.getByText('Signalement de test E2E (bandeau admin)')
     await expect(banner).toBeVisible()
+    // The admin page has its own visibility and deletion actions, with their own guards
+    await expect(page.getByRole('button', { name: 'Cacher l\'objet' })).toHaveCount(0)
+    await expect(page.getByRole('button', { name: 'Supprimer l\'objet' })).toHaveCount(0)
     await page.getByRole('button', { name: 'Rejeter le signalement' }).click()
 
     await expect(page.getByText('Signalement rejeté.')).toBeVisible()
@@ -104,7 +107,8 @@ test.describe('Report and moderation', () => {
     await hideButton.click()
 
     await expect(page.getByText('Objet caché.')).toBeVisible()
-    await expect(hideButton).toBeDisabled()
+    // The object is a draft now: there is nothing left to hide
+    await expect(hideButton).not.toBeVisible()
     const updated = await (await request.get(`${API_BASE}/api/2/datasets/${dataset.id}/`)).json()
     expect(updated.private).toBe(true)
   })
@@ -161,21 +165,26 @@ test.describe('Report and moderation', () => {
     await expect(filter).not.toBeVisible()
   })
 
-  test('does not show pending reports to a user who is not a sysadmin', async ({ browser, request }) => {
-    const dataset = await createDataset(request, `Test report banner hidden ${Date.now()}`, 'Dataset pour tester le bandeau de signalement')
-    createdDatasets.push(dataset.id)
-
-    await reportDataset(request, dataset.id, 'Signalement de test E2E (bandeau caché)')
-
+  test('does not show pending reports to the owner of the object who is not a sysadmin', async ({ browser, request }) => {
     const normalUserContext = await browser.newContext({ storageState: 'playwright/.auth/normal-user.json' })
     const normalUserPage = await normalUserContext.newPage()
-    // The reports API is restricted to sysadmins: the page must not even ask for them
-    const reportFetches: Array<string> = []
-    normalUserPage.on('request', (req) => {
-      if (req.method() === 'GET' && new URL(req.url()).pathname === '/api/1/reports/') reportFetches.push(req.url())
-    })
     try {
-      await gotoHydrated(normalUserPage, `/datasets/${dataset.id}/`)
+      // Owned by the normal user, who can edit it but must not see its reports
+      const dataset = await createDataset(normalUserPage.request, `Test report banner hidden ${Date.now()}`, 'Dataset pour tester le bandeau de signalement')
+      createdDatasets.push(dataset.id)
+
+      await reportDataset(request, dataset.id, 'Signalement de test E2E (bandeau caché)')
+
+      // The reports API is restricted to sysadmins: the page must not even ask for them
+      const reportFetches: Array<string> = []
+      normalUserPage.on('request', (req) => {
+        if (req.method() === 'GET' && new URL(req.url()).pathname === '/api/1/reports/') reportFetches.push(req.url())
+      })
+      // A server-side render fetches from Nitro, out of the browser's sight: reach the page
+      // through a client-side navigation so that its fetches go through the browser
+      await gotoHydrated(normalUserPage, '/')
+      await normalUserPage.evaluate(path => window.useNuxtApp!().$router.push(path), `/datasets/${dataset.id}/`)
+      await normalUserPage.waitForLoadState('networkidle')
       await expect(normalUserPage.getByRole('heading', { name: dataset.title })).toBeVisible()
       await expect(normalUserPage.getByText('Signalement de test E2E (bandeau caché)')).not.toBeVisible()
       expect(reportFetches).toEqual([])

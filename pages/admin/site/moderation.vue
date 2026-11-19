@@ -230,35 +230,18 @@
               </td>
               <td>
                 <div><FormattedDate :date="report.reported_at" /></div>
-                <p
-                  v-if="report.by"
-                  class="inline-flex items-center"
-                >
+                <p class="inline-flex items-center">
                   {{ t('par ') }}
-                  <AvatarWithName
+                  <ReportAuthor
                     class="fr-ml-1v"
-                    :user="report.by"
+                    :class="{ 'text-gray-plain': !report.by }"
+                    :report
                   />
-                </p>
-                <p
-                  v-else
-                  class="inline-flex items-center"
-                >
-                  {{ t('par ') }}
-                  <span
-                    class="fr-ml-1v inline-flex items-center space-x-1 text-gray-plain"
-                  >
-                    <component
-                      :is="report.reason === 'auto_spam' ? RiRobot2Line : RiSpyLine"
-                      class="size-3.5 shrink-0"
-                    />
-                    <span class="font-bold">{{ report.reason === 'auto_spam' ? t('Spam bot') : t('Anonyme') }}</span>
-                  </span>
                 </p>
               </td>
               <td>
                 <div class="font-bold">
-                  {{ reasons?.find((reason) => reason.value === report.reason)?.label || report.reason }}
+                  {{ getReportReasonLabel(report, reasons) }}
                 </div>
                 {{ report.message }}
               </td>
@@ -318,7 +301,7 @@
                     :delete-button-label="$t('Supprimer')"
                     :deletable-object="subjects[report.id].value!"
                     :object-type="getObjectType(report.subject.class)"
-                    :object-title="getSubjectTitle(subjects[report.id]?.value)"
+                    :object-title="getReportSubjectTitle(subjects[report.id]?.value)"
                     @deleted="() => { fetchFullSubject(report, report.subject!); refresh() }"
                   >
                     <template #button="{ attrs, listeners }">
@@ -367,9 +350,10 @@
 import type { Report, ReportReason, ReportSubject, Activity, Dataservice, DatasetV2, Organization, Reuse, User, UserReference } from '@datagouv/components-next'
 import { ActivityActor, AvatarWithName, FilterChip, FormattedDate, LoadingBlock, Pagination, SearchableSelect, BrandedButton, TranslationT } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
-import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine, RiRobot2Line, RiSpyLine } from '@remixicon/vue'
+import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'
-import { getDeleteUrl, getObjectType, getSwitchToPrivateMethodAndUrl } from '~/utils/reports'
+import ReportAuthor from '~/components/Spam/ReportAuthor.vue'
+import { getDeleteUrl, getObjectType, getReportReasonLabel, getReportSubjectTitle, getSwitchToPrivateMethodAndUrl } from '~/utils/reports'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
@@ -543,14 +527,6 @@ const getDiscussionAuthor = (report: Report, thread: Thread) => {
     if (comment) return comment.posted_by
   }
   return thread.user
-}
-
-const getSubjectTitle = (subject: RecordSubjectFullObject['value']): string | undefined => {
-  if (!subject) return undefined
-  if ('title' in subject) return subject.title
-  if ('name' in subject) return subject.name
-  if ('first_name' in subject) return `${subject.first_name} ${subject.last_name}`.trim() || subject.slug
-  return undefined
 }
 </script>
 

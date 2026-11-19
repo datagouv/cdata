@@ -43,7 +43,9 @@
         <div class="container pt-14 pb-4 sm:pb-6">
           <PendingReportsBanner
             :subject="{ class: 'Organization', value: organization }"
+            with-object-actions
             class="mb-4"
+            @refresh="refresh"
           />
           <div class="flex items-start justify-between gap-3">
             <div>
