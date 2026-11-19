@@ -19,12 +19,10 @@ import { Agent, buildConnector } from 'undici'
 const GLOBAL_UNICAST_IPV6 = ipaddr.IPv6.parseCIDR('2000::/3')
 
 /**
- * Whether the IP address `addressWithZone` (no brackets, zone index allowed) must not be fetched.
+ * Whether the IP address `address` (no brackets) must not be fetched.
  * Anything that is not an IP address is refused.
  */
-export function isForbiddenAddress(addressWithZone: string): boolean {
-  // A zone index (fe80::1%eth0) only scopes a link-local address, it never makes one public.
-  const address = addressWithZone.split('%')[0]
+export function isForbiddenAddress(address: string): boolean {
   // net.isIP first: ipaddr.parse also reads the shorthand IPv4 forms (127.1, 0x7f.0.0.1).
   if (!net.isIP(address)) {
     return true

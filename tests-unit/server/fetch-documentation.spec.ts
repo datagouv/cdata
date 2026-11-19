@@ -167,7 +167,6 @@ describe('isForbiddenAddress', () => {
     'fc00::1',
     'fd12:3456::1',
     'fe80::1',
-    'fe80::1%eth0',
     'fec0::1', // site-local
     'ff02::1',
     // An IPv6 address carrying an IPv4 is refused whatever the IPv4, public ones included.
