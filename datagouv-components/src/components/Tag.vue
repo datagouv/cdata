@@ -5,7 +5,7 @@
     :type="isButton ? 'button' : undefined"
     :aria-pressed="pressed"
     @click="toggle"
-    class="inline-flex items-center gap-1 max-w-full min-h-6 py-0.5 rounded-xl border border-(--border-default-grey) text-xs/[18px] font-normal"
+    class="inline-flex items-center gap-1 max-w-full min-h-6 py-0.5 rounded-xl shadow-[inset_0_0_0_1px_var(--border-default-grey)] text-xs/[18px] font-normal"
     :class="[stateClasses, displayedIcon && typeof displayedIcon !== 'string' ? 'pl-1.5 pr-2' : 'px-2']"
   >
     <img
