@@ -82,6 +82,14 @@ describe('fetchDocumentationContent', () => {
     expect(hits).toBe(0)
   })
 
+  it('answers an unresolvable hostname as it answers a private one', async () => {
+    vi.spyOn(dns, 'lookup').mockImplementation(((hostname: string, _options: dns.LookupOptions, callback: LookupCallback) => {
+      callback(Object.assign(new Error(`getaddrinfo ENOTFOUND ${hostname}`), { code: 'ENOTFOUND' }), '')
+    }) as typeof dns.lookup)
+
+    await expect(fetchDocumentationContent(`http://missing.test:${port}/`)).rejects.toThrow(DISALLOWED_URL_MESSAGE)
+  })
+
   it.each([
     'http://127.0.0.1:{port}/',
     'http://0.0.0.0:{port}/',

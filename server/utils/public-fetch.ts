@@ -53,11 +53,9 @@ export class ForbiddenFetchHostError extends Error {
  */
 export const publicOnlyLookup: LookupFunction = (hostname, options, callback) => {
   dns.lookup(hostname, { ...options, all: true }, (err, addresses) => {
-    if (err) {
-      callback(err, '')
-      return
-    }
-    if (!addresses.length || addresses.some(a => isForbiddenAddress(a.address))) {
+    // A name that does not resolve is refused like a private one: told apart, the two answers
+    // would let anyone list the internal names the server's resolver knows.
+    if (err || !addresses.length || addresses.some(a => isForbiddenAddress(a.address))) {
       callback(new ForbiddenFetchHostError(hostname), '')
       return
     }
