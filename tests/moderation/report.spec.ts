@@ -1,6 +1,6 @@
 import type { APIRequestContext } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, deleteDatasets } from '../helpers'
+import { API_BASE, createDataset, deleteDatasets, gotoHydrated } from '../helpers'
 
 const createdDatasets: Array<string> = []
 
@@ -55,6 +55,134 @@ test.describe('Report and moderation', () => {
 
     // The default filter only shows pending reports: the dismissed one disappears
     await expect(row).not.toBeVisible()
+  })
+
+  test('can dismiss a pending report from the reported object page', async ({ page, request }) => {
+    const dataset = await createDataset(request, `Test report banner ${Date.now()}`, 'Dataset pour tester le bandeau de signalement')
+    createdDatasets.push(dataset.id)
+
+    await reportDataset(request, dataset.id, 'Signalement de test E2E (bandeau)')
+
+    await gotoHydrated(page, `/datasets/${dataset.id}/`)
+
+    const banner = page.getByText('Signalement de test E2E (bandeau)')
+    await expect(banner).toBeVisible()
+
+    await page.getByRole('button', { name: 'Rejeter le signalement' }).click()
+
+    await expect(page.getByText('Signalement rejeté.')).toBeVisible()
+    await expect(banner).not.toBeVisible()
+    const pending = await (await request.get(`${API_BASE}/api/1/reports/`, { params: { subject: dataset.id, handled: false } })).json()
+    expect(pending.total).toBe(0)
+  })
+
+  test('can dismiss a pending report from the object admin page', async ({ page, request }) => {
+    const dataset = await createDataset(request, `Test report banner admin ${Date.now()}`, 'Dataset pour tester le bandeau de signalement en administration')
+    createdDatasets.push(dataset.id)
+
+    await reportDataset(request, dataset.id, 'Signalement de test E2E (bandeau admin)')
+
+    await gotoHydrated(page, `/admin/datasets/${dataset.id}`)
+
+    const banner = page.getByText('Signalement de test E2E (bandeau admin)')
+    await expect(banner).toBeVisible()
+    await page.getByRole('button', { name: 'Rejeter le signalement' }).click()
+
+    await expect(page.getByText('Signalement rejeté.')).toBeVisible()
+    await expect(banner).not.toBeVisible()
+  })
+
+  test('can hide a reported object from its page', async ({ page, request }) => {
+    const dataset = await createDataset(request, `Test report banner hide ${Date.now()}`, 'Dataset pour tester le masquage depuis le bandeau')
+    createdDatasets.push(dataset.id)
+
+    await reportDataset(request, dataset.id, 'Signalement de test E2E (bandeau, masquage)')
+
+    await gotoHydrated(page, `/datasets/${dataset.id}/`)
+
+    const hideButton = page.getByRole('button', { name: 'Cacher l\'objet' })
+    await hideButton.click()
+
+    await expect(page.getByText('Objet caché.')).toBeVisible()
+    await expect(hideButton).toBeDisabled()
+    const updated = await (await request.get(`${API_BASE}/api/2/datasets/${dataset.id}/`)).json()
+    expect(updated.private).toBe(true)
+  })
+
+  test('can delete a reported object from its page', async ({ page, request }) => {
+    const dataset = await createDataset(request, `Test report banner delete ${Date.now()}`, 'Dataset pour tester la suppression depuis le bandeau')
+    createdDatasets.push(dataset.id)
+
+    await reportDataset(request, dataset.id, 'Signalement de test E2E (bandeau, suppression)')
+
+    await gotoHydrated(page, `/datasets/${dataset.id}/`)
+
+    await page.getByRole('button', { name: 'Supprimer l\'objet' }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByText('Envoyer un mail automatique (voies de recours)').click()
+    await dialog.getByRole('button', { name: 'Supprimer', exact: true }).click()
+
+    await expect(page.getByText('Objet supprimé.')).toBeVisible()
+    // Deleting the object handles its reports
+    await expect(page.getByText('Signalement de test E2E (bandeau, suppression)')).not.toBeVisible()
+    const updated = await (await request.get(`${API_BASE}/api/2/datasets/${dataset.id}/`)).json()
+    expect(updated.deleted).not.toBeNull()
+  })
+
+  test('links to the other pending reports of the object in moderation', async ({ page, request }) => {
+    const title = `Test report banner others ${Date.now()}`
+    const dataset = await createDataset(request, title, 'Dataset pour tester le lien vers les autres signalements')
+    createdDatasets.push(dataset.id)
+    const otherDataset = await createDataset(request, `Test report banner others, other ${Date.now()}`, 'Dataset signalé à côté')
+    createdDatasets.push(otherDataset.id)
+
+    await reportDataset(request, dataset.id, 'Signalement de test E2E (premier)')
+    await reportDataset(request, dataset.id, 'Signalement de test E2E (second)')
+    await reportDataset(request, otherDataset.id, 'Signalement de test E2E (autre objet)')
+
+    await gotoHydrated(page, `/datasets/${dataset.id}/`)
+
+    // Only the latest report is shown, the other one is behind the link
+    await expect(page.getByText('Signalement de test E2E (second)')).toBeVisible()
+    await expect(page.getByText('Signalement de test E2E (premier)')).not.toBeVisible()
+
+    await page.getByRole('link', { name: 'Voir l\'autre signalement' }).click()
+    await page.waitForURL(`**/admin/site/moderation?subject=${dataset.id}`)
+
+    await expect(page.getByRole('row').filter({ hasText: 'Signalement de test E2E (premier)' })).toBeVisible()
+    await expect(page.getByRole('row').filter({ hasText: 'Signalement de test E2E (second)' })).toBeVisible()
+    await expect(page.getByRole('row').filter({ hasText: 'Signalement de test E2E (autre objet)' })).not.toBeVisible()
+
+    // The filter is shown, and can be removed
+    const filter = page.getByTitle(title)
+    await expect(filter).toBeVisible()
+    await page.getByRole('button', { name: 'Retirer le filtre sur l\'objet' }).click()
+    await page.waitForURL(url => url.pathname === '/admin/site/moderation' && !url.searchParams.has('subject'))
+    await expect(filter).not.toBeVisible()
+  })
+
+  test('does not show pending reports to a user who is not a sysadmin', async ({ browser, request }) => {
+    const dataset = await createDataset(request, `Test report banner hidden ${Date.now()}`, 'Dataset pour tester le bandeau de signalement')
+    createdDatasets.push(dataset.id)
+
+    await reportDataset(request, dataset.id, 'Signalement de test E2E (bandeau caché)')
+
+    const normalUserContext = await browser.newContext({ storageState: 'playwright/.auth/normal-user.json' })
+    const normalUserPage = await normalUserContext.newPage()
+    // The reports API is restricted to sysadmins: the page must not even ask for them
+    const reportFetches: Array<string> = []
+    normalUserPage.on('request', (req) => {
+      if (req.method() === 'GET' && new URL(req.url()).pathname === '/api/1/reports/') reportFetches.push(req.url())
+    })
+    try {
+      await gotoHydrated(normalUserPage, `/datasets/${dataset.id}/`)
+      await expect(normalUserPage.getByRole('heading', { name: dataset.title })).toBeVisible()
+      await expect(normalUserPage.getByText('Signalement de test E2E (bandeau caché)')).not.toBeVisible()
+      expect(reportFetches).toEqual([])
+    }
+    finally {
+      await normalUserContext.close()
+    }
   })
 
   test('cannot send a report without a reason nor a message', async ({ page, request }) => {

@@ -34,6 +34,11 @@
           />
         </div>
       </div>
+      <PendingReportsBanner
+        v-if="dataservice"
+        :subject="{ class: 'Dataservice', value: dataservice }"
+        class="mt-4"
+      />
     </div>
     <LoadingBlock
       v-if="dataservice"
@@ -325,6 +330,7 @@ import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import { useElementSize } from '@vueuse/core'

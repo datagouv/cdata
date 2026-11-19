@@ -45,6 +45,11 @@
           />
         </div>
       </div>
+      <PendingReportsBanner
+        v-if="dataset"
+        :subject="{ class: 'Dataset', value: dataset }"
+        class="mt-4"
+      />
     </div>
     <LoadingBlock
       v-if="dataset"
@@ -509,6 +514,7 @@ import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'

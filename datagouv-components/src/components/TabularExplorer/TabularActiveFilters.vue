@@ -4,78 +4,32 @@
     class="flex items-center justify-between gap-2"
   >
     <div class="flex min-w-0 flex-wrap items-center gap-1.5">
-      <!-- Sort chip -->
-      <span
+      <FilterChip
         v-if="sort"
-        class="inline-flex h-6 items-center gap-1 rounded border border-new-primary/20 bg-new-primary/10 pl-1.5 pr-0.5 text-[12px] leading-4 text-new-primary"
-      >
-        <component
-          :is="sort.direction === 'asc' ? RiArrowUpLine : RiArrowDownLine"
-          class="size-3.5"
-          aria-hidden="true"
-        />
-        <span class="font-medium">{{ sort.column }}</span>
-        <span>{{ sort.direction === 'asc' ? t('croissant') : t('décroissant') }}</span>
-        <button
-          :aria-label="t('Supprimer le tri')"
-          class="flex size-5 items-center justify-center rounded hover:bg-new-primary/15"
-          @click="sort = null"
-        >
-          <RiCloseLine
-            class="size-3.5"
-            aria-hidden="true"
-          />
-        </button>
-      </span>
-
-      <!-- Global search chip -->
-      <span
+        :icon="sort.direction === 'asc' ? RiArrowUpLine : RiArrowDownLine"
+        :name="sort.column"
+        :value="sort.direction === 'asc' ? t('croissant') : t('décroissant')"
+        :remove-label="t('Supprimer le tri')"
+        @remove="sort = null"
+      />
+      <FilterChip
         v-if="globalSearch"
-        class="inline-flex h-6 items-center gap-1 rounded border border-new-primary/20 bg-new-primary/10 pl-1.5 pr-0.5 text-[12px] leading-4 text-new-primary"
-      >
-        <RiSearchLine
-          class="size-3.5"
-          aria-hidden="true"
-        />
-        <span class="font-medium">{{ t('Toutes les colonnes') }}</span>
-        <span>{{ t('contient') }} "{{ globalSearch }}"</span>
-        <button
-          :aria-label="t('Supprimer la recherche')"
-          class="flex size-5 items-center justify-center rounded hover:bg-new-primary/15"
-          @click="globalSearch = ''"
-        >
-          <RiCloseLine
-            class="size-3.5"
-            aria-hidden="true"
-          />
-        </button>
-      </span>
-
-      <!-- Filter chips -->
-      <span
+        :icon="RiSearchLine"
+        :name="t('Toutes les colonnes')"
+        :value="`${t('contient')} &quot;${globalSearch}&quot;`"
+        :remove-label="t('Supprimer la recherche')"
+        @remove="globalSearch = ''"
+      />
+      <FilterChip
         v-for="af in activeFilters"
         :key="af.column"
         :data-testid="`active-filter-${af.column}`"
-        class="inline-flex h-6 items-center gap-1 rounded border border-new-primary/20 bg-new-primary/10 pl-1.5 pr-0.5 text-[12px] leading-4 text-new-primary"
-      >
-        <component
-          :is="getColumnDisplay(af.column).icon"
-          class="size-3.5"
-          aria-hidden="true"
-        />
-        <span class="font-medium">{{ af.column }}</span>
-        <span>{{ af.label }}</span>
-        <button
-          :aria-label="t('Supprimer ce filtre')"
-          class="flex size-5 items-center justify-center rounded hover:bg-new-primary/15"
-          @click="removeFilter(af.column)"
-        >
-          <RiCloseLine
-            class="size-3.5"
-            aria-hidden="true"
-          />
-        </button>
-      </span>
+        :icon="getColumnDisplay(af.column).icon"
+        :name="af.column"
+        :value="af.label"
+        :remove-label="t('Supprimer ce filtre')"
+        @remove="removeFilter(af.column)"
+      />
     </div>
 
     <div class="flex shrink-0 items-center gap-1">
@@ -108,6 +62,7 @@
 <script setup lang="ts">
 import { RiArrowDownLine, RiArrowUpLine, RiCloseLine, RiDownloadLine, RiSearchLine } from '@remixicon/vue'
 import BrandedButton from '../BrandedButton.vue'
+import FilterChip from '../FilterChip.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useTabularContext } from './useTabularContext'
 

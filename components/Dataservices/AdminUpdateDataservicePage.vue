@@ -20,6 +20,10 @@
         />
       </template>
       <template #top>
+        <PendingReportsBanner
+          class="mb-4"
+          :subject="{ class: 'Dataservice', value: dataservice }"
+        />
         <SimpleBanner
           v-if="!dataservice.permissions.edit"
           class="mb-4"
@@ -174,6 +178,7 @@ import type { Dataservice } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeDataservice from '~/components/Dataservices/DescribeDataservice.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import SubjectNotifications from '~/components/Notifications/SubjectNotifications.vue'
 import type { DataserviceForm } from '~/types/types'
 

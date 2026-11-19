@@ -5,15 +5,21 @@
     size="lg"
   >
     <template #button="{ attrs, listeners }">
-      <BrandedButton
-        color="danger"
-        size="xs"
-        :icon="RiDeleteBin6Line"
-        v-bind="attrs"
-        v-on="listeners"
+      <slot
+        name="button"
+        :attrs="attrs"
+        :listeners="listeners"
       >
-        {{ $t('Supprimer') }}
-      </BrandedButton>
+        <BrandedButton
+          color="danger"
+          size="xs"
+          :icon="RiDeleteBin6Line"
+          v-bind="attrs"
+          v-on="listeners"
+        >
+          {{ $t('Supprimer') }}
+        </BrandedButton>
+      </slot>
     </template>
     <template #default>
       <template v-if="!deleted">

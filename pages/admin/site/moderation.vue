@@ -13,12 +13,20 @@
     />
     <div
       v-if="pageData"
-      class="flex justify-between items-end"
+      class="flex justify-between items-end gap-4"
     >
-      <h2 class="text-sm font-bold uppercase m-0">
+      <h2 class="text-sm font-bold uppercase m-0 shrink-0">
         {{ t('{n} signalements | {n} signalement | {n} signalements', pageData.total) }}
       </h2>
-      <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
+      <div class="min-w-0 flex flex-wrap items-center justify-end md:gap-x-6 gap-2">
+        <FilterChip
+          v-if="subjectId"
+          class="max-w-96"
+          :name="t('Objet')"
+          :value="subjectLabel || subjectId"
+          :remove-label="t('Retirer le filtre sur l\'objet')"
+          @remove="removeSubjectFilter"
+        />
         <SearchableSelect
           v-model="filterStatus"
           :placeholder="$t('Filtrer par statut')"
@@ -304,9 +312,9 @@
                     —
                   </div>
                   <AdminDeleteModal
-                    v-if="report.subject && getDeleteUrl(report, report.subject)"
+                    v-if="report.subject"
                     :title="report.subject_embed_id ? $t('Êtes-vous sûr de vouloir supprimer ce commentaire ?') : $t('Êtes-vous sûr de vouloir supprimer cet objet ?')"
-                    :delete-url="getDeleteUrl(report, report.subject)!"
+                    :delete-url="getDeleteUrl(report.subject, report.subject_embed_id)"
                     :delete-button-label="$t('Supprimer')"
                     :deletable-object="subjects[report.id].value!"
                     :object-type="getObjectType(report.subject.class)"
@@ -357,11 +365,11 @@
 
 <script setup lang="ts">
 import type { Report, ReportReason, ReportSubject, Activity, Dataservice, DatasetV2, Organization, Reuse, User, UserReference } from '@datagouv/components-next'
-import { ActivityActor, AvatarWithName, FormattedDate, LoadingBlock, Pagination, SearchableSelect, BrandedButton, TranslationT } from '@datagouv/components-next'
+import { ActivityActor, AvatarWithName, FilterChip, FormattedDate, LoadingBlock, Pagination, SearchableSelect, BrandedButton, TranslationT } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine, RiRobot2Line, RiSpyLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'
-import type { ObjectType } from '~/types/delete'
+import { getDeleteUrl, getObjectType, getSwitchToPrivateMethodAndUrl } from '~/utils/reports'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
@@ -404,14 +412,26 @@ const subjectType = computed(() => {
   return undefined
 })
 
+// Set by the "other reports" link of the banner on the reported object's page
+const subjectId = computed(() => typeof route.query.subject === 'string' ? route.query.subject : undefined)
+
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Report>>(`/api/1/reports/`, { query: {
   handled: filterStatusValue,
   subject_type: subjectType,
+  subject: subjectId,
   page: page,
-  pageSize: pageSize,
+  page_size: pageSize,
   sort: '-reported_at',
 } })
 const { data: reasons } = await useAPI<Array<ReportReason>>('/api/1/reports/reasons/', { lazy: true })
+
+// Saved on each report when it is created, so it is there even once the object is deleted
+const subjectLabel = computed(() => subjectId.value ? pageData.value?.data[0]?.subject_label : null)
+
+function removeSubjectFilter() {
+  const { subject: _subject, ...query } = route.query
+  navigateTo({ query })
+}
 
 const getSubjectUrl = (subject: ReportSubject) => {
   return {
@@ -475,17 +495,6 @@ const dismiss = async (report: Report) => {
   await refresh()
 }
 
-const getSwitchToPrivateMethodAndUrl = (subject: ReportSubject): { method: 'PUT' | 'PATCH', url: string } | null => {
-  return {
-    Dataset: { method: 'PUT' as const, url: `/api/1/datasets/${subject.id}/` },
-    Dataservice: { method: 'PATCH' as const, url: `/api/1/dataservices/${subject.id}/` },
-    Reuse: { method: 'PUT' as const, url: `/api/1/reuses/${subject.id}/` },
-    Organization: null,
-    Discussion: null,
-    User: null,
-  }[subject.class]
-}
-
 const switchPrivate = async (report: Report, subject: ReportSubject) => {
   const methodAndUrl = getSwitchToPrivateMethodAndUrl(subject)
   if (!methodAndUrl) return
@@ -495,21 +504,6 @@ const switchPrivate = async (report: Report, subject: ReportSubject) => {
     body: { private: true },
   })
   await fetchFullSubject(report, subject)
-}
-
-const getDeleteUrl = (report: Report, subject: ReportSubject): string | null => {
-  if (subject.class === 'Discussion' && report.subject_embed_id) {
-    return `/api/1/discussions/${subject.id}/comments/${report.subject_embed_id}/`
-  }
-
-  return {
-    Dataset: `/api/1/datasets/${subject.id}/`,
-    Dataservice: `/api/1/dataservices/${subject.id}/`,
-    Reuse: `/api/1/reuses/${subject.id}/`,
-    Organization: `/api/1/organizations/${subject.id}/`,
-    Discussion: `/api/1/discussions/${subject.id}/`,
-    User: `/api/1/users/${subject.id}/`,
-  }[subject.class]
 }
 
 const isSubjectDeleted = (subject: RecordSubjectFullObject['value']) => {
@@ -549,17 +543,6 @@ const getDiscussionAuthor = (report: Report, thread: Thread) => {
     if (comment) return comment.posted_by
   }
   return thread.user
-}
-
-const getObjectType = (subjectClass: string): ObjectType => {
-  return {
-    Dataset: 'dataset' as ObjectType,
-    Dataservice: 'dataservice' as ObjectType,
-    Reuse: 'reuse' as ObjectType,
-    Organization: 'organization' as ObjectType,
-    Discussion: 'discussion' as ObjectType,
-    User: 'user' as ObjectType,
-  }[subjectClass] || 'dataset'
 }
 
 const getSubjectTitle = (subject: RecordSubjectFullObject['value']): string | undefined => {

@@ -24,6 +24,10 @@
         />
       </template>
       <template #top>
+        <PendingReportsBanner
+          class="mb-4"
+          :subject="{ class: 'Dataset', value: dataset }"
+        />
         <SimpleBanner
           v-if="!dataset.permissions.edit"
           class="mb-4"
@@ -250,6 +254,7 @@ import type { Badge, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiCheckLine, RiDeleteBin6Line, RiFileCopyLine, RiFingerprintLine } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import ModalWithButton from '~/components/Modal/ModalWithButton.vue'
 import SubjectNotifications from '~/components/Notifications/SubjectNotifications.vue'
 import { updateBadges } from '~/api/badges'

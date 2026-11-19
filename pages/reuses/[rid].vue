@@ -49,6 +49,11 @@
           />
         </div>
       </div>
+      <PendingReportsBanner
+        v-if="reuse"
+        :subject="{ class: 'Reuse', value: reuse }"
+        class="mt-4"
+      />
     </div>
     <LoadingBlock
       v-if="reuse"
@@ -178,6 +183,7 @@ import { RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
 import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import { keepScrollWithinPage } from '~/utils/scroll'
 
