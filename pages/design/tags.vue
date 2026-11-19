@@ -60,7 +60,9 @@
           >
             Cliquable · bouton
           </Tag>
+          <!-- flex: the wrapper must not add a text line around the inline Tag, it would sit higher than its neighbours -->
           <Toggletip
+            class="flex"
             :styled-button="false"
             button-class=""
             :button-props="{
