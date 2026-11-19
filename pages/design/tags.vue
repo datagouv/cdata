@@ -86,10 +86,9 @@
             </template>
           </Toggletip>
           <Tag
-            :pressed="isSelected"
+            v-model:pressed="isSelected"
             :icon="isSelected ? RiCheckLine : undefined"
             data-testid="selectable-tag"
-            @click="isSelected = !isSelected"
           >
             Sélectionnable
           </Tag>

@@ -4,6 +4,7 @@
     :to
     :type="isButton ? 'button' : undefined"
     :aria-pressed="pressed"
+    @click="toggle"
     class="inline-flex items-center gap-1 max-w-full min-h-6 py-0.5 rounded-xl border border-(--border-default-grey) text-xs/[18px] font-normal"
     :class="[stateClasses, displayedIcon && typeof displayedIcon !== 'string' ? 'pl-1.5 pr-2' : 'px-2']"
   >
@@ -52,6 +53,10 @@ const { t } = useTranslation()
 const attrs = useAttrs()
 const isButton = computed(() => !props.to && (props.dismissible || !!attrs.onClick || pressed.value !== undefined))
 const displayedIcon = computed(() => props.dismissible ? RiCloseLine : props.icon)
+
+function toggle() {
+  if (pressed.value !== undefined) pressed.value = !pressed.value
+}
 
 const stateClasses = computed(() => {
   if (pressed.value) {
