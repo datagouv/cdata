@@ -4,110 +4,33 @@
  * Two independent concerns, mirroring udata's `udata/ssrf.py`:
  * - when: the address is checked by the socket's own DNS lookup, so the checked address is the
  *   connected one (no DNS rebinding window, every redirect hop checked);
- * - what: only globally reachable addresses pass. Anything the IANA special-purpose registries
- *   do not mark as global is refused, rather than enumerating the ranges known to be dangerous.
+ * - what: only plain unicast addresses pass. Anything ipaddr.js classifies in a special-purpose
+ *   range is refused, IPv6 addresses carrying an IPv4 (IPv4-mapped, 6to4, NAT64) included:
+ *   blocking a reachable host is fixable on report, letting a private one through is not.
  */
 
 import dns from 'node:dns'
-import net, { BlockList, type LookupFunction } from 'node:net'
+import net, { type LookupFunction } from 'node:net'
+import ipaddr from 'ipaddr.js'
 import { Agent, buildConnector } from 'undici'
 
-/** IPv4 ranges that are not globally reachable (IANA IPv4 special-purpose registry), plus multicast. */
-const NON_GLOBAL_IPV4 = new BlockList()
-for (const [network, prefix] of [
-  ['0.0.0.0', 8], // "this network", 0.0.0.0 reaches localhost
-  ['10.0.0.0', 8], // private
-  ['100.64.0.0', 10], // shared address space (CGNAT)
-  ['127.0.0.0', 8], // loopback
-  ['169.254.0.0', 16], // link-local, cloud instance metadata (169.254.169.254)
-  ['172.16.0.0', 12], // private
-  ['192.0.0.0', 24], // IETF protocol assignments
-  ['192.0.2.0', 24], // documentation (TEST-NET-1)
-  ['192.168.0.0', 16], // private
-  ['198.18.0.0', 15], // benchmarking
-  ['198.51.100.0', 24], // documentation (TEST-NET-2)
-  ['203.0.113.0', 24], // documentation (TEST-NET-3)
-  ['224.0.0.0', 4], // multicast
-  ['240.0.0.0', 4], // reserved, broadcast
-] as const) {
-  NON_GLOBAL_IPV4.addSubnet(network, prefix, 'ipv4')
-}
-
-/**
- * IPv6 is checked the other way around: only global unicast (2000::/3) can be public, which
- * rules out ::, ::1, IPv4-compatible ::/96, ULA, link-local, site-local and multicast at once.
- */
-const GLOBAL_UNICAST_IPV6 = new BlockList()
-GLOBAL_UNICAST_IPV6.addSubnet('2000::', 3, 'ipv6')
-
-/** Non-global ranges inside 2000::/3 (IANA IPv6 special-purpose registry). */
-const NON_GLOBAL_IPV6 = new BlockList()
-for (const [network, prefix] of [
-  ['2001::', 23], // IETF protocol assignments (Teredo, benchmarking, ORCHID…)
-  ['2001:db8::', 32], // documentation
-  ['3fff::', 20], // documentation
-] as const) {
-  NON_GLOBAL_IPV6.addSubnet(network, prefix, 'ipv6')
-}
-
-/** The eight 16-bit groups of a valid IPv6 address. */
-function ipv6Hextets(address: string): number[] {
-  let text = address.toLowerCase()
-  const dottedTail = /(\d+)\.(\d+)\.(\d+)\.(\d+)$/.exec(text)
-  if (dottedTail) {
-    const [o1, o2, o3, o4] = dottedTail.slice(1).map(Number)
-    text = `${text.slice(0, dottedTail.index)}${((o1 << 8) | o2).toString(16)}:${((o3 << 8) | o4).toString(16)}`
-  }
-  const [head, tail] = text.split('::')
-  const headGroups = head ? head.split(':') : []
-  const tailGroups = tail ? tail.split(':') : []
-  const zeros = tail === undefined ? [] : Array(8 - headGroups.length - tailGroups.length).fill('0')
-  return [...headGroups, ...zeros, ...tailGroups].map(group => Number.parseInt(group, 16))
-}
-
-function ipv4FromHextets(high: number, low: number): string {
-  return `${high >> 8}.${high & 0xFF}.${low >> 8}.${low & 0xFF}`
-}
-
-/**
- * The IPv4 address an IPv6 address routes to, if any: `::ffff:7f00:1`, `2002:7f00:1::` and
- * `64:ff9b::7f00:1` all reach 127.0.0.1. Unwrapping keeps them from smuggling a private target,
- * and keeps a NAT64 address standing for a public IPv4 reachable.
- */
-function embeddedIpv4(address: string): string | null {
-  const h = ipv6Hextets(address)
-  const firstFiveZero = h.slice(0, 5).every(group => group === 0)
-  // ::ffff:0:0/96 — IPv4-mapped
-  if (firstFiveZero && h[5] === 0xFFFF) {
-    return ipv4FromHextets(h[6], h[7])
-  }
-  // 2002::/16 — 6to4
-  if (h[0] === 0x2002) {
-    return ipv4FromHextets(h[1], h[2])
-  }
-  // 64:ff9b::/96 — NAT64 well-known prefix
-  if (h[0] === 0x64 && h[1] === 0xFF9B && h.slice(2, 6).every(group => group === 0)) {
-    return ipv4FromHextets(h[6], h[7])
-  }
-  return null
-}
+// ipaddr.js calls "unicast" any IPv6 address outside its special ranges, IPv4-compatible
+// ::/96 included: only global unicast can be public.
+const GLOBAL_UNICAST_IPV6 = ipaddr.IPv6.parseCIDR('2000::/3')
 
 /** Whether `address` (a valid IPv4 or IPv6 address, no brackets) must not be fetched. */
 export function isForbiddenAddress(addressWithZone: string): boolean {
   // A zone index (fe80::1%eth0) only scopes a link-local address, it never makes one public.
   const address = addressWithZone.split('%')[0]
-  const family = net.isIP(address)
-  if (family === 4) {
-    return NON_GLOBAL_IPV4.check(address, 'ipv4')
-  }
-  if (family !== 6) {
+  // net.isIP first: ipaddr.parse also reads the shorthand IPv4 forms (127.1, 0x7f.0.0.1).
+  if (!net.isIP(address)) {
     return true
   }
-  const ipv4 = embeddedIpv4(address)
-  if (ipv4) {
-    return NON_GLOBAL_IPV4.check(ipv4, 'ipv4')
+  const parsed = ipaddr.parse(address)
+  if (parsed.range() !== 'unicast') {
+    return true
   }
-  return !GLOBAL_UNICAST_IPV6.check(address, 'ipv6') || NON_GLOBAL_IPV6.check(address, 'ipv6')
+  return parsed.kind() === 'ipv6' && !parsed.match(GLOBAL_UNICAST_IPV6)
 }
 
 export class ForbiddenFetchHostError extends Error {

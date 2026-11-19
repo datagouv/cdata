@@ -155,6 +155,10 @@ describe('isForbiddenAddress', () => {
     'fe80::1%eth0',
     'fec0::1', // site-local
     'ff02::1',
+    // An IPv6 address carrying an IPv4 is refused whatever the IPv4, public ones included.
+    '::ffff:1.1.1.1',
+    '64:ff9b::101:101', // NAT64 of 1.1.1.1
+    '2002:101:101::1', // 6to4 of 1.1.1.1
   ])('refuses %s', (address) => {
     expect(isForbiddenAddress(address)).toBe(true)
   })
@@ -163,9 +167,6 @@ describe('isForbiddenAddress', () => {
     PUBLIC_ADDRESS,
     '8.8.8.8',
     PUBLIC_IPV6_ADDRESS,
-    '::ffff:1.1.1.1',
-    '64:ff9b::101:101', // NAT64 of 1.1.1.1
-    '2002:101:101::1', // 6to4 of 1.1.1.1
   ])('accepts %s', (address) => {
     expect(isForbiddenAddress(address)).toBe(false)
   })
