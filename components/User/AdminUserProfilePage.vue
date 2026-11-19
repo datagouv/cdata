@@ -98,18 +98,7 @@
             </div>
           </div>
           <div class="fr-col-auto">
-            <BrandedButton
-              v-if="config.public.changeEmailPage"
-              color="secondary"
-              size="xs"
-              as="a"
-              :href="`${config.public.apiBase}/${config.public.changeEmailPage}`"
-              :icon="RiEditLine"
-              external
-            >
-              {{ $t(`Changer d'adresse email`) }}
-            </BrandedButton>
-            <ChangeEmailModal v-else />
+            <ChangeEmailModal />
           </div>
         </div>
       </div>
@@ -142,18 +131,7 @@
             </div>
           </div>
           <div class="fr-col-auto">
-            <BrandedButton
-              v-if="config.public.changePasswordPage"
-              color="secondary"
-              size="xs"
-              as="a"
-              :href="`${config.public.apiBase}/${config.public.changePasswordPage}`"
-              :icon="RiEditLine"
-              external
-            >
-              {{ $t('Changer de mot de passe') }}
-            </BrandedButton>
-            <ChangePasswordModal v-else />
+            <ChangePasswordModal />
           </div>
         </div>
       </div>
@@ -248,7 +226,7 @@
 <script setup lang="ts">
 import { BannerAction, BrandedButton, FormattedDate, PaddedContainer, toast, SearchableSelect, TranslationT } from '@datagouv/components-next'
 import type { User } from '@datagouv/components-next'
-import { RiEditLine, RiSaveLine } from '@remixicon/vue'
+import { RiSaveLine } from '@remixicon/vue'
 import DeleteUserModal from './DeleteUserModal.vue'
 import ChangePasswordModal from './ChangePasswordModal.vue'
 import ChangeEmailModal from './ChangeEmailModal.vue'
@@ -267,7 +245,6 @@ const emits = defineEmits<{
 }>()
 
 const me = useMe()
-const config = useNuxtApp().$config
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
 

@@ -261,8 +261,6 @@ export default defineNuxtConfig({
       datasetBadges: ['spd', 'inspire', 'hvd', 'sl', 'sr'],
 
       requireEmailConfirmation: true,
-      changeEmailPage: 'change-email',
-      changePasswordPage: 'change',
 
       readOnlyMode: false,
 
