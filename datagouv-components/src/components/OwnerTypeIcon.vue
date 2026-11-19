@@ -2,7 +2,8 @@
   <component
     :is="icon"
     v-if="icon"
-    class="size-3.5 flex-none"
+    class="flex-none"
+    :class="sizeClass"
     aria-hidden="true"
   />
 </template>
@@ -11,9 +12,12 @@
 import { computed } from 'vue'
 import { findOrganizationType, type OrganizationTypes, type UserType } from '../functions/organizations'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   type: OrganizationTypes | UserType
-}>()
+  sizeClass?: string
+}>(), {
+  sizeClass: 'size-3.5',
+})
 
 const icon = computed(() => findOrganizationType(props.type).icon)
 </script>

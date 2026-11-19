@@ -59,7 +59,6 @@
           color="primary"
           size="xs"
           :icon="RiCheckLine"
-          :aria-controls="modalId"
           @click="isOpen = true"
         >
           {{ $t('Accepter') }}
@@ -69,15 +68,14 @@
           color="danger"
           size="xs"
           :icon="RiCloseLine"
-          :aria-controls="modalId"
           @click="isOpen = true"
         >
           {{ $t('Refuser') }}
         </BrandedButton>
       </template>
     </BannerNotif>
-    <ModalClient
-      :modal-id="modalId"
+    <Modal
+      :id="modalId"
       :opened="isOpen"
       :title="$t('Transfert en attente')"
       size="lg"
@@ -116,14 +114,14 @@
           </BrandedButton>
         </div>
       </template>
-    </ModalClient>
+    </Modal>
   </div>
 </template>
 
 <script setup lang="ts">
 import { Avatar, BrandedButton, OrganizationLogo } from '@datagouv/components-next'
 import { RiCheckLine, RiCloseLine, RiSendPlaneLine } from '@remixicon/vue'
-import ModalClient from './Modal/Modal.client.vue'
+import Modal from './Modal/Modal.vue'
 import type { TransferParty, TransferRequest } from '~/types/types'
 
 const props = withDefaults(defineProps<{

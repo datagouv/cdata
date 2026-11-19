@@ -9,13 +9,31 @@ export type ActivityKey = 'dataset:created' | 'dataset:updated' | 'dataset:delet
   | 'user:followed' | 'topic:created' | 'topic:updated'
 
 /**
- * Who an action is attributed to. Not necessarily a person: harvesting and API tokens
- * act on their own behalf. `class` is the discriminator every API reference carries.
+ * Who an action is attributed to. Not necessarily a person: harvesting acts on its own
+ * behalf, an API token or an application's OAuth2 token on behalf of its owner. `class`
+ * is the discriminator every API reference carries.
  */
 export type ActivityActor
   = | UserReference
-    | { class: 'HarvestSource', id: string, name: string }
-    | { class: 'ApiToken', id: string, name: string }
+    | {
+      class: 'HarvestSource'
+      id: string
+      /** Null once the source has been purged. */
+      name: string | null
+    }
+    | {
+      class: 'ApiToken'
+      id: string
+      owner: UserReference
+      /** Only sent to the token owner and to sysadmins; a token may also have no name. */
+      name: string | null
+    }
+    | {
+      class: 'OAuth2Token'
+      id: string
+      owner: UserReference
+      client: { class: 'OAuth2Client', id: string, name: string }
+    }
 
 export type ActivityExtras = {
   /** Set on the `dataset:resource:*` keys. */

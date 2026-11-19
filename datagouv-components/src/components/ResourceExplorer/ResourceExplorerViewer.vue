@@ -231,7 +231,7 @@ const props = withDefaults(defineProps<{
   resourceTo: (resource: Resource) => RouteLocationRaw
   // When provided (inline mode), shows an "Explorer" button next to the download
   // action that opens the fullscreen explorer on the current resource.
-  exploreTo?: (resource: Resource) => string
+  exploreTo?: (resource: Resource) => string | RouteLocationRaw
   // Overrides the "Copier le lien" target.
   resourceExternalUrl?: (resource: Resource) => string
   replace?: boolean

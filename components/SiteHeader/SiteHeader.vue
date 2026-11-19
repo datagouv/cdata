@@ -82,7 +82,7 @@
                             <BrandedButton
                               :href="me.page"
                               color="tertiary"
-                              :icon="NuxtImg"
+                              :icon="Avatar"
                               :icon-attrs="{
                                 'src': getUserAvatar(me, 24),
                                 'loading': 'lazy',
@@ -262,7 +262,7 @@
                     <BrandedButton
                       :href="me.page"
                       color="tertiary"
-                      :icon="NuxtImg"
+                      :icon="Avatar"
                       :icon-attrs="{
                         'src': getUserAvatar(me, 24),
                         'loading': 'lazy',
@@ -530,8 +530,7 @@
 </template>
 
 <script setup lang="ts">
-import { NuxtImg as _NuxtImg } from '#components'
-import type { Component } from 'vue'
+import type { FunctionalComponent } from 'vue'
 import { BrandedButton, Toggletip, useGetUserAvatar, toast } from '@datagouv/components-next'
 import { RiAccountCircleLine, RiAddLine, RiCheckLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiTerminalLine, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
@@ -542,8 +541,8 @@ import { useMarkAsRead } from '~/composables/useMarkAsRead'
 import { useNotifications } from '~/composables/useNotifications.client'
 import { useLogout, useMaybeMe } from '~/utils/auth'
 
-// @ts-expect-error @nuxt/image v2 types mark the default slot as required (only used with `custom` prop), making NuxtImg incompatible with Component
-const NuxtImg: Component = _NuxtImg
+// BrandedButton takes its icon as a component: the avatar is a plain image wrapped in one.
+const Avatar: FunctionalComponent = (_props, { attrs }) => h('img', attrs)
 
 defineProps<{
   fluid?: boolean
@@ -615,19 +614,22 @@ const logout = async () => {
 onMounted(() => {
   // TODO: remove this logic when we don't rely on udata flash messages
   // following https://github.com/opendatateam/udata/pull/3348
-  const FLASH_MESSAGES: Record<string, { type: 'success' | 'error', text: string }> = {
+  const FLASH_MESSAGES: Record<string, { type: 'success' | 'error' | 'info', text: string }> = {
     logout: { type: 'success', text: t('Vous êtes maintenant déconnecté.') },
     connected: { type: 'success', text: t('Vous êtes maintenant connecté.') },
     change_email: { type: 'success', text: t('Merci. Les instructions de confirmation pour changer votre adresse email ont été envoyées à l\'adresse mail cible.') },
     post_confirm: { type: 'success', text: t('Votre adresse email est maintenant confirmée. Vous êtes maintenant connecté.') },
     change_email_confirmed: { type: 'success', text: t('Votre nouvelle adresse email est maintenant confirmée.') },
-    change_email_expired: { type: 'error', text: t('Le code de vérification de votre adresse email a expiré, un nouveau mail vous a été envoyé.') },
+    change_email_expired: { type: 'error', text: t('Le lien de vérification de votre adresse email a expiré, refaites la demande depuis votre profil.') },
     change_email_invalid: { type: 'error', text: t('Le code de vérification de votre adresse email est incorrect.') },
     change_email_already_taken: { type: 'error', text: t('Cette adresse email est déjà utilisée par un autre compte. Votre adresse email n\'a pas été modifiée.') },
     proconnect_reauth_success: { type: 'success', text: t('Compte confirmé.') },
     proconnect_reauth_failed: { type: 'error', text: t('La confirmation de votre identité avec ProConnect a échoué. Veuillez réessayer.') },
     proconnect_reauth_unavailable: { type: 'error', text: t('Votre session n’a pas été ouverte avec ProConnect : confirmez votre identité avec votre mot de passe.') },
     proconnect_reauth_identity_mismatch: { type: 'error', text: t('Vous vous êtes identifié sur ProConnect avec une autre adresse email que celle de ce compte ({email}).', { email: me.value?.email ?? '' }) },
+    proconnect_identity_mismatch: { type: 'error', text: t('Ce compte est protégé par la double authentification d\'une autre identité ProConnect : connectez-vous avec celle-ci, ou contactez-nous si vous en avez changé.') },
+    proconnect_second_factor_required: { type: 'error', text: t('Ce compte est protégé par la double authentification de ProConnect : connectez-vous avec votre clé ou votre application d\'authentification. Un code reçu par email ne suffit pas.') },
+    proconnect_only_available: { type: 'info', text: t('Vous êtes maintenant connecté. Pour mieux protéger votre compte, vous pouvez vous connecter uniquement avec ProConnect depuis votre profil.') },
   }
 
   if (route.query.flash) {

@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs'
 import * as path from 'node:path'
 import type { Page } from '@playwright/test'
+import type { Dataset } from '@datagouv/components-next'
 import { test, expect } from '../base'
-import { createOrganization, deleteDatasets, deleteOrganizations, gotoHydrated, type ApiOrganization } from '../helpers'
+import { API_BASE, createDataset, createOrganization, deleteDatasets, deleteOrganizations, gotoHydrated, type ApiOrganization } from '../helpers'
 
 // These tests replay the situation reported in datagouv/data.gouv.fr#2060 with the very
 // files it was reported with: a washing machine durability record, exported as CSV
@@ -561,6 +562,34 @@ test.describe('navigation', () => {
     // dataset just created.
     await expect(page).toHaveURL(/step=4/)
     await expect(page.getByRole('button', { name: 'Publier le jeu de données' })).toBeVisible()
+  })
+
+  test('l’ajout à un jeu de données existant aboutit sur sa page', async ({ page, request }) => {
+    await stubPublicationApis(page)
+    const dataset = await createDataset(request, `Jeu existant ${Date.now()}`, 'Reçoit un fichier chaque année', { organization: organization.id })
+    createdDatasets.push(dataset.id)
+
+    await gotoHydrated(page, '/admin/datasets/structured?step=1')
+    await selectProducer(page)
+    await page.getByText('Ajouter à un jeu de données existant').click()
+    await page.getByLabel('Lien vers le jeu de données').fill(`/datasets/${dataset.id}`)
+    await page.getByRole('button', { name: 'Ajouter le jeu de données' }).click()
+    await expect(page.getByText(dataset.title)).toBeVisible()
+    await selectSchema(page, 'durabilite')
+    await page.getByRole('button', { name: 'Suivant' }).click()
+
+    await page.locator('input[type="file"]').setInputFiles(fixture('lave-linge-virgule.csv'))
+    await page.getByRole('button', { name: 'Publier', exact: true }).click()
+    await expect(page.getByText('Vos données sont conformes au schéma.')).toBeVisible(SPREADSHEET_OPENED)
+    await page.getByRole('button', { name: 'Publier', exact: true }).click()
+
+    // Publishing empties the wizard form while leaving for the dataset page: the
+    // step guard must not catch that emptied form and pull the user back to step 1
+    await expect(page).toHaveURL(new RegExp(`/datasets/${dataset.slug}/?$`))
+    await expect(page.getByRole('heading', { name: dataset.title })).toBeVisible()
+
+    const published = (await (await request.get(`${API_BASE}/api/1/datasets/${dataset.id}/`)).json()) as Dataset
+    expect(published.resources.map(resource => resource.schema?.name)).toEqual([SCHEMAS.durabilite.name])
   })
 
   test('recharger une étape avancée renvoie au début plutôt qu’à un écran amputé', async ({ page }) => {

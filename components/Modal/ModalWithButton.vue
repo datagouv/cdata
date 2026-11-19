@@ -2,8 +2,7 @@
   <slot
     name="button"
     :attrs="{
-      'aria-controls': id,
-      'type': 'button' as any,
+      type: 'button' as any,
     }"
     :listeners="{
       click: open,
@@ -11,8 +10,7 @@
 
     :close
   />
-  <ModalClient
-    :modal-id="id"
+  <Modal
     class="fr-header__search"
     :opened="isOpen"
     :title
@@ -36,13 +34,11 @@
         :close
       />
     </template>
-  </ModalClient>
+  </Modal>
 </template>
 
 <script setup lang="ts">
-import ModalClient from './Modal.client.vue'
-
-const id = useId() as string
+import Modal from './Modal.vue'
 
 withDefaults(defineProps<{
   title: string
