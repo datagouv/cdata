@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 const screenshotOptions = { maxDiffPixelRatio: 0.01 }
 
 test('renders every tag and badge section', async ({ page }) => {
-  for (const section of ['components-tag-examples', 'tag-variants', 'tags-select-example', 'dataset-label-examples', 'card-business-labels', 'access-type-badges', 'schema-badge', 'table-statuses', 'external-link-badge-examples']) {
+  for (const section of ['components-tag-examples', 'tag-variants', 'tags-select-example', 'dataset-label-examples', 'badge-tones', 'card-business-labels', 'access-type-badges', 'schema-badge', 'table-statuses', 'external-link-badge-examples']) {
     await expect(page.getByTestId(section)).toHaveScreenshot(`${section}.png`, screenshotOptions)
   }
 })

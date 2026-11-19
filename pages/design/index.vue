@@ -78,7 +78,6 @@
           </div>
         </div>
       </section>
-      <BadgeShowcase />
       <div class="container">
         <BannerAction />
         <BannerNotif />
@@ -148,7 +147,6 @@
 import { BrandedButton, DatasetCard, DatasetQuality, DateRangeDetails, ReadMore, ResourceAccordion, SimpleBanner, type Dataset } from '@datagouv/components-next'
 import { RiArrowRightLine } from '@remixicon/vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import BadgeShowcase from '~/design-system/Badge.vue'
 import BannerAction from '~/design-system/BannerAction.vue'
 import BannerNotif from '~/design-system/BannerNotif.vue'
 import OrganizationNameWithCertificate from '~/design-system/OrganizationNameWithCertificate.vue'

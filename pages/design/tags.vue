@@ -155,6 +155,13 @@
         </div>
       </section>
 
+      <section data-testid="badge-tones">
+        <h2 class="!mb-3">
+          Badges
+        </h2>
+        <BadgeShowcase />
+      </section>
+
       <section data-testid="card-business-labels">
         <h2 class="!mb-3">
           Labels métier des cartes
@@ -289,6 +296,7 @@
 import { AccessTypeBadge, DatasetBadge, LabelTag, ObjectStatusBadge, OrganizationTypeBadge, Tag, Toggletip, type ObjectStatus, type Resource, type TranslatedBadge } from '@datagouv/components-next'
 import { RiCheckboxCircleLine, RiCheckLine, RiInformationLine } from '@remixicon/vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import BadgeShowcase from '~/design-system/Badge.vue'
 import ResourceAvailabilityBadge from '~/components/Datasets/ResourceAvailabilityBadge.vue'
 import DiscussionStatusBadge from '~/components/Discussions/DiscussionStatusBadge.vue'
 import JobBadge from '~/components/Harvesters/JobBadge.vue'
