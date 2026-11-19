@@ -90,20 +90,26 @@
             {{ record.fields.producteur || '-' }}
           </td>
           <td>
-            <HvdStatutBadge
-              :statut="record.fields.statut_telechargement"
-              :url="record.fields.url_telechargement"
+            <ExternalLinkBadge
+              v-if="record.fields.statut_telechargement"
+              :label="record.fields.statut_telechargement"
+              :url="statutLinksToData(record.fields.statut_telechargement) ? record.fields.url_telechargement : null"
               :tone="statutBadgeType(record.fields.statut_telechargement)"
-              :links-to-data="statutLinksToData(record.fields.statut_telechargement)"
+              size="xs"
+              wrap
             />
+            <span v-else>-</span>
           </td>
           <td>
-            <HvdStatutBadge
-              :statut="record.fields.statut_api"
-              :url="record.fields.url_api"
+            <ExternalLinkBadge
+              v-if="record.fields.statut_api"
+              :label="record.fields.statut_api"
+              :url="statutLinksToData(record.fields.statut_api) ? record.fields.url_api : null"
               :tone="statutBadgeType(record.fields.statut_api)"
-              :links-to-data="statutLinksToData(record.fields.statut_api)"
+              size="xs"
+              wrap
             />
+            <span v-else>-</span>
           </td>
         </template>
       </GristTableViewer>
@@ -118,7 +124,7 @@ import OnboardingSection from '~/components/Onboarding/OnboardingSection.vue'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
-import HvdStatutBadge from '~/components/SuiviDePublication/HvdStatutBadge.vue'
+import ExternalLinkBadge from '~/components/ExternalLinkBadge.vue'
 import GristTableViewer from '~/components/GristTableViewer/GristTableViewer.vue'
 import type { GristFilter, GristRecord } from '~/components/GristTableViewer/GristTableViewer.vue'
 import type { BadgeTone } from '@datagouv/components-next'

@@ -9,7 +9,7 @@ test.beforeEach(async ({ page }) => {
 const screenshotOptions = { maxDiffPixelRatio: 0.01 }
 
 test('renders every tag and badge section', async ({ page }) => {
-  for (const section of ['components-tag-examples', 'tag-variants', 'tags-select-example', 'dataset-label-examples', 'card-business-labels', 'access-type-badges', 'schema-badge', 'table-statuses', 'hvd-status-examples']) {
+  for (const section of ['components-tag-examples', 'tag-variants', 'tags-select-example', 'dataset-label-examples', 'card-business-labels', 'access-type-badges', 'schema-badge', 'table-statuses', 'external-link-badge-examples']) {
     await expect(page.getByTestId(section)).toHaveScreenshot(`${section}.png`, screenshotOptions)
   }
 })
@@ -100,13 +100,14 @@ test('shows DatasetLabelTag with and without a link', async ({ page }) => {
   await expect(page.getByTestId('dataset-label-link')).toHaveAttribute('href', '/datasets/search?badge=hvd')
 })
 
-test('shows HvdStatutBadge with and without a data URL', async ({ page }) => {
-  await expect(page.getByTestId('hvd-status-empty').getByText('-', { exact: true })).toBeVisible()
-  await expect(page.getByTestId('hvd-status-static').getByRole('link')).toHaveCount(0)
+test('shows ExternalLinkBadge with and without a URL', async ({ page }) => {
+  await expect(page.getByTestId('external-link-badge-static').getByRole('link')).toHaveCount(0)
+  await expect(page.getByTestId('external-link-badge-static')).toContainText('Publié')
 
-  const linkedBadge = page.getByTestId('hvd-status-link').getByRole('link')
+  const linkedBadge = page.getByTestId('external-link-badge-link').getByRole('link')
+  await expect(linkedBadge).toHaveAttribute('href', 'https://www.data.gouv.fr/datasets/base-adresse-nationale')
   await expect(linkedBadge).toHaveAttribute('target', '_blank')
   await expect(linkedBadge).toHaveAttribute('rel', 'noopener noreferrer')
-  await expect(linkedBadge).toHaveAttribute('aria-label', /Publié.*Voir les données.*nouvel onglet/)
+  await expect(linkedBadge).toHaveAccessibleName('Publié (nouvel onglet)')
   await expect(linkedBadge.locator('svg')).toHaveCount(1)
 })

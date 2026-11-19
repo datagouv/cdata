@@ -146,29 +146,13 @@
             </div>
           </td>
           <td class="whitespace-nowrap">
-            <CdataLink
-              v-if="statutLinksToData(record.fields.statut_front) && record.fields.url"
-              :to="record.fields.url"
-              external
-              target="_blank"
-              rel="noopener"
-              class="no-underline fr-raw-link"
-            >
-              <Badge
-                :tone="statutBadgeType(record.fields.statut_front)"
-                :icon-right="RiExternalLinkLine"
-                size="sm"
-              >
-                {{ record.fields.statut_front }}
-              </Badge>
-            </CdataLink>
-            <Badge
-              v-else-if="record.fields.statut_front"
+            <ExternalLinkBadge
+              v-if="record.fields.statut_front"
+              :label="record.fields.statut_front"
+              :url="statutLinksToData(record.fields.statut_front) ? record.fields.url : null"
               :tone="statutBadgeType(record.fields.statut_front)"
               size="sm"
-            >
-              {{ record.fields.statut_front }}
-            </Badge>
+            />
             <span v-else>-</span>
           </td>
           <td class="whitespace-nowrap">
@@ -217,7 +201,6 @@
 </template>
 
 <script setup lang="ts">
-import { RiExternalLinkLine } from '@remixicon/vue'
 import { TranslationT, Badge } from '@datagouv/components-next'
 import OnboardingHero from '~/components/Onboarding/OnboardingHero.vue'
 import OnboardingSection from '~/components/Onboarding/OnboardingSection.vue'
@@ -225,6 +208,7 @@ import OnboardingTitle from '~/components/Onboarding/OnboardingTitle.vue'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
+import ExternalLinkBadge from '~/components/ExternalLinkBadge.vue'
 import GristTableViewer from '~/components/GristTableViewer/GristTableViewer.vue'
 import type { GristFilter, GristRecord } from '~/components/GristTableViewer/GristTableViewer.vue'
 import type { BadgeTone } from '@datagouv/components-next'

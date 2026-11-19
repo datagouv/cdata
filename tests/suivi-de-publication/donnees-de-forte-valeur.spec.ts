@@ -118,9 +118,9 @@ test('links the status badges to the published data', async ({ page }) => {
   await expect(telechargementLink).toHaveAttribute('href', 'https://www.data.gouv.fr/datasets/zebre')
   await expect(telechargementLink).toHaveAttribute('target', '_blank')
   await expect(telechargementLink).toHaveAttribute('rel', 'noopener noreferrer')
-  await expect(telechargementLink).toHaveAccessibleName('Disponible sur data.gouv.fr — Voir les données (nouvel onglet)')
+  await expect(telechargementLink).toHaveAccessibleName('Disponible sur data.gouv.fr (nouvel onglet)')
   await expect(telechargementLink.locator('svg')).toHaveCount(1)
-  await expect(telechargementLink).not.toContainText('Voir les données')
+  await expect(telechargementLink).toHaveText('Disponible sur data.gouv.fr')
   // "Non disponible" has no url and is not a link.
   await expect(zebreRow.locator('td').nth(6).getByRole('link')).toHaveCount(0)
   await expect(zebreRow.locator('td').nth(6)).toContainText('Non disponible')

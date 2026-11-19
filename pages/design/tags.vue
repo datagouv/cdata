@@ -248,51 +248,37 @@
         </div>
       </section>
 
-      <section data-testid="hvd-status-examples">
+      <section data-testid="external-link-badge-examples">
         <h2 class="!mb-3">
-          Statuts HVD
+          Badges vers un lien externe
         </h2>
         <div class="flex flex-wrap items-center gap-4">
           <div
             class="space-y-2"
-            data-testid="hvd-status-empty"
+            data-testid="external-link-badge-static"
           >
             <p class="text-sm font-bold">
-              Sans statut
+              Sans lien
             </p>
-            <HvdStatutBadge
-              :statut="null"
-              :url="null"
-              tone="neutral"
-              :links-to-data="false"
-            />
-          </div>
-          <div
-            class="space-y-2"
-            data-testid="hvd-status-static"
-          >
-            <p class="text-sm font-bold">
-              Statut fourni par la page
-            </p>
-            <HvdStatutBadge
-              statut="Publié"
+            <ExternalLinkBadge
+              label="Publié"
               :url="null"
               tone="success"
-              :links-to-data="false"
+              size="xs"
             />
           </div>
           <div
             class="space-y-2"
-            data-testid="hvd-status-link"
+            data-testid="external-link-badge-link"
           >
             <p class="text-sm font-bold">
-              Avec lien vers les données
+              Avec lien
             </p>
-            <HvdStatutBadge
-              statut="Publié"
+            <ExternalLinkBadge
+              label="Publié"
               url="https://www.data.gouv.fr/datasets/base-adresse-nationale"
               tone="success"
-              :links-to-data="true"
+              size="xs"
             />
           </div>
         </div>
@@ -308,7 +294,7 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ResourceAvailabilityBadge from '~/components/Datasets/ResourceAvailabilityBadge.vue'
 import DiscussionStatusBadge from '~/components/Discussions/DiscussionStatusBadge.vue'
 import JobBadge from '~/components/Harvesters/JobBadge.vue'
-import HvdStatutBadge from '~/components/SuiviDePublication/HvdStatutBadge.vue'
+import ExternalLinkBadge from '~/components/ExternalLinkBadge.vue'
 import TagsSelect from '~/components/TagsSelect.vue'
 import type { Thread } from '~/types/discussions'
 import type { HarvesterJobPreview, HarvesterJobStatus } from '~/types/harvesters'
