@@ -284,8 +284,8 @@
                     :icon="RiEyeOffLine"
                     icon-only
                     keep-margins-even-without-borders
-                    :disabled="'private' in subjects[report.id].value! && (subjects[report.id].value as any).private"
-                    :title="$t('Cacher l\'objet')"
+                    :disabled="('private' in subjects[report.id].value! && (subjects[report.id].value as any).private) || isLockedByDoi(subjects[report.id].value)"
+                    :title="isLockedByDoi(subjects[report.id].value) ? $t('Un jeu de données porteur d\'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.') : $t('Cacher l\'objet')"
                     @click="switchPrivate(report, report.subject)"
                   />
                   <div
@@ -311,8 +311,8 @@
                         :icon="RiDeleteBinLine"
                         icon-only
                         keep-margins-even-without-borders
-                        :disabled="isSubjectDeleted(subjects[report.id].value)"
-                        :title="$t('Supprimer l\'objet')"
+                        :disabled="isSubjectDeleted(subjects[report.id].value) || isLockedByDoi(subjects[report.id].value)"
+                        :title="isLockedByDoi(subjects[report.id].value) ? $t('Un jeu de données porteur d\'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.') : $t('Supprimer l\'objet')"
                         v-bind="attrs"
                         v-on="listeners"
                       />
@@ -353,7 +353,8 @@ import { computed, ref } from 'vue'
 import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'
 import ReportAuthor from '~/components/Spam/ReportAuthor.vue'
-import { getDeleteUrl, getObjectType, getReportReasonLabel, getReportSubjectTitle, getSwitchToPrivateMethodAndUrl } from '~/utils/reports'
+import { dismissReport, switchSubjectToPrivate } from '~/api/reports'
+import { getDeleteUrl, getObjectType, getReportReasonLabel, getReportSubjectTitle, getSwitchToPrivateMethodAndUrl, isLockedByDoi } from '~/utils/reports'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
@@ -409,8 +410,13 @@ const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Report>>
 } })
 const { data: reasons } = await useAPI<Array<ReportReason>>('/api/1/reports/reasons/', { lazy: true })
 
-// Saved on each report when it is created, so it is there even once the object is deleted
-const subjectLabel = computed(() => subjectId.value ? pageData.value?.data[0]?.subject_label : null)
+// Saved on each report when it is created, so it is there even once the object is deleted. Kept once
+// read: dismissing the last pending reports, or switching the status, can leave no report to read it from
+const subjectLabel = ref<string | null>(null)
+watch(pageData, () => {
+  const label = pageData.value?.data[0]?.subject_label
+  if (subjectId.value && label) subjectLabel.value = label
+}, { immediate: true })
 
 function removeSubjectFilter() {
   const { subject: _subject, ...query } = route.query
@@ -470,23 +476,12 @@ watchEffect(async () => {
 })
 
 const dismiss = async (report: Report) => {
-  await $api(`/api/1/reports/${report.id}`, {
-    method: 'PATCH',
-    body: {
-      dismissed_at: new Date(),
-    },
-  })
+  await dismissReport(report)
   await refresh()
 }
 
 const switchPrivate = async (report: Report, subject: ReportSubject) => {
-  const methodAndUrl = getSwitchToPrivateMethodAndUrl(subject)
-  if (!methodAndUrl) return
-
-  await $api(methodAndUrl.url, {
-    method: methodAndUrl.method,
-    body: { private: true },
-  })
+  await switchSubjectToPrivate(subject)
   await fetchFullSubject(report, subject)
 }
 

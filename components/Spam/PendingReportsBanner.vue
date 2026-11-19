@@ -38,8 +38,8 @@
         {{ $t('Voir les {n} autres signalements | Voir l\'autre signalement | Voir les {n} autres signalements', reports!.total - 1) }}
       </CdataLink>
     </div>
-    <!-- Under the text rather than in the `#button` slot: the banner also sits in the narrow
-         form column of the admin pages, where several buttons beside the text wrap badly -->
+    <!-- Under the text rather than in the `#button` slot: `BannerAction` puts that slot beside the
+         text without wrapping, which squeezes the report in the narrow form column of the admin pages -->
     <div class="mt-3 flex flex-wrap gap-2">
       <BrandedButton
         :icon="RiCheckLine"
@@ -64,7 +64,7 @@
           :deletable-object="subject.value"
           :object-type="getObjectType(subject.class)"
           :object-title="getReportSubjectTitle(subject.value)"
-          @deleted="onDeleted"
+          @deleted="emit('refresh')"
         >
           <template #button="{ attrs, listeners }">
             <BrandedButton
@@ -89,12 +89,13 @@
 import { BannerAction, BrandedButton, FormattedDate, toast, TranslationT } from '@datagouv/components-next'
 import type { Dataservice, DatasetV2, DatasetV2WithFullObject, Organization, Report, ReportReason, ReportSubject, Reuse, User } from '@datagouv/components-next'
 import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine } from '@remixicon/vue'
+import { dismissReport, switchSubjectToPrivate } from '~/api/reports'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import CdataLink from '~/components/CdataLink.vue'
 import ReportAuthor from '~/components/Spam/ReportAuthor.vue'
 import type { PaginatedArray } from '~/types/types'
 import { isMeAdmin } from '~/utils/auth'
-import { getDeleteUrl, getObjectType, getReportReasonLabel, getReportSubjectTitle, getSwitchToPrivateMethodAndUrl } from '~/utils/reports'
+import { getDeleteUrl, getObjectType, getReportReasonLabel, getReportSubjectTitle, getSwitchToPrivateMethodAndUrl, isLockedByDoi } from '~/utils/reports'
 
 const props = defineProps<{
   subject: { class: 'Dataset', value: DatasetV2 | DatasetV2WithFullObject }
@@ -112,7 +113,6 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useTranslation()
-const { $api } = useNuxtApp()
 
 // The reports API is restricted to sysadmins, other visitors would get a 403
 const isAdmin = isMeAdmin()
@@ -128,25 +128,26 @@ const { data: reasons } = await useAPI<Array<ReportReason>>('/api/1/reports/reas
   immediate: isAdmin,
 })
 
+// The page reloads its object after acting on it, with the banner's actions or with its own (the
+// deletion of the admin pages): deleting the object handles its reports, so the banner must follow
+watch(() => props.subject.value, () => {
+  if (isAdmin) refresh()
+})
+
 const report = computed(() => reports.value?.data[0] ?? null)
 const reportSubject = computed<ReportSubject>(() => ({ class: props.subject.class, id: props.subject.value.id }))
-const switchToPrivate = computed(() => getSwitchToPrivateMethodAndUrl(reportSubject.value))
 
-// udata refuses to make private or to delete a dataset that has a DOI
-const hasDoi = computed(() => props.subject.class === 'Dataset' && !!props.subject.value.doi)
-const canHide = computed(() => !!switchToPrivate.value && !hasDoi.value && !('private' in props.subject.value && props.subject.value.private))
-const canDelete = computed(() => !hasDoi.value)
+const canHide = computed(() => !!getSwitchToPrivateMethodAndUrl(reportSubject.value) && !isLockedByDoi(props.subject.value) && !('private' in props.subject.value && props.subject.value.private))
+const canDelete = computed(() => !isLockedByDoi(props.subject.value))
 
 const dismissing = ref(false)
 
 async function dismiss(report: Report) {
   dismissing.value = true
   try {
-    await $api(`/api/1/reports/${report.id}/`, {
-      method: 'PATCH',
-      body: { dismissed_at: new Date() },
-    })
+    await dismissReport(report)
     await refresh()
+    // Another pending report may take its place: the banner alone would not show the change
     toast.success(t('Signalement rejeté.'))
   }
   catch {
@@ -160,15 +161,10 @@ async function dismiss(report: Report) {
 const hiding = ref(false)
 
 async function hide() {
-  if (!switchToPrivate.value) return
   hiding.value = true
   try {
-    await $api(switchToPrivate.value.url, {
-      method: switchToPrivate.value.method,
-      body: { private: true },
-    })
+    await switchSubjectToPrivate(reportSubject.value)
     emit('refresh')
-    toast.success(t('Objet caché.'))
   }
   catch {
     toast.error(t('Impossible de cacher l\'objet.'))
@@ -176,12 +172,5 @@ async function hide() {
   finally {
     hiding.value = false
   }
-}
-
-async function onDeleted() {
-  emit('refresh')
-  // Deleting the object marks its reports as handled: the banner goes away with them
-  await refresh()
-  toast.success(t('Objet supprimé.'))
 }
 </script>

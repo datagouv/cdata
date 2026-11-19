@@ -106,9 +106,9 @@ test.describe('Report and moderation', () => {
     const hideButton = page.getByRole('button', { name: 'Cacher l\'objet' })
     await hideButton.click()
 
-    await expect(page.getByText('Objet caché.')).toBeVisible()
     // The object is a draft now: there is nothing left to hide
     await expect(hideButton).not.toBeVisible()
+    await expect(page.getByText('Brouillon', { exact: true })).toBeVisible()
     const updated = await (await request.get(`${API_BASE}/api/2/datasets/${dataset.id}/`)).json()
     expect(updated.private).toBe(true)
   })
@@ -126,11 +126,31 @@ test.describe('Report and moderation', () => {
     await dialog.getByText('Envoyer un mail automatique (voies de recours)').click()
     await dialog.getByRole('button', { name: 'Supprimer', exact: true }).click()
 
-    await expect(page.getByText('Objet supprimé.')).toBeVisible()
     // Deleting the object handles its reports
     await expect(page.getByText('Signalement de test E2E (bandeau, suppression)')).not.toBeVisible()
+    await expect(page.getByText('Supprimé', { exact: true })).toBeVisible()
     const updated = await (await request.get(`${API_BASE}/api/2/datasets/${dataset.id}/`)).json()
     expect(updated.deleted).not.toBeNull()
+  })
+
+  test('removes the banner once the object is deleted from its admin page', async ({ page, request }) => {
+    const dataset = await createDataset(request, `Test report banner admin delete ${Date.now()}`, 'Dataset pour tester le bandeau après suppression en administration')
+    createdDatasets.push(dataset.id)
+
+    await reportDataset(request, dataset.id, 'Signalement de test E2E (bandeau, suppression admin)')
+
+    await gotoHydrated(page, `/admin/datasets/${dataset.id}`)
+    const banner = page.getByText('Signalement de test E2E (bandeau, suppression admin)')
+    await expect(banner).toBeVisible()
+
+    // The page's own deletion, not the banner's
+    await page.getByRole('button', { name: 'Supprimer', exact: true }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByText('Envoyer un mail automatique (voies de recours)').click()
+    await dialog.getByRole('button', { name: 'Supprimer le jeu de données' }).click()
+
+    await expect(page.getByRole('button', { name: 'Restaurer' })).toBeVisible()
+    await expect(banner).not.toBeVisible()
   })
 
   test('links to the other pending reports of the object in moderation', async ({ page, request }) => {
@@ -157,9 +177,17 @@ test.describe('Report and moderation', () => {
     await expect(page.getByRole('row').filter({ hasText: 'Signalement de test E2E (second)' })).toBeVisible()
     await expect(page.getByRole('row').filter({ hasText: 'Signalement de test E2E (autre objet)' })).not.toBeVisible()
 
-    // The filter is shown, and can be removed
+    // The filter is shown, by its title even once no pending report is left to read it from
     const filter = page.getByTitle(title)
     await expect(filter).toBeVisible()
+    for (const message of ['Signalement de test E2E (premier)', 'Signalement de test E2E (second)']) {
+      const row = page.getByRole('row').filter({ hasText: message })
+      await row.getByRole('button', { name: 'Rejeter le signalement' }).click()
+      await expect(row).not.toBeVisible()
+    }
+    await expect(filter).toBeVisible()
+
+    // And it can be removed
     await page.getByRole('button', { name: 'Retirer le filtre sur l\'objet' }).click()
     await page.waitForURL(url => url.pathname === '/admin/site/moderation' && !url.searchParams.has('subject'))
     await expect(filter).not.toBeVisible()

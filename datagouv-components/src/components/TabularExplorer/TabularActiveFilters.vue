@@ -16,7 +16,7 @@
         v-if="globalSearch"
         :icon="RiSearchLine"
         :name="t('Toutes les colonnes')"
-        :value="`${t('contient')} &quot;${globalSearch}&quot;`"
+        :value="globalSearchLabel"
         :remove-label="t('Supprimer la recherche')"
         @remove="globalSearch = ''"
       />
@@ -61,6 +61,7 @@
 
 <script setup lang="ts">
 import { RiArrowDownLine, RiArrowUpLine, RiCloseLine, RiDownloadLine, RiSearchLine } from '@remixicon/vue'
+import { computed } from 'vue'
 import BrandedButton from '../BrandedButton.vue'
 import FilterChip from '../FilterChip.vue'
 import { useTranslation } from '../../composables/useTranslation'
@@ -71,4 +72,6 @@ defineProps<{ withClear?: boolean }>()
 
 const { t } = useTranslation()
 const { tableData, activeFilters, sort, globalSearch, removeFilter, canReset, reset, getColumnDisplay, filteredDownloadUrl } = useTabularContext()
+
+const globalSearchLabel = computed(() => `${t('contient')} "${globalSearch.value}"`)
 </script>

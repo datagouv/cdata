@@ -7,6 +7,12 @@ export function getReportReasonLabel(report: Report, reasons: Array<ReportReason
   return reasons?.find(reason => reason.value === report.reason)?.label || report.reason
 }
 
+// A DOI has to keep resolving to a public page: udata refuses to delete such a dataset or to make
+// it private (`Dataset.clean`). Its `permissions` only say who may act, not what the state allows.
+export function isLockedByDoi(subject: DatasetV2 | DatasetV2WithFullObject | Dataservice | Reuse | Organization | Thread | User | null | undefined): boolean {
+  return !!subject && 'doi' in subject && !!subject.doi
+}
+
 export function getReportSubjectTitle(subject: DatasetV2 | DatasetV2WithFullObject | Dataservice | Reuse | Organization | Thread | User | null | undefined): string | undefined {
   if (!subject) return undefined
   if ('title' in subject) return subject.title
