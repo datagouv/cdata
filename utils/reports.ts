@@ -2,6 +2,16 @@ import type { Dataservice, DatasetV2, DatasetV2WithFullObject, Organization, Rep
 import type { ObjectType } from '~/types/delete'
 import type { Thread } from '~/types/discussions'
 
+// The object a report is about, as loaded by the pages that act on it
+export type ReportedObject = DatasetV2 | DatasetV2WithFullObject | Dataservice | Reuse | Organization | Thread | User
+
+// The objects that have a page of their own: a discussion is shown on the page of its subject
+export type ReportedObjectWithClass = { class: 'Dataset', value: DatasetV2 | DatasetV2WithFullObject }
+  | { class: 'Reuse', value: Reuse }
+  | { class: 'Dataservice', value: Dataservice }
+  | { class: 'Organization', value: Organization }
+  | { class: 'User', value: User }
+
 // The reasons are loaded apart from the reports: until then, the raw value stands in for the label
 export function getReportReasonLabel(report: Report, reasons: Array<ReportReason> | null | undefined): string {
   return reasons?.find(reason => reason.value === report.reason)?.label || report.reason
@@ -9,11 +19,16 @@ export function getReportReasonLabel(report: Report, reasons: Array<ReportReason
 
 // A DOI has to keep resolving to a public page: udata refuses to delete such a dataset or to make
 // it private (`Dataset.clean`). Its `permissions` only say who may act, not what the state allows.
-export function isLockedByDoi(subject: DatasetV2 | DatasetV2WithFullObject | Dataservice | Reuse | Organization | Thread | User | null | undefined): boolean {
+export function isLockedByDoi(subject: ReportedObject | null | undefined): boolean {
   return !!subject && 'doi' in subject && !!subject.doi
 }
 
-export function getReportSubjectTitle(subject: DatasetV2 | DatasetV2WithFullObject | Dataservice | Reuse | Organization | Thread | User | null | undefined): string | undefined {
+// Whether the state of an object that can be hidden prevents hiding it now
+export function isHideBlocked(subject: ReportedObject | null | undefined): boolean {
+  return (!!subject && 'private' in subject && subject.private) || isLockedByDoi(subject)
+}
+
+export function getReportSubjectTitle(subject: ReportedObject | null | undefined): string | undefined {
   if (!subject) return undefined
   if ('title' in subject) return subject.title
   if ('name' in subject) return subject.name

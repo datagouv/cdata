@@ -4,7 +4,7 @@
     type="warning"
   >
     <template #title>
-      <span class="font-bold">{{ $t('Signalé : {reason}', { reason: getReportReasonLabel(report, reasons) }) }}</span>
+      {{ $t('Signalé : {reason}', { reason: getReportReasonLabel(report, reasons) }) }}
     </template>
     <div
       v-if="report.message"
@@ -34,9 +34,16 @@
       v-if="reports!.total > 1"
       class="mt-1"
     >
+      <!-- The total, not the others: the moderation lists the pending reports, this one included -->
       <CdataLink :to="`/admin/site/moderation?subject=${subject.value.id}`">
-        {{ $t('Voir les {n} autres signalements | Voir l\'autre signalement | Voir les {n} autres signalements', reports!.total - 1) }}
+        {{ $t('Voir les {n} signalements en attente', { n: reports!.total }) }}
       </CdataLink>
+    </div>
+    <div
+      v-if="withObjectActions && isLockedByDoi(subject.value)"
+      class="mt-1"
+    >
+      {{ $t('Porteur d\'un DOI : ce jeu de données ne peut être ni caché ni supprimé, seulement archivé.') }}
     </div>
     <!-- Under the text rather than in the `#button` slot: `BannerAction` puts that slot beside the
          text without wrapping, which squeezes the report in the narrow form column of the admin pages -->
@@ -87,7 +94,7 @@
 
 <script setup lang="ts">
 import { BannerAction, BrandedButton, FormattedDate, toast, TranslationT } from '@datagouv/components-next'
-import type { Dataservice, DatasetV2, DatasetV2WithFullObject, Organization, Report, ReportReason, ReportSubject, Reuse, User } from '@datagouv/components-next'
+import type { Report, ReportReason, ReportSubject } from '@datagouv/components-next'
 import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine } from '@remixicon/vue'
 import { dismissReport, switchSubjectToPrivate } from '~/api/reports'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
@@ -95,14 +102,11 @@ import CdataLink from '~/components/CdataLink.vue'
 import ReportAuthor from '~/components/Spam/ReportAuthor.vue'
 import type { PaginatedArray } from '~/types/types'
 import { isMeAdmin } from '~/utils/auth'
-import { getDeleteUrl, getObjectType, getReportReasonLabel, getReportSubjectTitle, getSwitchToPrivateMethodAndUrl, isLockedByDoi } from '~/utils/reports'
+import { getDeleteUrl, getObjectType, getReportReasonLabel, getReportSubjectTitle, getSwitchToPrivateMethodAndUrl, isHideBlocked, isLockedByDoi } from '~/utils/reports'
+import type { ReportedObjectWithClass } from '~/utils/reports'
 
 const props = defineProps<{
-  subject: { class: 'Dataset', value: DatasetV2 | DatasetV2WithFullObject }
-    | { class: 'Reuse', value: Reuse }
-    | { class: 'Dataservice', value: Dataservice }
-    | { class: 'Organization', value: Organization }
-    | { class: 'User', value: User }
+  subject: ReportedObjectWithClass
   // Hide and delete, for the pages that do not already offer them next to the banner
   withObjectActions?: boolean
 }>()
@@ -120,11 +124,10 @@ const isAdmin = isMeAdmin()
 // Only the latest report is shown here, the others are listed in the moderation dashboard
 const { data: reports, refresh } = await useAPI<PaginatedArray<Report>>('/api/1/reports/', {
   query: { subject: props.subject.value.id, handled: false, sort: '-reported_at', page_size: 1 },
-  lazy: true,
+  // Not lazy: shown above the page, a banner arriving once the page is rendered would push it down
   immediate: isAdmin,
 })
 const { data: reasons } = await useAPI<Array<ReportReason>>('/api/1/reports/reasons/', {
-  lazy: true,
   immediate: isAdmin,
 })
 
@@ -137,7 +140,7 @@ watch(() => props.subject.value, () => {
 const report = computed(() => reports.value?.data[0] ?? null)
 const reportSubject = computed<ReportSubject>(() => ({ class: props.subject.class, id: props.subject.value.id }))
 
-const canHide = computed(() => !!getSwitchToPrivateMethodAndUrl(reportSubject.value) && !isLockedByDoi(props.subject.value) && !('private' in props.subject.value && props.subject.value.private))
+const canHide = computed(() => !!getSwitchToPrivateMethodAndUrl(reportSubject.value) && !isHideBlocked(props.subject.value))
 const canDelete = computed(() => !isLockedByDoi(props.subject.value))
 
 const dismissing = ref(false)

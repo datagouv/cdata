@@ -170,7 +170,7 @@ test.describe('Report and moderation', () => {
     await expect(page.getByText('Signalement de test E2E (second)')).toBeVisible()
     await expect(page.getByText('Signalement de test E2E (premier)')).not.toBeVisible()
 
-    await page.getByRole('link', { name: 'Voir l\'autre signalement' }).click()
+    await page.getByRole('link', { name: 'Voir les 2 signalements en attente' }).click()
     await page.waitForURL(`**/admin/site/moderation?subject=${dataset.id}`)
 
     await expect(page.getByRole('row').filter({ hasText: 'Signalement de test E2E (premier)' })).toBeVisible()
