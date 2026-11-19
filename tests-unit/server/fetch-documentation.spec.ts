@@ -29,30 +29,30 @@ function stubSocketDns(addresses: LookupAddress[]) {
   }) as typeof dns.lookup)
 }
 
+let server: Server
+let port: number
+let hits = 0
+
+beforeAll(async () => {
+  server = createServer((_req, res) => {
+    hits++
+    res.end('internal secret')
+  })
+  // Dual-stack, like a server bound to every interface: reachable through 127.0.0.1, ::1 and ::.
+  await new Promise<void>(resolve => server.listen(0, '::', resolve))
+  port = (server.address() as AddressInfo).port
+})
+
+afterAll(async () => {
+  await new Promise(resolve => server.close(resolve))
+})
+
+afterEach(() => {
+  vi.restoreAllMocks()
+  hits = 0
+})
+
 describe('fetchDocumentationContent', () => {
-  let server: Server
-  let port: number
-  let hits = 0
-
-  beforeAll(async () => {
-    server = createServer((_req, res) => {
-      hits++
-      res.end('internal secret')
-    })
-    // Dual-stack, like a server bound to every interface: reachable through 127.0.0.1, ::1 and ::.
-    await new Promise<void>(resolve => server.listen(0, '::', resolve))
-    port = (server.address() as AddressInfo).port
-  })
-
-  afterAll(async () => {
-    await new Promise(resolve => server.close(resolve))
-  })
-
-  afterEach(() => {
-    vi.restoreAllMocks()
-    hits = 0
-  })
-
   it('refuses a hostname that rebinds to loopback between the check and the connection', async () => {
     stubSocketDns([{ address: '127.0.0.1', family: 4 }])
 
@@ -104,27 +104,6 @@ describe('fetchDocumentationContent', () => {
 })
 
 describe('publicFetchDispatcher', () => {
-  let server: Server
-  let port: number
-  let hits = 0
-
-  beforeAll(async () => {
-    server = createServer((_req, res) => {
-      hits++
-      res.end('internal secret')
-    })
-    await new Promise<void>(resolve => server.listen(0, '::', resolve))
-    port = (server.address() as AddressInfo).port
-  })
-
-  afterAll(async () => {
-    await new Promise(resolve => server.close(resolve))
-  })
-
-  afterEach(() => {
-    hits = 0
-  })
-
   it.each(['127.0.0.1', '[::1]'])('refuses the private IP literal %s on its own, without the caller checking the URL', async (host) => {
     const error = await fetch(`http://${host}:${port}/`, { dispatcher: publicFetchDispatcher }).catch(err => err)
 
@@ -187,10 +166,6 @@ describe('isForbiddenAddress', () => {
 })
 
 describe('publicOnlyLookup', () => {
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   it('hands public addresses to the socket, in both lookup shapes', async () => {
     stubSocketDns([{ address: PUBLIC_ADDRESS, family: 4 }, { address: PUBLIC_IPV6_ADDRESS, family: 6 }])
 
