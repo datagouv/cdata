@@ -8,6 +8,13 @@ import type { Post } from '../types/posts'
 
 export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
+/** Whether the Nuxt server itself asked the Tabular API for this resource's profile (see tests/fake-services.ts). */
+export async function serverFetchedTabularProfile(request: APIRequestContext, resourceId: string): Promise<boolean> {
+  const response = await request.get(`${process.env.FAKE_SERVICES_URL}/tabular-server-requests`)
+  const paths = await response.json() as Array<string>
+  return paths.some(path => path.endsWith(`/resources/${resourceId}/profile/`))
+}
+
 export type ApiDataset = { id: string, title: string, slug: string }
 export type ApiResource = { id: string, title: string, latest: string, url: string }
 export type ApiHarvestSource = { id: string, name: string, backend: string, schedule: string | null, config: Record<string, unknown> }

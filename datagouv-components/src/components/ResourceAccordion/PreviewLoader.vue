@@ -1,5 +1,6 @@
 <template>
   <ContentLoader
+    aria-hidden="true"
     viewBox="0 0 1124 300"
     :speed="2"
     primary-color="#f3f3f3"

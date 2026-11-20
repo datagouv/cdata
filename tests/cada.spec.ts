@@ -1,6 +1,6 @@
 import type { Page, Response } from '@playwright/test'
 import { test, expect } from './base'
-import { gotoSettled } from './helpers'
+import { gotoSettled, serverFetchedTabularProfile } from './helpers'
 
 // The CADA explore runs against the real Tabular API, so no assertion pins an
 // absolute row count: a filtered count is always compared to the unfiltered one.
@@ -71,6 +71,17 @@ test('CADA homepage gives the date of the last analysis above the table', async 
 
   await expect(page.getByRole('button', { name: /Colonnes/ })).toBeVisible({ timeout: 30000 })
   await expect(page.getByText(/Dernière mise à jour le/)).toBeVisible()
+})
+
+test('CADA homepage leaves the Tabular API to the browser', async ({ request }) => {
+  test.skip(!process.env.FAKE_SERVICES_URL, 'needs tests/fake-services.ts to see the server requests')
+  const rendered = await request.get('/explore/cada')
+  expect(rendered.ok()).toBe(true)
+  // The id the server is configured with, from the runtime config in its payload
+  const resourceId = (await rendered.text()).match(/cadaResourceId:"([^"]+)"/)?.[1]
+  expect(resourceId).toBeTruthy()
+
+  expect(await serverFetchedTabularProfile(request, resourceId!)).toBe(false)
 })
 
 test('CADA detail page shows advice content', async ({ page }) => {

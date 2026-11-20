@@ -91,17 +91,14 @@ const dataUrl = computed(() =>
 )
 
 // The banner needs the udata resource's dates (the Tabular API has none)
-const resourceRequest = useFetch<{ resource: Resource }>(`/api/2/datasets/resources/${props.resourceId}/`, {
+const resourceRequest = useFetch<{ resource: Resource }>(() => `/api/2/datasets/resources/${props.resourceId}/`, {
   server: false,
   immediate: !props.resource,
-  watch: false,
 })
 
 // Profile is shared with sibling components (e.g. DataStructure) via
 // `provideTabularProfile` in the parent. Falls back to a local fetch
 // when no parent provides it (standalone usage).
-// Fetched before the rows: `dataQuery` reads the column types to build the
-// global search, so the profile has to be resolved by the time it is evaluated.
 const { data: profileData, error: profileError, status: profileStatus } = await injectTabularProfile(() => props.resourceId)
 const { data: fetchedResource } = await resourceRequest
 const previewResource = computed(() => props.resource ?? fetchedResource.value?.resource ?? null)

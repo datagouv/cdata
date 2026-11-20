@@ -1,7 +1,6 @@
 <template>
   <div
     v-if="parsingFinishedAt"
-    role="status"
     class="flex items-start gap-2 border-b px-3 py-2.5"
     :class="isStale ? 'border-new-warning-light-hover bg-new-warning-light' : 'border-new-info-light-hover bg-new-info-light'"
   >

@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs'
 import type { APIRequestContext, Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, createDatasetWithRemoteResources, createRemoteResource, deleteDatasets, openNewExplorer, gotoSettled } from '../helpers'
+import { API_BASE, createDataset, createDatasetWithRemoteResources, createRemoteResource, deleteDatasets, openNewExplorer, gotoSettled, serverFetchedTabularProfile } from '../helpers'
 import { RESOURCE_ID as TABULAR_RESOURCE_ID, mockTabular } from '../visualizations/fixtures'
 
 const createdDatasets: Array<string> = []
@@ -431,16 +431,15 @@ test('the explorer answers a 404 for a dataset that does not exist', async ({ pa
   expect(response.status()).toBe(404)
 })
 
-test('the server renders no table, even for a resource the Tabular API serves', async ({ request }) => {
-  // The fixture resource, which the Tabular API answers for: a server render that
-  // fetched it would put its table in the HTML.
+test('the server render leaves the Tabular API to the browser', async ({ request }) => {
+  test.skip(!process.env.FAKE_SERVICES_URL, 'needs tests/fake-services.ts to see the server requests')
   const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
   const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
 
   const rendered = await request.get(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}`)
 
   expect(rendered.ok()).toBe(true)
-  expect(await rendered.text()).not.toContain('data-testid="data-table"')
+  expect(await serverFetchedTabularProfile(request, TABULAR_RESOURCE_ID)).toBe(false)
 })
 
 // The banner comes with the loaded table, client-side: these remote resources are
