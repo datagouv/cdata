@@ -26,12 +26,18 @@ export async function useFetch<DataT, ErrorT = never>(
   const error: Ref<ErrorT | null> = ref(null)
   const status = ref<AsyncDataRequestStatus>('idle')
 
-  const execute = async (signal?: AbortSignal) => {
+  let controller: AbortController | undefined
+  const execute = async () => {
     const urlValue = toValue(url)
     if (!urlValue) return
     const params = deepToValue(options?.params)
     const query = deepToValue(options?.query)
+    // A new call supersedes the one in flight, as with Nuxt
+    controller?.abort()
+    controller = new AbortController()
+    const signal = controller.signal
     status.value = 'pending'
+    error.value = null
     try {
       data.value = isRaw
         // Raw targets another data.gouv service (the Tabular API in TabularExplorer) via its own
@@ -44,28 +50,22 @@ export async function useFetch<DataT, ErrorT = never>(
     }
     catch (e) {
       // Ignore aborted requests — they're superseded by a newer call, not a real error.
-      if (signal?.aborted) return
+      if (signal.aborted) return
       error.value = e as ErrorT
       status.value = 'error'
     }
   }
 
-  // When server is false, only start watching after mount (client-side only)
-  if (options?.server === false) {
-    onMounted(() => {
-      watchEffect((onCleanup) => {
-        const controller = new AbortController()
-        onCleanup(() => controller.abort())
-        void execute(controller.signal)
-      })
-    })
-  }
-  else {
-    watchEffect((onCleanup) => {
-      const controller = new AbortController()
-      onCleanup(() => controller.abort())
-      void execute(controller.signal)
-    })
+  const watchAndExecute = () => watchEffect((onCleanup) => {
+    void execute()
+    onCleanup(() => controller?.abort())
+  })
+
+  // `immediate: false`: nothing is fetched until `execute` is called, as with Nuxt.
+  if (options?.immediate !== false) {
+    // When server is false, only start watching after mount (client-side only)
+    if (options?.server === false) onMounted(watchAndExecute)
+    else watchAndExecute()
   }
 
   return {

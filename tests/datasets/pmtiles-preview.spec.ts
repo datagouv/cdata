@@ -104,7 +104,9 @@ test('the PMTiles map preview loads the archive and opens a popup on click', asy
 
   const { resource, datasetId } = await createDatasetWithPmtilesResource(request, ARCHIVE_URL)
 
-  await page.goto(`/datasets/${datasetId}/?resource_id=${resource.id}`)
+  // The map tab of the new explorer, the default resource navigation.
+  await page.goto(`/datasets/${datasetId}/?resource_id=${resource.id}&tab=map`)
+  await expect(page.getByRole('tab', { name: 'Carte', selected: true })).toBeVisible({ timeout: 30000 })
 
   await expect(page.getByText(/Aperçu de la carte mis à jour le/)).toBeVisible()
   const canvas = page.locator('.maplibregl-canvas')
@@ -115,11 +117,16 @@ test('the PMTiles map preview loads the archive and opens a popup on click', asy
   await expect.poll(() => archive.tileReads(), { timeout: 20000 }).toBeGreaterThan(0)
 
   // The fixture holds a single feature centered on its own coordinates, so
-  // the dot sits at the exact canvas center.
-  const box = (await canvas.boundingBox())!
-  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
+  // the dot sits at the exact canvas center. Loading the tile is not drawing it:
+  // click again until the dot is there.
   const popup = page.locator('.maplibregl-popup')
-  await expect(popup).toBeVisible()
+  await expect(async () => {
+    // The map tab sits below the fold of the dataset page: mouse clicks don't scroll.
+    await canvas.scrollIntoViewIfNeeded()
+    const box = (await canvas.boundingBox())!
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2)
+    await expect(popup).toBeVisible({ timeout: 1000 })
+  }).toPass({ timeout: 20000 })
   await expect(popup).toContainText('THEVENOT')
   await expect(popup).toContainText('Passy')
 })
@@ -132,7 +139,7 @@ test.describe('broken archive', () => {
 
     const { resource, datasetId } = await createDatasetWithPmtilesResource(request, 'https://pmtiles-down.example.com/gone.pmtiles')
 
-    await page.goto(`/datasets/${datasetId}/?resource_id=${resource.id}`)
+    await page.goto(`/datasets/${datasetId}/?resource_id=${resource.id}&tab=map`)
 
     await expect(page.getByText('L\'aperçu cartographique de ce fichier n\'a pas pu être chargé.')).toBeVisible()
     await expect(page.locator('.maplibregl-canvas')).toHaveCount(0)

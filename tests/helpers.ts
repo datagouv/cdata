@@ -8,6 +8,13 @@ import type { Post } from '../types/posts'
 
 export const API_BASE = process.env.NUXT_PUBLIC_API_BASE || 'http://dev.local:7000'
 
+/** Whether the Nuxt server itself asked the Tabular API for this resource's profile (see tests/fake-services.ts). */
+export async function serverFetchedTabularProfile(request: APIRequestContext, resourceId: string): Promise<boolean> {
+  const response = await request.get(`${process.env.FAKE_SERVICES_URL}/tabular-server-requests`)
+  const paths = await response.json() as Array<string>
+  return paths.some(path => path.endsWith(`/resources/${resourceId}/profile/`))
+}
+
 export type ApiDataset = { id: string, title: string, slug: string }
 export type ApiResource = { id: string, title: string, latest: string, url: string }
 export type ApiHarvestSource = { id: string, name: string, backend: string, schedule: string | null, config: Record<string, unknown> }
@@ -147,12 +154,23 @@ export async function gotoSettled(page: Page, url: string): Promise<void> {
   await page.waitForLoadState('networkidle')
 }
 
-// The banner is the only way into the new explorer, and it only lives on the resources
-// tab: opt in from there, then navigate wherever the test needs to go.
-export async function enableNewExplorer(page: Page, url: string): Promise<void> {
-  await page.goto(url)
-  await page.getByRole('button', { name: 'Tester la nouvelle navigation' }).click()
+// Opens a dataset page and checks it stays on the new explorer once settled
+export async function openNewExplorer(page: Page, url: string): Promise<void> {
+  await gotoSettled(page, url)
   await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
+  await expect(page.getByRole('button', { name: 'Utiliser la nouvelle navigation' })).toHaveCount(0)
+}
+
+// Open a dataset page as a visitor who opted out of the new explorer (the cookie as the
+// app writes it), and wait for the legacy list to replace the server-rendered new one.
+export async function gotoLegacyExplorer(page: Page, url: string): Promise<void> {
+  await page.context().addCookies([{
+    name: 'new_explorer',
+    value: encodeURIComponent(JSON.stringify('0')),
+    url: test.info().project.use.baseURL!,
+  }])
+  await page.goto(url)
+  await expect(page.getByRole('button', { name: 'Utiliser la nouvelle navigation' })).toBeVisible({ timeout: 30000 })
 }
 
 export async function deleteDatasets(request: APIRequestContext, ids: Array<string>): Promise<void> {
