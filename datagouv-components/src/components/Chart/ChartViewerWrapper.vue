@@ -90,7 +90,7 @@ import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
 import { useComponentsConfig } from '../../config'
 import { fetchTabularData, TabularApiError, tabularErrorMessage, useGetProfile, type FetchTabularDataOptions } from '../../functions/tabularApi'
-import type { Chart, ChartForApi, ColumnsDefinition } from '../../types/visualizations'
+import type { Chart, ChartForApi, ColumnDefinition, ColumnsDefinition } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
 import { until, watchDebounced } from '@vueuse/shared'
 import { buildColumnsFromProfile } from '../../functions/charts'
@@ -117,8 +117,6 @@ const canRetry = computed(() => !(error.value instanceof TabularApiError) || err
 // than RELOAD_VEIL_DELAY dims the current chart instead.
 const RELOAD_VEIL_DELAY = 300
 const hasRendered = ref(false)
-// The profile resolves first: only fetched data ends the first load.
-let hasData = false
 const veiled = ref(false)
 let veilTimer: ReturnType<typeof setTimeout> | undefined
 const blockStatus = computed(() => {
@@ -128,7 +126,7 @@ const blockStatus = computed(() => {
 watch(status, (value) => {
   clearTimeout(veilTimer)
   veiled.value = false
-  if (value === 'success' && hasData) hasRendered.value = true
+  if (value === 'success') hasRendered.value = true
   if (value === 'pending' && hasRendered.value) {
     veilTimer = setTimeout(() => {
       veiled.value = true
@@ -192,60 +190,17 @@ const series = reactive<{
   columns: {},
 })
 
-const resourceIds = computed(() => {
-  return [...new Set(props.chart.series
-    .filter(s => s.resource_id)
-    .map(s => s.resource_id))]
-})
+// Columns by resource id, kept across reloads: a new title or sort needs no new profile.
+// A failed profile is not kept, so a retry asks again.
+const profileCache = new Map<string, Array<ColumnDefinition>>()
 
-let latestProfileRequest = 0
-
-async function fetchSeriesProfile() {
-  // The profile of a resource left for another could answer last.
-  const request = ++latestProfileRequest
-  const isStale = () => request !== latestProfileRequest
-  pendingOperations.value++
-  status.value = 'pending'
-  error.value = null
-
-  try {
-    if (props.chart.series.length === 0) {
-      status.value = 'success'
-      series.data = {}
-      series.columns = {}
-      return
-    }
-
-    const fetchPromises = resourceIds.value
-      .map(async (id) => {
-        return {
-          id,
-          profile: await getProfile(id),
-        }
-      })
-
-    const settled = await Promise.allSettled(fetchPromises)
-    if (isStale()) return
-    const results = settled
-      .filter(r => r.status === 'fulfilled')
-      .map(r => r.value)
-    series.columns = Object.fromEntries(results.map(result => [
-      result.id,
-      buildColumnsFromProfile(result.profile),
-    ]))
-  }
-  catch (err) {
-    if (isStale()) return
-    error.value = err instanceof Error ? err : new Error('Failed to fetch series profile')
-    status.value = 'error'
-    failedChartKey.value = chartDataKey(props.chart)
-    console.error(err)
-    series.columns = {}
-    series.data = {}
-  }
-  finally {
-    pendingOperations.value--
-  }
+async function loadColumns(chart: Chart | ChartForApi): Promise<ColumnsDefinition> {
+  const ids = [...new Set(chart.series.map(serie => serie.resource_id).filter(Boolean))]
+  const settled = await Promise.allSettled(ids.map(async (id) => {
+    if (!profileCache.has(id)) profileCache.set(id, buildColumnsFromProfile(await getProfile(id)))
+    return [id, profileCache.get(id)!] as const
+  }))
+  return Object.fromEntries(settled.filter(r => r.status === 'fulfilled').map(r => r.value))
 }
 
 let latestRequest = 0
@@ -259,10 +214,14 @@ async function fetchSeriesData() {
   error.value = null
 
   try {
+    // The viewer looks the columns of a series up by its resource: they come with the
+    // data, or the previous chart would be drawn with the new resources' columns.
+    const columnsPromise = loadColumns(requestedChart)
     if (props.chart.series.length === 0 || !props.chart.x_axis.column_x) {
-      hasData = true
+      const columns = await columnsPromise
+      if (isStale()) return
       loadedChart.value = requestedChart
-      status.value = 'success'
+      series.columns = columns
       series.data = {}
       resetNotes()
       return
@@ -305,13 +264,13 @@ async function fetchSeriesData() {
         }
       })
 
-    const settled = await Promise.allSettled(fetchPromises)
+    const [settled, columns] = await Promise.all([Promise.allSettled(fetchPromises), columnsPromise])
     if (isStale()) return
     const results = settled.filter(r => r.status === 'fulfilled').map(r => r.value)
     const failures = settled.filter(r => r.status === 'rejected')
     if (results.length === 0 && failures.length > 0) throw failures[0]!.reason
-    hasData = true
     loadedChart.value = requestedChart
+    series.columns = columns
     series.data = Object.fromEntries(results.map(result => [
       result.key,
       result.rows,
@@ -334,13 +293,8 @@ async function fetchSeriesData() {
 }
 
 function retry() {
-  fetchSeriesProfile()
   fetchSeriesData()
 }
-
-// A string key: the computed array is new on every chart change, and the
-// profile only depends on the resources.
-watch(() => resourceIds.value.join(','), fetchSeriesProfile, { immediate: true })
 
 watchDebounced(() => chartDataKey(props.chart), fetchSeriesData, { debounce: config.searchDebounce ?? 300, immediate: true })
 

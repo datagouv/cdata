@@ -431,6 +431,50 @@ describe('ChartViewerWrapper data fetching', () => {
     expect(Object.keys(columns)).toEqual([OTHER_ID])
   })
 
+  it('keeps the columns of the shown chart until the data of a new resource answers', async () => {
+    const OTHER_ID = '11111111-2222-4333-8444-555555555555'
+    const profile = (name: string) => ({ profile: { header: [name], columns: { [name]: { python_type: 'int' } } } })
+    let resolveOtherData: (v: unknown) => void = () => {}
+    ofetchMock.mockImplementation((url: string) => {
+      if (url.includes(`${RESOURCE_ID}/profile/`)) return Promise.resolve(profile('first'))
+      if (url.includes(`${OTHER_ID}/profile/`)) return Promise.resolve(profile('other'))
+      if (url.includes(OTHER_ID)) return new Promise((resolve) => {
+        resolveOtherData = resolve
+      })
+      return Promise.resolve(rows(3))
+    })
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart, 300)
+    await vi.advanceTimersByTimeAsync(300)
+    await flushPromises()
+    const viewer = () => wrapper.findComponent(ChartViewerStub)
+    const next = structuredClone(chart)
+    next.series[0]!.resource_id = OTHER_ID
+    await wrapper.setProps({ chart: next })
+    await vi.advanceTimersByTimeAsync(300)
+    await flushPromises()
+    expect(viewer().props('chart').series[0].resource_id).toBe(RESOURCE_ID)
+    expect(Object.keys(viewer().props('series').columns)).toEqual([RESOURCE_ID])
+
+    resolveOtherData(rows(2))
+    await flushPromises()
+    expect(viewer().props('chart').series[0].resource_id).toBe(OTHER_ID)
+    expect(Object.keys(viewer().props('series').columns)).toEqual([OTHER_ID])
+  })
+
+  it('fetches a resource profile once across reloads', async () => {
+    mockApi(3, false)
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart)
+    await settle()
+    const next = structuredClone(chart)
+    next.series[0]!.aggregate_y = 'sum'
+    await wrapper.setProps({ chart: next })
+    await settle()
+    expect(ofetchMock.mock.calls.filter(c => String(c[0]).includes('/profile/'))).toHaveLength(1)
+    expect(dataCalls()).toHaveLength(2)
+  })
+
   it('passes a presentation-only change to the viewer right away', async () => {
     mockApi(3, false)
     const chart = chartFixture()
