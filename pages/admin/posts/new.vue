@@ -148,15 +148,11 @@ async function save(form: { content: string }) {
 }
 
 // Once the post exists, the next creation must start from scratch: its slug would otherwise
-// be rejected as already used. Cleared when leaving the page, not right after the creation:
-// an emptied form sends the step watcher below back to the first step.
+// be rejected as already used. Cleared when leaving the page so the form does not empty
+// itself on screen while the post page loads.
 onUnmounted(() => {
   if (newPost.value) clearNuxtState([POST_FORM_STATE, 'new-post'])
 })
 
-watchEffect(() => {
-  if (!isCurrentStepValid.value) {
-    moveToStep(1)
-  }
-})
+useStepGuard(currentStep, isCurrentStepValid, () => moveToStep(1))
 </script>

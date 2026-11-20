@@ -137,11 +137,7 @@ async function createOrganizationAndMoveToNextStep(logo_file: File | null) {
   }
 }
 
-watchEffect(() => {
-  if (!isCurrentStepValid.value) {
-    moveToStep(1)
-  }
-})
+useStepGuard(currentStep, isCurrentStepValid, () => moveToStep(1))
 watch(currentStep, (step) => {
   // reset state when returning to page
   if (step === 1) {
