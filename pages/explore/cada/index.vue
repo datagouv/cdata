@@ -35,33 +35,36 @@
     </form>
 
     <ClientOnly>
-      <TabularExplorer
-        v-if="RESOURCE_ID"
-        v-model:global-search="search"
-        :resource-id="RESOURCE_ID"
-        :search-input="false"
-        :initial-sort="{ column: 'Séance', direction: 'desc' }"
-        sync-url
-        :url-aliases="URL_ALIASES"
-      >
-        <TabularToolbar class="py-3" />
-        <div class="hidden md:block">
-          <TabularActiveFilters
-            with-clear
-            class="pb-3"
+      <Suspense>
+        <TabularExplorer
+          v-if="RESOURCE_ID"
+          v-model:global-search="search"
+          :resource-id="RESOURCE_ID"
+          :search-input="false"
+          :initial-sort="{ column: 'Séance', direction: 'desc' }"
+          sync-url
+          :url-aliases="URL_ALIASES"
+        >
+          <TabularToolbar class="py-3" />
+          <div class="hidden md:block">
+            <TabularActiveFilters
+              with-clear
+              class="pb-3"
+            />
+          </div>
+          <TabularTable
+            full-bleed
+            :row-href="{ columns: ['Numéro de dossier'], href: row => `/explore/cada/${row['Numéro de dossier']}` }"
+            :no-format-columns="['Numéro de dossier']"
           />
-        </div>
-        <TabularTable
-          full-bleed
-          :row-href="{ columns: ['Numéro de dossier'], href: row => `/explore/cada/${row['Numéro de dossier']}` }"
-          :no-format-columns="['Numéro de dossier']"
-        />
-        <TabularMobileFilters />
-      </TabularExplorer>
+          <TabularMobileFilters />
+        </TabularExplorer>
+        <template #fallback>
+          <TabularSkeleton :search-input="false" />
+        </template>
+      </Suspense>
       <template #fallback>
-        <div class="bg-gray-100 rounded-lg py-12 text-center text-gray-medium">
-          {{ $t('Chargement…') }}
-        </div>
+        <TabularSkeleton :search-input="false" />
       </template>
     </ClientOnly>
 
@@ -193,7 +196,7 @@
 </template>
 
 <script setup lang="ts">
-import { SearchInput, TABULAR_SEARCH_PARAM, TabularActiveFilters, TabularExplorer, TabularMobileFilters, TabularTable, TabularToolbar, TranslationT, provideTabularProfile, searchFromUrlParam } from '@datagouv/components-next'
+import { SearchInput, TABULAR_SEARCH_PARAM, TabularActiveFilters, TabularExplorer, TabularMobileFilters, TabularSkeleton, TabularTable, TabularToolbar, TranslationT, provideTabularProfile, searchFromUrlParam } from '@datagouv/components-next'
 import type { TabularUrlAlias } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'

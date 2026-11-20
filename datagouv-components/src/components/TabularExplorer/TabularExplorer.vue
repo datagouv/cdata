@@ -18,6 +18,11 @@
          stays: a failed search or filter only empties the rows, so the controls that
          caused it remain there to undo it. -->
     <template v-else-if="(tableData || loadedOnce) && profileData">
+      <TabularPreviewDateBanner
+        v-if="previewResource"
+        :resource="previewResource"
+        class="shrink-0"
+      />
       <slot />
     </template>
   </div>
@@ -33,6 +38,8 @@ import { injectTabularProfile } from '../../composables/useTabularProfile'
 import { hasFilterForColumn as _hasFilterForColumn, buildDateFilterParams, buildGlobalSearchConditions, isSameSort, useFormatTabular } from '../../functions/tabular'
 import PreviewError from '../ResourceAccordion/PreviewError.vue'
 import TabularSkeleton from './TabularSkeleton.vue'
+import TabularPreviewDateBanner from './TabularPreviewDateBanner.vue'
+import type { Resource } from '../../types/resources'
 import type { TabularDataResponse, TabularRow, SortConfig, ColumnFilters, DateFilter, TabularUrlAlias } from './types'
 import { provideTabularContext, type ActiveFilter } from './useTabularContext'
 import { useColumnMetadata } from './useColumnMetadata'
@@ -61,6 +68,8 @@ const props = withDefaults(defineProps<{
   // e.g. { administration: { column: 'Administration', operator: 'contains' } }.
   // Any other filter goes into a JSON `filters` param.
   urlAliases?: Record<string, TabularUrlAlias>
+  // The udata resource, for the preview date banner. Fetched when not given.
+  resource?: Resource
 }>(), {
   searchInput: true,
 })
@@ -81,12 +90,21 @@ const dataUrl = computed(() =>
   `${config.tabularApiUrl}/api/resources/${props.resourceId}/data/`,
 )
 
+// The banner needs the udata resource's dates (the Tabular API has none)
+const resourceRequest = useFetch<{ resource: Resource }>(`/api/2/datasets/resources/${props.resourceId}/`, {
+  server: false,
+  immediate: !props.resource,
+  watch: false,
+})
+
 // Profile is shared with sibling components (e.g. DataStructure) via
 // `provideTabularProfile` in the parent. Falls back to a local fetch
 // when no parent provides it (standalone usage).
 // Fetched before the rows: `dataQuery` reads the column types to build the
 // global search, so the profile has to be resolved by the time it is evaluated.
 const { data: profileData, error: profileError, status: profileStatus } = await injectTabularProfile(() => props.resourceId)
+const { data: fetchedResource } = await resourceRequest
+const previewResource = computed(() => props.resource ?? fetchedResource.value?.resource ?? null)
 
 const allColumns = computed(() => profileData.value?.profile?.header ?? [])
 
@@ -170,7 +188,12 @@ const tableQuery = computed(() => {
 
 const dataQuery = computed(() => ({ page: 1, page_size: PAGE_SIZE, ...tableQuery.value }))
 
-const { data: tableData, error, status: dataStatus } = await useFetch<TabularDataResponse>(dataUrl, { raw: true, query: dataQuery })
+const { data: tableData, error, status: dataStatus, execute: fetchRows } = await useFetch<TabularDataResponse>(dataUrl, { raw: true, query: dataQuery, server: false, immediate: false, watch: false })
+
+// Rows wait for the profile: its columns build the URL's filters, sort and search
+watch([profileStatus, dataQuery], ([status]) => {
+  if (status === 'success') void fetchRows()
+}, { immediate: true })
 
 // A failed request clears `tableData`: telling a resource that can't be previewed
 // from a search or filter the API rejects needs to know whether it ever loaded.

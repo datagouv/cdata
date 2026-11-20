@@ -50,22 +50,17 @@ export async function useFetch<DataT, ErrorT = never>(
     }
   }
 
-  // When server is false, only start watching after mount (client-side only)
-  if (options?.server === false) {
-    onMounted(() => {
-      watchEffect((onCleanup) => {
-        const controller = new AbortController()
-        onCleanup(() => controller.abort())
-        void execute(controller.signal)
-      })
-    })
-  }
-  else {
-    watchEffect((onCleanup) => {
-      const controller = new AbortController()
-      onCleanup(() => controller.abort())
-      void execute(controller.signal)
-    })
+  const watchAndExecute = () => watchEffect((onCleanup) => {
+    const controller = new AbortController()
+    onCleanup(() => controller.abort())
+    void execute(controller.signal)
+  })
+
+  // `immediate: false`: nothing is fetched until `execute` is called, as with Nuxt.
+  if (options?.immediate !== false) {
+    // When server is false, only start watching after mount (client-side only)
+    if (options?.server === false) onMounted(watchAndExecute)
+    else watchAndExecute()
   }
 
   return {

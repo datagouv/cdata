@@ -1,19 +1,23 @@
 <template>
-  <TabularExplorer
-    v-if="config.public.tabularApiPreviewResourcesId"
-    :resource-id="config.public.tabularApiPreviewResourcesId"
-    :initial-filters="initialFilters"
-  >
-    <TabularToolbar class="py-3" />
-    <div class="hidden md:block">
-      <TabularActiveFilters
-        with-clear
-        class="pb-3"
-      />
-    </div>
-    <TabularTable />
-    <TabularMobileFilters />
-  </TabularExplorer>
+  <Suspense v-if="config.public.tabularApiPreviewResourcesId">
+    <TabularExplorer
+      :resource-id="config.public.tabularApiPreviewResourcesId"
+      :initial-filters="initialFilters"
+    >
+      <TabularToolbar class="py-3" />
+      <div class="hidden md:block">
+        <TabularActiveFilters
+          with-clear
+          class="pb-3"
+        />
+      </div>
+      <TabularTable />
+      <TabularMobileFilters />
+    </TabularExplorer>
+    <template #fallback>
+      <TabularSkeleton />
+    </template>
+  </Suspense>
   <SimpleBanner
     v-else
     class="mt-2"
@@ -24,7 +28,7 @@
 </template>
 
 <script setup lang="ts">
-import { SimpleBanner, TabularActiveFilters, TabularExplorer, TabularMobileFilters, TabularTable, TabularToolbar } from '@datagouv/components-next'
+import { SimpleBanner, TabularActiveFilters, TabularExplorer, TabularMobileFilters, TabularSkeleton, TabularTable, TabularToolbar } from '@datagouv/components-next'
 import { buildFiltersFromQuery } from '~/utils/previewDashboard'
 
 const config = useRuntimeConfig()
