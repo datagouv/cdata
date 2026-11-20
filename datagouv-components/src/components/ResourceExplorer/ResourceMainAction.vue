@@ -84,7 +84,7 @@
                 download
                 @click="trackDownload(item.format); close()"
               >
-                <span class="min-w-0 flex-1 truncate">{{ t('Format {format}', { format: item.format }) }}</span>
+                <span class="min-w-0 flex-1 truncate">{{ item.format ? t('Format {format}', { format: item.format }) : t('Fichier') }}</span>
                 <span
                   v-if="item.size"
                   class="shrink-0 rounded bg-gray-lower px-1 text-[13px] tabular-nums text-gray-medium"
@@ -141,7 +141,7 @@ import { useResourceCapabilities } from '../../composables/useResourceCapabiliti
 import type { Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 
-type DownloadItem = { url: string, format: string, size?: number }
+type DownloadItem = { url: string, format: string | null, size?: number }
 type DownloadGroup = { title: string, items: DownloadItem[] }
 
 // The one action a resource offers, whatever its kind: the two explorer headers mount
@@ -213,7 +213,7 @@ const singleDownload = computed<DownloadItem | null>(() => {
   return items.length === 1 ? items[0]! : null
 })
 
-const trackDownload = (format: string) => {
+const trackDownload = (format: string | null) => {
   trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${format}`)
 }
 
