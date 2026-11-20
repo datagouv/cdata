@@ -11,7 +11,7 @@ export type Member = {
   since: string | null
 }
 
-export type OrganizationSuggest = { id: string, image_url: string, name: string }
+export type OrganizationSuggest = { id: string, image_url: string, name: string, acronym: string | null, slug: string }
 
 export type OrganizationOrSuggest = Organization | OrganizationReference | OrganizationSuggest
 
