@@ -204,7 +204,7 @@
               id="assistant-input-counter"
               class="mr-auto text-[11px] tabular-nums"
               :class="input.length >= MAX_INPUT_LENGTH ? 'text-new-error' : 'text-new-gray-medium'"
-            >{{ input.length.toLocaleString('fr-FR') }} / {{ MAX_INPUT_LENGTH.toLocaleString('fr-FR') }}<span class="sr-only"> {{ $t('caractères') }}</span></span>
+            >{{ input.length.toLocaleString(locale) }} / {{ MAX_INPUT_LENGTH.toLocaleString(locale) }}<span class="sr-only"> {{ $t('caractères') }}</span></span>
             <!-- RGAA 7.5: announced when a threshold is first crossed, not on every keystroke. -->
             <span
               class="sr-only"
@@ -285,7 +285,7 @@ const lengthLevel = computed(() => input.value.length >= MAX_INPUT_LENGTH ? 2 : 
 const lengthNotice = ref('')
 let announcedLevel = 0
 watch(lengthLevel, (level) => {
-  const max = MAX_INPUT_LENGTH.toLocaleString('fr-FR')
+  const max = MAX_INPUT_LENGTH.toLocaleString(locale)
   if (level === 0) {
     announcedLevel = 0
     lengthNotice.value = ''
@@ -327,7 +327,7 @@ const displayItemsCache = new WeakMap<ChatMessage, Array<ChatDisplayItem>>()
 function displayItems(message: ChatMessage): Array<ChatDisplayItem> {
   let items = displayItemsCache.get(message)
   if (!items) {
-    items = buildChatDisplayItems(message.parts)
+    items = buildChatDisplayItems(message.parts, locale)
     displayItemsCache.set(message, items)
   }
   return items
@@ -361,7 +361,7 @@ function userMessageText(parts: Array<{ type: string, text?: unknown }>): string
   return parts.map(part => (part.type === 'text' && typeof part.text === 'string' ? part.text : '')).filter(Boolean).join('\n')
 }
 
-const { t } = useTranslation()
+const { t, locale } = useTranslation()
 const suggestions = computed(() => getStarterQuestions(props.columns, t))
 
 // The button that started it leaves the DOM with the conversation (RGAA 12.8).
@@ -377,15 +377,10 @@ function applySuggestion(suggestion: string) {
   textareaRef.value?.focus()
 }
 
-// Guard against double submissions (double click, repeated Enter).
-const SEND_COOLDOWN_MS = 1000
-let lastSubmittedAt = 0
-
+// A double click or a repeated Enter finds the composer already emptied.
 function submit() {
   const text = input.value.trim()
-  const now = Date.now()
-  if (!text || waiting.value || busy.value || now - lastSubmittedAt < SEND_COOLDOWN_MS) return
-  lastSubmittedAt = now
+  if (!text || waiting.value || busy.value) return
   lastSentText = text
   sendMessage({ text })
   input.value = ''

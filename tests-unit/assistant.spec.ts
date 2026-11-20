@@ -2,6 +2,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { useTranslation } from '@datagouv/components-next'
 import type { ChartForApi, ColumnDefinition } from '@datagouv/components-next'
 import ChatPanel from '~/components/Assistant/ChatPanel.vue'
 import AssistantSpinner from '~/components/Assistant/AssistantSpinner.vue'
@@ -71,7 +72,7 @@ const CHART = {
 }
 
 function traceOf(part: Record<string, unknown>) {
-  const [item] = buildChatDisplayItems([part])
+  const [item] = buildChatDisplayItems([part], 'fr-FR')
   return item?.kind === 'trace' ? item.trace : null
 }
 
@@ -87,20 +88,18 @@ describe('toAssistantVisualization', () => {
   } as unknown as ChartForApi
 
   it('keeps only what the assistant needs', () => {
-    expect(toAssistantVisualization(chart, { filter, chart_type: 'histogram' }, true)).toEqual({
+    expect(toAssistantVisualization(chart, true)).toEqual({
       exists: true,
       title: 'Population',
       description: '',
       x_axis: CHART.x_axis,
       y_axis: CHART.y_axis,
       series: [{ type: 'line', column_y: 'pop', aggregate_y: 'sum', resource_id: 'r1', filters: filter }],
-      filter,
-      chart_type: 'histogram',
     })
   })
 
   it('tells a new chart from a saved one', () => {
-    expect(toAssistantVisualization(chart, { filter: null }, false)).toMatchObject({ exists: false, filter: null, chart_type: null })
+    expect(toAssistantVisualization(chart, false)).toMatchObject({ exists: false })
   })
 })
 
@@ -113,7 +112,7 @@ describe('chartToolResults', () => {
         role: 'assistant',
         parts: [
           { type: 'tool-create_chart', toolCallId: 'c1', state: 'output-available', input: {}, output: { status: 'ok', chart: CHART, more_groups: true } },
-          { type: 'tool-query_data', toolCallId: 'q1', state: 'output-available', input: {}, output: { status: 'ok', table: 'a | b', rows: 0, total: 0, more_groups: false } },
+          { type: 'tool-query_data', toolCallId: 'q1', state: 'output-available', input: {}, output: { status: 'ok', table: '', rows: 0, total: 0, more_groups: false } },
           { type: 'tool-update_chart', toolCallId: 'c2', state: 'output-available', input: {}, output: { status: 'ok', patch: { title: 'Nouveau' } } },
         ],
       },
@@ -177,7 +176,7 @@ describe('buildChatDisplayItems', () => {
       { type: 'reasoning', text: 'a' },
       { type: 'reasoning', text: 'b' },
       { type: 'text', text: 'Bonjour' },
-    ])).toEqual([{ kind: 'thinking', text: 'ab' }, { kind: 'text', text: 'Bonjour' }])
+    ], 'fr-FR')).toEqual([{ kind: 'thinking', text: 'ab' }, { kind: 'text', text: 'Bonjour' }])
   })
 
   it('carries the query_data table on the trace and truncates it', () => {
@@ -216,10 +215,15 @@ describe('summarizes chart tool traces', () => {
     ['several rows', { status: 'ok', table: 'a\n1\n2\n3', rows: 3, total: 3, more_groups: false }, '3 lignes'],
     ['a truncated table', { status: 'ok', table: 'a\n1\n2', rows: 2, total: 2187, more_groups: false }, `${(2187).toLocaleString('fr-FR')} lignes`],
     ['an aggregate with more groups', { status: 'ok', table: 'a | b\n1 | 2', rows: 50, total: null, more_groups: true }, '50 lignes, plus de 50 valeurs'],
-    ['an empty result', { status: 'ok', table: 'a', rows: 0, total: 0, more_groups: false }, 'Aucune ligne'],
+    ['an empty result', { status: 'ok', table: '', rows: 0, total: 0, more_groups: false }, 'Aucune ligne'],
     ['an error', { status: 'error', errors: ['Unknown column: x.'] }, 'Requête non exécutée'],
   ])('query_data: %s', (_case, output, summary) => {
     expect(summaryOf({ type: 'tool-query_data', output })).toBe(summary)
+  })
+
+  it('formats the row count in the given locale', () => {
+    const [item] = buildChatDisplayItems([{ type: 'tool-query_data', state: 'output-available', input: {}, output: { status: 'ok', table: 'a\n1', rows: 1, total: 2187, more_groups: false } }], 'en-US')
+    expect(item?.kind === 'trace' && item.trace.summary).toBe('2,187 lignes')
   })
 
   it.each([
@@ -601,7 +605,7 @@ describe('ChatPanel', () => {
   })
 
   it('mentions the current visualization when one is sent', () => {
-    const visualization = toAssistantVisualization(CHART as unknown as ChartForApi, { filter: null, chart_type: 'line' }, false)
+    const visualization = toAssistantVisualization(CHART as unknown as ChartForApi, false)
     const wrapper = mountPanel('resource-1', visualization)
 
     expect(wrapper.find('[aria-label="Contexte utilisé par l’assistant"]').text()).toContain('Visualisation en cours')
@@ -683,9 +687,10 @@ describe('ChatPanel', () => {
   it('shows the character counter beyond 3600 characters, in red at the max', async () => {
     const wrapper = mountPanel('resource-1')
     const textarea = wrapper.find('textarea#assistant-input')
-    const expected = `${(3601).toLocaleString('fr-FR')} / ${(4000).toLocaleString('fr-FR')}`
+    const { locale } = useTranslation()
+    const expected = `${(3601).toLocaleString(locale)} / ${(4000).toLocaleString(locale)}`
 
-    expect(wrapper.text()).not.toContain('/ 4 000')
+    expect(wrapper.text()).not.toContain(` / ${(4000).toLocaleString(locale)}`)
 
     await textarea.setValue('a'.repeat(3601))
     expect(wrapper.text()).toContain(expected)
@@ -700,7 +705,7 @@ describe('ChatPanel', () => {
     const wrapper = mountPanel('resource-1')
     const textarea = wrapper.find('textarea#assistant-input')
     const notice = () => wrapper.find('[data-testid="chat-length-status"]').text()
-    const max = (4000).toLocaleString('fr-FR')
+    const max = (4000).toLocaleString(useTranslation().locale)
 
     expect(textarea.attributes('aria-describedby')).toBeUndefined()
     await textarea.setValue('a'.repeat(3601))
@@ -774,19 +779,30 @@ describe('ChatPanel', () => {
     expect(stopMock).toHaveBeenCalled()
   })
 
-  it('ignores a second submit within the anti-double-send cooldown', async () => {
-    const now = vi.spyOn(Date, 'now').mockReturnValue(10_000)
+  it('sends a double click once', async () => {
     const wrapper = mountPanel('resource-1')
-    const textarea = wrapper.find('textarea#assistant-input')
+    await wrapper.find('textarea#assistant-input').setValue('premier')
+    const send = wrapper.find('button[aria-label="Envoyer"]')
 
-    await textarea.setValue('premier')
-    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
-    await textarea.setValue('second')
-    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
+    await send.trigger('click')
+    await send.trigger('click')
 
     expect(sendMessageMock).toHaveBeenCalledTimes(1)
     expect(sendMessageMock).toHaveBeenCalledWith({ text: 'premier' })
-    now.mockRestore()
+  })
+
+  it('sends a retry right after a fast failure', async () => {
+    const wrapper = mountPanel('resource-1')
+    await wrapper.find('textarea#assistant-input').setValue('premier')
+    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
+
+    chatState.status.value = 'error'
+    chatState.error.value = new Error('fetch failed')
+    await nextTick()
+    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
+
+    expect(sendMessageMock).toHaveBeenCalledTimes(2)
+    expect(sendMessageMock).toHaveBeenLastCalledWith({ text: 'premier' })
   })
 
   it('renders assistant text as markdown', () => {

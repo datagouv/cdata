@@ -53,8 +53,9 @@
               >{{ $t('Choix de la ressource') }}</label>
               <select
                 id="resource-select"
-                v-model="selectedResource"
+                :value="selectedResource"
                 class="w-full fr-select"
+                @change="chooseResource(($event.target as HTMLSelectElement).value)"
               >
                 <option
                   value=""
@@ -74,7 +75,7 @@
           </div>
           <p
             class="mb-0 flex shrink-0 items-center gap-1.5 text-[10px]"
-            :class="sourceLoading ? '' : selectedResource ? 'text-new-success' : 'text-new-gray-medium'"
+            :class="!sourceLoading && selectedResource && !resourceColumns.length ? 'text-new-warning' : 'text-new-gray-medium'"
             role="status"
             data-testid="source-status"
           >
@@ -85,11 +86,14 @@
               />
               {{ $t('Chargement…') }}
             </template>
-            <template v-else-if="selectedResource">
-              <RiCheckboxCircleLine
+            <template v-else-if="selectedResource && !resourceColumns.length">
+              <RiErrorWarningLine
                 class="size-3"
                 aria-hidden="true"
               />
+              {{ $t('Aucune colonne disponible') }}
+            </template>
+            <template v-else-if="selectedResource">
               {{ $t('{n} colonnes disponibles | {n} colonne disponible | {n} colonnes disponibles', { n: resourceColumns.length }) }}
             </template>
             <template v-else>
@@ -583,21 +587,22 @@
                       </fieldset>
                     </div>
 
-                    <details
-                      class="group min-w-0 border-t border-new-gray-light py-4"
-                      open
+                    <Disclosure
+                      v-slot="{ open }"
+                      as="div"
+                      default-open
+                      class="min-w-0 border-t border-new-gray-light py-4"
                       data-testid="chart-styles"
                     >
-                      <summary class="flex cursor-pointer list-none items-center gap-1 text-xs font-bold [&::-webkit-details-marker]:hidden">
+                      <DisclosureButton class="flex items-center gap-1 text-xs font-bold">
                         <RiArrowDownSLine
-                          class="size-3.5 shrink-0 transition-transform -rotate-90 group-open:rotate-0 motion-reduce:transition-none"
+                          class="size-3.5 shrink-0 transition-transform motion-reduce:transition-none"
+                          :class="open ? '' : '-rotate-90'"
                           aria-hidden="true"
                         />
                         {{ $t('Styles') }}
-                      </summary>
-                      <!-- box-border: the details content slot is content-box, which DSFR's `* { box-sizing: inherit }`
-                      would pass on to the fields (::details-content is too recent to fix it globally). -->
-                      <div class="mt-4 box-border space-y-4">
+                      </DisclosureButton>
+                      <DisclosurePanel class="mt-4 space-y-4">
                         <div>
                           <label
                             for="y-axis-label"
@@ -669,8 +674,8 @@
                             </select>
                           </div>
                         </div>
-                      </div>
-                    </details>
+                      </DisclosurePanel>
+                    </Disclosure>
                   </template>
                   <div
                     v-else
@@ -732,7 +737,7 @@
                 >
                   <p class="mb-0 flex-1 text-xs">
                     {{ $t('Le titre et la description sont obligatoires pour enregistrer le graphique.') }}
-                    {{ $t('À compléter : {fields}.', { fields: missingFields.map(field => field.label).join(', ') }) }}
+                    {{ $t('À compléter : {fields}.', { fields: humanJoin(missingFields.map(field => field.label)) }) }}
                   </p>
                   <BrandedButton
                     size="xs"
@@ -753,11 +758,11 @@
 
 <script setup lang="ts">
 import type { Resource, PaginatedArray, ChartForm, Chart, Filter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
-import { CHART_PAGE_SIZE, buildTypeConfig, buildColumnsFromProfile, defaultXColumn, fitsInChart, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, hasMixedSeries, SearchableSelect, SimpleBanner, Listbox, useTranslation } from '@datagouv/components-next'
+import { CHART_PAGE_SIZE, buildTypeConfig, buildColumnsFromProfile, defaultXColumn, fitsInChart, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, hasMixedSeries, humanJoin, SearchableSelect, SimpleBanner, Listbox, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, nextTick, reactive, ref, useTemplateRef, watch } from 'vue'
-import { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/vue'
-import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartBoxLine, RiBarChartLine, RiCheckboxCircleLine, RiInformationLine, RiLineChartLine, RiLoader4Line, RiSettings3Line, RiSparklingLine, RiText } from '@remixicon/vue'
+import { Disclosure, DisclosureButton, DisclosurePanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/vue'
+import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartBoxLine, RiBarChartLine, RiErrorWarningLine, RiInformationLine, RiLineChartLine, RiLoader4Line, RiSettings3Line, RiSparklingLine, RiText } from '@remixicon/vue'
 import { isMeAdmin } from '~/utils/auth'
 import { applySerieCalculation, getSerieCalculation, getSerieColumnYOptions, keepValidSortCombined } from '~/utils/charts'
 import type { SerieCalculation } from '~/utils/charts'
@@ -823,7 +828,10 @@ const dataset = ref<DatasetSuggest | null>(null)
 const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref<string>('')
 const chartViewerWrapperRef = ref<InstanceType<typeof ChartViewerWrapper> | null>(null)
-const sourceLoading = ref(false)
+const datasetLoading = ref(false)
+// loadColumnsForResources always sets columns[id], with [] when the profile fails.
+const columnsLoading = computed(() => !!selectedResource.value && !(selectedResource.value in columns.value))
+const sourceLoading = computed(() => datasetLoading.value || columnsLoading.value)
 const assistantEnabled = Boolean(runtimeConfig.public.assistantEnabled)
 type EditorTab = 'assistant' | 'manual'
 const tabs = computed(() => [
@@ -872,7 +880,7 @@ const savedChart = ref<Chart | null>(null)
 
 const chartForViewer = ref(toChartApi(form.value))
 // What the assistant sees of the chart, read when a message is sent; nothing without a chart.
-const visualization = computed(() => hasChart.value ? toAssistantVisualization(toChartApi(form.value), form.value, !!(props.initialChart || savedChart.value)) : null)
+const visualization = computed(() => hasChart.value ? toAssistantVisualization(toChartApi(form.value), !!(props.initialChart || savedChart.value)) : null)
 
 const hasChart = computed(() => !!form.value.x_axis.column_x && form.value.series.length > 0)
 
@@ -1259,10 +1267,10 @@ watch(
 
 watch(dataset, async (newDataset) => {
   selectedResource.value = ''
+  datasetLoading.value = !!newDataset
   if (!newDataset) {
     return
   }
-  sourceLoading.value = true
   try {
     const fetchedResources = await $chartsApi<PaginatedArray<Resource>>(`/api/2/datasets/${newDataset.id}/resources/`)
     for (const r of fetchedResources.data.filter(resource => hasTabularData(resource))) {
@@ -1273,17 +1281,25 @@ watch(dataset, async (newDataset) => {
     console.error('Failed to fetch resources:', error)
   }
   finally {
-    sourceLoading.value = false
+    // A dataset left since must not end the loading of the current one.
+    if (dataset.value === newDataset) datasetLoading.value = false
   }
 }, { immediate: true })
 
-watch(selectedResource, async (r, previous) => {
+// The user chose a resource: the series take it along, from the resource they use.
+// Opening a chart or switching datasets sets selectedResource without moving them.
+function chooseResource(id: string) {
+  const used = form.value.series[0]?.resource_id
+  if (used && used !== id) {
+    for (const serie of form.value.series) {
+      if (serie.resource_id === used) serie.resource_id = id
+    }
+  }
+  selectedResource.value = id
+}
+
+watch(selectedResource, async (r) => {
   if (r) {
-    // Opening a chart sets the resource from an empty one: its series stay where they are.
-    // A resource chosen afterwards takes along the series of the previous one.
-    const moved = previous
-      ? form.value.series.filter(serie => serie.resource_id === previous)
-      : []
     if (form.value.series.length === 0) {
       form.value.series.push({
         type: 'histogram',
@@ -1294,20 +1310,11 @@ watch(selectedResource, async (r, previous) => {
         column_x_name_override: null,
       })
     }
-    else {
-      for (const serie of moved) serie.resource_id = r
+    if (!savedResources[r]) {
+      await loadMissingResourcesForChart([r])
     }
-    sourceLoading.value = true
-    try {
-      if (!savedResources[r]) {
-        await loadMissingResourcesForChart([r])
-      }
-      if (!columns.value[r] || columns.value[r].length === 0) {
-        await loadColumnsForResources([r])
-      }
-    }
-    finally {
-      sourceLoading.value = false
+    if (!columns.value[r] || columns.value[r].length === 0) {
+      await loadColumnsForResources([r])
     }
     // Another resource was selected while this one loaded: its columns must not reset the form.
     if (selectedResource.value !== r) return
@@ -1323,8 +1330,8 @@ watch(selectedResource, async (r, previous) => {
       if (currentYColumn && !columnNames.includes(currentYColumn)) {
         form.value.series[0].column_y = ''
       }
-      // A moved series must not keep a column of its previous resource.
-      for (const serie of moved) {
+      // A series moved from another resource must not keep one of its columns.
+      for (const serie of form.value.series.filter(serie => serie.resource_id === r)) {
         if (serie.column_y && !columnNames.includes(serie.column_y)) serie.column_y = ''
         if (serie.column_x_name_override && !columnNames.includes(serie.column_x_name_override)) {
           serie.column_x_name_override = null

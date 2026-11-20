@@ -1,6 +1,5 @@
-import { isRecord } from '@datagouv/components-next'
-import type { ChartContent, ChartForApi, ChartForm, ColumnDefinition, DataSeries, DataSeriesType, GenericFilter, XAxis, TranslationFunction, YAxis } from '@datagouv/components-next'
-import { humanJoin } from '~/utils/helpers'
+import { humanJoin, isRecord } from '@datagouv/components-next'
+import type { ChartContent, ChartForApi, ColumnDefinition, DataSeries, DataSeriesType, XAxis, TranslationFunction, YAxis } from '@datagouv/components-next'
 
 /**
  * Auto-scroll guard for the chat panel: happy-dom cannot model scroll
@@ -76,15 +75,9 @@ export type AssistantVisualization = {
   x_axis: XAxis
   y_axis: YAxis
   series: Array<Pick<DataSeries, 'type' | 'column_y' | 'aggregate_y' | 'resource_id' | 'filters'>>
-  filter: GenericFilter | null
-  chart_type: DataSeriesType | null
 }
 
-export function toAssistantVisualization(
-  chart: ChartForApi,
-  form: Pick<ChartForm, 'filter' | 'chart_type'>,
-  exists: boolean,
-): AssistantVisualization {
+export function toAssistantVisualization(chart: ChartForApi, exists: boolean): AssistantVisualization {
   return {
     exists,
     title: chart.title,
@@ -92,8 +85,6 @@ export function toAssistantVisualization(
     x_axis: chart.x_axis,
     y_axis: chart.y_axis,
     series: chart.series.map(({ type, column_y, aggregate_y, resource_id, filters }) => ({ type, column_y, aggregate_y, resource_id, filters })),
-    filter: form.filter ?? null,
-    chart_type: form.chart_type ?? null,
   }
 }
 
@@ -232,9 +223,9 @@ function truncateAt(value: string, limit: number): string {
   return value.length > limit ? `${value.slice(0, limit)}…` : value
 }
 
-function formatRowCount(count: number): string {
+function formatRowCount(count: number, locale: string): string {
   if (count === 0) return 'Aucune ligne'
-  return count === 1 ? '1 ligne' : `${count.toLocaleString('fr-FR')} lignes`
+  return count === 1 ? '1 ligne' : `${count.toLocaleString(locale)} lignes`
 }
 
 function toolErrors(output: unknown): string | null {
@@ -245,14 +236,14 @@ function toolErrors(output: unknown): string | null {
 
 // `total` is the exact row count, known only without an aggregate; `rows` is
 // what the table shows.
-function buildQuerySummary(part: Record<string, unknown>): string {
+function buildQuerySummary(part: Record<string, unknown>, locale: string): string {
   if (part.state !== 'output-available') return QUERY_RUNNING_SUMMARY
   const output = part.output
   if (!isRecord(output)) return TOOL_LABELS['tool-query_data']!.summary
   if (output.status === 'error') return QUERY_NOT_RUN_SUMMARY
   const count = typeof output.total === 'number' ? output.total : output.rows
   if (output.status !== 'ok' || typeof count !== 'number') return TOOL_LABELS['tool-query_data']!.summary
-  const rows = formatRowCount(count)
+  const rows = formatRowCount(count, locale)
   return output.more_groups === true ? `${rows}, ${QUERY_MORE_GROUPS_SUMMARY}` : rows
 }
 
@@ -298,14 +289,14 @@ function buildUpdateSummary(part: Record<string, unknown>): string {
   return `${joined.charAt(0).toUpperCase()}${joined.slice(1)} ${participle}`
 }
 
-function buildSummary(type: string, part: Record<string, unknown>, fallback: string): string {
-  if (type === 'tool-query_data') return buildQuerySummary(part)
+function buildSummary(type: string, part: Record<string, unknown>, fallback: string, locale: string): string {
+  if (type === 'tool-query_data') return buildQuerySummary(part, locale)
   if (type === 'tool-create_chart') return buildCreateSummary(part)
   if (type === 'tool-update_chart') return buildUpdateSummary(part)
   return fallback
 }
 
-function buildToolTrace(type: string, part: Record<string, unknown>): ToolTrace {
+function buildToolTrace(type: string, part: Record<string, unknown>, locale: string): ToolTrace {
   const labels = TOOL_LABELS[type] ?? FALLBACK_TOOL_LABEL
   const error = part.state === 'output-error'
   const errorText = error
@@ -314,7 +305,7 @@ function buildToolTrace(type: string, part: Record<string, unknown>): ToolTrace 
 
   return {
     label: labels.label,
-    summary: error ? errorText! : buildSummary(type, part, labels.summary),
+    summary: error ? errorText! : buildSummary(type, part, labels.summary, locale),
     error,
     errorText,
     output: buildToolOutput(type, part.output),
@@ -328,7 +319,7 @@ function buildToolTrace(type: string, part: Record<string, unknown>): ToolTrace 
  * one part per tool call (keyed by toolCallId) and mutates its state in place,
  * so no merging is ever needed.
  */
-export function buildChatDisplayItems(parts: unknown[]): ChatDisplayItem[] {
+export function buildChatDisplayItems(parts: unknown[], locale: string): ChatDisplayItem[] {
   const items: ChatDisplayItem[] = []
 
   for (const part of parts) {
@@ -350,7 +341,7 @@ export function buildChatDisplayItems(parts: unknown[]): ChatDisplayItem[] {
     }
     if (!part.type.startsWith('tool-')) continue
 
-    items.push({ kind: 'trace', trace: buildToolTrace(part.type, part) })
+    items.push({ kind: 'trace', trace: buildToolTrace(part.type, part, locale) })
   }
 
   return items

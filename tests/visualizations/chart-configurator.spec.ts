@@ -873,6 +873,21 @@ test('switching datasets clears the selected resource and its form', async ({ pa
   await expect(page.getByTestId('form-panel-empty')).toBeVisible()
 })
 
+test('clearing the dataset while its resources load stops the loading', async ({ page }) => {
+  await setupChart(page)
+  await page.route(url => /^\/api\/2\/datasets\/[^/]+\/resources\/$/.test(url.pathname), () => {})
+
+  const datasetSelect = page.getByTestId('searchable-select-jeu-de-donn-es')
+  await datasetSelect.click()
+  await page.getByPlaceholder('Recherchez un jeu de données...').fill('Base SIRENE')
+  await page.getByRole('option', { name: /Base SIRENE/i }).first().click()
+  const status = page.getByTestId('source-status')
+  await expect(status).toHaveText('Chargement…')
+
+  await datasetSelect.locator('..').getByTitle('Effacer').click()
+  await expect(status).toHaveText('Source à sélectionner')
+})
+
 test('ignores a late profile response after changing resources', async ({ page }) => {
   await withSecondTabularResource(page)
   await setupChart(page)
@@ -996,7 +1011,7 @@ test('chat message is sent with the selected resource and the conversation survi
   expect(body.resource_id).toBe(RESOURCE_ID)
   expect(body.visualization).toMatchObject({ exists: false, title: 'Mon graphique', x_axis: { column_x: 'année_publication' } })
   // Only the chart itself: no ownership, visibility or extras.
-  expect(Object.keys(body.visualization).sort()).toEqual(['chart_type', 'description', 'exists', 'filter', 'series', 'title', 'x_axis', 'y_axis'])
+  expect(Object.keys(body.visualization).sort()).toEqual(['description', 'exists', 'series', 'title', 'x_axis', 'y_axis'])
   expect(Object.keys((body.visualization.series as Array<object>)[0]!).sort()).toEqual(['aggregate_y', 'column_y', 'filters', 'resource_id', 'type'])
   const lastUserMessage = [...body.messages].reverse().find(m => m.role === 'user')
   expect(JSON.stringify(lastUserMessage)).toContain('Logements par région en histogramme')
@@ -1055,24 +1070,16 @@ test('a count chart sorted by Y keeps its sort', async ({ page }) => {
   await expect(listbox.getByRole('option', { name: 'Compter - Ascendant' })).toBeVisible()
 })
 
-// The details content slot is content-box: without box-border on the section content,
-// DSFR's `* { box-sizing: inherit }` makes the padded fields wider than the panel.
-test('styles fields stay within the panel and only the summary looks clickable', async ({ page }) => {
+test('the styles section starts open and folds', async ({ page }) => {
   await page.route('**/assistant/chat/**', route => route.abort())
   await setupChart(page)
 
-  const styles = page.getByTestId('chart-styles')
+  const toggle = page.getByTestId('chart-styles').getByRole('button', { name: 'Styles' })
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true')
   await expect(page.getByLabel('Label de l’axe Y')).toBeVisible()
-  const overflowing = await styles.evaluate((details) => {
-    const right = details.getBoundingClientRect().right
-    return [...details.querySelectorAll('input, select')]
-      .filter(field => field.getBoundingClientRect().right > right + 0.5)
-      .map(field => field.id || field.getAttribute('name') || field.tagName)
-  })
-  expect(overflowing).toEqual([])
-
-  await expect(styles).toHaveCSS('cursor', 'auto')
-  await expect(styles.locator('summary')).toHaveCSS('cursor', 'pointer')
+  await toggle.click()
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false')
+  await expect(page.getByLabel('Label de l’axe Y')).toBeHidden()
 })
 
 test.describe('a chart whose series differ in type or filter', () => {
@@ -1190,5 +1197,36 @@ test.describe('when a chart of several series changes resource', () => {
     await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
     await expect.poll(() => saved).not.toBeNull()
     expect(saved!.series.map(serie => serie.resource_id)).toEqual([secondResourceId, secondResourceId])
+  })
+
+  test('a resource chosen after switching datasets takes the series along', async ({ page }) => {
+    await withSecondTabularResource(page)
+    await setupChart(page)
+    await page.getByLabel('Titre').fill('Changement de jeu de données')
+    await page.getByLabel('Description').fill('La série suit la ressource choisie.')
+
+    // Away and back: the resource select is emptied, the series still read the first resource.
+    const datasetSelect = page.getByTestId('searchable-select-jeu-de-donn-es')
+    await datasetSelect.click()
+    await page.getByPlaceholder('Recherchez un jeu de données...').fill('Base SIRENE')
+    await page.getByRole('option', { name: /Base SIRENE/i }).first().click()
+    await expect(page.locator('#resource-select')).toHaveValue('')
+    await datasetSelect.click()
+    await page.getByPlaceholder('Recherchez un jeu de données...').fill('logements sociaux')
+    await page.getByRole('option', { name: 'Logements sociaux et bailleurs par région', exact: true }).click()
+    await expect(page.locator('#resource-select')).toHaveValue('')
+
+    const secondResourceId = await otherResourceId(page)
+    await page.getByLabel('Choix de la ressource').selectOption(secondResourceId)
+
+    let saved: { series: Array<{ resource_id: string }> } | null = null
+    await page.route(url => url.pathname === '/api/1/visualizations/', async (route) => {
+      if (route.request().method() !== 'POST') return route.fallback()
+      saved = route.request().postDataJSON()
+      await route.fulfill({ status: 400, json: { message: 'Not saved by this test' } })
+    })
+    await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+    await expect.poll(() => saved).not.toBeNull()
+    expect(saved!.series.map(serie => serie.resource_id)).toEqual([secondResourceId])
   })
 })

@@ -10,3 +10,4 @@ export { useTranslation } from '~/datagouv-components/src/composables/useTransla
 export { default as MarkdownViewer } from '~/datagouv-components/src/components/MarkdownViewer.vue'
 export { chartContentToForm } from '~/datagouv-components/src/functions/charts'
 export { isRecord } from '~/datagouv-components/src/functions/tabular'
+export { humanJoin } from '~/datagouv-components/src/functions/helpers'
