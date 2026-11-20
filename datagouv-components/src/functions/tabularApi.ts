@@ -75,7 +75,6 @@ export type TabularErrorReason
     | { kind: 'invalid_value', value: string | null, type: string | null }
     | { kind: 'impossible_aggregate' }
     | { kind: 'forbidden_aggregation' }
-    | { kind: 'not_indexed', column: string, allowed: Array<string> }
     | { kind: 'invalid_query', detail: string }
     | { kind: 'unavailable' }
     | { kind: 'unknown' }
@@ -99,11 +98,6 @@ const UNKNOWN_COLUMN = /^column (?:(?:csvapi\.)?[0-9a-f]{32}\.)?"?(.+?)"? does n
 const INVALID_VALUE = /^invalid input syntax for type ([\w ]+): "(.*)"$/s
 const MISSING_TABLE_CODES = new Set(['42P01', 'PGRST205'])
 const INVALID_VALUE_CODES = new Set(['22P02', '22007'])
-// api-tabular's two "Unauthorized parameters" details (core/query.py).
-const FORBIDDEN_AGGREGATION_DETAIL = /^Aggregation parameters .* are not allowed/
-const NOT_INDEXED_DETAIL = /^(?<column>.*) is not among the allowed columns: (?<allowed>\{.*\})$/s
-// The items of the Python set repr of the indexed columns
-const PYTHON_STRING = /'((?:[^'\\]|\\.)*)'|"((?:[^"\\]|\\.)*)"/g
 
 function maskTableName(text: string): string {
   return text.replace(TABLE_NAME, 'ressource')
@@ -128,7 +122,8 @@ function decodeReason(status: number, body: unknown): TabularErrorReason {
   if (!isRecord(first)) return status === 404 || status === 410 ? { kind: 'unavailable' } : { kind: 'unknown' }
   const { title, detail } = first
   if (status === 403) {
-    return title === 'Unauthorized parameters' ? unauthorizedReason(detail) : { kind: 'unknown' }
+    // Since api-tabular #127, its only "Unauthorized parameters" error is a refused aggregation (core/query.py).
+    return title === 'Unauthorized parameters' ? { kind: 'forbidden_aggregation' } : { kind: 'unknown' }
   }
   if (isRecord(detail)) {
     const code = detail.code
@@ -148,19 +143,6 @@ function decodeReason(status: number, body: unknown): TabularErrorReason {
   }
   if (status === 400 && typeof detail === 'string' && detail) return { kind: 'invalid_query', detail: maskTableName(detail) }
   return { kind: 'unknown' }
-}
-
-function unauthorizedReason(detail: unknown): TabularErrorReason {
-  if (typeof detail !== 'string') return { kind: 'unknown' }
-  if (FORBIDDEN_AGGREGATION_DETAIL.test(detail)) return { kind: 'forbidden_aggregation' }
-  const match = NOT_INDEXED_DETAIL.exec(detail)
-  if (!match?.groups) return { kind: 'unknown' }
-  const allowed = [...match.groups.allowed!.matchAll(PYTHON_STRING)].map(item => item[1] ?? item[2]!)
-  return {
-    kind: 'not_indexed',
-    column: maskTableName(match.groups.column!),
-    allowed: allowed.length > 0 ? allowed.sort() : [match.groups.allowed!],
-  }
 }
 
 function expectedType(type: string, t: TranslationFunction): string {
@@ -205,11 +187,6 @@ export function tabularErrorMessage(error: unknown, t: TranslationFunction): str
       return t('Ce calcul n’est pas possible sur cette colonne.')
     case 'forbidden_aggregation':
       return t('Agrégation non autorisée sur cette ressource.')
-    case 'not_indexed':
-      return t('Colonne {column} non indexée : seules les colonnes {allowed} peuvent être regroupées ou agrégées.', {
-        column: reason.column,
-        allowed: reason.allowed.join(', '),
-      })
     case 'invalid_query':
       return reason.detail
     case 'unavailable':

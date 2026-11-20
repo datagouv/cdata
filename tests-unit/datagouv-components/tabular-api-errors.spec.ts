@@ -73,10 +73,9 @@ describe('decodeTabularError', () => {
     expect(decode(403, body)).toEqual({ message: 'Agrégation non autorisée sur cette ressource.', retryable: false, statusCode: 403 })
   })
 
-  // api-tabular core/query.py raise_if_not_index: a Python set of the indexed columns
-  it('lists the indexed columns of a large resource, sorted', () => {
-    const body = { errors: [{ code: null, title: 'Unauthorized parameters', detail: 'dep is not among the allowed columns: {\'region\', "l\'année"}' }] }
-    expect(decode(403, body).message).toBe('Colonne dep non indexée : seules les colonnes l\'année, region peuvent être regroupées ou agrégées.')
+  it('reads a forbidden aggregation by its status and title, whatever the detail says', () => {
+    const body = { errors: [{ code: 'c8276d', title: 'Unauthorized parameters', detail: 'Aggregations are disabled here' }] }
+    expect(decode(403, body).message).toBe('Agrégation non autorisée sur cette ressource.')
   })
 
   it('gives no readable message for another 403', () => {
