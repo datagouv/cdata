@@ -137,6 +137,13 @@
             </template>
           </LinkedToAccordion>
         </fieldset>
+        <DatasetLongDescriptionSuggestFromFiles
+          v-if="form.resources.length > 0"
+          v-model="datasetForm.description"
+          :resources="form.resources"
+          :title="datasetForm.title"
+          :organization="datasetForm.owned?.organization?.name"
+        />
         <Alert
           v-if="errors.length"
           type="error"
@@ -179,13 +186,15 @@
 
 <script setup lang="ts">
 import { BrandedButton, PaddedContainer, SimpleBanner } from '@datagouv/components-next'
+import DatasetLongDescriptionSuggestFromFiles from '../DatasetLongDescriptionSuggestFromFiles.vue'
 import UploadResourceModal from '../UploadResourceModal.vue'
 import type { DatasetForm, ResourceForm } from '~/types/types'
+
+const datasetForm = defineModel<DatasetForm>('datasetForm', { required: true })
 
 const props = defineProps<{
   loading: boolean
   resources: Array<ResourceForm>
-  datasetForm: DatasetForm
 }>()
 
 const emit = defineEmits<{
@@ -200,7 +209,7 @@ const { t } = useTranslation()
 const publishFileAccordionId = useId()
 const addDescriptionAccordionId = useId()
 
-const isDatasetOpen = computed(() => props.datasetForm.access_type === 'open')
+const isDatasetOpen = computed(() => datasetForm.value.access_type === 'open')
 
 const { form, getFirstError, getFirstWarning, touch, validate, errorsAsList: errors } = useForm({
   resources: props.resources,
