@@ -58,6 +58,21 @@ test('CADA homepage loads with search bar and table', async ({ page }) => {
   await expect(page.getByText('Lignes').first()).toBeVisible({ timeout: 30000 })
 })
 
+test('CADA homepage gives the date of the last analysis above the table', async ({ page }) => {
+  // The seeded udata has no CADA resource: the explorer fetches it for the banner's dates.
+  // Matched on the path: the request carries a `?lang=` query.
+  await page.route(url => /\/api\/2\/datasets\/resources\/[^/]+\/$/.test(url.pathname), route => route.fulfill({
+    json: {
+      dataset_id: 'cada',
+      resource: { last_modified: '2026-05-20T09:00:00+00:00', extras: { 'analysis:parsing:finished_at': '2026-06-01T10:00:00+00:00' } },
+    },
+  }))
+  await page.goto('/explore/cada')
+
+  await expect(page.getByRole('button', { name: /Colonnes/ })).toBeVisible({ timeout: 30000 })
+  await expect(page.getByText(/Dernière mise à jour le/)).toBeVisible()
+})
+
 test('CADA detail page shows advice content', async ({ page }) => {
   await page.goto('/explore/cada/20237028')
   await page.waitForLoadState('networkidle')

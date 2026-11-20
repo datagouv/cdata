@@ -76,7 +76,9 @@ test('the WMS map preview renders the GetCapabilities strings as text', async ({
   })
   const resource: ApiResource = await response.json()
 
-  await page.goto(`/datasets/${dataset.id}/?resource_id=${resource.id}`)
+  // The map tab of the new explorer, the default resource navigation.
+  await page.goto(`/datasets/${dataset.id}/?resource_id=${resource.id}&tab=map`)
+  await expect(page.getByRole('tab', { name: 'Carte', selected: true })).toBeVisible({ timeout: 30000 })
 
   // The map library takes several seconds to start on a busy CPU, and the preview then
   // polls the GetCapabilities response for up to 10 s before giving up.

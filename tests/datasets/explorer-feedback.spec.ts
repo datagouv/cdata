@@ -1,10 +1,9 @@
 import { test, expect } from '../base'
-import { createDatasetWithRemoteResources, deleteDatasets, enableNewExplorer } from '../helpers'
+import { createDatasetWithRemoteResources, deleteDatasets, openNewExplorer } from '../helpers'
 
 const createdDatasets: Array<string> = []
 
-test.afterEach(async ({ page, request }) => {
-  await page.context().clearCookies({ name: 'new_explorer' })
+test.afterEach(async ({ request }) => {
   await deleteDatasets(request, createdDatasets)
 })
 
@@ -14,7 +13,7 @@ test('the feedback link pre-fills the form with the current context', async ({ p
   const resource = resources[0]!
   const resourceQuery = `?resource_id=${resource.id}`
 
-  await enableNewExplorer(page, `/datasets/${dataset.id}${resourceQuery}`)
+  await openNewExplorer(page, `/datasets/${dataset.id}${resourceQuery}`)
 
   const link = page.getByRole('link', { name: 'Donner votre avis' })
   // The resource params only appear once the explorer has forwarded its

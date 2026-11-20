@@ -147,12 +147,23 @@ export async function gotoSettled(page: Page, url: string): Promise<void> {
   await page.waitForLoadState('networkidle')
 }
 
-// The banner is the only way into the new explorer, and it only lives on the resources
-// tab: opt in from there, then navigate wherever the test needs to go.
-export async function enableNewExplorer(page: Page, url: string): Promise<void> {
-  await page.goto(url)
-  await page.getByRole('button', { name: 'Tester la nouvelle navigation' }).click()
+// Opens a dataset page and checks it stays on the new explorer once settled
+export async function openNewExplorer(page: Page, url: string): Promise<void> {
+  await gotoSettled(page, url)
   await expect(page.locator('aside')).toBeVisible({ timeout: 30000 })
+  await expect(page.getByRole('button', { name: 'Utiliser la nouvelle navigation' })).toHaveCount(0)
+}
+
+// Open a dataset page as a visitor who opted out of the new explorer (the cookie as the
+// app writes it), and wait for the legacy list to replace the server-rendered new one.
+export async function gotoLegacyExplorer(page: Page, url: string): Promise<void> {
+  await page.context().addCookies([{
+    name: 'new_explorer',
+    value: encodeURIComponent(JSON.stringify('0')),
+    url: test.info().project.use.baseURL!,
+  }])
+  await page.goto(url)
+  await expect(page.getByRole('button', { name: 'Utiliser la nouvelle navigation' })).toBeVisible({ timeout: 30000 })
 }
 
 export async function deleteDatasets(request: APIRequestContext, ids: Array<string>): Promise<void> {
