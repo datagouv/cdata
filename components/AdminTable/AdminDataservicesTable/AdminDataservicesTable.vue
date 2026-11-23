@@ -54,11 +54,16 @@
         </td>
         <td>
           <DataserviceBadge
+            size="xs"
             :dataservice
           />
         </td>
         <td>
-          <AccessTypeBadge :access-type="dataservice.access_type" />
+          <AccessTypeBadge
+            :access-type="dataservice.access_type"
+            size="xs"
+            bare
+          />
         </td>
         <td><FormattedDate :date="dataservice.created_at" /></td>
         <td>
@@ -108,14 +113,12 @@
 
 <script setup lang="ts">
 import type { Activity, Dataservice } from '@datagouv/components-next'
-import { ActivityActor, BrandedButton, FormattedDate } from '@datagouv/components-next'
+import { ActivityActor, BrandedButton, FormattedDate, DataserviceBadge, AccessTypeBadge } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import type { DataserviceSortedBy, SortDirection } from '~/types/types'
-import AccessTypeBadge from '~/components/AccessTypes/AccessTypeBadge.vue'
-import DataserviceBadge from '~/components/AdminBadge/DataserviceBadge.vue'
 
 const props = withDefaults(defineProps<{
   activities?: Record<string, Activity>

@@ -71,15 +71,15 @@
               v-if="record.fields.thematique_values.length"
               class="flex flex-wrap gap-1"
             >
-              <AdminBadge
+              <Badge
                 v-for="theme in record.fields.thematique_values"
                 :key="theme"
-                type="teal"
+                tone="teal"
                 size="sm"
-                :no-wrap="false"
+                wrap
               >
                 {{ theme }}
-              </AdminBadge>
+              </Badge>
             </div>
             <span v-else>-</span>
           </td>
@@ -90,20 +90,28 @@
             {{ record.fields.producteur || '-' }}
           </td>
           <td>
-            <HvdStatutBadge
-              :statut="record.fields.statut_telechargement"
-              :url="record.fields.url_telechargement"
-              :type="statutBadgeType(record.fields.statut_telechargement)"
-              :links-to-data="statutLinksToData(record.fields.statut_telechargement)"
+            <ExternalLinkBadge
+              v-if="record.fields.statut_telechargement"
+              :label="record.fields.statut_telechargement"
+              :url="statutLinksToData(record.fields.statut_telechargement) ? record.fields.url_telechargement : null"
+              :link-label="t('Voir les données')"
+              :tone="statutTone(record.fields.statut_telechargement)"
+              size="xs"
+              wrap
             />
+            <span v-else>-</span>
           </td>
           <td>
-            <HvdStatutBadge
-              :statut="record.fields.statut_api"
-              :url="record.fields.url_api"
-              :type="statutBadgeType(record.fields.statut_api)"
-              :links-to-data="statutLinksToData(record.fields.statut_api)"
+            <ExternalLinkBadge
+              v-if="record.fields.statut_api"
+              :label="record.fields.statut_api"
+              :url="statutLinksToData(record.fields.statut_api) ? record.fields.url_api : null"
+              :link-label="t('Voir les données')"
+              :tone="statutTone(record.fields.statut_api)"
+              size="xs"
+              wrap
             />
+            <span v-else>-</span>
           </td>
         </template>
       </GristTableViewer>
@@ -112,17 +120,16 @@
 </template>
 
 <script setup lang="ts">
-import { TranslationT } from '@datagouv/components-next'
+import { TranslationT, Badge } from '@datagouv/components-next'
 import OnboardingHero from '~/components/Onboarding/OnboardingHero.vue'
 import OnboardingSection from '~/components/Onboarding/OnboardingSection.vue'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
-import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
-import HvdStatutBadge from '~/components/SuiviDePublication/HvdStatutBadge.vue'
+import ExternalLinkBadge from '~/components/ExternalLinkBadge.vue'
 import GristTableViewer from '~/components/GristTableViewer/GristTableViewer.vue'
 import type { GristFilter, GristRecord } from '~/components/GristTableViewer/GristTableViewer.vue'
-import type { AdminBadgeType } from '~/types/types'
+import type { BadgeTone } from '@datagouv/components-next'
 import { humanJoin } from '~/utils/helpers'
 
 // hvd_name (ensemble) and hvd_category (thématique) are Grist ChoiceList cells,
@@ -224,7 +231,7 @@ const enrichedRecords = computed<Array<HvdRecord>>(() => {
 type StatutDefinition = {
   // Raw Grist value — used both to match records and as the filter option value.
   value: string
-  badgeType: AdminBadgeType
+  tone: BadgeTone
   // Statuses whose badge links to the published dataset (when the record has an url).
   linksToData: boolean
 }
@@ -232,19 +239,19 @@ type StatutDefinition = {
 // Single source of truth for the statuses: drives the badge colours, the
 // "links to data" behaviour and the filter ordering. Order = progression order.
 const STATUTS: Array<StatutDefinition> = [
-  { value: 'Non disponible', badgeType: 'danger', linksToData: false },
-  { value: 'Planifié', badgeType: 'warning', linksToData: false },
-  { value: 'Partiellement disponible', badgeType: 'pink', linksToData: true },
-  { value: 'Disponible', badgeType: 'primary', linksToData: true },
-  { value: 'Disponible sur data.gouv.fr', badgeType: 'success', linksToData: true },
-  { value: 'Non requis', badgeType: 'default', linksToData: false },
+  { value: 'Non disponible', tone: 'danger', linksToData: false },
+  { value: 'Planifié', tone: 'warning', linksToData: false },
+  { value: 'Partiellement disponible', tone: 'pink', linksToData: true },
+  { value: 'Disponible', tone: 'primary', linksToData: true },
+  { value: 'Disponible sur data.gouv.fr', tone: 'success', linksToData: true },
+  { value: 'Non requis', tone: 'neutral', linksToData: false },
 ]
 
 const statutByValue = new Map(STATUTS.map(statut => [statut.value, statut]))
 
-function statutBadgeType(statut: string | null): AdminBadgeType {
-  if (!statut) return 'default'
-  return statutByValue.get(statut)?.badgeType ?? 'default'
+function statutTone(statut: string | null): BadgeTone {
+  if (!statut) return 'neutral'
+  return statutByValue.get(statut)?.tone ?? 'neutral'
 }
 
 function statutLinksToData(statut: string | null): boolean {

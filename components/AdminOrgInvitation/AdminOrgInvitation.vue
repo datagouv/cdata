@@ -1,13 +1,13 @@
 <template>
   <div class="relative bg-white shadow rounded-sm p-5 mt-3">
-    <AdminBadge
+    <Badge
       class="absolute top-0 left-2.5 -translate-y-1/2"
       size="sm"
-      type="primary"
+      tone="primary"
       :icon="RiUserAddLine"
     >
       {{ $t('Invitation') }}
-    </AdminBadge>
+    </Badge>
 
     <div class="flex flex-wrap justify-between gap-5">
       <div class="space-y-1">
@@ -37,12 +37,10 @@
               class="text-sm text-gray-medium"
             >
               {{ t('Rôle proposé :') }}
-              <AdminBadge
-                size="xs"
-                :type="getRoleBadgeType(invitation.role)"
-              >
-                {{ roleLabel }}
-              </AdminBadge>
+              <MemberRoleBadge
+                :role="invitation.role"
+                :label="roleLabel"
+              />
             </div>
           </div>
         </div>
@@ -88,10 +86,10 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, FormattedDate } from '@datagouv/components-next'
+import { BrandedButton, FormattedDate, Badge } from '@datagouv/components-next'
 import { ref } from 'vue'
 import { RiBuilding2Line, RiCheckLine, RiUserAddLine } from '@remixicon/vue'
-import AdminBadge from '../AdminBadge/AdminBadge.vue'
+import MemberRoleBadge from '~/components/Organization/MemberRoleBadge.vue'
 import type { OrgInvitation } from '~/types/types'
 
 const props = defineProps<{

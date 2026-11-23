@@ -23,6 +23,20 @@ test('a created token is shown in the modal until it is closed', async ({ page }
   await expect(dialog.locator('code')).toHaveCount(0)
 })
 
+test('going back after closing the modal leaves the profile', async ({ page }) => {
+  await gotoHydrated(page, '/')
+  await gotoHydrated(page, '/admin/me/profile')
+  await page.getByRole('button', { name: 'Créer un token' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Créer un token API' })
+  await expect(dialog).toBeVisible()
+  await dialog.getByRole('button', { name: 'Fermer', exact: true }).click()
+  await expect(page).toHaveURL(/\/admin\/me\/profile$/)
+
+  await page.goBack()
+
+  await expect(page).toHaveURL(/\/$/)
+})
+
 test.describe('when the token creation requires a fresh session', () => {
   // The 401 below is the point of the tests: the browser logs it.
   test.use({ allowedConsoleMessages: ['the server responded with a status of 401'] })

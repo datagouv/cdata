@@ -15,22 +15,10 @@
       {{ chart.title }}
     </template>
     <template
-      v-if="chart.deleted_at || chart.private"
+      v-if="getChartStatus(chart) !== 'public'"
       #badge
     >
-      <ObjectCardBadge
-        v-if="chart.deleted_at"
-        :icon="RiDeleteBinLine"
-        tone="danger"
-      >
-        {{ t('Supprimé') }}
-      </ObjectCardBadge>
-      <ObjectCardBadge
-        v-else
-        :icon="RiLockLine"
-      >
-        {{ t('Brouillon') }}
-      </ObjectCardBadge>
+      <ChartBadge :chart />
     </template>
 
     <ObjectCardOwner
@@ -74,18 +62,17 @@
 import { computed } from 'vue'
 import {
   RiBarChartBoxLine,
-  RiDeleteBinLine,
   RiEyeLine,
   RiLineChartLine,
-  RiLockLine,
 } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
+import { getChartStatus } from '../functions/objectStatus'
 import type { Chart } from '../types/visualizations'
 import { useTranslation } from '../composables/useTranslation'
 import CardMedia from './CardMedia.vue'
+import ChartBadge from './ChartBadge.vue'
 import FormattedDate from './FormattedDate.vue'
 import ObjectCard from './ObjectCard.vue'
-import ObjectCardBadge from './ObjectCardBadge.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
 import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardMetric from './ObjectCardMetric.vue'

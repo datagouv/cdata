@@ -81,8 +81,11 @@
       </template>
     </Toggletip>
     <span class="mr-1 text-gray-medium">{{ t("Schéma:") }}</span>
-    <span class="flex items-center bg-danger-lightest rounded-xl">
-      <span class="fr-tag fr-tag--sm">{{ title }}</span>
+    <span
+      class="flex items-center rounded-xl"
+      :class="{ 'bg-danger-lightest': validataStatus === 'warnings' || validataStatus === 'ko' }"
+    >
+      <Tag>{{ title }}</Tag>
       <span
         v-if="validataStatus === 'warnings'"
         class="flex items-center padding-sm"
@@ -105,6 +108,7 @@
 import { RiInformationLine } from '@remixicon/vue'
 import { computed, onMounted, ref } from 'vue'
 import type { Resource } from '../../types/resources'
+import Tag from '../Tag.vue'
 import Toggletip from '../Toggletip.vue'
 import { findSchemaInCatalog, useGetCatalog, useGetSchemaDocumentation, useGetSchemaValidationUrl } from '../../functions/schemas'
 import { useTranslation } from '../../composables/useTranslation'

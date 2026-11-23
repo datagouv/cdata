@@ -1,7 +1,7 @@
 <template>
   <div>
     <BannerNotif
-      type="warning"
+      tone="warning"
       :icon="RiSendPlaneLine"
       class="mb-4"
       :badge="$t('Transfert en attente')"

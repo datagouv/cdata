@@ -162,12 +162,7 @@
               />
             </td>
             <td>
-              <AdminBadge
-                size="xs"
-                :type="getStatus(resource).type"
-              >
-                {{ getStatus(resource).label }}
-              </AdminBadge>
+              <ResourceAvailabilityBadge :resource />
             </td>
             <td>
               {{ getResourceLabel(resource.type) }}
@@ -215,7 +210,8 @@ import UploadResourceModal from './UploadResourceModal.vue'
 import FileEditModal from './FileEditModal.vue'
 import FileEditModalFromQueryString from './FileEditModalFromQueryString.vue'
 import { geopfEligibilityRefreshKey } from './geopfEligibilityRefreshKey'
-import type { AdminBadgeType, CommunityResourceForm, PaginatedArray, ResourceForm } from '~/types/types'
+import ResourceAvailabilityBadge from './ResourceAvailabilityBadge.vue'
+import type { CommunityResourceForm, PaginatedArray, ResourceForm } from '~/types/types'
 
 const route = useRoute()
 const { $api } = useNuxtApp()
@@ -361,27 +357,6 @@ const saveReorder = async () => {
   }
   finally {
     loadingForOrdering.value = false
-  }
-}
-
-function getStatus(resource: Resource): { label: string, type: AdminBadgeType } {
-  if (resource.extras['check:available'] === true) {
-    return {
-      label: t('Disponible'),
-      type: 'primary',
-    }
-  }
-
-  if (resource.extras['check:available'] === false) {
-    return {
-      label: t('Indisponible'),
-      type: 'danger',
-    }
-  }
-
-  return {
-    label: t('Inconnu'),
-    type: 'warning',
   }
 }
 </script>

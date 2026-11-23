@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { cadaMeaningBadgeClass, cadaPartLabel, splitCadaValues } from '~/utils/cada'
+import { cadaMeaningTone, cadaPartLabel, splitCadaValues } from '~/utils/cada'
 
 describe('splitCadaValues', () => {
   it('returns an empty list for an empty value', () => {
@@ -49,24 +49,24 @@ describe('cadaPartLabel', () => {
   })
 })
 
-describe('cadaMeaningBadgeClass', () => {
+describe('cadaMeaningTone', () => {
   it('marks a negative conclusion as an error', () => {
-    expect(cadaMeaningBadgeClass('Défavorable')).toBe('fr-badge--error')
-    expect(cadaMeaningBadgeClass('Refus')).toBe('fr-badge--error')
+    expect(cadaMeaningTone('Défavorable')).toBe('danger')
+    expect(cadaMeaningTone('Refus')).toBe('danger')
   })
 
   it('marks a positive conclusion as a success', () => {
-    expect(cadaMeaningBadgeClass('Favorable')).toBe('fr-badge--success')
-    expect(cadaMeaningBadgeClass('La commission recommande')).toBe('fr-badge--success')
+    expect(cadaMeaningTone('Favorable')).toBe('success')
+    expect(cadaMeaningTone('La commission recommande')).toBe('success')
   })
 
   it('does not read "défavorable" as "favorable"', () => {
-    expect(cadaMeaningBadgeClass('Défavorable/Sauf vie privée')).toBe('fr-badge--error')
-    expect(cadaMeaningBadgeClass('défavorable')).toBe('fr-badge--error')
+    expect(cadaMeaningTone('Défavorable/Sauf vie privée')).toBe('danger')
+    expect(cadaMeaningTone('défavorable')).toBe('danger')
   })
 
   it('falls back to a warning for any other conclusion', () => {
-    expect(cadaMeaningBadgeClass('Incompétence')).toBe('fr-badge--warning')
-    expect(cadaMeaningBadgeClass('Sans objet')).toBe('fr-badge--warning')
+    expect(cadaMeaningTone('Incompétence')).toBe('warning')
+    expect(cadaMeaningTone('Sans objet')).toBe('warning')
   })
 })

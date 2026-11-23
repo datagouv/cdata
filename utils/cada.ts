@@ -1,3 +1,5 @@
+import type { BadgeTone } from '@datagouv/components-next'
+
 // The CADA source data packs several values in a single cell, comma-separated.
 export function splitCadaValues(value: string | null | undefined): Array<string> {
   if (!value) return []
@@ -17,10 +19,10 @@ export function cadaPartLabel(part: string | null | undefined): string {
   }
 }
 
-export function cadaMeaningBadgeClass(meaning: string): string {
+export function cadaMeaningTone(meaning: string): BadgeTone {
   const lower = meaning.toLowerCase()
   // `défavorable` contains `favorable`, so it has to be matched first.
-  if (lower.includes('défavorable') || lower.includes('refus')) return 'fr-badge--error'
-  if (lower.includes('favorable') || lower.includes('recommande')) return 'fr-badge--success'
-  return 'fr-badge--warning'
+  if (lower.includes('défavorable') || lower.includes('refus')) return 'danger'
+  if (lower.includes('favorable') || lower.includes('recommande')) return 'success'
+  return 'warning'
 }

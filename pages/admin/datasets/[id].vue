@@ -38,7 +38,10 @@
         <div class="text-sm text-mentionGrey space-y-1.5">
           <p class="space-x-1">
             <span>{{ $t('Statut') }}:</span>
-            <DatasetBadge :dataset />
+            <DatasetBadge
+              size="xs"
+              :dataset
+            />
           </p>
           <div class="space-x-1 flex items-center">
             <RiPriceTag3Line class="inline size-3" />
@@ -138,10 +141,9 @@
 </template>
 
 <script setup lang="ts">
-import { ActivityActor, BrandedButton, DatasetQualityTooltipContent, QualityScore, summarize, FormattedDate, Tooltip, getActivityTranslation } from '@datagouv/components-next'
+import { ActivityActor, BrandedButton, DatasetQualityTooltipContent, QualityScore, summarize, FormattedDate, Tooltip, getActivityTranslation, DatasetBadge } from '@datagouv/components-next'
 import type { Activity, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiDownloadLine, RiEyeLine, RiLineChartLine, RiPriceTag3Line, RiStarLine } from '@remixicon/vue'
-import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'

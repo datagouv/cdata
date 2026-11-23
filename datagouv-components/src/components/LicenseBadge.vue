@@ -1,22 +1,17 @@
 <template>
-  <AppLink
-    v-if="license && license.url"
-    :to="license.url"
-    class="px-1 py-[2px] font-mono bg-gray-some text-gray-medium rounded"
+  <Badge
+    v-if="license"
+    :to="license.url || null"
+    class="font-mono"
+    :title="license.title"
   >
     {{ license.title }}
-  </AppLink>
-  <span
-    v-else-if="license"
-    class="px-1 py-[2px] font-mono bg-gray-some text-gray-medium rounded"
-  >
-    {{ license.title }}
-  </span>
+  </Badge>
 </template>
 
 <script setup lang="ts">
 import type { License } from '../types/licenses'
-import AppLink from './AppLink.vue'
+import Badge from './Badge.vue'
 
 defineProps<{
   license: License

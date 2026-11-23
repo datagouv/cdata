@@ -121,14 +121,14 @@
               >
                 {{ getDatasetDoi(dataset) }}
               </a>
-              <AdminBadge
+              <Badge
                 v-if="!dataset.doi"
                 size="xs"
-                type="secondary"
+                tone="neutral"
                 class="ml-1"
               >
                 {{ $t('Moissonné') }}
-              </AdminBadge>
+              </Badge>
             </template>
             <template v-if="dataset.doi">
               {{ $t("Un jeu de données porteur d'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.") }}
@@ -245,8 +245,9 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, LoadingBlock, SimpleBanner, TranslationT, toast } from '@datagouv/components-next'
-import type { Badge, DatasetV2WithFullObject } from '@datagouv/components-next'
+// Badge is both the component and the udata badge type
+import { Badge, BannerAction, BrandedButton, LoadingBlock, SimpleBanner, TranslationT, toast } from '@datagouv/components-next'
+import type { DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiCheckLine, RiDeleteBin6Line, RiFileCopyLine, RiFingerprintLine } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'

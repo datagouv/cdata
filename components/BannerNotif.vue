@@ -1,13 +1,13 @@
 <template>
   <div class="relative bg-white shadow rounded-sm p-5 mt-3">
-    <AdminBadge
+    <Badge
       class="absolute top-0 left-2.5 -translate-y-1/2"
       size="sm"
-      :type
+      :tone
       :icon
     >
       {{ badge }}
-    </AdminBadge>
+    </Badge>
 
     <div class="flex flex-wrap justify-between space-x-5">
       <div class="space-y-1">
@@ -45,12 +45,11 @@
 </template>
 
 <script setup lang="ts">
-import { FormattedDate } from '@datagouv/components-next'
+import { FormattedDate, Badge } from '@datagouv/components-next'
 import type { Component } from 'vue'
-import AdminBadge from './AdminBadge/AdminBadge.vue'
 
 defineProps<{
-  type: 'warning' | 'primary'
+  tone: 'warning' | 'primary'
   icon: Component
   badge: string
   date: Date
