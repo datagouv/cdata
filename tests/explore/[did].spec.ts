@@ -1,14 +1,21 @@
 import { readFileSync } from 'node:fs'
 import type { APIRequestContext, Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, createDatasetWithRemoteResources, createRemoteResource, deleteDatasets, enableNewExplorer, gotoSettled } from '../helpers'
-import { RESOURCE_ID as TABULAR_RESOURCE_ID } from '../visualizations/fixtures'
+import { API_BASE, createDataset, createDatasetWithRemoteResources, createRemoteResource, deleteDatasets, openNewExplorer, gotoSettled, serverFetchedTabularProfile } from '../helpers'
+import { RESOURCE_ID as TABULAR_RESOURCE_ID, mockTabular } from '../visualizations/fixtures'
 
 const createdDatasets: Array<string> = []
 
 test.afterEach(async ({ request }) => {
   await deleteDatasets(request, createdDatasets)
 })
+
+// The explorer URL of the tabular fixture resource, whose dataset is only known to the API.
+async function fixtureExploreUrl(request: APIRequestContext, query = ''): Promise<string> {
+  const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
+  const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+  return `/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}${query}`
+}
 
 function resourceTitles(count: number): Array<string> {
   return Array.from({ length: count }, (_, index) => `Fichier numero ${String(index + 1).padStart(2, '0')}`)
@@ -155,15 +162,12 @@ test('the full-width list labels explorable resources on the row, without a hove
   await expect(page.getByRole('tooltip')).toHaveCount(0)
 })
 
-// Against the real Tabular API: the table is rendered during SSR, so mocking only the
-// browser side would hydrate it with other rows than the server rendered.
 test('the search narrows the table and survives a trip to another tab', async ({ page, request }) => {
-  const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
-  const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
-  // The explorer only hydrates once its browser-side data request answers: typing
-  // before that would be reset by hydration.
+  const exploreUrl = await fixtureExploreUrl(request)
+  // The table renders client-side only, once its data request answers: wait for it
+  // before typing in its search field.
   const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
-  await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}`)
+  await page.goto(exploreUrl)
   await loaded
   const table = page.getByTestId('data-table')
   await expect(table.getByText('Aucun résultat trouvé.')).toBeHidden()
@@ -189,10 +193,9 @@ test('the search narrows the table and survives a trip to another tab', async ({
 })
 
 test('the filtered download holds every row matching the search', async ({ page, request }) => {
-  const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
-  const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+  const exploreUrl = await fixtureExploreUrl(request)
   const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
-  await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}`)
+  await page.goto(exploreUrl)
   await loaded
   const table = page.getByTestId('data-table')
   const rowCount = page.getByTestId('row-count').first()
@@ -231,13 +234,11 @@ test.describe('a search the API rejects', () => {
   test.use({ allowedConsoleMessages: ['the server responded with a status of 400'] })
 
   test('keeps the toolbar so it can be undone', async ({ page, request }) => {
-    const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
-    const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+    const exploreUrl = await fixtureExploreUrl(request)
     const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
-    await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}`)
+    await page.goto(exploreUrl)
     await loaded
-    // Only the browser-side requests that carry the search fail: the first load
-    // (server-rendered, then hydrated) goes through untouched.
+    // Only the requests that carry the search fail: the first load goes through.
     await page.route(url => url.pathname.includes('/data/') && url.searchParams.has('or'), route => route.fulfill({ status: 400, body: 'Bad request' }))
     const table = page.getByTestId('data-table')
     const rejected = 'Les données n\'ont pas pu être chargées avec cette recherche ou ces filtres.'
@@ -292,7 +293,7 @@ test('the viewer explore button enters fullscreen on the resource being viewed',
   createdDatasets.push(dataset.id)
   const shown = resources[1]!
 
-  await enableNewExplorer(page, `/datasets/${dataset.slug}`)
+  await openNewExplorer(page, `/datasets/${dataset.slug}`)
 
   // Two links carry that name on this page — the dataset header one, which opens the
   // explorer on no resource in particular, and this one. Tell them apart by their
@@ -358,14 +359,9 @@ test('switching resources drops the filters, sort and search of the previous one
   expect(query.get('tab')).toBe('metadata')
 })
 
-// Against the real Tabular API, not `mockTabular`: the table is rendered during
-// SSR, and mocking only the browser side would hydrate it with other rows than
-// the server rendered.
 test.describe('table state in the URL', () => {
   async function gotoFixtureResource(page: Page, request: APIRequestContext, query = '') {
-    const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
-    const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
-    await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}${query}`)
+    await page.goto(await fixtureExploreUrl(request, query))
   }
 
   test('a sort in the URL is applied to the table', async ({ page, request }) => {
@@ -376,9 +372,28 @@ test.describe('table state in the URL', () => {
     await expect(page.getByRole('button', { name: 'Supprimer le tri' })).toBeVisible()
   })
 
+  test('loads the rows once per state, with the URL\'s sort from the first request', async ({ page, request }) => {
+    const rowRequests: Array<URL> = []
+    page.on('request', (req) => {
+      const url = new URL(req.url())
+      if (url.pathname.endsWith(`/api/resources/${TABULAR_RESOURCE_ID}/data/`)) rowRequests.push(url)
+    })
+
+    await gotoFixtureResource(page, request, '&sort=-Nbre_logements')
+    await expect(page.getByRole('button', { name: 'Supprimer le tri' })).toBeVisible({ timeout: 30000 })
+    await page.waitForLoadState('networkidle')
+    expect(rowRequests).toHaveLength(1)
+    expect(rowRequests[0]!.searchParams.get('Nbre_logements__sort')).toBe('desc')
+
+    await page.getByRole('button', { name: 'Supprimer le tri' }).click()
+    await expect.poll(() => rowRequests.length).toBe(2)
+    await page.waitForLoadState('networkidle')
+    expect(rowRequests).toHaveLength(2)
+    expect(rowRequests[1]!.searchParams.has('Nbre_logements__sort')).toBe(false)
+  })
+
   test('dropping the sort from its chip removes it from the URL', async ({ page, request }) => {
-    // The chip is in the server-rendered HTML, but the explorer only hydrates once
-    // its browser-side data request answers: a click before that does nothing.
+    // The chip renders client-side only, once the data request answers.
     const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
     await gotoFixtureResource(page, request, '&sort=-Nbre_logements')
     await loaded
@@ -416,4 +431,67 @@ test('the explorer answers a 404 for a dataset that does not exist', async ({ pa
   const response = await page.request.get('/explore/does-not-exist-at-all')
 
   expect(response.status()).toBe(404)
+})
+
+test('the server render leaves the Tabular API to the browser', async ({ request }) => {
+  test.skip(!process.env.FAKE_SERVICES_URL, 'needs tests/fake-services.ts to see the server requests')
+  const exploreUrl = await fixtureExploreUrl(request)
+
+  const rendered = await request.get(exploreUrl)
+
+  expect(rendered.ok()).toBe(true)
+  expect(await serverFetchedTabularProfile(request, TABULAR_RESOURCE_ID)).toBe(false)
+})
+
+// The banner comes with the loaded table, client-side: these remote resources are
+// unknown to the Tabular API, whose profile and rows are mocked in the browser.
+test.describe('preview date banner', () => {
+  async function gotoPreviewed(page: Page, request: APIRequestContext, extras: Record<string, string>) {
+    const dataset = await createDataset(request, `Test preview banner ${Date.now()}`, 'Dataset de test E2E')
+    createdDatasets.push(dataset.id)
+    const resource = await createRemoteResource(request, dataset.id, 'previewed', {
+      extras: { 'analysis:parsing:parsing_table': 'previewed', ...extras },
+    })
+    await page.goto(`/explore/${dataset.slug}?resource_id=${resource.id}`)
+  }
+
+  test('gives the date of the last analysis above the loaded table', async ({ page, request }) => {
+    await mockTabular(page)
+    // Without a detected change, a remote resource's last_modified is its creation
+    // date, today: give it a change older than the analysis.
+    await gotoPreviewed(page, request, {
+      'analysis:parsing:finished_at': '2026-06-01T10:00:00+00:00',
+      'analysis:last-modified-at': '2026-05-20T09:00:00+00:00',
+    })
+
+    await expect(page.getByTestId('data-table')).toBeVisible({ timeout: 30000 })
+    await expect(page.getByText(/Dernière mise à jour le/)).toBeVisible()
+    await expect(page.getByText('Prévisualisation non actualisée')).toHaveCount(0)
+  })
+
+  test('warns when the remote file changed after the last analysis', async ({ page, request }) => {
+    await mockTabular(page)
+    // A remote resource takes its last_modified from the change hydra detected.
+    await gotoPreviewed(page, request, {
+      'analysis:parsing:finished_at': '2026-06-01T10:00:00+00:00',
+      'analysis:last-modified-at': '2026-06-08T09:00:00+00:00',
+    })
+
+    await expect(page.getByTestId('data-table')).toBeVisible({ timeout: 30000 })
+    await expect(page.getByText('Prévisualisation non actualisée')).toBeVisible()
+    await expect(page.getByText(/Dernière mise à jour le/)).toHaveCount(0)
+  })
+
+  test.describe('over a failed preview', () => {
+    // The mocked 500 of the profile and its retry.
+    test.use({ allowedConsoleMessages: ['the server responded with a status of 500'] })
+
+    test('is not shown over a preview that failed to load', async ({ page, request }) => {
+      await page.route('**/api/resources/*/profile/', route => route.fulfill({ status: 500, body: 'Server error' }))
+      await gotoPreviewed(page, request, { 'analysis:parsing:finished_at': '2026-06-01T10:00:00+00:00' })
+
+      await expect(page.getByText('L\'aperçu de ce fichier n\'a pas pu être chargé.')).toBeVisible({ timeout: 30000 })
+      await expect(page.getByText(/Dernière mise à jour le/)).toHaveCount(0)
+    })
+  })
 })

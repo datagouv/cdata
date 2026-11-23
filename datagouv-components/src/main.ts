@@ -124,6 +124,7 @@ import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
 import TabularMobileFilters from './components/TabularExplorer/TabularMobileFilters.vue'
 import TabularTable from './components/TabularExplorer/TabularTable.vue'
 import TabularToolbar from './components/TabularExplorer/TabularToolbar.vue'
+import TabularSkeleton from './components/TabularExplorer/TabularSkeleton.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 import { ofetch } from 'ofetch'
@@ -466,6 +467,7 @@ export {
   TabularActiveFilters,
   TabularExplorer,
   TabularMobileFilters,
+  TabularSkeleton,
   TabularTable,
   TabularToolbar,
 }

@@ -141,7 +141,7 @@ import { RiInformationLine } from '@remixicon/vue'
 import CopyButton from '../CopyButton.vue'
 import Tooltip from '../Tooltip.vue'
 import { filesize } from '../../functions/helpers'
-import { getResourceFilesize } from '../../functions/resources'
+import { getParsingFinishedAt, getResourceFilesize } from '../../functions/resources'
 import { trackEvent } from '../../functions/matomo'
 import { useComponentsConfig } from '../../config'
 import FormattedDate from '../FormattedDate.vue'
@@ -166,7 +166,5 @@ const { generatedFormats, wfsFormats, defaultWfsProjection } = useResourceCapabi
 
 const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 
-const conversionsFinishedAt = computed(() =>
-  props.resource.extras['analysis:parsing:finished_at'] as string | undefined,
-)
+const conversionsFinishedAt = computed(() => getParsingFinishedAt(props.resource))
 </script>
