@@ -70,3 +70,24 @@ test.describe('when the token creation requires a fresh session', () => {
     await expect(page.getByText('Impossible de créer le token.')).toBeHidden()
   })
 })
+
+test('a sysadmin gets the sysadmin rights on a token only by asking for them', async ({ page }) => {
+  const plain = `E2E plain token ${Date.now()}`
+  const sysadmin = `E2E sysadmin token ${Date.now()}`
+  await gotoHydrated(page, '/admin/me/profile')
+  const dialog = page.getByRole('dialog', { name: 'Créer un token API' })
+
+  for (const [name, asSysadmin] of [[plain, false], [sysadmin, true]] as const) {
+    await page.getByRole('button', { name: 'Créer un token' }).click()
+    await dialog.getByLabel('Nom (optionnel)').fill(name)
+    if (asSysadmin) await dialog.getByRole('switch', { name: 'Droits sysadmin' }).click()
+    await dialog.getByRole('button', { name: 'Créer', exact: true }).click()
+    await expect(dialog.locator('code')).not.toBeEmpty()
+    await dialog.getByRole('button', { name: 'Fermer', exact: true }).last().click()
+    await expect(dialog).toBeHidden()
+  }
+
+  const token = (name: string) => page.getByTestId('api-token').filter({ hasText: name })
+  await expect(token(sysadmin).getByText('Sysadmin', { exact: true })).toBeVisible()
+  await expect(token(plain).getByText('Sysadmin', { exact: true })).toHaveCount(0)
+})

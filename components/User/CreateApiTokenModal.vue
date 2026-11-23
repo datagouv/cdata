@@ -49,6 +49,14 @@
           class="mt-4"
           :label="$t('Date d\'expiration (optionnel)')"
         />
+        <ToggleSwitch
+          v-if="isMeAdmin()"
+          v-model="sysadmin"
+          class="mt-4"
+          :label="$t('Droits sysadmin')"
+          :label-true="$t('Le token peut agir sur tous les contenus de la plateforme.')"
+          :label-false="$t('Le token n\'agit que sur vos contenus et ceux de vos organisations.')"
+        />
       </template>
     </template>
 
@@ -97,8 +105,10 @@
 import { BrandedButton, CopyButton, SimpleBanner, toast } from '@datagouv/components-next'
 import { RiAddLine } from '@remixicon/vue'
 import { FetchError } from 'ofetch'
-import type { ApiTokenCreated } from '~/types/api-tokens'
+import type { ApiTokenCreated, ApiTokenScope } from '~/types/api-tokens'
+import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
+import { isMeAdmin } from '~/utils/auth'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
@@ -119,17 +129,20 @@ const isOpen = computed({
 })
 const name = ref('')
 const expiresAt = ref('')
+const sysadmin = ref(false)
 // Shown in the modal rather than on the page, which the closing remounts.
 const createdToken = ref<string | null>(null)
 
 async function submit() {
   loading.value = true
+  const scopes: ApiTokenScope[] = sysadmin.value ? ['sysadmin'] : []
   try {
     const result = await $api<ApiTokenCreated>('/api/1/me/api_tokens/', {
       method: 'POST',
       body: {
         name: name.value.trim(),
         expires_at: expiresAt.value,
+        scopes,
       },
     })
     toast.success(t('Token créé avec succès.'))
