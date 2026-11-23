@@ -191,15 +191,24 @@ const series = reactive<{
 })
 
 // Columns by resource id, kept across reloads: a new title or sort needs no new profile.
-// A failed profile is not kept, so a retry asks again.
-const profileCache = new Map<string, Array<ColumnDefinition>>()
+// The request is kept, so overlapping loads share it; a failed one is dropped for the next load.
+const profileCache = new Map<string, Promise<Array<ColumnDefinition>>>()
+
+function profileColumns(id: string): Promise<Array<ColumnDefinition>> {
+  let request = profileCache.get(id)
+  if (!request) {
+    request = getProfile(id).then(buildColumnsFromProfile)
+    profileCache.set(id, request)
+    request.catch(() => {
+      if (profileCache.get(id) === request) profileCache.delete(id)
+    })
+  }
+  return request
+}
 
 async function loadColumns(chart: Chart | ChartForApi): Promise<ColumnsDefinition> {
   const ids = [...new Set(chart.series.map(serie => serie.resource_id).filter(Boolean))]
-  const settled = await Promise.allSettled(ids.map(async (id) => {
-    if (!profileCache.has(id)) profileCache.set(id, buildColumnsFromProfile(await getProfile(id)))
-    return [id, profileCache.get(id)!] as const
-  }))
+  const settled = await Promise.allSettled(ids.map(async id => [id, await profileColumns(id)] as const))
   return Object.fromEntries(settled.filter(r => r.status === 'fulfilled').map(r => r.value))
 }
 

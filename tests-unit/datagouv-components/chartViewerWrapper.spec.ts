@@ -462,6 +462,47 @@ describe('ChartViewerWrapper data fetching', () => {
     expect(Object.keys(viewer().props('series').columns)).toEqual([OTHER_ID])
   })
 
+  it('shares a pending profile request between overlapping loads', async () => {
+    let resolveProfile: (v: unknown) => void = () => {}
+    ofetchMock.mockImplementation((url: string) => {
+      if (url.includes('/profile/')) return new Promise((resolve) => {
+        resolveProfile = resolve
+      })
+      return Promise.resolve(rows(3))
+    })
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart)
+    await settle()
+    const next = structuredClone(chart)
+    next.series[0]!.aggregate_y = 'sum'
+    await wrapper.setProps({ chart: next })
+    await settle()
+    resolveProfile({ profile: { header: [] }, columns: {} })
+    await settle()
+    expect(ofetchMock.mock.calls.filter(c => String(c[0]).includes('/profile/'))).toHaveLength(1)
+    expect(dataCalls()).toHaveLength(2)
+  })
+
+  it('asks again for a profile that failed', async () => {
+    let profileCalls = 0
+    ofetchMock.mockImplementation(async (url: string) => {
+      if (url.includes('/profile/')) {
+        profileCalls++
+        if (profileCalls === 1) throw new Error('profile down')
+        return { profile: { header: [] }, columns: {} }
+      }
+      return rows(3)
+    })
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart)
+    await settle()
+    const next = structuredClone(chart)
+    next.series[0]!.aggregate_y = 'sum'
+    await wrapper.setProps({ chart: next })
+    await settle()
+    expect(profileCalls).toBe(2)
+  })
+
   it('fetches a resource profile once across reloads', async () => {
     mockApi(3, false)
     const chart = chartFixture()
