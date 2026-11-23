@@ -125,9 +125,9 @@
       role="alert"
       class="text-sm text-red-600 m-0"
     >
-      {{ $t(errorMessage) }}
+      {{ errorMessage }}
       <button
-        v-if="conversationTooLarge"
+        v-if="conversationUnreadable"
         type="button"
         class="ml-1 underline hover:no-underline"
         @click="startNewConversation"
@@ -253,7 +253,8 @@ import ToolTrace from './ToolTrace.vue'
 import AssistantThinking from './AssistantThinking.vue'
 import ThinkingBlock from './ThinkingBlock.vue'
 import { useAssistantChat } from './useAssistantChat'
-import { buildChatDisplayItems, chartToolResults, getStarterQuestions, isNearChatBottom, mapAssistantError } from '~/utils/assistant'
+import { buildChatDisplayItems, chartToolResults, getStarterQuestions, isNearChatBottom } from '~/utils/assistant'
+import { useAssistantErrorMessage } from './useAssistantErrorMessage'
 import type { AssistantVisualization, ChatDisplayItem, ChartToolResult } from '~/utils/assistant'
 
 const props = defineProps<{
@@ -349,8 +350,9 @@ const waiting = computed(() => !props.resourceId)
 // 'error' is not busy: a failed request leaves the status on 'error' until the
 // next one starts, and the composer must stay usable so the user can retry.
 const busy = computed(() => status.value === 'submitted' || status.value === 'streaming')
-const errorMessage = computed(() => (error.value ? mapAssistantError(error.value) : null))
-const conversationTooLarge = computed(() => (error.value as { statusCode?: unknown } | undefined)?.statusCode === 413)
+const assistantErrorMessage = useAssistantErrorMessage()
+const errorMessage = computed(() => (error.value ? assistantErrorMessage(error.value) : null))
+const conversationUnreadable = computed(() => (error.value as { statusCode?: unknown } | undefined)?.statusCode === 409)
 const replyStarted = computed(() => {
   const last = messages.value.at(-1)
   return last?.role === 'assistant' && displayItems(last).length > 0

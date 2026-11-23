@@ -7,7 +7,8 @@ import type { ChartForApi, ColumnDefinition } from '@datagouv/components-next'
 import ChatPanel from '~/components/Assistant/ChatPanel.vue'
 import AssistantSpinner from '~/components/Assistant/AssistantSpinner.vue'
 import ToolTrace from '~/components/Assistant/ToolTrace.vue'
-import { buildChatDisplayItems, chartToolResults, getStarterQuestions, isNearChatBottom, mapAssistantError, toAssistantVisualization } from '~/utils/assistant'
+import { buildChatDisplayItems, chartToolResults, getStarterQuestions, isNearChatBottom, toAssistantVisualization } from '~/utils/assistant'
+import { useAssistantErrorMessage } from '~/components/Assistant/useAssistantErrorMessage'
 import type { AssistantVisualization, ToolTrace as ToolTraceModel } from '~/utils/assistant'
 
 const sendMessageMock = vi.hoisted(() => vi.fn())
@@ -389,21 +390,23 @@ describe('isNearChatBottom', () => {
   })
 })
 
-describe('mapAssistantError', () => {
+describe('useAssistantErrorMessage', () => {
+  const errorMessage = useAssistantErrorMessage()
   it('maps status codes and falls back', () => {
-    expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 401 }))).toContain('Veuillez vous reconnecter')
-    expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 413 }))).toBe('La conversation est trop volumineuse.')
-    expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 429 }))).toContain('Trop de demandes, réessayez dans un instant.')
-    expect(mapAssistantError(Object.assign(new Error('x'), { statusCode: 503 }))).toContain('Assistant indisponible')
-    expect(mapAssistantError(new TypeError('fetch failed'))).toContain('Une erreur est survenue')
+    expect(errorMessage(Object.assign(new Error('x'), { statusCode: 401 }))).toContain('Veuillez vous reconnecter')
+    expect(errorMessage(Object.assign(new Error('x'), { statusCode: 409 }))).toBe('Cette conversation ne peut plus être lue.')
+    expect(errorMessage(Object.assign(new Error('x'), { statusCode: 413 }))).toBe('Votre message est trop long.')
+    expect(errorMessage(Object.assign(new Error('x'), { statusCode: 429 }))).toContain('Trop de demandes, réessayez dans un instant.')
+    expect(errorMessage(Object.assign(new Error('x'), { statusCode: 503 }))).toContain('Assistant indisponible')
+    expect(errorMessage(new TypeError('fetch failed'))).toContain('Une erreur est survenue')
   })
 
   // useChat turns an error event into `new Error(errorText)`.
   it('shows the localized text of an error event of the stream', () => {
     const text = 'Le service d’IA reçoit trop de demandes. Réessayez dans quelques instants.'
-    expect(mapAssistantError(new Error(text))).toBe(text)
-    expect(mapAssistantError(new Error(''))).toContain('Une erreur est survenue')
-    expect(mapAssistantError(Object.assign(new Error('The response body is empty.'), { name: 'AI_EmptyResponseBodyError' }))).toContain('Une erreur est survenue')
+    expect(errorMessage(new Error(text))).toBe(text)
+    expect(errorMessage(new Error(''))).toContain('Une erreur est survenue')
+    expect(errorMessage(Object.assign(new Error('The response body is empty.'), { name: 'AI_EmptyResponseBodyError' }))).toContain('Une erreur est survenue')
   })
 })
 
@@ -1010,18 +1013,27 @@ describe('ChatPanel', () => {
     expect(document.activeElement).toBe(wrapper.find('textarea').element)
   })
 
-  it('invites to start a new conversation after a 413', async () => {
+  it('invites to start a new conversation when udata can no longer read it', async () => {
     chatState.messages.value = [assistantTextMessage('Bonjour')]
-    chatState.error.value = Object.assign(new Error('Payload Too Large'), { statusCode: 413 })
+    chatState.error.value = Object.assign(new Error('Conflict'), { statusCode: 409 })
     const wrapper = mountPanel('resource-1')
     await flushPromises()
 
     const alert = wrapper.find('[role="alert"]')
-    expect(alert.text()).toContain('La conversation est trop volumineuse.')
+    expect(alert.text()).toContain('Cette conversation ne peut plus être lue.')
     const restart = alert.find('button')
     expect(restart.text()).toBe('Commencer une nouvelle conversation')
     await restart.trigger('click')
     expect(newConversationMock).toHaveBeenCalledOnce()
+  })
+
+  it('offers no new conversation for a message too long', async () => {
+    chatState.error.value = Object.assign(new Error('Payload Too Large'), { statusCode: 413 })
+    const wrapper = mountPanel('resource-1')
+    await flushPromises()
+
+    expect(wrapper.find('[role="alert"]').text()).toContain('Votre message est trop long.')
+    expect(wrapper.find('[role="alert"] button').exists()).toBe(false)
   })
 
   it('does not offer a new conversation in other errors', async () => {

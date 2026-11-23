@@ -161,25 +161,6 @@ export function chartToolResults(messages: unknown[]): ChartToolResult[] {
   return results
 }
 
-/**
- * Map an error surfaced by useChat to a French user-facing message, used as an
- * i18n key by the component ($t returns the key). HTTP failures carry a
- * `statusCode` (APICallError from the transport). An error event of the stream
- * becomes a plain Error holding the server's text, already localized: it says
- * whether waiting helps. Anything else is a network or unknown failure.
- */
-export function mapAssistantError(error: unknown): string {
-  const statusCode = (error as { statusCode?: unknown } | null)?.statusCode
-  if (statusCode === 401) return 'Veuillez vous reconnecter pour utiliser l’assistant.'
-  // The composer caps input at the server limit: a 413 means the history grew too large.
-  if (statusCode === 413) return 'La conversation est trop volumineuse.'
-  if (statusCode === 429) return 'Trop de demandes, réessayez dans un instant.'
-  if (statusCode === 503) return 'Assistant indisponible pour le moment.'
-  // A failed fetch is a TypeError, the SDK's own errors have an AI_ name.
-  if (statusCode === undefined && error instanceof Error && error.name === 'Error' && error.message) return error.message
-  return 'Une erreur est survenue, veuillez réessayer.'
-}
-
 export type ToolTrace = {
   label: string
   summary: string
@@ -195,9 +176,7 @@ export type ChatDisplayItem
 
 // Fixed French copy of the assistant UI, used as i18n keys by the components
 // ($t returns the key when no catalog entry exists): ToolTrace renders
-// $t(trace.label), ChatPanel renders
-// $t(mapAssistantError(error)). The literals stay here so an extraction tool
-// can find them. trace.summary is shown as is: it mixes this copy with dynamic
+// $t(trace.label). The literals stay here so an extraction tool can find them. trace.summary is shown as is: it mixes this copy with dynamic
 // values (row counts, server errors), which are never translated.
 const TOOL_LABELS: Record<string, { label: string, summary: string }> = {
   'tool-get_dataset_metadata': { label: 'Lecture des métadonnées', summary: 'Je consulte la fiche du jeu de données' },
