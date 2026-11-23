@@ -52,13 +52,13 @@ import { RiErrorWarningLine, RiInformationLine } from '@remixicon/vue'
 import FormattedDate from '../FormattedDate.vue'
 import TranslationT from '../TranslationT.vue'
 import { useTranslation } from '../../composables/useTranslation'
-import { getTabularPreviewDate, isTabularPreviewStale } from '../../functions/tabularPreview'
+import { getParsingFinishedAt, isParsingStale } from '../../functions/resources'
 import type { Resource } from '../../types/resources'
 
 const props = defineProps<{ resource: Resource }>()
 
 const { t } = useTranslation()
 
-const parsingFinishedAt = computed(() => getTabularPreviewDate(props.resource))
-const isStale = computed(() => isTabularPreviewStale(props.resource))
+const parsingFinishedAt = computed(() => getParsingFinishedAt(props.resource))
+const isStale = computed(() => isParsingStale(props.resource))
 </script>

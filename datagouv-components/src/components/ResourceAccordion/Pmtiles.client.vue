@@ -71,6 +71,7 @@ import PreviewError from './PreviewError.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
 import { getMapAttribution } from '../../functions/owned'
+import { getParsingFinishedAt } from '../../functions/resources'
 
 const props = defineProps<{ resource: Resource, dataset: Dataset | DatasetV2 }>()
 
@@ -91,7 +92,7 @@ const pmtilesViewerUrl = computed(() => {
 
 const lastUpdate = computed(() => {
   if (props.resource.extras['analysis:parsing:pmtiles_url'])
-    return formatDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined)
+    return formatDate(getParsingFinishedAt(props.resource))
   return formatDate(props.resource.last_modified)
 })
 

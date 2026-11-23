@@ -10,6 +10,13 @@ test.afterEach(async ({ request }) => {
   await deleteDatasets(request, createdDatasets)
 })
 
+// The explorer URL of the tabular fixture resource, whose dataset is only known to the API.
+async function fixtureExploreUrl(request: APIRequestContext, query = ''): Promise<string> {
+  const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
+  const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+  return `/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}${query}`
+}
+
 function resourceTitles(count: number): Array<string> {
   return Array.from({ length: count }, (_, index) => `Fichier numero ${String(index + 1).padStart(2, '0')}`)
 }
@@ -156,12 +163,11 @@ test('the full-width list labels explorable resources on the row, without a hove
 })
 
 test('the search narrows the table and survives a trip to another tab', async ({ page, request }) => {
-  const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
-  const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+  const exploreUrl = await fixtureExploreUrl(request)
   // The table renders client-side only, once its data request answers: wait for it
   // before typing in its search field.
   const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
-  await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}`)
+  await page.goto(exploreUrl)
   await loaded
   const table = page.getByTestId('data-table')
   await expect(table.getByText('Aucun résultat trouvé.')).toBeHidden()
@@ -187,10 +193,9 @@ test('the search narrows the table and survives a trip to another tab', async ({
 })
 
 test('the filtered download holds every row matching the search', async ({ page, request }) => {
-  const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
-  const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+  const exploreUrl = await fixtureExploreUrl(request)
   const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
-  await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}`)
+  await page.goto(exploreUrl)
   await loaded
   const table = page.getByTestId('data-table')
   const rowCount = page.getByTestId('row-count').first()
@@ -229,10 +234,9 @@ test.describe('a search the API rejects', () => {
   test.use({ allowedConsoleMessages: ['the server responded with a status of 400'] })
 
   test('keeps the toolbar so it can be undone', async ({ page, request }) => {
-    const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
-    const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+    const exploreUrl = await fixtureExploreUrl(request)
     const loaded = page.waitForResponse(response => response.url().includes('/data/'), { timeout: 30000 })
-    await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}`)
+    await page.goto(exploreUrl)
     await loaded
     // Only the requests that carry the search fail: the first load goes through.
     await page.route(url => url.pathname.includes('/data/') && url.searchParams.has('or'), route => route.fulfill({ status: 400, body: 'Bad request' }))
@@ -357,9 +361,7 @@ test('switching resources drops the filters, sort and search of the previous one
 
 test.describe('table state in the URL', () => {
   async function gotoFixtureResource(page: Page, request: APIRequestContext, query = '') {
-    const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
-    const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
-    await page.goto(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}${query}`)
+    await page.goto(await fixtureExploreUrl(request, query))
   }
 
   test('a sort in the URL is applied to the table', async ({ page, request }) => {
@@ -433,10 +435,9 @@ test('the explorer answers a 404 for a dataset that does not exist', async ({ pa
 
 test('the server render leaves the Tabular API to the browser', async ({ request }) => {
   test.skip(!process.env.FAKE_SERVICES_URL, 'needs tests/fake-services.ts to see the server requests')
-  const response = await request.get(`${API_BASE}/api/2/datasets/resources/${TABULAR_RESOURCE_ID}/`)
-  const { dataset_id: datasetId } = await response.json() as { dataset_id: string }
+  const exploreUrl = await fixtureExploreUrl(request)
 
-  const rendered = await request.get(`/explore/${datasetId}?resource_id=${TABULAR_RESOURCE_ID}`)
+  const rendered = await request.get(exploreUrl)
 
   expect(rendered.ok()).toBe(true)
   expect(await serverFetchedTabularProfile(request, TABULAR_RESOURCE_ID)).toBe(false)
