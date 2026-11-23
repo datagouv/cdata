@@ -24,12 +24,16 @@ async function withSecondTabularResource(page: Page) {
   })
 }
 
+// Polled: after a dataset switch, the options arrive with the dataset's resources.
 async function otherResourceId(page: Page) {
-  const resourceIds = await page.locator('#resource-select option').evaluateAll(options =>
-    options.map(option => (option as HTMLOptionElement).value).filter(Boolean),
-  )
-  const resourceId = resourceIds.find(id => id !== RESOURCE_ID)
-  expect(resourceId, 'the fixture dataset has another tabular resource').toBeDefined()
+  let resourceId: string | undefined
+  await expect.poll(async () => {
+    const resourceIds = await page.locator('#resource-select option').evaluateAll(options =>
+      options.map(option => (option as HTMLOptionElement).value).filter(Boolean),
+    )
+    resourceId = resourceIds.find(id => id !== RESOURCE_ID)
+    return resourceId
+  }, { message: 'the fixture dataset has another tabular resource' }).toBeDefined()
   return resourceId!
 }
 
@@ -708,7 +712,8 @@ test('the filter add buttons are blue and the fields of a new rule share one hei
   const row = page.getByRole('button', { name: 'Supprimer la règle' }).last().locator('..')
   const fields = row.locator('button.input, input.fr-input')
   await expect(fields).toHaveCount(4)
-  const heights = await fields.evaluateAll(elements => elements.map(element => element.getBoundingClientRect().height))
+  // Not evaluateAll + getBoundingClientRect: the page crashes on it with the Firefox of Playwright 1.65.
+  const heights = await Promise.all((await fields.all()).map(async field => (await field.boundingBox())?.height))
   expect(new Set(heights).size).toBe(1)
   await expect(filters.getByRole('button', { name: 'Ajouter une règle' })).toBeVisible()
 })

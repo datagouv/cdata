@@ -24,6 +24,9 @@ const IGNORED_MESSAGES = [
   'OpaqueResponseBlocking',
   // Firefox warning about scroll-linked positioning, not actionable
   'scroll-linked positioning effect',
+  // Firefox of Playwright 1.65, when a routed streamed response is fulfilled: not raised with
+  // Playwright 1.64 on the same build of the app
+  'The execution of microtasks on this page was reordered',
   // Nuxt wraps 404 errors during app init, same root cause as "Page not found:"
   'error caught during app initialization',
 ]
