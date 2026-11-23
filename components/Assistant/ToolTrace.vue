@@ -5,7 +5,7 @@
   >
     <template #header>
       <strong class="block truncate text-[11px] font-semibold leading-4 text-new-gray-dark">
-        {{ $t(trace.label) }}
+        {{ trace.label }}
       </strong>
       <span
         class="block truncate text-[11px] leading-4"
@@ -37,7 +37,7 @@
 <script setup lang="ts">
 import { RiErrorWarningLine, RiWrenchLine } from '@remixicon/vue'
 import CollapsibleTrace from './CollapsibleTrace.vue'
-import type { ToolTrace } from '~/utils/assistant'
+import type { ToolTrace } from './useChatDisplayItems'
 
 defineProps<{
   trace: ToolTrace

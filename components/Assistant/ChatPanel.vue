@@ -253,9 +253,11 @@ import ToolTrace from './ToolTrace.vue'
 import AssistantThinking from './AssistantThinking.vue'
 import ThinkingBlock from './ThinkingBlock.vue'
 import { useAssistantChat } from './useAssistantChat'
-import { buildChatDisplayItems, chartToolResults, getStarterQuestions, isNearChatBottom } from '~/utils/assistant'
+import { chartToolResults, isNearChatBottom } from '~/utils/assistant'
 import { useAssistantErrorMessage } from './useAssistantErrorMessage'
-import type { AssistantVisualization, ChatDisplayItem, ChartToolResult } from '~/utils/assistant'
+import { useChatDisplayItems, type ChatDisplayItem } from './useChatDisplayItems'
+import { useStarterQuestions } from './useStarterQuestions'
+import type { AssistantVisualization, ChartToolResult } from '~/utils/assistant'
 
 const props = defineProps<{
   resourceId: string | null
@@ -323,12 +325,13 @@ watch(messages, () => {
 
 type ChatMessage = (typeof messages.value)[number]
 
+const buildChatDisplayItems = useChatDisplayItems()
 const displayItemsCache = new WeakMap<ChatMessage, Array<ChatDisplayItem>>()
 
 function displayItems(message: ChatMessage): Array<ChatDisplayItem> {
   let items = displayItemsCache.get(message)
   if (!items) {
-    items = buildChatDisplayItems(message.parts, locale)
+    items = buildChatDisplayItems(message.parts)
     displayItemsCache.set(message, items)
   }
   return items
@@ -364,7 +367,7 @@ function userMessageText(parts: Array<{ type: string, text?: unknown }>): string
 }
 
 const { t, locale } = useTranslation()
-const suggestions = computed(() => getStarterQuestions(props.columns, t))
+const suggestions = useStarterQuestions(() => props.columns)
 
 // The button that started it leaves the DOM with the conversation (RGAA 12.8).
 async function startNewConversation() {

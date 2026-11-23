@@ -7,19 +7,33 @@ import type { ChartForApi, ColumnDefinition } from '@datagouv/components-next'
 import ChatPanel from '~/components/Assistant/ChatPanel.vue'
 import AssistantSpinner from '~/components/Assistant/AssistantSpinner.vue'
 import ToolTrace from '~/components/Assistant/ToolTrace.vue'
-import { buildChatDisplayItems, chartToolResults, getStarterQuestions, isNearChatBottom, toAssistantVisualization } from '~/utils/assistant'
+import { chartToolResults, isNearChatBottom, toAssistantVisualization } from '~/utils/assistant'
 import { useAssistantErrorMessage } from '~/components/Assistant/useAssistantErrorMessage'
-import type { AssistantVisualization, ToolTrace as ToolTraceModel } from '~/utils/assistant'
+import { useChatDisplayItems, type ToolTrace as ToolTraceModel } from '~/components/Assistant/useChatDisplayItems'
+import { useStarterQuestions } from '~/components/Assistant/useStarterQuestions'
+import type { AssistantVisualization } from '~/utils/assistant'
+
+const { locale } = useTranslation()
 
 const sendMessageMock = vi.hoisted(() => vi.fn())
 const stopMock = vi.hoisted(() => vi.fn())
 const newConversationMock = vi.hoisted(() => vi.fn())
 
 // The real builder, spied on to check which messages are rebuilt on each chunk.
-vi.mock('~/utils/assistant', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('~/utils/assistant')>()
-  return { ...actual, buildChatDisplayItems: vi.fn(actual.buildChatDisplayItems) }
+const buildSpy = vi.hoisted(() => vi.fn())
+vi.mock('~/components/Assistant/useChatDisplayItems', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('~/components/Assistant/useChatDisplayItems')>()
+  return {
+    ...actual,
+    useChatDisplayItems: () => {
+      buildSpy.mockImplementation(actual.useChatDisplayItems())
+      return buildSpy
+    },
+  }
 })
+
+const buildChatDisplayItems = useChatDisplayItems()
+const starterQuestions = (columns: Array<ColumnDefinition>) => useStarterQuestions(columns).value
 
 // State shared with the mocked useAssistantChat. The mock factory (which runs
 // after imports) fills it with real Vue refs; tests set state before mounting.
@@ -73,7 +87,7 @@ const CHART = {
 }
 
 function traceOf(part: Record<string, unknown>) {
-  const [item] = buildChatDisplayItems([part], 'fr-FR')
+  const [item] = buildChatDisplayItems([part])
   return item?.kind === 'trace' ? item.trace : null
 }
 
@@ -171,13 +185,13 @@ describe('chartToolResults', () => {
   })
 })
 
-describe('buildChatDisplayItems', () => {
+describe('useChatDisplayItems', () => {
   it('groups consecutive reasoning parts and keeps text', () => {
     expect(buildChatDisplayItems([
       { type: 'reasoning', text: 'a' },
       { type: 'reasoning', text: 'b' },
       { type: 'text', text: 'Bonjour' },
-    ], 'fr-FR')).toEqual([{ kind: 'thinking', text: 'ab' }, { kind: 'text', text: 'Bonjour' }])
+    ])).toEqual([{ kind: 'thinking', text: 'ab' }, { kind: 'text', text: 'Bonjour' }])
   })
 
   it('carries the query_data table on the trace and truncates it', () => {
@@ -195,7 +209,7 @@ describe('buildChatDisplayItems', () => {
 
   it('only carries the query_data output', () => {
     expect(traceOf({ type: 'tool-other', state: 'output-available', output: 'year: int' })?.output).toBeNull()
-    expect(traceOf({ type: 'tool-create_chart', state: 'output-available', output: { status: 'ok', chart: CHART } })?.output).toBeNull()
+    expect(traceOf({ type: 'tool-create_chart', state: 'output-available', output: { status: 'error', errors: ['x'] } })?.output).toBeNull()
   })
 
   it('shows the error text of a failed tool', () => {
@@ -214,17 +228,13 @@ describe('summarizes chart tool traces', () => {
   it.each([
     ['one row', { status: 'ok', table: 'a\n1', rows: 1, total: 1, more_groups: false }, '1 ligne'],
     ['several rows', { status: 'ok', table: 'a\n1\n2\n3', rows: 3, total: 3, more_groups: false }, '3 lignes'],
-    ['a truncated table', { status: 'ok', table: 'a\n1\n2', rows: 2, total: 2187, more_groups: false }, `${(2187).toLocaleString('fr-FR')} lignes`],
+    // Formatted in the locale: happy-dom's navigator is en-US.
+    ['a truncated table', { status: 'ok', table: 'a\n1\n2', rows: 2, total: 2187, more_groups: false }, '2,187 lignes'],
     ['an aggregate with more groups', { status: 'ok', table: 'a | b\n1 | 2', rows: 50, total: null, more_groups: true }, '50 lignes, plus de 50 valeurs'],
     ['an empty result', { status: 'ok', table: '', rows: 0, total: 0, more_groups: false }, 'Aucune ligne'],
     ['an error', { status: 'error', errors: ['Unknown column: x.'] }, 'Requête non exécutée'],
   ])('query_data: %s', (_case, output, summary) => {
     expect(summaryOf({ type: 'tool-query_data', output })).toBe(summary)
-  })
-
-  it('formats the row count in the given locale', () => {
-    const [item] = buildChatDisplayItems([{ type: 'tool-query_data', state: 'output-available', input: {}, output: { status: 'ok', table: 'a\n1', rows: 1, total: 2187, more_groups: false } }], 'en-US')
-    expect(item?.kind === 'trace' && item.trace.summary).toBe('2,187 lignes')
   })
 
   it.each([
@@ -242,7 +252,7 @@ describe('summarizes chart tool traces', () => {
     expect(summaryOf({ type: 'tool-create_chart', state: 'input-available' })).toBe('Je construis le graphique')
   })
 
-  // In French whatever the browser language: happy-dom's navigator is en-US.
+  // The French keys, as no catalog is loaded in tests.
   it.each([
     [{ title: 'T' }, 'Titre modifié'],
     [{ title: 'T', y_axis: { unit: '€' } }, 'Titre et unité modifiés'],
@@ -251,6 +261,7 @@ describe('summarizes chart tool traces', () => {
     [{ y_axis: { min: 0 } }, 'Bornes modifiées'],
     [{ description: 'd' }, 'Description modifiée'],
     [{ y_axis: { unit: '€' } }, 'Unité modifiée'],
+    [{ y_axis: { unit_position: 'prefix' } }, 'Position de l’unité modifiée'],
     [{ description: 'd', y_axis: { max: 1 } }, 'Description et bornes modifiées'],
     [{ description: 'd', y_axis: { unit: '€' } }, 'Description et unité modifiées'],
   ])('update_chart %j', (patch, summary) => {
@@ -262,17 +273,15 @@ describe('summarizes chart tool traces', () => {
   })
 })
 
-describe('getStarterQuestions', () => {
-  const t = (key: string, options?: Record<string, string | number> | number) =>
-    typeof options === 'object' ? key.replace(/\{(\w+)\}/g, (_, name) => String(options[name])) : key
+describe('useStarterQuestions', () => {
   const OPENER = 'Quel graphique peut-on faire avec ces données ?'
 
   it('suggests charts crossing the first useful dimension and measure', () => {
-    const questions = getStarterQuestions([
+    const questions = starterQuestions([
       { name: '__id', type: 'number' },
       { name: 'departement', type: 'categorical' },
       { name: 'population', type: 'number' },
-    ], t)
+    ])
 
     expect(questions).toEqual([
       OPENER,
@@ -282,33 +291,26 @@ describe('getStarterQuestions', () => {
     ])
   })
 
-  it('suggests a line chart over a date column', () => {
-    const questions = getStarterQuestions([
-      { name: 'date_mesure', type: 'date' },
-      { name: 'temperature', type: 'number' },
-    ], t)
-
-    expect(questions).toContain('Trace l’évolution de « temperature » selon « date_mesure »')
-  })
-
   // buildColumnsFromProfile types a year column as a number.
   it('skips identifier, code, year and free-text columns', () => {
-    const questions = getStarterQuestions([
+    const questions = starterQuestions([
       { name: 'code_insee', type: 'number' },
       { name: 'annee', type: 'number' },
       { name: 'url', type: 'text' },
       { name: 'region_id', type: 'categorical' },
-    ], t)
+      { name: 'date', type: 'date' },
+    ])
 
     expect(questions).toEqual([
       OPENER,
+      'Trace l’évolution du nombre de lignes selon « date »',
       'Propose-moi un graphique pertinent pour cette ressource',
     ])
   })
 
   it('suggests charts on the vote counts of « Table parquet A », not on its reference or free-text title', () => {
     // Column names and types as api-tabular profiles that parquet resource.
-    const questions = getStarterQuestions([
+    const questions = starterQuestions([
       { name: 'id', type: 'text' },
       { name: 'url', type: 'text' },
       { name: 'date', type: 'date' },
@@ -318,7 +320,7 @@ describe('getStarterQuestions', () => {
       { name: 'votants', type: 'number' },
       { name: 'dossier_ref', type: 'number' },
       { name: 'suffrages_exprimes', type: 'number' },
-    ], t)
+    ])
 
     expect(questions).toEqual([
       OPENER,
@@ -329,18 +331,18 @@ describe('getStarterQuestions', () => {
 
   it('skips reference and number identifiers as measures, but not measures sharing their letters', () => {
     for (const name of ['dossier_ref', 'ref_dossier', 'reference', 'num_dossier', 'numero', 'numéro_ligne']) {
-      const questions = getStarterQuestions([{ name, type: 'number' }, { name: 'date', type: 'date' }], t)
+      const questions = starterQuestions([{ name, type: 'number' }, { name: 'date', type: 'date' }])
       expect(questions, name).toContain('Trace l’évolution du nombre de lignes selon « date »')
     }
     for (const name of ['montant_numeraire', 'nombre_refus', 'preference']) {
-      const questions = getStarterQuestions([{ name, type: 'number' }, { name: 'date', type: 'date' }], t)
+      const questions = starterQuestions([{ name, type: 'number' }, { name: 'date', type: 'date' }])
       expect(questions, name).toContain(`Trace l’évolution de « ${name} » selon « date »`)
     }
   })
 
   it('skips free-text columns as dimensions', () => {
     for (const name of ['title', 'titre', 'description', 'libelle_long', 'commentaire', 'url']) {
-      expect(getStarterQuestions([{ name, type: 'text' }], t), name).toEqual([
+      expect(starterQuestions([{ name, type: 'text' }]), name).toEqual([
         OPENER,
         'Propose-moi un graphique pertinent pour cette ressource',
       ])
@@ -348,31 +350,24 @@ describe('getStarterQuestions', () => {
   })
 
   it('prefers a categorical column over a text column as dimension', () => {
-    const questions = getStarterQuestions([
+    const questions = starterQuestions([
       { name: 'nom', type: 'text' },
       { name: 'region', type: 'categorical' },
-    ], t)
+    ])
 
     expect(questions).toContain('Compte les lignes par « region »')
   })
 
   it('compares two dimensions when there is no measure nor date', () => {
-    const questions = getStarterQuestions([
+    const questions = starterQuestions([
       { name: 'commune', type: 'text' },
       { name: 'ouvert', type: 'boolean' },
-    ], t)
+    ])
 
     expect(questions).toEqual([
       OPENER,
       'Compte les lignes par « commune »',
       'Compare le nombre de lignes par « ouvert »',
-    ])
-  })
-
-  it('falls back to generic chart prompts without columns', () => {
-    expect(getStarterQuestions([], t)).toEqual([
-      OPENER,
-      'Propose-moi un graphique pertinent pour cette ressource',
     ])
   })
 })
@@ -466,10 +461,7 @@ describe('ToolTrace', () => {
   }
 
   function mountTrace() {
-    return mount(ToolTrace, {
-      props: { trace },
-      global: { mocks: { $t: (key: string) => key } },
-    })
+    return mount(ToolTrace, { props: { trace } })
   }
 
   it('links the toggle button to the panel with aria-controls', () => {
@@ -500,10 +492,7 @@ describe('ToolTrace', () => {
   })
 
   it('renders the string output in a pre block when expanded', async () => {
-    const wrapper = mount(ToolTrace, {
-      props: { trace: { ...trace, output: 'col1 | col2\nval1 | val2' } },
-      global: { mocks: { $t: (key: string) => key } },
-    })
+    const wrapper = mount(ToolTrace, { props: { trace: { ...trace, output: 'col1 | col2\nval1 | val2' } } })
     await wrapper.find('button').trigger('click')
 
     const blocks = wrapper.findAll('pre')
@@ -690,7 +679,6 @@ describe('ChatPanel', () => {
   it('shows the character counter beyond 3600 characters, in red at the max', async () => {
     const wrapper = mountPanel('resource-1')
     const textarea = wrapper.find('textarea#assistant-input')
-    const { locale } = useTranslation()
     const expected = `${(3601).toLocaleString(locale)} / ${(4000).toLocaleString(locale)}`
 
     expect(wrapper.text()).not.toContain(` / ${(4000).toLocaleString(locale)}`)
@@ -708,7 +696,7 @@ describe('ChatPanel', () => {
     const wrapper = mountPanel('resource-1')
     const textarea = wrapper.find('textarea#assistant-input')
     const notice = () => wrapper.find('[data-testid="chat-length-status"]').text()
-    const max = (4000).toLocaleString(useTranslation().locale)
+    const max = (4000).toLocaleString(locale)
 
     expect(textarea.attributes('aria-describedby')).toBeUndefined()
     await textarea.setValue('a'.repeat(3601))
@@ -851,7 +839,7 @@ describe('ChatPanel', () => {
     expect(bubble.find('strong').exists()).toBe(false)
   })
 
-  it('groups consecutive reasoning parts into a single collapsed block', () => {
+  it('renders consecutive reasoning parts as a single block named by its visible text', () => {
     chatState.messages.value = [{
       id: 'a1',
       role: 'assistant',
@@ -924,17 +912,17 @@ describe('ChatPanel', () => {
       id: 'a1',
       role: 'assistant',
       parts: [
-        { type: 'tool-get_dataset_metadata', state: 'output-available', input: {}, output: { title: 'Mon jeu', organization: 'Ministère', license: 'LOOL' } },
-        { type: 'tool-inspect_schema', state: 'output-available', input: {}, output: { columns: ['year', 'rate'], rowCount: 42 } },
+        { type: 'tool-create_chart', state: 'input-available', input: {} },
+        { type: 'tool-unknown', state: 'output-available', input: {}, output: {} },
       ],
     }]
     const wrapper = mountPanel('resource-1')
     const text = wrapper.text()
 
-    expect(text).toContain('Lecture des métadonnées')
-    expect(text).toContain('Je consulte la fiche du jeu de données')
-    expect(text).toContain('Inspection du schéma')
-    expect(text).toContain('Je vérifie les colonnes et les types disponibles')
+    expect(text).toContain('Création du graphique')
+    expect(text).toContain('Je construis le graphique')
+    expect(text).toContain('Opération')
+    expect(text).toContain('Je poursuis l’analyse')
   })
 
   it('renders one card per tool call, in arrival order, without merging calls to the same tool', () => {
@@ -944,7 +932,7 @@ describe('ChatPanel', () => {
       parts: [
         { type: 'tool-query_data', state: 'output-error', input: {}, errorText: 'boom' },
         { type: 'tool-query_data', state: 'output-available', input: {}, output: { status: 'ok', table: 'n\n1', rows: 1, total: 1, more_groups: false } },
-        { type: 'tool-inspect_schema', state: 'output-available', input: {}, output: { columns: ['year'], rowCount: 1 } },
+        { type: 'tool-create_chart', state: 'input-available', input: {} },
         { type: 'tool-query_data', state: 'output-available', input: {}, output: { status: 'ok', table: 'n\n2', rows: 1, total: 1, more_groups: false } },
       ],
     }]
@@ -954,7 +942,7 @@ describe('ChatPanel', () => {
     expect(traces).toHaveLength(4)
     expect(traces[0].text()).toContain('boom')
     expect(traces[1].find('pre').text()).toContain('1')
-    expect(traces[2].text()).toContain('Inspection du schéma')
+    expect(traces[2].text()).toContain('Création du graphique')
     expect(traces[3].find('pre').text()).toContain('2')
   })
 
@@ -982,6 +970,8 @@ describe('ChatPanel', () => {
     const alert = wrapper.find('[role="alert"]')
     expect(alert.exists()).toBe(true)
     expect(alert.text()).toContain('Trop de demandes, réessayez dans un instant.')
+    // Waiting helps here, not a new conversation.
+    expect(alert.find('button').exists()).toBe(false)
   })
 
   it('offers a new conversation only once the conversation has started', async () => {
@@ -1036,32 +1026,26 @@ describe('ChatPanel', () => {
     expect(wrapper.find('[role="alert"] button').exists()).toBe(false)
   })
 
-  it('does not offer a new conversation in other errors', async () => {
-    chatState.error.value = Object.assign(new Error('Too Many Requests'), { statusCode: 429 })
-    const wrapper = mountPanel('resource-1')
-    await flushPromises()
-
-    expect(wrapper.find('[role="alert"] button').exists()).toBe(false)
-  })
-
   it('rebuilds only the streaming message on each chunk', async () => {
     const finished = [
       { id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Question' }] },
       assistantTextMessage('Première réponse'),
       { id: 'u2', role: 'user', parts: [{ type: 'text', text: 'Suite' }] },
     ]
+    // useChat keeps the id of the streaming message and gives it a new object per chunk.
+    const chunk = (text: string) => ({ id: 'a2', role: 'assistant', parts: [{ type: 'text', text }] })
     chatState.status.value = 'streaming'
-    chatState.messages.value = [...finished, assistantTextMessage('Déb')]
+    chatState.messages.value = [...finished, chunk('Déb')]
     mountPanel('resource-1')
     await nextTick()
-    const build = vi.mocked(buildChatDisplayItems)
-    build.mockClear()
+    buildSpy.mockClear()
 
-    chatState.messages.value = [...finished, assistantTextMessage('Début de la réponse')]
+    const streaming = chunk('Début de la réponse')
+    chatState.messages.value = [...finished, streaming]
     await nextTick()
 
-    expect(build.mock.calls.map(([parts]) => parts)).not.toContain(finished[1]!.parts)
-    expect(build).toHaveBeenCalled()
+    // Panels mounted by earlier tests watch the same messages: compare what is rebuilt.
+    expect(new Set(buildSpy.mock.calls.map(([parts]) => parts))).toEqual(new Set([streaming.parts]))
   })
 
   it('restores the sent text in the composer when the request fails', async () => {
@@ -1108,6 +1092,8 @@ describe('ChatPanel', () => {
 
     await textarea.setValue('Message envoyé')
     await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
+    chatState.status.value = 'submitted'
+    await nextTick()
     chatState.status.value = 'ready'
     await nextTick()
 
