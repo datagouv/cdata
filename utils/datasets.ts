@@ -47,6 +47,15 @@ export function getDatasetDoi(dataset: DatasetV2WithFullObject): string | null {
 }
 
 /**
+ * A DOI has to keep resolving to a public page: udata refuses to delete such a dataset or to make
+ * it private (`Dataset.clean`). Its `permissions` only say who may act, not what the state allows.
+ * A DOI declared by the harvest source does not lock the dataset: only the one udata minted does.
+ */
+export function isDatasetLockedByDoi(dataset: DatasetV2 | DatasetV2WithFullObject): boolean {
+  return !!dataset.doi
+}
+
+/**
  * Why this dataset cannot receive a DOI, or `null` when it can.
  *
  * Mirrors the conditions `create_doi` enforces in udata.

@@ -45,6 +45,13 @@
           />
         </div>
       </div>
+      <PendingReportsBanner
+        v-if="dataset"
+        :subject="{ class: 'Dataset', value: dataset }"
+        with-object-actions
+        class="mt-4"
+        @refresh="refresh"
+      />
     </div>
     <LoadingBlock
       v-if="dataset"
@@ -58,30 +65,10 @@
             <div class="flex-1 overflow-x-hidden">
               <div ref="header">
                 <div class="flex gap-3 mb-2">
-                  <AdminBadge
-                    v-if="dataset.deleted"
-                    :icon="RiDeleteBinLine"
-                    size="sm"
-                    type="secondary"
-                  >
-                    {{ $t("Supprimé") }}
-                  </AdminBadge>
-                  <AdminBadge
-                    v-if="dataset.private"
-                    :icon="RiLockLine"
-                    size="sm"
-                    type="secondary"
-                  >
-                    {{ $t("Brouillon") }}
-                  </AdminBadge>
-                  <AdminBadge
-                    v-if="dataset.archived"
-                    :icon="RiLockLine"
-                    size="sm"
-                    type="secondary"
-                  >
-                    {{ $t("Archivé") }}
-                  </AdminBadge>
+                  <DatasetBadge
+                    v-if="getDatasetStatus(dataset) !== 'public'"
+                    :dataset
+                  />
                 </div>
                 <h1 class="text-2xl text-gray-title font-extrabold mb-6">
                   {{ dataset.title }}
@@ -381,13 +368,10 @@
           >
             <div class="space-y-3.5">
               <div>
-                <AdminBadge
-                  :icon="RiLockLine"
+                <AccessTypeBadge
+                  :access-type="dataset.access_type"
                   size="xs"
-                  type="pink"
-                >
-                  {{ $t('Accès restreint') }}
-                </AdminBadge>
+                />
               </div>
               <p class="font-bold text-xl">
                 {{ $t('Ces données ne sont accessibles que sur habilitation') }}
@@ -475,40 +459,17 @@
 </template>
 
 <script setup lang="ts">
+import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, LoadingBlock, BrandedButton, FormattedDate, StatBox, Toggletip, type TranslatedBadge, LabelTag, LicenseBadge, AppLink, MarkdownViewer, useMetrics, TranslationT, getDescriptionShort, type Resource, RESOURCE_EXPLORER_PAGE_SIZE, AccessTypeBadge, DatasetBadge, getDatasetStatus } from '@datagouv/components-next'
 import {
-  ReadMore,
-  AvatarWithName,
-  type DatasetV2WithFullObject,
-  SimpleBanner,
-  DatasetQuality,
-  isOrganizationCertified,
-  LoadingBlock,
-  BrandedButton,
-  FormattedDate,
-  StatBox,
-  Toggletip,
-  type TranslatedBadge,
-  LabelTag,
-  LicenseBadge,
-  AppLink,
-  MarkdownViewer,
-  useMetrics,
-  TranslationT,
-  getDescriptionShort,
-  type Resource,
-  RESOURCE_EXPLORER_PAGE_SIZE,
-} from '@datagouv/components-next'
-import {
-  RiDeleteBinLine,
   RiExternalLinkFill,
   RiExternalLinkLine,
   RiFullscreenLine,
-  RiLockLine,
 } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
@@ -531,7 +492,7 @@ const { height: sidebarHeight } = useElementSize(sidebar)
 const { height: headerHeight } = useElementSize(header)
 
 const url = computed(() => `/api/2/datasets/${route.params.did}/`)
-const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
+const { data: dataset, status, refresh } = await useAPI<DatasetV2WithFullObject>(url, {
   headers: {
     'X-Get-Datasets-Full-Objects': 'True',
   },

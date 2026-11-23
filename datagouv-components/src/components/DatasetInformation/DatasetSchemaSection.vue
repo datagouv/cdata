@@ -14,10 +14,7 @@
       >
         <p class="text-sm mb-0">
           {{ t('Les fichiers du jeu de données suivent le schéma :') }}
-          <Tag
-            type="secondary"
-            :icon="RiCheckboxCircleLine"
-          >
+          <Tag :icon="RiCheckboxCircleLine">
             {{ schema.name || schema.url }}
           </Tag>
         </p>

@@ -37,7 +37,10 @@
       <div class="text-sm text-mentionGrey space-y-1.5 mb-5">
         <p class="space-x-1">
           <span>{{ $t('Statut') }}:</span>
-          <DataserviceBadge :dataservice />
+          <DataserviceBadge
+            size="xs"
+            :dataservice
+          />
         </p>
         <div class="space-x-1">
           <RiBarChartBoxLine class="inline size-3" />
@@ -104,10 +107,9 @@
 </template>
 
 <script setup lang="ts">
-import { ActivityActor, BrandedButton, summarize, Tooltip, FormattedDate, getActivityTranslation } from '@datagouv/components-next'
+import { ActivityActor, BrandedButton, summarize, Tooltip, FormattedDate, getActivityTranslation, DataserviceBadge } from '@datagouv/components-next'
 import type { Activity, Dataservice } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiEyeLine, RiStarLine } from '@remixicon/vue'
-import DataserviceBadge from '~/components/AdminBadge/DataserviceBadge.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'

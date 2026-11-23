@@ -34,6 +34,13 @@
           />
         </div>
       </div>
+      <PendingReportsBanner
+        v-if="dataservice"
+        :subject="{ class: 'Dataservice', value: dataservice }"
+        with-object-actions
+        class="mt-4"
+        @refresh="refresh"
+      />
     </div>
     <LoadingBlock
       v-if="dataservice"
@@ -47,30 +54,10 @@
             <div class="flex-1 overflow-x-hidden">
               <div ref="header">
                 <div class="flex gap-3 mb-2">
-                  <AdminBadge
-                    v-if="dataservice.deleted_at"
-                    :icon="RiDeleteBinLine"
-                    size="sm"
-                    type="secondary"
-                  >
-                    {{ $t('Supprimé') }}
-                  </AdminBadge>
-                  <AdminBadge
-                    v-if="dataservice.private"
-                    :icon="RiLockLine"
-                    size="sm"
-                    type="secondary"
-                  >
-                    {{ $t('Brouillon') }}
-                  </AdminBadge>
-                  <AdminBadge
-                    v-if="dataservice.archived_at"
-                    :icon="RiLockLine"
-                    size="sm"
-                    type="secondary"
-                  >
-                    {{ $t('Archivé') }}
-                  </AdminBadge>
+                  <DataserviceBadge
+                    v-if="getDataserviceStatus(dataservice) !== 'public'"
+                    :dataservice
+                  />
                 </div>
                 <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
                   {{ dataservice.title }}
@@ -318,13 +305,13 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, DataserviceQuality, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
-import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
-import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
+import { isOrganizationCertified, BrandedButton, DataserviceQuality, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, MarkdownViewer, getDescriptionShort, DataserviceBadge, getDataserviceStatus } from '@datagouv/components-next'
+import { RiArrowDownSLine, RiArrowUpSLine } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import { useElementSize } from '@vueuse/core'
@@ -346,7 +333,7 @@ const { height: sidebarHeight } = useElementSize(sidebar)
 const { height: headerHeight } = useElementSize(header)
 
 const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
-const { data: dataservice, status } = await useAPI<Dataservice>(url, { showErrorPage: true, redirectOnSlug: 'did' })
+const { data: dataservice, status, refresh } = await useAPI<Dataservice>(url, { showErrorPage: true, redirectOnSlug: 'did' })
 
 const title = computed(() => `API - ${dataservice.value?.title} | ${config.public.title}`)
 const description = computed(() => normalizeSeoDescription(dataservice.value ? getDescriptionShort(dataservice.value) : undefined))

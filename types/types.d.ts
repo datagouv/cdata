@@ -36,10 +36,6 @@ export type PublishingFormAccordionState = AccordionFunctionalState | DSFRInfoSt
 
 export type AccordionState = DSFRFormDefaultState | AccordionFunctionalState | DSFRInfoState
 
-export type AdminBadgeState = DSFRFormDefaultState | FormFunctionalState | DSFRInfoState
-
-export type AdminBadgeType = 'primary' | 'secondary' | 'warning' | 'danger' | 'success' | 'default' | 'pink' | 'teal'
-
 export type DatasetSortedBy = 'title' | 'created' | 'last_update' | 'reuses' | 'followers' | 'views'
 
 export type ResourceSortedBy = 'title' | 'type' | 'format' | 'created_at' | 'last_modified'

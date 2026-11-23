@@ -175,12 +175,11 @@
               {{ member.user.first_name }} {{ member.user.last_name }}
             </p>
             <p class="!mb-0">
-              <AdminBadge
-                type="secondary"
+              <MemberRoleBadge
+                :role="member.role"
+                :label="member.label"
                 size="sm"
-              >
-                {{ member.label }}
-              </AdminBadge>
+              />
             </p>
           </div>
         </div>
@@ -286,6 +285,7 @@
 import { Avatar, BrandedButton, CopyButton, FormattedDate, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, type Organization, toast } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
+import MemberRoleBadge from '~/components/Organization/MemberRoleBadge.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
 
 const props = defineProps<{

@@ -116,11 +116,11 @@ test.skip('displays the enriched Grist records sorted by title', async ({ page }
   // Organisation ids resolved to names through the Organisations table.
   await expect(zebreRow.locator('td').nth(1)).toHaveText('INSEE')
   // Grist list unwrapped: one type badge per value above the title, no "L" marker.
-  await expect(zebreRow.locator('td:first-child .fr-badge')).toHaveText(['API', 'Code source'])
+  await expect(zebreRow.locator('td:first-child').getByTestId('request-type')).toHaveText(['API', 'Code source'])
 
   const abeilleRow = rows.nth(0)
   // Non-list type value yields no badge.
-  await expect(abeilleRow.locator('td:first-child .fr-badge')).toHaveCount(0)
+  await expect(abeilleRow.locator('td:first-child').getByTestId('request-type')).toHaveCount(0)
   // Unknown organisation id dropped.
   await expect(rows.nth(2).locator('td').nth(1)).toHaveText('-')
 })

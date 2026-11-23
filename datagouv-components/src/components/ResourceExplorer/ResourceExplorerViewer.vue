@@ -58,33 +58,35 @@
               v-if="tab.key === 'data'"
               :class="fullscreen ? 'flex min-h-0 flex-1 flex-col' : ''"
             >
-              <!-- Wrapped in Suspense so switching to this tab (or loading its data) shows
-                   the table skeleton instead of a blank gap while TabularExplorer resolves. -->
-              <Suspense
-                v-if="previewKind === 'tabular'"
-                :timeout="200"
-              >
-                <!-- Fullscreen, the explorer owns the page and its URL: the filters
-                     can live there. Inline, the URL belongs to the dataset page. -->
-                <TabularExplorer
-                  v-model:global-search="search"
-                  :resource-id="resource.id"
-                  :sync-url="fullscreen"
-                >
-                  <TabularToolbar class="shrink-0 border-b border-gray-default p-2" />
-                  <div class="hidden shrink-0 md:block">
-                    <TabularActiveFilters
-                      with-clear
-                      class="border-b border-gray-default p-2"
-                    />
-                  </div>
-                  <TabularTable :fill="fullscreen" />
-                  <TabularMobileFilters />
-                </TabularExplorer>
+              <!-- Client only: rows landing during hydration would end up in the skeleton -->
+              <ClientOnly v-if="previewKind === 'tabular'">
+                <Suspense :timeout="200">
+                  <!-- Fullscreen, the explorer owns the page and its URL: the filters
+                       can live there. Inline, the URL belongs to the dataset page. -->
+                  <TabularExplorer
+                    v-model:global-search="search"
+                    :resource-id="resource.id"
+                    :sync-url="fullscreen"
+                    :resource
+                  >
+                    <TabularToolbar class="shrink-0 border-b border-gray-default p-2" />
+                    <div class="hidden shrink-0 md:block">
+                      <TabularActiveFilters
+                        with-clear
+                        class="border-b border-gray-default p-2"
+                      />
+                    </div>
+                    <TabularTable :fill="fullscreen" />
+                    <TabularMobileFilters />
+                  </TabularExplorer>
+                  <template #fallback>
+                    <TabularSkeleton :fill="fullscreen" />
+                  </template>
+                </Suspense>
                 <template #fallback>
                   <TabularSkeleton :fill="fullscreen" />
                 </template>
-              </Suspense>
+              </ClientOnly>
 
               <!-- PDF is a full-bleed visual preview like the table and the map: it
                    owns its own reader backdrop, so it sits outside the padded wrapper. -->
@@ -142,10 +144,12 @@
               />
             </div>
             <div v-if="tab.key === 'data-structure'">
-              <DataStructure
-                v-if="hasTabularData"
-                :resource="resource"
-              />
+              <ClientOnly v-if="hasTabularData">
+                <DataStructure :resource="resource" />
+                <template #fallback>
+                  <PreviewLoader />
+                </template>
+              </ClientOnly>
             </div>
             <div v-if="tab.key === 'metadata'">
               <Metadata :resource />
@@ -175,7 +179,9 @@
 <script setup lang="ts">
 import { computed, defineAsyncComponent, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import ClientOnly from '../ClientOnly.vue'
 import PreviewError from '../ResourceAccordion/PreviewError.vue'
+import PreviewLoader from '../ResourceAccordion/PreviewLoader.vue'
 import UrlPreview from '../ResourceAccordion/UrlPreview.vue'
 import MarkdownViewer from '../MarkdownViewer.vue'
 import OpenApiViewer from '../OpenApiViewer/OpenApiViewer.vue'

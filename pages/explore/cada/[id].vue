@@ -78,12 +78,9 @@
               <h3 class="text-sm text-gray-500 uppercase mb-2">
                 {{ $t('Type de consultation') }}
               </h3>
-              <CdataLink
-                :to="{ path: '/explore/cada', query: { part: advice.Partie } }"
-                class="fr-badge fr-badge--sm"
-              >
+              <Tag :to="{ path: '/explore/cada', query: { part: advice.Partie } }">
                 {{ partLabel }}
-              </CdataLink>
+              </Tag>
             </div>
 
             <div
@@ -93,15 +90,14 @@
               <h3 class="text-sm text-gray-500 uppercase mb-2">
                 {{ $t('Thèmes') }}
               </h3>
-              <div class="flex flex-wrap gap-1.5">
-                <CdataLink
+              <div class="flex flex-wrap gap-2">
+                <Tag
                   v-for="th in themeParts"
                   :key="th"
                   :to="{ path: '/explore/cada', query: { topic: th } }"
-                  class="fr-badge fr-badge--sm"
                 >
                   {{ th }}
-                </CdataLink>
+                </Tag>
               </div>
             </div>
 
@@ -112,16 +108,16 @@
               <h3 class="text-sm text-gray-500 uppercase mb-2">
                 {{ $t('Conclusions') }}
               </h3>
-              <div class="flex flex-wrap gap-1.5">
-                <CdataLink
+              <div class="flex flex-wrap gap-2">
+                <Badge
                   v-for="m in meanings"
                   :key="m"
                   :to="{ path: '/explore/cada', query: { meaning: m } }"
-                  class="fr-badge fr-badge--sm"
-                  :class="cadaMeaningBadgeClass(m)"
+                  :tone="cadaMeaningTone(m)"
+                  medium
                 >
                   {{ m }}
-                </CdataLink>
+                </Badge>
               </div>
             </div>
 
@@ -132,15 +128,14 @@
               <h3 class="text-sm text-gray-500 uppercase mb-2">
                 {{ $t('Mots-clés') }}
               </h3>
-              <div class="flex flex-wrap gap-1.5">
-                <CdataLink
+              <div class="flex flex-wrap gap-2">
+                <Tag
                   v-for="tag in tags"
                   :key="tag"
                   :to="{ path: '/explore/cada', query: { tag: tag } }"
-                  class="fr-badge fr-badge--sm"
                 >
                   {{ tag }}
-                </CdataLink>
+                </Tag>
               </div>
             </div>
           </aside>
@@ -162,7 +157,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, fetchTabularData, FormattedDate, LoadingBlock, useComponentsConfig } from '@datagouv/components-next'
+import { Badge, BrandedButton, fetchTabularData, FormattedDate, LoadingBlock, Tag, useComponentsConfig } from '@datagouv/components-next'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 

@@ -19,23 +19,24 @@
     </SearchableSelect>
     <div
       v-if="tags.length"
-      class="mt-2 flex flex-wrap"
+      class="mt-2 flex flex-wrap gap-2"
+      data-testid="selected-tags"
     >
-      <button
+      <TagComponent
         v-for="tag in tags"
         :key="tag.text"
-        class="fr-tag fr-tag--sm fr-tag--dismiss mr-2 mb-2"
-        type="button"
+        dismissible
+        :data-testid="`selected-tag-${tag.text}`"
         @click="removeTag(tag)"
       >
         {{ tag.text }}
-      </button>
+      </TagComponent>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { SearchableSelect } from '@datagouv/components-next'
+import { SearchableSelect, Tag as TagComponent } from '@datagouv/components-next'
 import type { Tag } from '~/types/types'
 
 defineProps<{
@@ -55,6 +56,7 @@ async function suggestTags(query: string) {
     },
   })
 }
+
 function removeTag(tag: Tag) {
   tags.value = tags.value.filter(otherTag => otherTag.text !== tag.text)
 }

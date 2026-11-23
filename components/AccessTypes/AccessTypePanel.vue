@@ -58,8 +58,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type AccessAudience, type AccessAudienceType, type WithAccessType } from '@datagouv/components-next'
-import AccessTypeBadge from './AccessTypeBadge.vue'
+import { BrandedButton, type AccessAudience, type AccessAudienceType, type WithAccessType, AccessTypeBadge } from '@datagouv/components-next'
 
 const props = withDefaults(defineProps<{
   object: WithAccessType

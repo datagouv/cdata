@@ -1,4 +1,5 @@
 import { test, expect } from '../base'
+import { gotoLegacyExplorer } from '../helpers'
 
 test('show details page', async ({ page }) => {
   await page.goto(
@@ -142,7 +143,9 @@ test('reuses and dataservices tab lists the dataset reuses', async ({ page }) =>
 })
 
 test('resources are displayed and accordion expands', async ({ page }) => {
-  await page.goto(
+  // The accordion belongs to the legacy resource list, now behind an opt-out.
+  await gotoLegacyExplorer(
+    page,
     '/datasets/base-sirene-des-entreprises-et-de-leurs-etablissements-siren-siret/',
   )
 

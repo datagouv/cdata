@@ -4,9 +4,9 @@
     class="space-y-8"
   >
     <BannerNotif
-      v-for="type in ['primary', 'warning']"
-      :key="type"
-      :type
+      v-for="tone in ['primary', 'warning'] as const"
+      :key="tone"
+      :tone
       :icon="RiSendPlaneLine"
       class="mb-4"
       badge="Transfert en attente"

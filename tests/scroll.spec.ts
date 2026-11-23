@@ -1,6 +1,6 @@
 import type { APIRequestContext, Page } from '@playwright/test'
 import { test, expect } from './base'
-import { API_BASE, createDatasetWithRemoteResources, createPost, deleteDatasets, deletePosts } from './helpers'
+import { API_BASE, createDatasetWithRemoteResources, createPost, deleteDatasets, deletePosts, gotoLegacyExplorer } from './helpers'
 
 // The whole scroll behaviour comes from Nuxt: hash anchors, keeping the position
 // between the tabs of a same object (`definePageMeta({ scrollToTop })`), and
@@ -87,6 +87,9 @@ test.describe('Tabs', () => {
 test.describe('Result lists', () => {
   const createdDatasets: Array<string> = []
 
+  // The resource pagination below is the legacy list's, now behind an opt-out
+  // (gotoLegacyExplorer).
+
   test.afterEach(async ({ request }) => {
     await deleteDatasets(request, createdDatasets)
   })
@@ -106,7 +109,7 @@ test.describe('Result lists', () => {
     }
     const tops = { firstOfFirstPage: await firstOf(1), firstOfSecondPage: await firstOf(2) }
 
-    await page.goto(`/datasets/${dataset.id}/`)
+    await gotoLegacyExplorer(page, `/datasets/${dataset.id}/`)
     await page.waitForLoadState('networkidle')
 
     return tops

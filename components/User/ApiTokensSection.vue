@@ -10,15 +10,25 @@
     <div
       v-for="token in tokens"
       :key="token.id"
+      data-testid="api-token"
       class="flex items-center justify-between gap-4 py-3 border-b border-gray-200 last:border-b-0"
     >
       <div class="min-w-0">
-        <div class="text-sm truncate">
-          <span class="font-medium">{{ token.name || `${token.token_prefix}…` }}</span>
-          <span
-            v-if="token.name"
-            class="text-gray-400 ml-1"
-          >{{ token.token_prefix }}…</span>
+        <div class="flex items-center gap-2 text-sm">
+          <div class="truncate">
+            <span class="font-medium">{{ token.name || `${token.token_prefix}…` }}</span>
+            <span
+              v-if="token.name"
+              class="text-gray-400 ml-1"
+            >{{ token.token_prefix }}…</span>
+          </div>
+          <Badge
+            v-if="token.scopes.includes('sysadmin')"
+            tone="warning"
+            size="xs"
+          >
+            {{ $t('Sysadmin') }}
+          </Badge>
         </div>
         <div class="text-xs text-gray-500">
           <TranslationT keypath="Créé {date}">
@@ -126,7 +136,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, FormattedDate, toast, TranslationT } from '@datagouv/components-next'
+import { Badge, BrandedButton, FormattedDate, toast, TranslationT } from '@datagouv/components-next'
 import { RiDeleteBin6Line } from '@remixicon/vue'
 import type { ApiToken } from '~/types/api-tokens'
 import CreateApiTokenModal from './CreateApiTokenModal.vue'

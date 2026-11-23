@@ -37,6 +37,7 @@
           </p>
         </div>
       </div>
+      <TabularPreviewDateBanner :resource />
       <div class="fr-table fr-table--no-background fr-p-0 fr-m-0">
         <table class="fr-mb-3w">
           <caption class="sr-only">
@@ -93,11 +94,6 @@
         @change="changePage"
       />
       <div class="fr-px-5v">
-        <TranslationT keypath="Dernière mise à jour de la prévisualisation : {date}">
-          <template #date>
-            <FormattedDate :date="parsingFinishedAt" />
-          </template>
-        </TranslationT> —
         {{ t('{count} colonnes', columns.length) }} —
         {{ t('Lignes {count}', rowCount) }}
       </div>
@@ -110,8 +106,7 @@ import { computed, onMounted, ref } from 'vue'
 import { RiArrowDownLine, RiArrowUpLine, RiExternalLinkFill } from '@remixicon/vue'
 import Pagination from '../Pagination.vue'
 import { getData, type SortConfig } from '../../functions/tabularApi'
-import FormattedDate from '../FormattedDate.vue'
-import TranslationT from '../TranslationT.vue'
+import TabularPreviewDateBanner from '../TabularExplorer/TabularPreviewDateBanner.vue'
 import { trackEvent } from '../../functions/matomo'
 import type { Resource } from '../../types/resources'
 import { useComponentsConfig } from '../../config'
@@ -203,8 +198,6 @@ function sortByField(col: string) {
   currentPage.value = 1
   getTableInfos(currentPage.value, sortConfig.value)
 };
-
-const parsingFinishedAt = computed(() => props.resource.extras['analysis:parsing:finished_at'] as string | undefined)
 
 // A tabular API failure is (most often) transient: when metadata gives no
 // diagnosis, describe a failure rather than claiming the file can't be previewed.
