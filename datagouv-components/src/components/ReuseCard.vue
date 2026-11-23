@@ -32,23 +32,10 @@
       {{ reuse.title }}
     </template>
     <template
-      v-if="reuse.private || reuse.archived"
+      v-if="getReuseStatus(reuse) !== 'public'"
       #badge
     >
-      <span class="flex flex-wrap gap-1">
-        <ObjectCardBadge
-          v-if="reuse.private"
-          :icon="RiLockLine"
-        >
-          {{ t('Brouillon') }}
-        </ObjectCardBadge>
-        <ObjectCardBadge
-          v-if="reuse.archived"
-          :icon="RiArchiveLine"
-        >
-          {{ t('Archivé') }}
-        </ObjectCardBadge>
-      </span>
+      <ReuseBadge :reuse />
     </template>
 
     <ObjectCardOwner
@@ -85,18 +72,18 @@
 </template>
 
 <script setup lang="ts">
-import { RiArchiveLine, RiLineChartLine, RiLockLine } from '@remixicon/vue'
+import { RiLineChartLine } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
+import { getReuseStatus } from '../functions/objectStatus'
 import type { Reuse, ReuseV2 } from '../types/reuses'
 import type { TitleTag } from '../types/ui'
-import { useTranslation } from '../composables/useTranslation'
 import CardMedia from './CardMedia.vue'
 import FormattedDate from './FormattedDate.vue'
 import ObjectCard from './ObjectCard.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
-import ObjectCardBadge from './ObjectCardBadge.vue'
 import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
+import ReuseBadge from './ReuseBadge.vue'
 import ReuseDetails from './ReuseDetails.vue'
 import TranslationT from './TranslationT.vue'
 
@@ -129,6 +116,4 @@ withDefaults(
     titleTag: 'h3',
   },
 )
-
-const { t } = useTranslation()
 </script>

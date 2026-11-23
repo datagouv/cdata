@@ -67,30 +67,10 @@
         <div class="grid md:grid-cols-12 gap-4">
           <div class="md:col-span-5 flex flex-col justify-center">
             <div class="flex gap-3 mb-2">
-              <AdminBadge
-                v-if="reuse.deleted"
-                :icon="RiDeleteBinLine"
-                size="sm"
-                type="secondary"
-              >
-                {{ $t('Supprimé') }}
-              </AdminBadge>
-              <AdminBadge
-                v-if="reuse.private"
-                :icon="RiLockLine"
-                size="sm"
-                type="secondary"
-              >
-                {{ $t('Brouillon') }}
-              </AdminBadge>
-              <AdminBadge
-                v-if="reuse.archived"
-                :icon="RiLockLine"
-                size="sm"
-                type="secondary"
-              >
-                {{ $t('Archivé') }}
-              </AdminBadge>
+              <ReuseBadge
+                v-if="getReuseStatus(reuse) !== 'public'"
+                :reuse
+              />
             </div>
             <div
               v-if="reuse.organization"
@@ -180,9 +160,7 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, Avatar, BrandedButton, LoadingBlock, OrganizationNameWithCertificate, ReuseDetails, type Reuse, OrganizationLogo, getDescriptionShort } from '@datagouv/components-next'
-import { RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
-import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
+import { isOrganizationCertified, Avatar, BrandedButton, LoadingBlock, OrganizationNameWithCertificate, ReuseDetails, type Reuse, OrganizationLogo, getDescriptionShort, ReuseBadge, getReuseStatus } from '@datagouv/components-next'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'

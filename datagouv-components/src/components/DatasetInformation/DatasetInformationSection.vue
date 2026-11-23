@@ -7,16 +7,13 @@
       <div v-if="dataset.tags && dataset.tags.length">
         <DescriptionListTerm>{{ t('Mots-clés') }}</DescriptionListTerm>
         <DescriptionListDetails class="flex flex-wrap gap-2 items-start">
-          <AppLink
+          <Tag
             v-for="tag in dataset.tags"
             :key="tag"
-            class="fr-raw-link"
             :to="getTagUrl(tag)"
           >
-            <Tag type="secondary">
-              {{ tag }}
-            </Tag>
-          </AppLink>
+            {{ tag }}
+          </Tag>
         </DescriptionListDetails>
       </div>
       <div>
@@ -51,7 +48,6 @@ import type { DatasetV2WithFullObject } from '../../types/datasets'
 import DescriptionList from '../DescriptionList.vue'
 import DescriptionListTerm from '../DescriptionListTerm.vue'
 import DescriptionListDetails from '../DescriptionListDetails.vue'
-import AppLink from '../AppLink.vue'
 import CopyButton from '../CopyButton.vue'
 import LicenseBadge from '../LicenseBadge.vue'
 import Tag from '../Tag.vue'

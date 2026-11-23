@@ -54,30 +54,10 @@
             <div class="flex-1 overflow-x-hidden">
               <div ref="header">
                 <div class="flex gap-3 mb-2">
-                  <AdminBadge
-                    v-if="dataservice.deleted_at"
-                    :icon="RiDeleteBinLine"
-                    size="sm"
-                    type="secondary"
-                  >
-                    {{ $t('Supprimé') }}
-                  </AdminBadge>
-                  <AdminBadge
-                    v-if="dataservice.private"
-                    :icon="RiLockLine"
-                    size="sm"
-                    type="secondary"
-                  >
-                    {{ $t('Brouillon') }}
-                  </AdminBadge>
-                  <AdminBadge
-                    v-if="dataservice.archived_at"
-                    :icon="RiLockLine"
-                    size="sm"
-                    type="secondary"
-                  >
-                    {{ $t('Archivé') }}
-                  </AdminBadge>
+                  <DataserviceBadge
+                    v-if="getDataserviceStatus(dataservice) !== 'public'"
+                    :dataservice
+                  />
                 </div>
                 <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
                   {{ dataservice.title }}
@@ -325,9 +305,8 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, DataserviceQuality, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
-import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
-import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
+import { isOrganizationCertified, BrandedButton, DataserviceQuality, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, MarkdownViewer, getDescriptionShort, DataserviceBadge, getDataserviceStatus } from '@datagouv/components-next'
+import { RiArrowDownSLine, RiArrowUpSLine } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'

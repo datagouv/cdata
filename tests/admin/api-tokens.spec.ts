@@ -23,6 +23,20 @@ test('a created token is shown in the modal until it is closed', async ({ page }
   await expect(dialog.locator('code')).toHaveCount(0)
 })
 
+test('going back after closing the modal leaves the profile', async ({ page }) => {
+  await gotoHydrated(page, '/')
+  await gotoHydrated(page, '/admin/me/profile')
+  await page.getByRole('button', { name: 'Créer un token' }).click()
+  const dialog = page.getByRole('dialog', { name: 'Créer un token API' })
+  await expect(dialog).toBeVisible()
+  await dialog.getByRole('button', { name: 'Fermer', exact: true }).click()
+  await expect(page).toHaveURL(/\/admin\/me\/profile$/)
+
+  await page.goBack()
+
+  await expect(page).toHaveURL(/\/$/)
+})
+
 test.describe('when the token creation requires a fresh session', () => {
   // The 401 below is the point of the tests: the browser logs it.
   test.use({ allowedConsoleMessages: ['the server responded with a status of 401'] })
@@ -55,4 +69,25 @@ test.describe('when the token creation requires a fresh session', () => {
     await expect(page.getByRole('heading', { level: 1, name: 'Confirmer votre identité' })).toBeVisible()
     await expect(page.getByText('Impossible de créer le token.')).toBeHidden()
   })
+})
+
+test('a sysadmin gets the sysadmin rights on a token only by asking for them', async ({ page }) => {
+  const plain = `E2E plain token ${Date.now()}`
+  const sysadmin = `E2E sysadmin token ${Date.now()}`
+  await gotoHydrated(page, '/admin/me/profile')
+  const dialog = page.getByRole('dialog', { name: 'Créer un token API' })
+
+  for (const [name, asSysadmin] of [[plain, false], [sysadmin, true]] as const) {
+    await page.getByRole('button', { name: 'Créer un token' }).click()
+    await dialog.getByLabel('Nom (optionnel)').fill(name)
+    if (asSysadmin) await dialog.getByRole('switch', { name: 'Droits sysadmin' }).click()
+    await dialog.getByRole('button', { name: 'Créer', exact: true }).click()
+    await expect(dialog.locator('code')).not.toBeEmpty()
+    await dialog.getByRole('button', { name: 'Fermer', exact: true }).last().click()
+    await expect(dialog).toBeHidden()
+  }
+
+  const token = (name: string) => page.getByTestId('api-token').filter({ hasText: name })
+  await expect(token(sysadmin).getByText('Sysadmin', { exact: true })).toBeVisible()
+  await expect(token(plain).getByText('Sysadmin', { exact: true })).toHaveCount(0)
 })

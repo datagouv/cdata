@@ -22,12 +22,12 @@
     v-else-if="pushing || push.status === 'pending'"
     class="flex flex-col items-start gap-1"
   >
-    <AdminBadge
+    <Badge
       size="xs"
-      type="primary"
+      tone="primary"
     >
       {{ t('Envoi en cours…') }}
-    </AdminBadge>
+    </Badge>
     <span class="text-xs text-gray-medium">
       {{ t('Cette opération peut prendre du temps. Vous recevrez un e-mail une fois l\'envoi terminé et pouvez continuer votre navigation.') }}
     </span>
@@ -37,12 +37,12 @@
     v-else-if="push.status === 'done'"
     class="flex flex-col items-start"
   >
-    <AdminBadge
+    <Badge
       size="xs"
-      type="success"
+      tone="success"
     >
       {{ t('Synchronisé') }}
-    </AdminBadge>
+    </Badge>
     <span
       v-if="push.last_synced_at"
       class="text-xs text-gray-medium"
@@ -56,12 +56,12 @@
     class="flex flex-col items-start gap-1"
   >
     <Tooltip>
-      <AdminBadge
+      <Badge
         size="xs"
-        type="danger"
+        tone="danger"
       >
         {{ push.status === 'timeout' ? t('Délai dépassé') : t("Échec de l'envoi") }}
-      </AdminBadge>
+      </Badge>
 
       <template #tooltip>
         <span class="block w-96 max-w-full whitespace-pre-line">{{ push.error }}</span>
@@ -89,7 +89,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, Tooltip, useFormatDate } from '@datagouv/components-next'
+import { BrandedButton, Tooltip, useFormatDate, Badge } from '@datagouv/components-next'
 import { RiRefreshLine, RiUploadCloud2Line } from '@remixicon/vue'
 import { isGeopfReauthRequired, type GeopfPushableResource } from '~/utils/geopf'
 

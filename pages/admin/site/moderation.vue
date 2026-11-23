@@ -151,27 +151,30 @@
                   <div v-if="subjects[report.id].value">
                     <DatasetBadge
                       v-if="subjects[report.id].type === 'Dataset'"
+                      size="xs"
                       :dataset="(subjects[report.id].value as DatasetV2)"
                     />
                     <DataserviceBadge
                       v-else-if="subjects[report.id].type === 'Dataservice'"
+                      size="xs"
                       :dataservice="(subjects[report.id].value as Dataservice)"
                     />
                     <ReuseBadge
                       v-else-if="subjects[report.id].type === 'Reuse'"
+                      size="xs"
                       :reuse="(subjects[report.id].value as Reuse)"
                     />
                     <div v-else>
                       —
                     </div>
                   </div>
-                  <AdminBadge
+                  <Badge
                     v-else
-                    type="danger"
+                    tone="danger"
                     size="xs"
                   >
                     {{ $t('Supprimé') }}
-                  </AdminBadge>
+                  </Badge>
                 </template>
                 <div
                   v-else
@@ -348,7 +351,7 @@
 
 <script setup lang="ts">
 import type { Report, ReportReason, ReportSubject, Activity, Dataservice, DatasetV2, Organization, Reuse, User, UserReference } from '@datagouv/components-next'
-import { ActivityActor, AvatarWithName, FilterChip, FormattedDate, LoadingBlock, Pagination, SearchableSelect, BrandedButton, TranslationT } from '@datagouv/components-next'
+import { ActivityActor, AvatarWithName, FilterChip, FormattedDate, LoadingBlock, Pagination, SearchableSelect, BrandedButton, TranslationT, Badge, DatasetBadge, DataserviceBadge, ReuseBadge } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'
@@ -361,9 +364,6 @@ import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import type { Thread } from '~/types/discussions'
-import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
-import DataserviceBadge from '~/components/AdminBadge/DataserviceBadge.vue'
-import ReuseBadge from '~/components/AdminBadge/ReuseBadge.vue'
 import TabLinks from '~/components/TabLinks.vue'
 
 const { t } = useTranslation()

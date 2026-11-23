@@ -32,14 +32,13 @@
               <dt class="font-bold text-sm pb-1">
                 {{ $t('Mots clés') }}
               </dt>
-              <dd class="flex flex-wrap gap-0.5 p-0 text-sm">
-                <span
+              <dd class="flex flex-wrap gap-2 p-0 text-sm">
+                <Tag
                   v-for="tag in reuse.tags"
                   :key="tag"
-                  class="text-xs px-2 py-1 rounded-xl bg-gray-default"
                 >
                   {{ tag }}
-                </span>
+                </Tag>
                 <span
                   v-if="!reuse.tags?.length"
                   class="text-mention-grey"
@@ -207,7 +206,7 @@
 </template>
 
 <script setup lang="ts">
-import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseV2, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, FormattedDate, useMetrics, MarkdownViewer, BrandedButton } from '@datagouv/components-next'
+import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseV2, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, FormattedDate, useMetrics, MarkdownViewer, BrandedButton, Tag } from '@datagouv/components-next'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import type { PaginatedArray } from '~/types/types'
 

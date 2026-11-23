@@ -93,14 +93,15 @@
                 v-if="record.fields.type_values.length > 0"
                 class="flex flex-wrap gap-1 -ml-1.5"
               >
-                <span
+                <Badge
                   v-for="value in record.fields.type_values"
                   :key="value"
-                  class="fr-badge fr-badge--sm fr-badge--no-icon"
-                  :class="typeBadgeClass(value)"
+                  size="xs"
+                  :tone="typeTone(value)"
+                  data-testid="request-type"
                 >
                   {{ value }}
-                </span>
+                </Badge>
               </div>
               <CdataLink
                 v-if="record.fields.url && statutLinksToData(record.fields.statut_front)"
@@ -122,62 +123,47 @@
             {{ humanJoin(record.fields.organisation_names) || '-' }}
           </td>
           <td class="whitespace-nowrap">
-            <AdminBadge
+            <Badge
               v-if="record.fields.source_demande_front"
-              :type="sourceBadgeType(record.fields.source_demande_front)"
+              :tone="sourceTone(record.fields.source_demande_front)"
               size="sm"
             >
               {{ record.fields.source_demande_front }}
-            </AdminBadge>
+            </Badge>
             <span v-else>-</span>
           </td>
           <td>
             <div class="flex flex-col gap-1 items-start">
-              <AdminBadge
+              <Badge
                 v-for="value in record.fields.thematique_values"
                 :key="value"
-                type="default"
+                tone="neutral"
                 size="sm"
               >
                 {{ value }}
-              </AdminBadge>
+              </Badge>
               <span v-if="record.fields.thematique_values.length === 0">-</span>
             </div>
           </td>
           <td class="whitespace-nowrap">
-            <CdataLink
-              v-if="statutLinksToData(record.fields.statut_front) && record.fields.url"
-              :to="record.fields.url"
-              external
-              target="_blank"
-              rel="noopener"
-              class="no-underline fr-raw-link"
-            >
-              <AdminBadge
-                :type="statutBadgeType(record.fields.statut_front)"
-                :icon-right="RiExternalLinkLine"
-                size="sm"
-              >
-                {{ record.fields.statut_front }}
-              </AdminBadge>
-            </CdataLink>
-            <AdminBadge
-              v-else-if="record.fields.statut_front"
-              :type="statutBadgeType(record.fields.statut_front)"
+            <ExternalLinkBadge
+              v-if="record.fields.statut_front"
+              :label="record.fields.statut_front"
+              :url="statutLinksToData(record.fields.statut_front) ? record.fields.url : null"
+              :link-label="t('Voir les données')"
+              :tone="statutTone(record.fields.statut_front)"
               size="sm"
-            >
-              {{ record.fields.statut_front }}
-            </AdminBadge>
+            />
             <span v-else>-</span>
           </td>
           <td class="whitespace-nowrap">
-            <AdminBadge
+            <Badge
               v-if="record.fields.restriction_acces"
-              :type="record.fields.restriction_acces === 'Aucune' ? 'success' : 'warning'"
+              :tone="record.fields.restriction_acces === 'Aucune' ? 'success' : 'warning'"
               size="sm"
             >
               {{ record.fields.restriction_acces }}
-            </AdminBadge>
+            </Badge>
             <span v-else>-</span>
           </td>
         </template>
@@ -198,12 +184,12 @@
             :key="statut.value"
           >
             <dt class="inline">
-              <AdminBadge
-                :type="statut.badgeType"
+              <Badge
+                :tone="statut.tone"
                 size="sm"
               >
                 {{ statut.label }}
-              </AdminBadge>
+              </Badge>
             </dt>
             <dd class="inline ml-2">
               {{ statut.description }}
@@ -216,18 +202,17 @@
 </template>
 
 <script setup lang="ts">
-import { RiExternalLinkLine } from '@remixicon/vue'
-import { TranslationT } from '@datagouv/components-next'
+import { TranslationT, Badge } from '@datagouv/components-next'
 import OnboardingHero from '~/components/Onboarding/OnboardingHero.vue'
 import OnboardingSection from '~/components/Onboarding/OnboardingSection.vue'
 import OnboardingTitle from '~/components/Onboarding/OnboardingTitle.vue'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
-import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
+import ExternalLinkBadge from '~/components/ExternalLinkBadge.vue'
 import GristTableViewer from '~/components/GristTableViewer/GristTableViewer.vue'
 import type { GristFilter, GristRecord } from '~/components/GristTableViewer/GristTableViewer.vue'
-import type { AdminBadgeType } from '~/types/types'
+import type { BadgeTone } from '@datagouv/components-next'
 import { humanJoin } from '~/utils/helpers'
 import { unwrapList } from '~/utils/grist'
 
@@ -316,7 +301,7 @@ type StatutDefinition = {
   value: string
   // Translated label shown in the legend below the table.
   label: string
-  badgeType: AdminBadgeType
+  tone: BadgeTone
   // Statuses whose badge links to the published dataset (when the record has an url).
   linksToData: boolean
   description: string
@@ -328,28 +313,28 @@ const STATUTS: Array<StatutDefinition> = [
   {
     value: 'Non disponible',
     label: t('Non disponible'),
-    badgeType: 'danger',
+    tone: 'danger',
     linksToData: false,
     description: t('les données ne sont pas publiées sur {site}.', { site: config.public.title }),
   },
   {
     value: 'En cours',
     label: t('En cours'),
-    badgeType: 'primary',
+    tone: 'primary',
     linksToData: false,
     description: t('les données sont en cours de publication sur {site}.', { site: config.public.title }),
   },
   {
     value: 'Disponible',
     label: t('Disponible'),
-    badgeType: 'success',
+    tone: 'success',
     linksToData: true,
     description: t('les données sont publiées sur {site}.', { site: config.public.title }),
   },
   {
     value: 'Mise à jour requise',
     label: t('Mise à jour requise'),
-    badgeType: 'warning',
+    tone: 'warning',
     linksToData: true,
     description: t('le jeu de données est disponible sur {site}, mais une mise à jour est attendue (ajout d\'un nouveau millésime, correction d\'une erreur, enrichissement des données publiées…).', { site: config.public.title }),
   },
@@ -360,16 +345,16 @@ const statutByValue = new Map(STATUTS.map(statut => [statut.value, statut]))
 // Colours for the "Source de la demande" column. Status colours (red, green, orange)
 // are kept out so they stay tied to the status column; "Demande utilisateur" uses the
 // DSFR decorative teal and "Autre demande" stays neutral grey.
-const SOURCE_BADGE_TYPES: Record<string, AdminBadgeType> = {
+const SOURCE_TONES: Record<string, BadgeTone> = {
   'DINUM': 'primary',
   'Engagements ministériels 2021': 'pink',
   'Demande utilisateur': 'teal',
-  'Autre demande': 'default',
+  'Autre demande': 'neutral',
 }
 
-function sourceBadgeType(source: string | null): AdminBadgeType {
-  if (!source) return 'default'
-  return SOURCE_BADGE_TYPES[source] ?? 'default'
+function sourceTone(source: string | null): BadgeTone {
+  if (!source) return 'neutral'
+  return SOURCE_TONES[source] ?? 'neutral'
 }
 
 const columns = [
@@ -425,21 +410,21 @@ const filters: Array<GristFilter<OuvertureRecord>> = [
   },
 ]
 
-function statutBadgeType(statut: string | null): AdminBadgeType {
-  if (!statut) return 'default'
-  return statutByValue.get(statut)?.badgeType ?? 'default'
+function statutTone(statut: string | null): BadgeTone {
+  if (!statut) return 'neutral'
+  return statutByValue.get(statut)?.tone ?? 'neutral'
 }
 
 function statutLinksToData(statut: string | null): boolean {
   return Boolean(statut && statutByValue.get(statut)?.linksToData)
 }
 
-function typeBadgeClass(type: string): string {
+function typeTone(type: string): BadgeTone {
   switch (type) {
-    case 'API': return 'fr-badge--green-menthe'
-    case 'Téléchargement': return 'fr-badge--blue-ecume'
-    case 'Code source': return 'fr-badge--purple-glycine'
-    default: return ''
+    case 'API': return 'teal'
+    case 'Téléchargement': return 'primary'
+    case 'Code source': return 'pink'
+    default: return 'neutral'
   }
 }
 

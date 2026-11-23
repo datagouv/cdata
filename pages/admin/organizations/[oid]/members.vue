@@ -238,12 +238,10 @@
               <AdminEmail :user="member.user" />
             </td>
             <td>
-              <AdminBadge
-                size="xs"
-                :type="getRoleBadgeType(member.role)"
-              >
-                {{ member.label }}
-              </AdminBadge>
+              <MemberRoleBadge
+                :role="member.role"
+                :label="member.label"
+              />
             </td>
             <td><FormattedDate :date="member.since" /></td>
             <td>
@@ -381,6 +379,7 @@ import InputGroup from '~/components/InputGroup/InputGroup.vue'
 import AdminMembershipRequest from '~/components/AdminMembershipRequest/AdminMembershipRequest.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import MemberRoleBadge from '~/components/Organization/MemberRoleBadge.vue'
 import { useNotifications } from '~/composables/useNotifications.client'
 import { email, required } from '~/composables/useForm'
 

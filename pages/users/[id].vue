@@ -69,39 +69,39 @@
         </div>
         <div class="flex flex-col items-end gap-2">
           <div class="flex flex-wrap gap-2">
-            <AdminBadge
+            <Badge
               size="xs"
-              type="secondary"
+              tone="neutral"
             >
               {{ $t('{n} jeux de données', { n: user.metrics.datasets }) }}
-            </AdminBadge>
-            <AdminBadge
+            </Badge>
+            <Badge
               size="xs"
-              type="secondary"
+              tone="neutral"
             >
               {{ $t('{n} réutilisations | {n} réutilisation | {n} réutilisations', { n: user.metrics.reuses }) }}
-            </AdminBadge>
-            <AdminBadge
+            </Badge>
+            <Badge
               size="xs"
-              type="secondary"
+              tone="neutral"
             >
               {{ $t('{n} API', { n: user.metrics.dataservices }) }}
-            </AdminBadge>
+            </Badge>
           </div>
 
           <div class="flex flex-wrap gap-2">
-            <AdminBadge
+            <Badge
               size="xs"
-              type="secondary"
+              tone="neutral"
             >
               {{ $t('{n} abonnés | {n} abonné | {n} abonnés', { n: user.metrics.followers }) }}
-            </AdminBadge>
-            <AdminBadge
+            </Badge>
+            <Badge
               size="xs"
-              type="secondary"
+              tone="neutral"
             >
               {{ $t('{n} personnes suivies | 1 personne suivie | {n} personnes suivies', { n: user.metrics.following }) }}
-            </AdminBadge>
+            </Badge>
           </div>
         </div>
       </div>
@@ -215,7 +215,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, MarkdownViewer, OrganizationCard, Pagination, ReuseCard } from '@datagouv/components-next'
+import { Avatar, BrandedButton, MarkdownViewer, OrganizationCard, Pagination, ReuseCard, Badge } from '@datagouv/components-next'
 import type { DatasetV2, ReuseV2, User } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 import { DatasetCardLg } from '#components'

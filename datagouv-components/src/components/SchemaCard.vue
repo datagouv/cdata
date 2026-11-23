@@ -21,14 +21,10 @@
       <Tag
         v-for="label in schema.labels"
         :key="label"
-        type="secondary"
       >
         {{ t('Label :') }} {{ label }}
       </Tag>
-      <Tag
-        v-if="schema.schema_type"
-        type="secondary"
-      >
+      <Tag v-if="schema.schema_type">
         {{ t('Standard :') }} {{ schema.schema_type }}
       </Tag>
     </div>
