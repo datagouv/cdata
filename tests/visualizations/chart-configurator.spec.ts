@@ -888,6 +888,103 @@ test('clearing the dataset while its resources load stops the loading', async ({
   await expect(status).toHaveText('Source à sélectionner')
 })
 
+test('a dataset left while its resources load does not end the loading of the next one', async ({ page }) => {
+  await setupChart(page)
+  const held: Array<{ continue: () => Promise<void> }> = []
+  await page.route(url => /^\/api\/2\/datasets\/[^/]+\/resources\/$/.test(url.pathname), route => held.push(route))
+
+  const datasetSelect = page.getByTestId('searchable-select-jeu-de-donn-es')
+  await datasetSelect.click()
+  await page.getByPlaceholder('Recherchez un jeu de données...').fill('Base SIRENE')
+  await page.getByRole('option', { name: /Base SIRENE/i }).first().click()
+  await expect.poll(() => held.length).toBe(1)
+  await datasetSelect.click()
+  await page.getByPlaceholder('Recherchez un jeu de données...').fill('logements sociaux')
+  await page.getByRole('option', { name: 'Logements sociaux et bailleurs par région', exact: true }).click()
+  await expect.poll(() => held.length).toBe(2)
+
+  const status = page.getByTestId('source-status')
+  const firstAnswer = page.waitForResponse(response => response.url().includes('/resources/'))
+  await held[0]!.continue()
+  await firstAnswer
+  await expect(status).toHaveText('Chargement…')
+  await held[1]!.continue()
+  await expect(status).toHaveText('Source à sélectionner')
+})
+
+test('the resource choice only lists the resources of the selected dataset', async ({ page }) => {
+  await setupChart(page)
+  const datasetSelect = page.getByTestId('searchable-select-jeu-de-donn-es')
+  await datasetSelect.click()
+  await page.getByPlaceholder('Recherchez un jeu de données...').fill('Base SIRENE')
+  await page.getByRole('option', { name: /Base SIRENE/i }).first().click()
+  await expect(page.getByTestId('source-status')).toHaveText('Source à sélectionner')
+  await expect(page.locator(`#resource-select option[value="${RESOURCE_ID}"]`)).toHaveCount(0)
+})
+
+test.describe('when a resource profile cannot be read', () => {
+  test.use({ allowedConsoleMessages: ['status of 500', 'status of 400', 'Failed to load columns'] })
+
+  test('says the columns are unavailable, and a retry shows the loading', async ({ page }) => {
+    await withSecondTabularResource(page)
+    await setupChart(page)
+    const secondResourceId = await otherResourceId(page)
+    let fail = true
+    let release: () => void = () => {}
+    await page.route(`**/api/resources/${secondResourceId}/profile/`, async (route) => {
+      if (fail) return route.fulfill({ status: 500, body: 'down' })
+      await new Promise<void>((resolve) => {
+        release = resolve
+      })
+      await route.fallback()
+    })
+
+    const status = page.getByTestId('source-status')
+    await page.getByLabel('Choix de la ressource').selectOption(secondResourceId)
+    await expect(status).toHaveText('Colonnes indisponibles')
+    fail = false
+    await page.getByRole('button', { name: 'Réessayer' }).click()
+    await expect(status).toHaveText('Chargement…')
+    release()
+    await expect(status).toHaveText(/colonnes disponibles/)
+  })
+
+  test('opening a chart keeps its columns', async ({ page }) => {
+    await page.route('**/assistant/chat/**', route => route.abort())
+    const chart = await createChart(page.request, { title: 'Profil en panne', xColumn: 'region' })
+    try {
+      await mockTabular(page)
+      await page.route('**/api/resources/*/profile/', route => route.fulfill({ status: 500, body: 'down' }))
+      let saved: { x_axis: { column_x: string }, series: Array<{ column_y: string }> } | null = null
+      await page.route(url => url.pathname === `/api/1/visualizations/${chart.id}/`, async (route) => {
+        if (route.request().method() !== 'PATCH') return route.fallback()
+        saved = route.request().postDataJSON()
+        await route.fulfill({ status: 400, json: { message: 'Not saved by this test' } })
+      })
+      await page.goto(`/admin/beta/charts/${chart.id}`)
+      await expect(page.getByTestId('source-status')).toHaveText('Colonnes indisponibles')
+      await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+      await expect.poll(() => saved).not.toBeNull()
+      expect(saved!.x_axis.column_x).toBe('region')
+      expect(saved!.series[0]!.column_y).toBe('valeur')
+    }
+    finally {
+      await deleteChart(page.request, chart.id)
+    }
+  })
+})
+
+test('a resource without columns says so', async ({ page }) => {
+  await withSecondTabularResource(page)
+  await setupChart(page)
+  const secondResourceId = await otherResourceId(page)
+  await page.route(`**/api/resources/${secondResourceId}/profile/`, route =>
+    route.fulfill({ json: { profile: { header: [], columns: {}, formats: {}, profile: {} } } }),
+  )
+  await page.getByLabel('Choix de la ressource').selectOption(secondResourceId)
+  await expect(page.getByTestId('source-status')).toHaveText('Aucune colonne disponible')
+})
+
 test('ignores a late profile response after changing resources', async ({ page }) => {
   await withSecondTabularResource(page)
   await setupChart(page)

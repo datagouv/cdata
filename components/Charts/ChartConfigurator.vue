@@ -86,6 +86,13 @@
               />
               {{ $t('Chargement…') }}
             </template>
+            <template v-else-if="selectedResource && columnsFailed.has(selectedResource)">
+              <RiErrorWarningLine
+                class="size-3"
+                aria-hidden="true"
+              />
+              {{ $t('Colonnes indisponibles') }}
+            </template>
             <template v-else-if="selectedResource && !resourceColumns.length">
               <RiErrorWarningLine
                 class="size-3"
@@ -104,6 +111,15 @@
               {{ $t('Source à sélectionner') }}
             </template>
           </p>
+          <BrandedButton
+            v-if="!sourceLoading && selectedResource && columnsFailed.has(selectedResource)"
+            size="xs"
+            color="secondary"
+            class="shrink-0"
+            @click="retryColumns"
+          >
+            {{ $t('Réessayer') }}
+          </BrandedButton>
         </div>
       </section>
 
@@ -823,14 +839,17 @@ const props = defineProps<{
 }>()
 
 const columns = ref<ColumnsDefinition>({})
+// Resources whose profile failed: unknown columns, not an empty resource.
+const columnsFailed = ref(new Set<string>())
+const columnsPending = ref(new Set<string>())
 const producer = ref<Owned | null>(null)
 const dataset = ref<DatasetSuggest | null>(null)
 const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref<string>('')
 const chartViewerWrapperRef = ref<InstanceType<typeof ChartViewerWrapper> | null>(null)
 const datasetLoading = ref(false)
-// loadColumnsForResources always sets columns[id], with [] when the profile fails.
-const columnsLoading = computed(() => !!selectedResource.value && !(selectedResource.value in columns.value))
+const columnsLoading = computed(() => !!selectedResource.value && (columnsPending.value.has(selectedResource.value)
+  || (!(selectedResource.value in columns.value) && !columnsFailed.value.has(selectedResource.value))))
 const sourceLoading = computed(() => datasetLoading.value || columnsLoading.value)
 const assistantEnabled = Boolean(runtimeConfig.public.assistantEnabled)
 type EditorTab = 'assistant' | 'manual'
@@ -891,7 +910,14 @@ const chartTypeOptions = computed(() => [
 
 const conditionOptions = ['exact', 'differs', 'is_null', 'is_not_null', 'greater', 'less', 'strictly_greater', 'strictly_less'] satisfies Array<FilterCondition>
 
-const resources = computed(() => Object.values(savedResources))
+// The resources of the current dataset, and the selected one when a chart reads another.
+const datasetResourceIds = ref<Array<string>>([])
+const resources = computed(() => {
+  const ids = datasetResourceIds.value.includes(selectedResource.value) || !selectedResource.value
+    ? datasetResourceIds.value
+    : [...datasetResourceIds.value, selectedResource.value]
+  return ids.map(id => savedResources[id]).filter(Boolean)
+})
 
 const activeResource = computed(() => {
   const resource = savedResources[selectedResource.value]
@@ -1093,13 +1119,18 @@ async function loadColumnsForResources(resourceIds: Array<string>) {
 
   await Promise.all(
     idsToLoad.map(async (id) => {
+      columnsFailed.value.delete(id)
+      columnsPending.value.add(id)
       try {
         const profile = await getProfile(id)
         columns.value[id] = buildColumnsFromProfile(profile)
       }
       catch (error) {
         console.error(`Failed to load columns for resource ${id}:`, error)
-        columns.value[id] = []
+        columnsFailed.value.add(id)
+      }
+      finally {
+        columnsPending.value.delete(id)
       }
     }),
   )
@@ -1267,15 +1298,19 @@ watch(
 
 watch(dataset, async (newDataset) => {
   selectedResource.value = ''
+  datasetResourceIds.value = []
   datasetLoading.value = !!newDataset
   if (!newDataset) {
     return
   }
   try {
     const fetchedResources = await $chartsApi<PaginatedArray<Resource>>(`/api/2/datasets/${newDataset.id}/resources/`)
-    for (const r of fetchedResources.data.filter(resource => hasTabularData(resource))) {
+    if (dataset.value !== newDataset) return
+    const tabular = fetchedResources.data.filter(resource => hasTabularData(resource))
+    for (const r of tabular) {
       savedResources[r.id] = r
     }
+    datasetResourceIds.value = tabular.map(r => r.id)
   }
   catch (error) {
     console.error('Failed to fetch resources:', error)
@@ -1286,19 +1321,21 @@ watch(dataset, async (newDataset) => {
   }
 }, { immediate: true })
 
+// Series moved by the last resource choice, whose columns the new profile checks.
+let movedSeries: Array<ChartForm['series'][number]> = []
+
 // The user chose a resource: the series take it along, from the resource they use.
 // Opening a chart or switching datasets sets selectedResource without moving them.
 function chooseResource(id: string) {
   const used = form.value.series[0]?.resource_id
-  if (used && used !== id) {
-    for (const serie of form.value.series) {
-      if (serie.resource_id === used) serie.resource_id = id
-    }
-  }
+  movedSeries = used && used !== id ? form.value.series.filter(serie => serie.resource_id === used) : []
+  for (const serie of movedSeries) serie.resource_id = id
   selectedResource.value = id
 }
 
 watch(selectedResource, async (r) => {
+  const moved = movedSeries
+  movedSeries = []
   if (r) {
     if (form.value.series.length === 0) {
       form.value.series.push({
@@ -1313,39 +1350,48 @@ watch(selectedResource, async (r) => {
     if (!savedResources[r]) {
       await loadMissingResourcesForChart([r])
     }
-    if (!columns.value[r] || columns.value[r].length === 0) {
-      await loadColumnsForResources([r])
-    }
+    await loadColumnsForResources([r])
     // Another resource was selected while this one loaded: its columns must not reset the form.
     if (selectedResource.value !== r) return
-    const resourceColumns = columns.value[r]
-    if (resourceColumns && resourceColumns.length > 0) {
-      const currentXColumn = form.value.x_axis.column_x
-      const currentYColumn = form.value.series[0]?.column_y
-      const columnNames = resourceColumns.map(c => c.name)
-
-      if (currentXColumn && !columnNames.includes(currentXColumn)) {
-        form.value.x_axis.column_x = ''
-      }
-      if (currentYColumn && !columnNames.includes(currentYColumn)) {
-        form.value.series[0].column_y = ''
-      }
-      // A series moved from another resource must not keep one of its columns.
-      for (const serie of form.value.series.filter(serie => serie.resource_id === r)) {
-        if (serie.column_y && !columnNames.includes(serie.column_y)) serie.column_y = ''
-        if (serie.column_x_name_override && !columnNames.includes(serie.column_x_name_override)) {
-          serie.column_x_name_override = null
-        }
-      }
-    }
-    else {
-      form.value.x_axis.column_x = ''
-      form.value.series[0].column_y = ''
-    }
-    ensureSeriesHasColumnX(r)
-    ensureSeriesHasColumnY(r)
+    applyResourceColumns(r, moved)
   }
 })
+
+async function retryColumns() {
+  const r = selectedResource.value
+  await loadColumnsForResources([r])
+  if (selectedResource.value === r) applyResourceColumns(r, [])
+}
+
+function applyResourceColumns(r: string, moved: Array<ChartForm['series'][number]>) {
+  const resourceColumns = columns.value[r]
+  if (resourceColumns && resourceColumns.length > 0) {
+    const currentXColumn = form.value.x_axis.column_x
+    const currentYColumn = form.value.series[0]?.column_y
+    const columnNames = resourceColumns.map(c => c.name)
+
+    if (currentXColumn && !columnNames.includes(currentXColumn)) {
+      form.value.x_axis.column_x = ''
+    }
+    if (currentYColumn && !columnNames.includes(currentYColumn)) {
+      form.value.series[0].column_y = ''
+    }
+    // A series moved from another resource must not keep one of its columns.
+    for (const serie of moved) {
+      if (serie.column_y && !columnNames.includes(serie.column_y)) serie.column_y = ''
+      if (serie.column_x_name_override && !columnNames.includes(serie.column_x_name_override)) {
+        serie.column_x_name_override = null
+      }
+    }
+  }
+  // Unknown columns (failed profile) keep the chart as it is: saving it must not lose them.
+  else if (!columnsFailed.value.has(r)) {
+    form.value.x_axis.column_x = ''
+    form.value.series[0].column_y = ''
+  }
+  ensureSeriesHasColumnX(r)
+  ensureSeriesHasColumnY(r)
+}
 
 watch(
   sortOptions,
