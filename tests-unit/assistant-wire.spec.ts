@@ -105,12 +105,33 @@ describe('useAssistantChat wire contract', () => {
     const withResource = await transport.prepareSendMessagesRequest({ messages: MESSAGES, id: 'chat-1', trigger: 'submit-message' as const, messageId: undefined })
     // Protocol fields (id/trigger/messageId) are required by the backend's
     // VercelAIAdapter (SubmitMessage discriminated union) and must not be dropped.
-    expect(withResource.body).toEqual({ id: 'chat-1', trigger: 'submit-message', messageId: undefined, messages: MESSAGES, resource_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479' })
+    expect(withResource.body).toEqual({ id: expect.any(String), trigger: 'submit-message', messageId: undefined, messages: MESSAGES, resource_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479' })
 
     resourceId.value = null
     const withoutResource = await transport.prepareSendMessagesRequest({ messages: MESSAGES, id: 'chat-1', trigger: 'submit-message' as const, messageId: undefined })
-    expect(withoutResource.body).toEqual({ id: 'chat-1', trigger: 'submit-message', messageId: undefined, messages: MESSAGES })
+    expect(withoutResource.body).toEqual({ id: expect.any(String), trigger: 'submit-message', messageId: undefined, messages: MESSAGES })
     expect(withoutResource.body).not.toHaveProperty('resource_id')
+  })
+
+  it('sends only the new question: udata holds the history', async () => {
+    useAssistantChat(ref(null), () => null)
+    const answer = { id: '2', role: 'assistant', parts: [{ type: 'text', text: 'Salut' }] }
+    const question = { id: '3', role: 'user', parts: [{ type: 'text', text: 'Et ensuite ?' }] }
+
+    const { body } = await capturedTransport().prepareSendMessagesRequest({ messages: [...MESSAGES, answer, question], id: 'chat-1', trigger: 'submit-message' as const, messageId: undefined })
+
+    expect(body).toMatchObject({ messages: [question] })
+  })
+
+  it('keeps the conversation id across questions and renews it with a new conversation', async () => {
+    const chat = useAssistantChat(ref(null), () => null)
+    const transport = capturedTransport()
+    const sentId = async () => ((await transport.prepareSendMessagesRequest({ messages: MESSAGES, id: 'chat-1', trigger: 'submit-message' as const, messageId: undefined })).body as { id: string }).id
+
+    const first = await sentId()
+    expect(await sentId()).toBe(first)
+    chat.newConversation()
+    expect(await sentId()).not.toBe(first)
   })
 
   it('sends the current visualization read at send time', async () => {

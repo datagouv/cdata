@@ -2,7 +2,7 @@ import type { Ref } from 'vue'
 import { watch } from 'vue'
 import './zodJitless'
 import { useChat } from '@ai-sdk/vue'
-import { DefaultChatTransport } from 'ai'
+import { DefaultChatTransport, generateId } from 'ai'
 import { buildChatBody, type AssistantVisualization } from '~/utils/assistant'
 
 export function useAssistantChat(resourceId: Ref<string | null>, visualization: () => AssistantVisualization | null) {
@@ -11,6 +11,9 @@ export function useAssistantChat(resourceId: Ref<string | null>, visualization: 
   const devApiKey = runtimeConfig.public.devApiKey as string | undefined
   const { locale } = useTranslation()
 
+  // udata stores the conversation under this id: useChat keeps its own after a reset.
+  let conversationId = generateId()
+
   const chat = useChat({
     // The transport does its own fetch, outside $api: mirror its authentication
     // and lang parameter (plugins/api.ts).
@@ -18,10 +21,9 @@ export function useAssistantChat(resourceId: Ref<string | null>, visualization: 
       api: `${apiBase}/api/1/assistant/chat/?lang=${encodeURIComponent(locale)}`,
       headers: devApiKey ? { 'X-API-KEY': devApiKey } : {},
       credentials: devApiKey ? undefined : 'include',
-      prepareSendMessagesRequest({ messages, id, trigger, messageId }) {
-        // buildChatBody keeps the protocol fields required by udata's VercelAIAdapter.
-        // The chart is read at send time so the assistant sees the user's latest edits.
-        return { body: buildChatBody(messages, resourceId.value, visualization(), { id, trigger, messageId }) }
+      prepareSendMessagesRequest({ messages, trigger, messageId }) {
+        // udata holds the history: only the new question goes, with the chart as it is now.
+        return { body: buildChatBody(messages.slice(-1), resourceId.value, visualization(), { id: conversationId, trigger, messageId }) }
       },
     }),
   })
@@ -32,10 +34,11 @@ export function useAssistantChat(resourceId: Ref<string | null>, visualization: 
     chat.stop()
     chat.messages.value = []
     chat.clearError()
+    conversationId = generateId()
   }
 
   // History belongs to the selected resource: without a reset, switching
-  // resources would resend the previous conversation with the new resource_id.
+  // resources would continue the previous conversation with the new resource_id.
   watch(resourceId, newConversation)
 
   return { ...chat, newConversation }

@@ -5,6 +5,7 @@ export const ASSISTANT_CHAT_PATH = '/api/1/assistant/chat/'
 
 /** Fields of the chat request body the fake assistant reads. */
 export type AssistantChatBody = {
+  id?: string
   resource_id?: string | null
   messages?: Array<{ role?: string }>
 }
@@ -72,6 +73,9 @@ export function updateChartStream(): string {
   return toStream(toolCallChunks('update_chart', { patch: UPDATE_CHART_OUTPUT.patch }, UPDATE_CHART_OUTPUT, 'Unité ajoutée.'))
 }
 
+// Turns answered per conversation id: the client only sends its new question, as udata holds the history.
+const turnsByConversation = new Map<string, number>()
+
 /**
  * Scripted conversation: the first turn creates a chart for the request's
  * resource (with `createStream`, by default `createChartStream`), every later turn updates it.
@@ -80,8 +84,9 @@ export function assistantChatStream(
   body: AssistantChatBody,
   createStream: (body: AssistantChatBody) => string = body => createChartStream(body.resource_id ?? ''),
 ): string {
-  const userTurns = (body.messages ?? []).filter(message => message.role === 'user').length
-  return userTurns <= 1 ? createStream(body) : updateChartStream()
+  const turn = (turnsByConversation.get(body.id ?? '') ?? 0) + 1
+  turnsByConversation.set(body.id ?? '', turn)
+  return turn <= 1 ? createStream(body) : updateChartStream()
 }
 
 /**
