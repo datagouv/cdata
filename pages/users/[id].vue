@@ -40,6 +40,10 @@
         />
       </div>
     </div>
+    <PendingReportsBanner
+      :subject="{ class: 'User', value: user }"
+      class="mt-4"
+    />
     <div class="mt-4 space-y-12">
       <div class="flex justify-between items-center gap-2">
         <div class="flex items-center space-x-8">
@@ -218,6 +222,7 @@ import { DatasetCardLg } from '#components'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import DeleteUserModal from '~/components/User/DeleteUserModal.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const me = useMaybeMe()

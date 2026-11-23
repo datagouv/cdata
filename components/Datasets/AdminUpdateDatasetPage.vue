@@ -24,6 +24,10 @@
         />
       </template>
       <template #top>
+        <PendingReportsBanner
+          class="mb-4"
+          :subject="{ class: 'Dataset', value: dataset }"
+        />
         <SimpleBanner
           v-if="!dataset.permissions.edit"
           class="mb-4"
@@ -65,7 +69,7 @@
             </template>
           </TranslationT>
           <div
-            v-if="dataset.doi"
+            v-if="isDatasetLockedByDoi(dataset)"
             class="mt-1"
           >
             {{ $t("Un jeu de données porteur d'un DOI ne peut plus repasser en brouillon.") }}
@@ -74,7 +78,7 @@
           <template #button>
             <BrandedButton
               :loading="isLoading"
-              :disabled="!!dataset.doi"
+              :disabled="isDatasetLockedByDoi(dataset)"
               @click="switchDatasetPrivate"
             >
               {{ dataset.private ? $t('Publier le jeu de données') : $t('Passer en brouillon') }}
@@ -130,7 +134,7 @@
                 {{ $t('Moissonné') }}
               </Badge>
             </template>
-            <template v-if="dataset.doi">
+            <template v-if="isDatasetLockedByDoi(dataset)">
               {{ $t("Un jeu de données porteur d'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.") }}
             </template>
             <template v-else>
@@ -206,7 +210,7 @@
             </template>
           </BannerAction>
           <BannerAction
-            v-if="!dataset.deleted && !dataset.doi"
+            v-if="!dataset.deleted && !isDatasetLockedByDoi(dataset)"
             type="danger"
             :title="$t('Supprimer le jeu de données')"
           >
@@ -251,6 +255,7 @@ import type { DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiCheckLine, RiDeleteBin6Line, RiFileCopyLine, RiFingerprintLine } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import ModalWithButton from '~/components/Modal/ModalWithButton.vue'
 import SubjectNotifications from '~/components/Notifications/SubjectNotifications.vue'
 import { updateBadges } from '~/api/badges'

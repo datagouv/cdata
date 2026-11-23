@@ -49,6 +49,13 @@
           />
         </div>
       </div>
+      <PendingReportsBanner
+        v-if="reuse"
+        :subject="{ class: 'Reuse', value: reuse }"
+        with-object-actions
+        class="mt-4"
+        @refresh="refresh"
+      />
     </div>
     <LoadingBlock
       v-if="reuse"
@@ -156,6 +163,7 @@
 import { isOrganizationCertified, Avatar, BrandedButton, LoadingBlock, OrganizationNameWithCertificate, ReuseDetails, type Reuse, OrganizationLogo, getDescriptionShort, ReuseBadge, getReuseStatus } from '@datagouv/components-next'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import { keepScrollWithinPage } from '~/utils/scroll'
 
@@ -167,7 +175,7 @@ const route = useRoute()
 const config = useRuntimeConfig()
 
 const url = computed(() => `/api/1/reuses/${route.params.rid}/`)
-const { data: reuse, status } = await useAPI<Reuse>(url, { showErrorPage: true, redirectOnSlug: 'rid' })
+const { data: reuse, status, refresh } = await useAPI<Reuse>(url, { showErrorPage: true, redirectOnSlug: 'rid' })
 
 const title = computed(() => `Réutilisation - ${reuse.value?.title} | ${config.public.title}`)
 const description = computed(() => normalizeSeoDescription(reuse.value ? getDescriptionShort(reuse.value) : undefined))

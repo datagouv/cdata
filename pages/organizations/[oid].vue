@@ -41,6 +41,12 @@
       </div>
       <div class="bg-white">
         <div class="container pt-14 pb-4 sm:pb-6">
+          <PendingReportsBanner
+            :subject="{ class: 'Organization', value: organization }"
+            with-object-actions
+            class="mb-4"
+            @refresh="refresh"
+          />
           <div class="flex items-start justify-between gap-3">
             <div>
               <OrganizationBadge
@@ -128,6 +134,7 @@ import { useTimeoutFn } from '@vueuse/core'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import OrganizationBannerEditor from '~/components/Organizations/OrganizationBannerEditor.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import { isUserOrgAdmin, useMaybeMe } from '~/utils/auth'
 import { keepScrollWithinPage } from '~/utils/scroll'

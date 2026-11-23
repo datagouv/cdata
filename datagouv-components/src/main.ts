@@ -58,6 +58,7 @@ import DescriptionListTerm from './components/DescriptionListTerm.vue'
 import DescriptionListDetails from './components/DescriptionListDetails.vue'
 import DiscussionMessageCard from './components/DiscussionMessageCard.vue'
 import DateRangeDetails from './components/DateRangeDetails.vue'
+import FilterChip from './components/FilterChip.vue'
 import FormattedDate from './components/FormattedDate.vue'
 import { DatasetInformationSection, DatasetTemporalitySection, DatasetSpatialSection, DatasetSchemaSection, DatasetEmbedSection } from './components/DatasetInformation'
 import LeafletMap from './components/LeafletMap.vue'
@@ -406,6 +407,7 @@ export {
   QualityScore,
   DatasetQualityTooltipContent,
   DateRangeDetails,
+  FilterChip,
   FormattedDate,
   ExtraAccordion,
   LabelTag,

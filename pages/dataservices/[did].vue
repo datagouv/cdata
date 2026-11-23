@@ -34,6 +34,13 @@
           />
         </div>
       </div>
+      <PendingReportsBanner
+        v-if="dataservice"
+        :subject="{ class: 'Dataservice', value: dataservice }"
+        with-object-actions
+        class="mt-4"
+        @refresh="refresh"
+      />
     </div>
     <LoadingBlock
       v-if="dataservice"
@@ -304,6 +311,7 @@ import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import { useElementSize } from '@vueuse/core'
@@ -325,7 +333,7 @@ const { height: sidebarHeight } = useElementSize(sidebar)
 const { height: headerHeight } = useElementSize(header)
 
 const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
-const { data: dataservice, status } = await useAPI<Dataservice>(url, { showErrorPage: true, redirectOnSlug: 'did' })
+const { data: dataservice, status, refresh } = await useAPI<Dataservice>(url, { showErrorPage: true, redirectOnSlug: 'did' })
 
 const title = computed(() => `API - ${dataservice.value?.title} | ${config.public.title}`)
 const description = computed(() => normalizeSeoDescription(dataservice.value ? getDescriptionShort(dataservice.value) : undefined))

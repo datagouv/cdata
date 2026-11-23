@@ -20,6 +20,10 @@
         />
       </template>
       <template #top>
+        <PendingReportsBanner
+          class="mb-4"
+          :subject="{ class: 'Reuse', value: reuse }"
+        />
         <SimpleBanner
           v-if="!reuse.permissions.edit"
           class="mb-4"
@@ -176,6 +180,7 @@ import type { Reuse, ReuseTopic, ReuseType } from '@datagouv/components-next'
 import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
 import DescribeReuse from '~/components/Reuses/DescribeReuse.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import SubjectNotifications from '~/components/Notifications/SubjectNotifications.vue'
 import type { ReuseForm } from '~/types/types'
 

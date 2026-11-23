@@ -19,6 +19,10 @@
       @submit="updateCurrentOrganization"
     >
       <template #top>
+        <PendingReportsBanner
+          class="mb-4"
+          :subject="{ class: 'Organization', value: organization }"
+        />
         <BannerAction
           v-if="organization.permissions.edit && !isOrganizationPresentationPublished(organization.presentation_blocs_published_at)"
           class="mb-4"
@@ -105,6 +109,7 @@ import { AnimatedLoader, BannerAction, BrandedButton, toast } from '@datagouv/co
 import type { Organization, Badge } from '@datagouv/components-next'
 import DescribeOrganizationFrom from '~/components/Organization/New/Step2DescribeOrganization.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import { updateOrganization, uploadLogo } from '~/api/organizations'
 import { updateBadges } from '~/api/badges'
 
