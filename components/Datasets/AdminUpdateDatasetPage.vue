@@ -69,7 +69,7 @@
             </template>
           </TranslationT>
           <div
-            v-if="dataset.doi"
+            v-if="isDatasetLockedByDoi(dataset)"
             class="mt-1"
           >
             {{ $t("Un jeu de données porteur d'un DOI ne peut plus repasser en brouillon.") }}
@@ -78,7 +78,7 @@
           <template #button>
             <BrandedButton
               :loading="isLoading"
-              :disabled="!!dataset.doi"
+              :disabled="isDatasetLockedByDoi(dataset)"
               @click="switchDatasetPrivate"
             >
               {{ dataset.private ? $t('Publier le jeu de données') : $t('Passer en brouillon') }}
@@ -134,7 +134,7 @@
                 {{ $t('Moissonné') }}
               </AdminBadge>
             </template>
-            <template v-if="dataset.doi">
+            <template v-if="isDatasetLockedByDoi(dataset)">
               {{ $t("Un jeu de données porteur d'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.") }}
             </template>
             <template v-else>
@@ -210,7 +210,7 @@
             </template>
           </BannerAction>
           <BannerAction
-            v-if="!dataset.deleted && !dataset.doi"
+            v-if="!dataset.deleted && !isDatasetLockedByDoi(dataset)"
             type="danger"
             :title="$t('Supprimer le jeu de données')"
           >

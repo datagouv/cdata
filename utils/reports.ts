@@ -1,6 +1,7 @@
 import type { Dataservice, DatasetV2, DatasetV2WithFullObject, Organization, Report, ReportReason, ReportSubject, Reuse, User } from '@datagouv/components-next'
 import type { ObjectType } from '~/types/delete'
 import type { Thread } from '~/types/discussions'
+import { isDatasetLockedByDoi } from '~/utils/datasets'
 
 // The object a report is about, as loaded by the pages that act on it
 export type ReportedObject = DatasetV2 | DatasetV2WithFullObject | Dataservice | Reuse | Organization | Thread | User
@@ -17,10 +18,9 @@ export function getReportReasonLabel(report: Report, reasons: Array<ReportReason
   return reasons?.find(reason => reason.value === report.reason)?.label || report.reason
 }
 
-// A DOI has to keep resolving to a public page: udata refuses to delete such a dataset or to make
-// it private (`Dataset.clean`). Its `permissions` only say who may act, not what the state allows.
+// Only a dataset carries a DOI
 export function isLockedByDoi(subject: ReportedObject | null | undefined): boolean {
-  return !!subject && 'doi' in subject && !!subject.doi
+  return !!subject && 'doi' in subject && isDatasetLockedByDoi(subject)
 }
 
 // Whether the state of an object that can be hidden prevents hiding it now
