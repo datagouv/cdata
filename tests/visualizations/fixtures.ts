@@ -162,12 +162,8 @@ export async function sendAssistantMessage(page: Page, prompt: string) {
     request.url().includes(ASSISTANT_CHAT_PATH) && request.method() === 'POST',
   )
   await page.getByLabel('Votre demande').fill(prompt)
-  // The panel ignores a send within a second of the previous one: retry until the
-  // composer is cleared, which only happens once the message is sent.
-  await expect(async () => {
-    await page.getByRole('button', { name: 'Envoyer' }).click()
-    await expect(page.getByLabel('Votre demande')).toHaveValue('', { timeout: 500 })
-  }).toPass()
+  await page.getByRole('button', { name: 'Envoyer' }).click()
+  await expect(page.getByLabel('Votre demande')).toHaveValue('')
   const request = await requestPromise
   const url = new URL(request.url())
   expect(`${url.origin}${url.pathname}`).toBe(`${API_BASE_URL.replace(/\/$/, '')}${ASSISTANT_CHAT_PATH}`)
