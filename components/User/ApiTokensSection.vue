@@ -10,6 +10,7 @@
     <div
       v-for="token in tokens"
       :key="token.id"
+      data-testid="api-token"
       class="flex items-center justify-between gap-4 py-3 border-b border-gray-200 last:border-b-0"
     >
       <div class="min-w-0">

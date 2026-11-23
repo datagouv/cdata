@@ -73,8 +73,7 @@ test('a sysadmin gets the sysadmin rights on a token only by asking for them', a
     await expect(dialog).toBeHidden()
   }
 
-  // The name and the badge share the token's first line.
-  const firstLine = (name: string) => page.getByText(name, { exact: true }).locator('xpath=../..')
-  await expect(firstLine(sysadmin).getByText('Sysadmin', { exact: true })).toBeVisible()
-  await expect(firstLine(plain).getByText('Sysadmin', { exact: true })).toHaveCount(0)
+  const token = (name: string) => page.getByTestId('api-token').filter({ hasText: name })
+  await expect(token(sysadmin).getByText('Sysadmin', { exact: true })).toBeVisible()
+  await expect(token(plain).getByText('Sysadmin', { exact: true })).toHaveCount(0)
 })
