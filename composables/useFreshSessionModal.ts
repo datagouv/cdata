@@ -14,7 +14,16 @@ export function useFreshSessionModal(query: string, value: string, check: () => 
   const route = useRoute()
   const router = useRouter()
   const requested = computed(() => route.query[query] === value)
-  const setRequested = (open: boolean) => router.replace({ query: { ...route.query, [query]: open ? value : undefined } })
+  // Opening adds a history entry of its own: the redirection to /verify replaces it, so
+  // going back from there lands on the page without the modal, rather than on the page
+  // before it. Closing goes back to that entry when it is the one the opening left,
+  // for the back button not to stop on the same page twice.
+  const setRequested = (open: boolean) => {
+    if (open) return router.push({ query: { ...route.query, [query]: value } })
+    const closed = router.resolve({ query: { ...route.query, [query]: undefined } }).fullPath
+    if (router.options.history.state.back === closed) return router.back()
+    return router.replace(closed)
+  }
   // Shown only once udata accepts the request, so that it does not flash before /verify.
   const shown = ref(false)
   const pending = ref(false)

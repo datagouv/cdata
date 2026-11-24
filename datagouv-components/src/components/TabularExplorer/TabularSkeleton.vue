@@ -1,4 +1,17 @@
 <template>
+  <!-- Preview date banner — mirrors TabularPreviewDateBanner: icon, title and message -->
+  <div class="animate-pulse-placeholder flex shrink-0 gap-2 border-b border-gray-default px-3 py-2.5">
+    <div class="size-5 shrink-0 rounded bg-gray-200" />
+    <div class="flex-1">
+      <div class="flex h-5 items-center">
+        <div class="h-3 w-28 rounded bg-gray-200" />
+      </div>
+      <div class="flex h-5 items-center">
+        <div class="h-3 w-3/4 rounded bg-gray-200" />
+      </div>
+    </div>
+  </div>
+
   <!-- Toolbar row — mirrors TabularToolbar: the search field and the mobile filter
        button (it only shows below md) on the left, the columns menu plus the rows info
        on the right. The active-filters line stays empty until the user filters, so

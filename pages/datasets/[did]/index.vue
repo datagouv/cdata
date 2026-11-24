@@ -2,7 +2,7 @@
   <div class="space-y-5">
     <BannerAction
       type="primary"
-      :title="newExplorerEnabled ? $t('Vous testez la nouvelle navigation dans les ressources') : $t('Une nouvelle navigation dans les ressources est disponible')"
+      :title="newExplorerEnabled ? $t('Vous utilisez la nouvelle navigation dans les ressources') : $t('Vous utilisez l\'ancienne navigation dans les ressources')"
     >
       <template #button>
         <div class="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
@@ -17,7 +17,7 @@
             size="xs"
             @click="toggleExplorer"
           >
-            {{ newExplorerEnabled ? $t("Revenir sur l'ancienne navigation") : $t("Tester la nouvelle navigation") }}
+            {{ newExplorerEnabled ? $t("Revenir sur l'ancienne navigation") : $t("Utiliser la nouvelle navigation") }}
           </BrandedButton>
         </div>
       </template>

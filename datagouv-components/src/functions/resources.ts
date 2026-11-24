@@ -262,6 +262,21 @@ export function hasTabularParsingError(resource: Resource): boolean {
   return step !== null && !NON_TABULAR_PARSING_ERROR_STEPS.includes(step)
 }
 
+type AnalysedResource = Pick<Resource, 'extras' | 'last_modified'>
+
+/** When the last analysis of the file ended, i.e. the date of the data its preview and conversions show. */
+export function getParsingFinishedAt(resource: AnalysedResource): string | undefined {
+  const finishedAt = resource.extras['analysis:parsing:finished_at']
+  return typeof finishedAt === 'string' && finishedAt ? finishedAt : undefined
+}
+
+/** Whether the file changed since its last analysis, so its preview shows older data. */
+export function isParsingStale(resource: AnalysedResource): boolean {
+  const finishedAt = getParsingFinishedAt(resource)
+  if (!finishedAt || !resource.last_modified) return false
+  return new Date(resource.last_modified).getTime() > new Date(finishedAt).getTime()
+}
+
 type CorsStatus = 'allowed' | 'blocked' | 'unknown'
 
 export const getResourceCorsStatus = (resource: Resource): CorsStatus => {

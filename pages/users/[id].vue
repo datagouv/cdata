@@ -40,6 +40,10 @@
         />
       </div>
     </div>
+    <PendingReportsBanner
+      :subject="{ class: 'User', value: user }"
+      class="mt-4"
+    />
     <div class="mt-4 space-y-12">
       <div class="flex justify-between items-center gap-2">
         <div class="flex items-center space-x-8">
@@ -218,12 +222,13 @@ import { DatasetCardLg } from '#components'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import DeleteUserModal from '~/components/User/DeleteUserModal.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const me = useMaybeMe()
 
 const route = useRoute()
-const url = computed(() => `/api/1/users/${route.params.id}`)
+const url = computed(() => `/api/1/users/${route.params.id}/`)
 const { data: user } = await useAPI<User>(url, { showErrorPage: true, redirectOnSlug: 'id' })
 
 const title = computed(() => user.value ? `${user.value.first_name} ${user.value.last_name}` : null)
@@ -247,7 +252,7 @@ const datasetsParams = computed(() => {
     owner: user.value?.id,
   }
 })
-const { data: datasets } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/datasets`, { query: datasetsParams })
+const { data: datasets } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/datasets/`, { query: datasetsParams })
 
 const reusesPage = ref(1)
 const reusesParams = computed(() => {
@@ -257,7 +262,7 @@ const reusesParams = computed(() => {
     owner: user.value?.id,
   }
 })
-const { data: reuses } = await useAPI<PaginatedArray<ReuseV2>>(`/api/2/reuses`, { query: reusesParams })
+const { data: reuses } = await useAPI<PaginatedArray<ReuseV2>>(`/api/2/reuses/`, { query: reusesParams })
 
 const followedDatasetsPage = ref(1)
 const followedDatasetsParams = computed(() => {
@@ -267,5 +272,5 @@ const followedDatasetsParams = computed(() => {
     followed_by: user.value?.id,
   }
 })
-const { data: followedDatasets } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/datasets`, { query: followedDatasetsParams })
+const { data: followedDatasets } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/datasets/`, { query: followedDatasetsParams })
 </script>

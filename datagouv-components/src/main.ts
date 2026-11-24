@@ -58,6 +58,7 @@ import DescriptionListTerm from './components/DescriptionListTerm.vue'
 import DescriptionListDetails from './components/DescriptionListDetails.vue'
 import DiscussionMessageCard from './components/DiscussionMessageCard.vue'
 import DateRangeDetails from './components/DateRangeDetails.vue'
+import FilterChip from './components/FilterChip.vue'
 import FormattedDate from './components/FormattedDate.vue'
 import { DatasetInformationSection, DatasetTemporalitySection, DatasetSpatialSection, DatasetSchemaSection, DatasetEmbedSection } from './components/DatasetInformation'
 import LeafletMap from './components/LeafletMap.vue'
@@ -123,6 +124,7 @@ import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
 import TabularMobileFilters from './components/TabularExplorer/TabularMobileFilters.vue'
 import TabularTable from './components/TabularExplorer/TabularTable.vue'
 import TabularToolbar from './components/TabularExplorer/TabularToolbar.vue'
+import TabularSkeleton from './components/TabularExplorer/TabularSkeleton.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 import { ofetch } from 'ofetch'
@@ -406,6 +408,7 @@ export {
   QualityScore,
   DatasetQualityTooltipContent,
   DateRangeDetails,
+  FilterChip,
   FormattedDate,
   ExtraAccordion,
   LabelTag,
@@ -464,6 +467,7 @@ export {
   TabularActiveFilters,
   TabularExplorer,
   TabularMobileFilters,
+  TabularSkeleton,
   TabularTable,
   TabularToolbar,
 }

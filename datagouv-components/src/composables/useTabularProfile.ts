@@ -27,14 +27,13 @@ async function createProfileState(resourceId: MaybeRefOrGetter<string>): Promise
   const config = useComponentsConfig()
   const ridRef = computed(() => toValue(resourceId))
 
-  // Goes through the package's useFetch, which delegates to the host's
-  // customUseFetch (Nuxt useFetch in cdata) so the response is shared
-  // between SSR and CSR via the Nuxt payload — avoiding a double fetch.
   const profileUrl = computed(() =>
     ridRef.value ? `${config.tabularApiUrl}/api/resources/${ridRef.value}/profile/` : null,
   )
 
-  const { data, error, status, refresh } = await useFetch<TabularProfileResponse>(profileUrl, { raw: true })
+  // Goes through the package's useFetch, which delegates to the host's
+  // customUseFetch (Nuxt useFetch in cdata).
+  const { data, error, status, refresh } = await useFetch<TabularProfileResponse>(profileUrl, { raw: true, server: false })
 
   return { resourceId: ridRef, data, error, status, refresh }
 }
