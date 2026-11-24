@@ -49,6 +49,7 @@
         <BrandedButton
           color="primary"
           :disabled="!hasNoErrors"
+          :loading
           @click="submit"
         >
           {{ publicationMode === 'existing' ? $t("Publier") : $t("Suivant") }}
@@ -73,6 +74,7 @@ import { goToStep } from '~/utils/scroll'
 const props = defineProps<{
   schema: RegisteredSchema | null
   publicationMode: SchemaPublicationMode
+  loading: boolean
 }>()
 
 const emit = defineEmits<{

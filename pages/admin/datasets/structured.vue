@@ -29,6 +29,7 @@
       v-model:use-spreadsheet="useSpreadsheet"
       :schema="associateSchemaForm.selectedSchema"
       :publication-mode="publicationMode"
+      :loading="saving"
       @previous="moveToStep(1)"
       @next="dataNext"
       @open-sheet="openSheet"
@@ -39,12 +40,14 @@
       v-model:resources="resources"
       :schema="associateSchemaForm.selectedSchema"
       :publication-mode="publicationMode"
+      :loading="saving"
       @previous="moveToStep(2)"
       @next="dataNext"
     />
     <Step3DescribeDataset
       v-if="currentStep === 3 && associateSchemaForm.selectedSchema && associateSchemaForm.owned?.organization"
       v-model="datasetForm"
+      :loading="saving"
       @previous="goBackFromStep3"
       @next="describeNext"
     />
@@ -127,7 +130,7 @@ const publicationMode = useState<SchemaPublicationMode>(PUBLICATION_MODE_STATE, 
 const published = useState(PUBLISHED_STATE, () => false)
 
 // A second click on "Publier" while the files upload would send them again
-let saving = false
+const saving = ref(false)
 
 const currentStep = computed(() => {
   const step = route.query.step as string
@@ -159,6 +162,8 @@ const isCurrentStepValid = computed(() => {
   // left out: `save()` empties the form once published, and that screen only reads
   // `newDataset`.
   if (step > 1 && step < 4 && !(associateSchemaForm.value.selectedSchema && associateSchemaForm.value.owned)) return false
+  // Once the files are sent, coming back to these steps starts the wizard over instead of
+  // showing a form that would send them again
   if (step > 1 && step < 4 && published.value) return false
 
   return true
@@ -203,8 +208,8 @@ function openSheet(fileToOpen?: File) {
 }
 
 async function save() {
-  if (saving || published.value) return
-  saving = true
+  if (saving.value || published.value) return
+  saving.value = true
   try {
     start()
 
@@ -240,7 +245,7 @@ async function save() {
     if (results.every(f => f.status !== 'rejected')) {
       if (publicationMode.value === 'existing') {
         published.value = true
-        await navigateTo(`/datasets/${dataset.slug}`)
+        await navigateTo(`/datasets/${dataset.slug}`, { replace: true })
       }
       else {
         await moveToStep(4)
@@ -250,7 +255,7 @@ async function save() {
   }
   finally {
     finish()
-    saving = false
+    saving.value = false
   }
 }
 
@@ -310,15 +315,6 @@ onUnmounted(() => {
   if (published.value) {
     clearForm()
     clearNuxtState(NEW_DATASET_STATE)
-  }
-})
-
-// Back in the history while the dataset page loads, the same page is shown again
-// without remounting
-const router = useRouter()
-watch(() => router.currentRoute.value.fullPath, (fullPath) => {
-  if (published.value && fullPath === route.fullPath) {
-    moveToStep(1)
   }
 })
 
