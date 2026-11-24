@@ -277,9 +277,8 @@ if (hasTabularData.value) {
 // resource remounts the viewer.
 const search = ref('')
 
-// The active tab lives in the URL so a shared link opens on the same one. Read once
-// at mount (TabGroup only takes an initial index), which is enough: switching resource
-// remounts the viewer, and the tab is preserved when the new resource also has it.
+// The active tab lives in the URL so a shared link opens on the same one. Reading it at
+// mount is enough: switching resource remounts the viewer.
 const defaultTabIndex = computed(() => {
   const index = tabsOptions.value.findIndex(option => option.key === route.query.tab)
   return index === -1 ? 0 : index
