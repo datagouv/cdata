@@ -3,12 +3,12 @@ import { watch } from 'vue'
 import './zodJitless'
 import { useChat } from '@ai-sdk/vue'
 import { DefaultChatTransport, generateId } from 'ai'
-import { buildChatBody, type AssistantVisualization } from '~/utils/assistant'
+import type { AssistantVisualization } from '~/utils/assistant'
+import { apiAuthOptions } from '~/utils/auth'
 
 export function useAssistantChat(resourceId: Ref<string | null>, visualization: () => AssistantVisualization | null) {
   const runtimeConfig = useRuntimeConfig()
   const apiBase = runtimeConfig.public.apiBase as string
-  const devApiKey = runtimeConfig.public.devApiKey as string | undefined
   const { locale } = useTranslation()
 
   // udata stores the conversation under this id: useChat keeps its own after a reset.
@@ -19,11 +19,19 @@ export function useAssistantChat(resourceId: Ref<string | null>, visualization: 
     // and lang parameter (plugins/api.ts).
     transport: new DefaultChatTransport({
       api: `${apiBase}/api/1/assistant/chat/?lang=${encodeURIComponent(locale)}`,
-      headers: devApiKey ? { 'X-API-KEY': devApiKey } : {},
-      credentials: devApiKey ? undefined : 'include',
+      ...apiAuthOptions(runtimeConfig.public.devApiKey as string | undefined),
       prepareSendMessagesRequest({ messages, trigger, messageId }) {
         // udata holds the history: only the new question goes, with the chart as it is now.
-        return { body: buildChatBody(messages.slice(-1), resourceId.value, visualization(), { id: conversationId, trigger, messageId }) }
+        return {
+          body: {
+            id: conversationId,
+            trigger,
+            messageId,
+            messages: messages.slice(-1),
+            resource_id: resourceId.value,
+            visualization: visualization(),
+          },
+        }
       },
     }),
   })

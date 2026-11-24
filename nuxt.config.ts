@@ -140,6 +140,7 @@ export default defineNuxtConfig({
       guidesHarvestingUrl: 'https://guides.data.gouv.fr/moissonnage',
       guidesLabelsUrl: undefined, // TODO: add guide when created
       guidesCommunityResources: 'https://guides.data.gouv.fr/jeux-de-donnees/ressource-communautaire',
+      guidesAssistantMistakes: 'https://guides.data.gouv.fr/intelligence-artificielle/lassistant-dexploration-des-donnees-peut-faire-des-erreurs',
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
 

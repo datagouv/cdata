@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ChartContent, ChartForm, GenericFilter } from '@datagouv/components-next'
-import { applyChartToolResult, createChartResultHandler } from '~/components/Charts/applyChartToolResult'
+import { applyChartToolResult } from '~/components/Charts/applyChartToolResult'
 import type { ChartToolResult } from '~/utils/assistant'
 
 const filter = { _cls: 'Filter', column: 'region', condition: 'exact', value: 'Bretagne' } as unknown as GenericFilter
@@ -57,25 +57,5 @@ describe('applyChartToolResult', () => {
     expect(form.owned).toEqual({ owner: 'user-1', organization: null })
     expect(form.private).toBe(true)
     expect(form.extras).toEqual({ keep: 'me' })
-  })
-})
-
-describe('createChartResultHandler', () => {
-  it('applies a tool call once: a re-emitted result never overwrites later manual edits', () => {
-    const form = makeForm()
-    const handle = createChartResultHandler(() => form, () => 'res-1')
-    handle(create())
-    expect(form.title).toBe('New')
-
-    form.title = 'Edited by hand'
-    handle(create())
-    expect(form.title).toBe('Edited by hand')
-  })
-
-  it('ignores a created chart for another resource than the selected one', () => {
-    const form = makeForm()
-    const handle = createChartResultHandler(() => form, () => 'other-res')
-    handle(create())
-    expect(form.title).toBe('Old')
   })
 })

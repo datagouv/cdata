@@ -97,7 +97,7 @@ describe('useAssistantChat wire contract', () => {
     expect(chat.clearError).toHaveBeenCalled()
   })
 
-  it('sends resource_id only when a resource is selected', async () => {
+  it('sends the selected resource_id, or null without one', async () => {
     const resourceId = ref<string | null>('f47ac10b-58cc-4372-a567-0e02b2c3d479')
     useAssistantChat(resourceId, () => null)
     const transport = capturedTransport()
@@ -105,12 +105,11 @@ describe('useAssistantChat wire contract', () => {
     const withResource = await transport.prepareSendMessagesRequest({ messages: MESSAGES, id: 'chat-1', trigger: 'submit-message' as const, messageId: undefined })
     // Protocol fields (id/trigger/messageId) are required by the backend's
     // VercelAIAdapter (SubmitMessage discriminated union) and must not be dropped.
-    expect(withResource.body).toEqual({ id: expect.any(String), trigger: 'submit-message', messageId: undefined, messages: MESSAGES, resource_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479' })
+    expect(withResource.body).toEqual({ id: expect.any(String), trigger: 'submit-message', messageId: undefined, messages: MESSAGES, resource_id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479', visualization: null })
 
     resourceId.value = null
     const withoutResource = await transport.prepareSendMessagesRequest({ messages: MESSAGES, id: 'chat-1', trigger: 'submit-message' as const, messageId: undefined })
-    expect(withoutResource.body).toEqual({ id: expect.any(String), trigger: 'submit-message', messageId: undefined, messages: MESSAGES })
-    expect(withoutResource.body).not.toHaveProperty('resource_id')
+    expect(withoutResource.body).toEqual({ id: expect.any(String), trigger: 'submit-message', messageId: undefined, messages: MESSAGES, resource_id: null, visualization: null })
   })
 
   it('sends only the new question: udata holds the history', async () => {

@@ -40,14 +40,13 @@
           :key="suggestion"
           class="max-w-full p-0"
         >
-          <button
-            type="button"
-            class="inline-flex min-h-7 max-w-full items-center rounded-full border border-gray-default bg-white px-2.5 py-1 text-left text-xs leading-snug text-new-gray-medium transition-colors hover:border-new-primary hover:bg-blue-light hover:text-new-primary motion-reduce:transition-none"
+          <Tag
+            class="text-left"
             data-testid="assistant-suggestion"
             @click="applySuggestion(suggestion)"
           >
             {{ suggestion }}
-          </button>
+          </Tag>
         </li>
       </ul>
     </div>
@@ -110,7 +109,7 @@
           <MarkdownViewer
             v-else-if="item.kind === 'text'"
             :content="item.text"
-            no-images
+            generated
           />
         </template>
       </article>
@@ -123,7 +122,7 @@
     <p
       v-if="errorMessage"
       role="alert"
-      class="text-sm text-red-600 m-0"
+      class="text-sm text-new-error m-0"
     >
       {{ errorMessage }}
       <button
@@ -157,29 +156,27 @@
             {{ $t('Contexte utilisé par l’assistant') }}
           </p>
           <ul class="m-0 mt-1 flex min-w-0 list-none flex-wrap gap-1.5 p-0">
-            <li
-              class="inline-flex h-7 min-w-0 max-w-full items-center gap-1.5 rounded border border-blue-tint bg-blue-light px-2 py-0 text-new-primary"
-              :title="resource.title"
-            >
-              <RiTableLine
-                class="size-3.5 shrink-0"
-                aria-hidden="true"
-              />
-              <span class="truncate text-xs font-medium">{{ resource.title }}</span>
-              <span
-                v-if="resource.format"
-                class="shrink-0 border-l border-blue-tint pl-1.5 text-[11px] uppercase"
-              ><span class="sr-only">{{ $t('format') }} </span>{{ resource.format }}</span>
+            <li class="min-w-0 max-w-full">
+              <Tag
+                :icon="RiTableLine"
+                :title="resource.title"
+              >
+                <span class="flex min-w-0 gap-1.5">
+                  <span class="truncate">{{ resource.title }}</span>
+                  <span
+                    v-if="resource.format"
+                    class="shrink-0 uppercase"
+                  ><span class="sr-only">{{ $t('format') }} </span>{{ resource.format }}</span>
+                </span>
+              </Tag>
             </li>
             <li
               v-if="visualization"
-              class="inline-flex h-7 shrink-0 items-center gap-1.5 rounded border border-blue-tint bg-white px-2 py-0 text-new-primary"
+              class="shrink-0"
             >
-              <RiFocus3Line
-                class="size-3.5 shrink-0"
-                aria-hidden="true"
-              />
-              <span class="text-xs font-medium">{{ $t('Visualisation en cours') }}</span>
+              <Tag :icon="RiFocus3Line">
+                {{ $t('Visualisation en cours') }}
+              </Tag>
             </li>
           </ul>
         </div>
@@ -215,7 +212,7 @@
               v-if="busy"
               type="button"
               class="flex h-7 shrink-0 items-center gap-1 rounded-md border border-new-gray-dark px-2 text-xs font-medium text-new-gray-dark hover:bg-gray-100"
-              @click="stop"
+              @click="stopTurn"
             >
               <RiStopMiniLine
                 class="size-4"
@@ -240,6 +237,11 @@
       </div>
       <p class="m-0 mt-1 text-right text-[11px] leading-5 text-new-gray-medium">
         {{ $t('L’assistant peut faire des erreurs.') }}
+        <a
+          :href="config.public.guidesAssistantMistakes"
+          target="_blank"
+          rel="noopener"
+        >{{ $t('En savoir plus') }}</a>
       </p>
     </form>
   </section>
@@ -248,7 +250,7 @@
 <script setup lang="ts">
 import { RiAddLine, RiArrowUpLine, RiFocus3Line, RiStopMiniLine, RiTableLine } from '@remixicon/vue'
 import { computed, nextTick, ref, toRef, watch } from 'vue'
-import { MarkdownViewer, useTranslation, type ColumnDefinition } from '@datagouv/components-next'
+import { MarkdownViewer, Tag, useTranslation, type ColumnDefinition } from '@datagouv/components-next'
 import ToolTrace from './ToolTrace.vue'
 import AssistantThinking from './AssistantThinking.vue'
 import ThinkingBlock from './ThinkingBlock.vue'
@@ -271,6 +273,7 @@ const emit = defineEmits<{
   (e: 'chart-result', result: ChartToolResult): void
 }>()
 
+const config = useRuntimeConfig()
 const { error, messages, newConversation, sendMessage, status, stop } = useAssistantChat(toRef(props, 'resourceId'), () => props.visualization)
 
 // Bound, not literal: the asset stays a plain public URL instead of being inlined by the build.
@@ -337,15 +340,15 @@ function displayItems(message: ChatMessage): Array<ChatDisplayItem> {
   return items
 }
 
-// The configurator ignores a tool call it already applied: emitting the
-// results of every changed message is enough.
-const scannedMessages = new WeakSet<ChatMessage>()
+// Each update lists every chart of the conversation again: one already applied must not undo the user's form changes since.
+const emittedToolCalls = new Set<string>()
 
 watch(messages, (value) => {
-  for (const message of value) {
-    if (scannedMessages.has(message)) continue
-    scannedMessages.add(message)
-    for (const result of chartToolResults([message])) emit('chart-result', result)
+  if (!value.length) emittedToolCalls.clear()
+  for (const result of chartToolResults(value)) {
+    if (emittedToolCalls.has(result.toolCallId)) continue
+    emittedToolCalls.add(result.toolCallId)
+    emit('chart-result', result)
   }
 })
 
@@ -395,18 +398,27 @@ function submit() {
 // network error never loses the user's message.
 let lastSentText: string | null = null
 
+// udata does not keep a failed or stopped turn: the screen must not show it either.
+function dropLastTurn(text: string) {
+  const lastTurn = messages.value.findLastIndex(message => message.role === 'user')
+  if (lastTurn !== -1) messages.value = messages.value.slice(0, lastTurn)
+  input.value = text
+}
+
+// The status cannot tell a stopped turn from a finished one: stopping drops it here.
+async function stopTurn() {
+  const text = lastSentText
+  lastSentText = null
+  await stop()
+  if (text !== null) dropLastTurn(text)
+}
+
 // The composer stays disabled for the whole request, so give the focus back
 // once the status settles (error included, to make retrying immediate).
 watch(status, async (value) => {
   if (value !== 'ready' && value !== 'error') return
-  if (value === 'error' && lastSentText !== null) {
-    // useChat keeps the failed user message (and any partial reply): drop that
-    // turn, or resending the restored text would show and send it twice.
-    const failedTurn = messages.value.findLastIndex(message => message.role === 'user')
-    if (failedTurn !== -1) messages.value = messages.value.slice(0, failedTurn)
-    input.value = lastSentText
-    lastSentText = null
-  }
+  if (value === 'error' && lastSentText !== null) dropLastTurn(lastSentText)
+  lastSentText = null
   await nextTick()
   textareaRef.value?.focus()
 })

@@ -15,7 +15,13 @@ export type ChatDisplayItem
     | { kind: 'thinking', text: string }
     | { kind: 'trace', trace: ToolTrace }
 
-type ToolCopy = { label: string, summary: string }
+// Label and generic summary are translated when shown; buildSummary returns null when the generic one applies.
+type ToolDisplay = {
+  label: () => string
+  summary: () => string
+  buildSummary?: (part: Record<string, unknown>) => string | null
+  buildOutput?: (output: unknown) => string | null
+}
 
 // query_data results carry a plain text table; keep the trace readable
 // without letting a huge result bloat the DOM.
@@ -48,19 +54,6 @@ const PATCH_FIELDS: PatchField[] = [
 export function useChatDisplayItems() {
   const { t, locale } = useTranslation()
 
-  function toolCopy(type: string): ToolCopy {
-    switch (type) {
-      case 'tool-query_data':
-        return { label: t('Interrogation des données'), summary: t('Je calcule la réponse à partir des données') }
-      case 'tool-create_chart':
-        return { label: t('Création du graphique'), summary: t('Je construis le graphique') }
-      case 'tool-update_chart':
-        return { label: t('Modification du graphique'), summary: t('Je modifie le graphique') }
-      default:
-        return { label: t('Opération'), summary: t('Je poursuis l’analyse') }
-    }
-  }
-
   function formatRowCount(count: number): string {
     return t('Aucune ligne | 1 ligne | {rows} lignes', { n: count, rows: count.toLocaleString(locale) })
   }
@@ -74,7 +67,6 @@ export function useChatDisplayItems() {
 
   // `total` is the exact row count, known only without an aggregate; `rows` is
   // what the table shows.
-  // The summaries below are null when the tool's generic one applies.
   function buildQuerySummary(part: Record<string, unknown>): string | null {
     if (part.state !== 'output-available') return t('Exécution en cours')
     const output = part.output
@@ -86,10 +78,9 @@ export function useChatDisplayItems() {
     return output.more_groups === true ? t('{rows}, plus de 50 valeurs', { rows }) : rows
   }
 
-  // query_data shows its result table, or its errors when the query was not run.
-  // Chart tools' outputs are summarized only.
-  function buildToolOutput(type: string, output: unknown): string | null {
-    if (type !== 'tool-query_data' || !isRecord(output)) return null
+  // The result table, or the errors when the query was not run.
+  function buildQueryOutput(output: unknown): string | null {
+    if (!isRecord(output)) return null
     const text = output.status === 'error' ? toolErrors(output) : output.table
     return typeof text === 'string' && text ? truncateAt(text, OUTPUT_TRUNCATE_AT) : null
   }
@@ -116,26 +107,43 @@ export function useChatDisplayItems() {
     return plural ? t('{fields} modifiés', { fields: capitalized }) : t('{fields} modifié', { fields: capitalized })
   }
 
-  function buildSummary(type: string, part: Record<string, unknown>): string | null {
-    if (type === 'tool-query_data') return buildQuerySummary(part)
-    if (type === 'tool-create_chart') return buildCreateSummary(part)
-    if (type === 'tool-update_chart') return buildUpdateSummary(part)
-    return null
+  // One entry per udata tool. Chart tools' outputs are summarized only.
+  const tools: Record<string, ToolDisplay> = {
+    'tool-query_data': {
+      label: () => t('Interrogation des données'),
+      summary: () => t('Je calcule la réponse à partir des données'),
+      buildSummary: buildQuerySummary,
+      buildOutput: buildQueryOutput,
+    },
+    'tool-create_chart': {
+      label: () => t('Création du graphique'),
+      summary: () => t('Je construis le graphique'),
+      buildSummary: buildCreateSummary,
+    },
+    'tool-update_chart': {
+      label: () => t('Modification du graphique'),
+      summary: () => t('Je modifie le graphique'),
+      buildSummary: buildUpdateSummary,
+    },
+  }
+  const otherTool: ToolDisplay = {
+    label: () => t('Opération'),
+    summary: () => t('Je poursuis l’analyse'),
   }
 
   function buildToolTrace(type: string, part: Record<string, unknown>): ToolTrace {
-    const copy = toolCopy(type)
+    const tool = tools[type] ?? otherTool
     const error = part.state === 'output-error'
     const errorText = error
       ? (typeof part.errorText === 'string' && part.errorText ? part.errorText : t('Échec de l’opération'))
       : null
 
     return {
-      label: copy.label,
-      summary: errorText ?? buildSummary(type, part) ?? copy.summary,
+      label: tool.label(),
+      summary: errorText ?? tool.buildSummary?.(part) ?? tool.summary(),
       error,
       errorText,
-      output: buildToolOutput(type, part.output),
+      output: tool.buildOutput?.(part.output) ?? null,
     }
   }
 

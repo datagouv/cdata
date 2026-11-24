@@ -64,11 +64,14 @@ function assistantTextMessage(text: string) {
 
 type PanelResource = { title: string, format: string | null }
 
+const GUIDE_URL = 'https://guides.example/assistant-mistakes'
+
 function mountPanel(
   resourceId: string | null,
   visualization: AssistantVisualization | null = null,
   { columns = [], resource = resourceId ? { title: 'Table parquet A', format: 'parquet' } : null }: { columns?: Array<ColumnDefinition>, resource?: PanelResource | null } = {},
 ) {
+  vi.stubGlobal('useRuntimeConfig', () => ({ public: { guidesAssistantMistakes: GUIDE_URL } }))
   return mount(ChatPanel, {
     props: { resourceId, visualization, columns, resource },
     attachTo: document.body,
@@ -464,8 +467,10 @@ describe('ToolTrace', () => {
     return mount(ToolTrace, { props: { trace } })
   }
 
-  it('links the toggle button to the panel with aria-controls', () => {
+  // headlessui links the button once the panel is mounted, a tick later.
+  it('links the toggle button to the panel with aria-controls', async () => {
     const wrapper = mountTrace()
+    await nextTick()
     const button = wrapper.find('button')
 
     expect(button.attributes('aria-expanded')).toBe('false')
@@ -483,6 +488,7 @@ describe('ToolTrace', () => {
 
   it('keeps the collapsed panel inert and removes inert when expanded', async () => {
     const wrapper = mountTrace()
+    await nextTick()
 
     expect(panelOf(wrapper).attributes('inert')).toBeDefined()
 
@@ -609,10 +615,13 @@ describe('ChatPanel', () => {
     expect(wrapper.find('[aria-label="Contexte utilisé par l’assistant"]').exists()).toBe(false)
   })
 
-  it('warns that the assistant can make mistakes', () => {
+  it('warns that the assistant can make mistakes, with a link to the guide', () => {
     const wrapper = mountPanel('resource-1')
 
     expect(wrapper.text()).toContain('L’assistant peut faire des erreurs.')
+    const link = wrapper.findAll('a').find(a => a.text() === 'En savoir plus')
+    expect(link?.attributes('href')).toBe(GUIDE_URL)
+    expect(link?.attributes('target')).toBe('_blank')
   })
 
   it('announces new messages politely in a log', () => {
@@ -768,6 +777,54 @@ describe('ChatPanel', () => {
 
     await button!.trigger('click')
     expect(stopMock).toHaveBeenCalled()
+  })
+
+  // udata keeps no cancelled run: the next question must not look like it follows the stopped one.
+  it('drops the stopped turn from the history and restores its text in the composer', async () => {
+    const answered = [
+      { id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Première question' }] },
+      { id: 'a1', role: 'assistant', parts: [{ type: 'text', text: 'Réponse' }] },
+    ]
+    chatState.messages.value = [...answered]
+    const wrapper = mountPanel('resource-1')
+    const textarea = wrapper.find('textarea#assistant-input')
+
+    await textarea.setValue('Question arrêtée')
+    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
+    chatState.messages.value = [
+      ...answered,
+      { id: 'u2', role: 'user', parts: [{ type: 'text', text: 'Question arrêtée' }] },
+      { id: 'a2', role: 'assistant', parts: [{ type: 'text', text: 'Début de répo' }] },
+    ]
+    chatState.status.value = 'streaming'
+    await nextTick()
+    stopMock.mockImplementationOnce(async () => {
+      chatState.status.value = 'ready'
+    })
+    await wrapper.findAll('button').find(b => b.text() === 'Arrêter')!.trigger('click')
+    await flushPromises()
+
+    expect(chatState.messages.value).toEqual(answered)
+    expect((textarea.element as HTMLTextAreaElement).value).toBe('Question arrêtée')
+  })
+
+  it('leaves the composer empty when a new conversation interrupts the stream', async () => {
+    const wrapper = mountPanel('resource-1')
+    const textarea = wrapper.find('textarea#assistant-input')
+    await textarea.setValue('Question abandonnée')
+    await wrapper.find('button[aria-label="Envoyer"]').trigger('click')
+    chatState.messages.value = [{ id: 'u1', role: 'user', parts: [{ type: 'text', text: 'Question abandonnée' }] }]
+    chatState.status.value = 'streaming'
+    await nextTick()
+    newConversationMock.mockImplementationOnce(() => {
+      chatState.messages.value = []
+      chatState.status.value = 'ready'
+    })
+
+    await wrapper.find('[data-testid="assistant-new-conversation"]').trigger('click')
+    await flushPromises()
+
+    expect((textarea.element as HTMLTextAreaElement).value).toBe('')
   })
 
   it('sends a double click once', async () => {
@@ -1167,6 +1224,17 @@ describe('ChatPanel', () => {
       chatState.messages.value = [answered]
       await nextTick()
       chatState.messages.value = [answered, { id: 'u2', role: 'user', parts: [{ type: 'text', text: 'Et ensuite ?' }] }]
+      await nextTick()
+
+      expect(wrapper.emitted('chart-result')).toHaveLength(1)
+    })
+
+    it('emits a tool call once while its message keeps streaming', async () => {
+      const wrapper = mountPanel('resource-1')
+      const chunk = (text: string) => ({ id: 'a1', role: 'assistant', parts: [createPart('output-available'), { type: 'text', text }] })
+      chatState.messages.value = [chunk('Voici')]
+      await nextTick()
+      chatState.messages.value = [chunk('Voici le graphique')]
       await nextTick()
 
       expect(wrapper.emitted('chart-result')).toHaveLength(1)

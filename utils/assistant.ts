@@ -35,26 +35,6 @@ export function toAssistantVisualization(chart: ChartForApi, exists: boolean): A
 }
 
 /**
- * Build the assistant chat request body, including the protocol fields required
- * by udata's VercelAIAdapter (SubmitMessage discriminated union). `resource_id`
- * is only sent when a resource is selected and `visualization` (the current
- * chart, see `toAssistantVisualization`) only when there is one.
- */
-export function buildChatBody(
-  messages: unknown[],
-  resourceId: string | null,
-  visualization: AssistantVisualization | null,
-  protocol?: { id: string, trigger: string, messageId?: string },
-): { messages: unknown[], id?: string, trigger?: string, messageId?: string, resource_id?: string, visualization?: AssistantVisualization } {
-  return {
-    ...protocol,
-    messages,
-    ...(resourceId ? { resource_id: resourceId } : {}),
-    ...(visualization ? { visualization } : {}),
-  }
-}
-
-/**
  * Partial chart change produced by udata's `update_chart` tool (`output.patch`).
  */
 export type ChartUpdatePatch = {

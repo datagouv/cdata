@@ -11,3 +11,4 @@ export { default as MarkdownViewer } from '~/datagouv-components/src/components/
 export { chartContentToForm } from '~/datagouv-components/src/functions/charts'
 export { isRecord } from '~/datagouv-components/src/functions/tabular'
 export { humanJoin } from '~/datagouv-components/src/functions/helpers'
+export { default as Tag } from '~/datagouv-components/src/components/Tag.vue'
