@@ -1,5 +1,5 @@
 import { test, expect } from '../base'
-import { API_BASE, gotoHydrated } from '../helpers'
+import { API_BASE, gotoHydrated, holdRequests } from '../helpers'
 import { fillNewPostForm } from './helpers'
 
 const createdPosts: Array<string> = []
@@ -16,29 +16,18 @@ test('clicking save again while the post is being created does not create it twi
   await fillNewPostForm(page, newPost(`Test double création ${Date.now()}`))
 
   // Hold the creation request so the second click happens while it is in flight
-  let createRequests = 0
-  let release: () => void = () => {}
-  const released = new Promise<void>((resolve) => {
-    release = resolve
-  })
-  await page.route(url => url.pathname === '/api/1/posts/', async (route) => {
-    if (route.request().method() === 'POST') {
-      createRequests++
-      await released
-    }
-    await route.continue()
-  })
+  const creation = await holdRequests(page, url => url.pathname === '/api/1/posts/', 'POST')
 
   const saveButton = page.getByRole('button', { name: 'Sauvegarder' })
   await saveButton.click()
-  await expect.poll(() => createRequests).toBe(1)
+  await expect.poll(creation.held).toBe(1)
   await expect(saveButton).toBeDisabled()
   await saveButton.click({ force: true })
-  release()
+  creation.release()
 
   await expect(page).toHaveURL(/\/admin\/posts\/(?!new)[a-z0-9-]+$/)
   createdPosts.push(page.url().split('/').pop()!)
-  expect(createRequests).toBe(1)
+  expect(creation.held()).toBe(1)
 })
 
 test.describe('when the cover upload fails', () => {

@@ -3,7 +3,7 @@ import * as path from 'node:path'
 import type { Page } from '@playwright/test'
 import type { Dataset } from '@datagouv/components-next'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, createOrganization, deleteDatasets, deleteOrganizations, gotoHydrated, type ApiDataset, type ApiOrganization } from '../helpers'
+import { API_BASE, createDataset, createOrganization, deleteDatasets, deleteOrganizations, gotoHydrated, holdRequests, type ApiDataset, type ApiOrganization } from '../helpers'
 
 // These tests replay the situation reported in datagouv/data.gouv.fr#2060 with the very
 // files it was reported with: a washing machine durability record, exported as CSV
@@ -160,6 +160,11 @@ async function startWizard(page: Page, schema: SchemaKey) {
 // Up to the last "Publier" of a file added to an existing dataset, validated against its schema
 async function openValidatedSheetOnExistingDataset(page: Page, dataset: ApiDataset, { addWith = 'click' }: { addWith?: 'click' | 'enter' } = {}) {
   await gotoHydrated(page, '/admin/datasets/structured?step=1')
+  await fillValidatedSheetOnExistingDataset(page, dataset, { addWith })
+}
+
+// The same from the first step already on screen
+async function fillValidatedSheetOnExistingDataset(page: Page, dataset: ApiDataset, { addWith = 'click' }: { addWith?: 'click' | 'enter' } = {}) {
   await selectProducer(page)
   await page.getByText('Ajouter à un jeu de données existant').click()
   const link = page.getByLabel('Lien vers le jeu de données')
@@ -181,19 +186,8 @@ async function openValidatedSheetOnExistingDataset(page: Page, dataset: ApiDatas
 
 // Holds the dataset page while it loads, so the wizard can be watched in between
 async function holdDatasetPage(page: Page, dataset: ApiDataset) {
-  let holding = true
-  let release = () => {}
-  const released = new Promise<void>((resolve) => {
-    release = resolve
-  })
-  await page.route(new RegExp(`/api/[12]/datasets/${dataset.slug}/`), async (route) => {
-    if (holding && route.request().method() === 'GET') await released
-    await route.continue()
-  })
-  return () => {
-    holding = false
-    release()
-  }
+  const { release } = await holdRequests(page, new RegExp(`/api/[12]/datasets/${dataset.slug}/`), 'GET')
+  return release
 }
 
 function countUploads(page: Page, dataset: ApiDataset) {
@@ -691,8 +685,17 @@ test.describe('navigation', () => {
     await expect(page).toHaveURL(/step=1/)
     await expect(page.getByRole('heading', { name: /Associez un schéma/ })).toBeVisible()
     await expect(page.getByText(dataset.title)).toBeHidden()
+
+    // The dataset page loading in the background must not take over the restarted wizard
     release()
-    expect(uploads()).toBe(1)
+    await page.waitForLoadState('networkidle')
+    await expect(page).toHaveURL(/step=1/)
+
+    // Started over for real: the same file can be published again
+    await fillValidatedSheetOnExistingDataset(page, dataset)
+    await page.getByRole('button', { name: 'Publier', exact: true }).click()
+    await expect(page).toHaveURL(new RegExp(`/datasets/${dataset.slug}/?$`), PUBLISHED)
+    expect(uploads()).toBe(2)
   })
 
   test('le retour du navigateur pendant le chargement du jeu de données existant recommence le wizard', async ({ page, request }) => {
