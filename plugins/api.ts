@@ -1,5 +1,6 @@
 import { toast } from '@datagouv/components-next'
 import { getApiErrorMessage } from '~/utils/api'
+import { apiAuthOptions } from '~/utils/auth'
 
 export default defineNuxtPlugin({
   async setup(nuxtApp) {
@@ -23,11 +24,12 @@ export default defineNuxtPlugin({
             options.headers.set('Content-Type', 'application/json')
           }
           options.headers.set('Accept', 'application/json')
-          if (config.public.devApiKey) {
-            options.headers.set('X-API-KEY', config.public.devApiKey)
+          const auth = apiAuthOptions(config.public.devApiKey)
+          for (const [name, value] of Object.entries(auth.headers)) {
+            options.headers.set(name, value)
           }
-          else {
-            options.credentials = 'include'
+          if (auth.credentials) {
+            options.credentials = auth.credentials
           }
           if (cookie) {
             options.headers.set('Cookie', cookie)
