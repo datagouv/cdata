@@ -179,8 +179,9 @@ const selected = computed<Array<T | TSuggest>>(() => {
   }).filter(object => object)
 })
 
-// The field commits its value on change, which Enter only fires inside a form. Enter also
-// confirms an input method composition, which is not a request to add the link.
+// Enter adds the link without submitting the form around the field, if any. The value is read
+// from the input because the model only updates on change, which Enter fires only inside a form.
+// Enter that ends an input method composition only confirms the typed text.
 const loadByLinkOnEnter = (event: KeyboardEvent) => {
   if (event.isComposing || !(event.target instanceof HTMLInputElement)) return
   event.preventDefault()
