@@ -72,11 +72,11 @@ function rehypeNoHeadings(this: Processor): Transformer {
   }
 }
 
-export function formatMarkdown(md: string, config: number | { minDepth: number, noHeadings: boolean, followLinks?: boolean, noImages?: boolean } = 3) {
+export function formatMarkdown(md: string, config: number | { minDepth: number, noHeadings: boolean, followLinks?: boolean, generated?: boolean } = 3) {
   let minDepth: number
   let noHeadings = false
   let followLinks = false
-  let noImages = false
+  let generated = false
   if (typeof config === 'number') {
     minDepth = config
   }
@@ -84,7 +84,7 @@ export function formatMarkdown(md: string, config: number | { minDepth: number, 
     minDepth = config.minDepth
     noHeadings = config.noHeadings
     followLinks = config.followLinks ?? false
-    noImages = config.noImages ?? false
+    generated = config.generated ?? false
   }
   const result = unified()
     .use(behead, { minDepth: minDepth > 1 ? minDepth : undefined } as Options)
@@ -103,13 +103,13 @@ export function formatMarkdown(md: string, config: number | { minDepth: number, 
     .use(rehypeHighlight)
     .use(rehypeSlug)
     .use(rehypeSanitize)
-    .use(noImages ? [rehypeNoImages] : [])
+    .use(generated ? [rehypeNoImages] : [])
     // Markdown mostly comes from users: links leaving the site must not pass on its search
     // ranking, or they become worth spamming for. `followLinks` is for content written by the team.
-    // Generated content (noImages) also opens its links aside: it sits next to unsaved work.
+    // Generated content also opens its links aside: it sits next to unsaved work.
     .use(rehypeExternalLinks, {
-      rel: followLinks ? [] : ['ugc', 'nofollow', 'noopener', ...(noImages ? ['noreferrer'] : [])],
-      target: noImages ? '_blank' : undefined,
+      rel: followLinks ? [] : ['ugc', 'nofollow', 'noopener', ...(generated ? ['noreferrer'] : [])],
+      target: generated ? '_blank' : undefined,
       protocols: ['http', 'https', 'mailto'],
     })
     // Serialize syntax tree to HTML

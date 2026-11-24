@@ -2,25 +2,15 @@ import { ofetch } from 'ofetch'
 import { useComponentsConfig, type PluginConfig } from '../config'
 import { encodeConditionColumn, encodeConditionValue, encodeTabularParam, isRecord } from './tabular'
 import type { AndFilters, Filter, GenericFilter, OrFilters } from '../types/visualizations'
-import type { SortConfig, TabularProfileResponse } from '../components/TabularExplorer/types'
+import type { SortConfig, TabularDataResponse as TabularRowsResponse, TabularProfileResponse } from '../components/TabularExplorer/types'
 import type { TranslationFunction } from '../composables/useTranslation'
 
 export type { SortConfig }
 
-export type TabularDataResponse = {
+// An aggregate answers rows without __id, and without total.
+export type TabularDataResponse = Omit<TabularRowsResponse, 'data' | 'meta'> & {
   data: Array<Record<string, unknown>>
-  links: {
-    profile: string
-    swagger: string
-    next: string | null
-    prev: string | null
-  }
-  meta: {
-    page: number
-    page_size: number
-    /** Absent from the answer to an aggregate */
-    total?: number
-  }
+  meta: Omit<TabularRowsResponse['meta'], 'total'> & { total?: number }
 }
 
 export type TabularAggregateType = 'avg' | 'sum' | 'count' | 'min' | 'max'
@@ -92,7 +82,7 @@ export class TabularApiError extends Error {
   }
 }
 
-// Same rule as udata's assistant client (udata/core/assistant/tabular.py).
+// The message is shown to the user: the internal table name means nothing to them.
 const TABLE_NAME = /\b(?:csvapi\.)?[0-9a-f]{32}\b/g
 const UNKNOWN_COLUMN = /^column (?:(?:csvapi\.)?[0-9a-f]{32}\.)?"?(.+?)"? does not exist$/s
 const INVALID_VALUE = /^invalid input syntax for type ([\w ]+): "(.*)"$/s
