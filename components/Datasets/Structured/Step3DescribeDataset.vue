@@ -157,6 +157,7 @@
           </BrandedButton>
           <BrandedButton
             color="primary"
+            :loading
             @click="submit"
           >
             {{ $t("Suivant") }}
@@ -179,6 +180,10 @@ import LinkedToAccordion from '~/components/LinkedToAccordion/LinkedToAccordion.
 import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplanation.vue'
 import { useForm, required, minLength } from '~/composables/useForm'
 import type { DatasetForm } from '~/types/types'
+
+defineProps<{
+  loading: boolean
+}>()
 
 const emit = defineEmits<{
   (e: 'previous' | 'next'): void

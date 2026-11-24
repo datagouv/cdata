@@ -99,6 +99,24 @@ export async function gotoHydrated(page: Page, url: string): Promise<void> {
   await page.waitForFunction(() => window.useNuxtApp?.().isHydrating === false)
 }
 
+// Holds the requests to `url` with `method` until `release()`, to act on the page while they
+// are in flight. `held()` counts the requests held so far.
+export async function holdRequests(page: Page, url: string | RegExp | ((url: URL) => boolean), method: string): Promise<{ release: () => void, held: () => number }> {
+  let held = 0
+  let release = () => {}
+  const released = new Promise<void>((resolve) => {
+    release = resolve
+  })
+  await page.route(url, async (route) => {
+    if (route.request().method() === method) {
+      held++
+      await released
+    }
+    await route.continue()
+  })
+  return { release, held: () => held }
+}
+
 // The tab of an item of the blocs editor (`EditItem`) only reacts once the item is hovered
 // or focused: focusing one of its buttons is what a keyboard user does.
 function editTab(item: Locator): Locator {
