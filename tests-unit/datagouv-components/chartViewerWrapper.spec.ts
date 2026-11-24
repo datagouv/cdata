@@ -336,6 +336,33 @@ describe('ChartViewerWrapper data fetching', () => {
     expect(wrapper.find('[data-testid="chart-truncation-warning"]').exists()).toBe(false)
   })
 
+  it('captures the newest chart, unveiled, while an older request is still running', async () => {
+    ofetchMock.mockImplementation((url: string) => {
+      if (url.includes('/profile/')) return Promise.resolve({ profile: { header: [] }, columns: {} })
+      if (url.includes('n__sum')) return new Promise(() => {})
+      return Promise.resolve(rows(3))
+    })
+    const chart = chartFixture()
+    const wrapper = mountWrapper(chart)
+    await settle()
+    const older = structuredClone(chart)
+    older.series[0]!.aggregate_y = 'sum'
+    await wrapper.setProps({ chart: older })
+    await settle()
+    const newest = structuredClone(chart)
+    newest.series[0]!.aggregate_y = 'min'
+    await wrapper.setProps({ chart: newest })
+    await settle()
+    let image: string | null | undefined
+    void (wrapper.vm as unknown as { capture: () => Promise<string | null> }).capture().then((value) => {
+      image = value
+    })
+    await vi.advanceTimersByTimeAsync(300)
+    await flushPromises()
+    expect(image).toBe('image of min')
+    expect(wrapper.find('[data-testid="chart-reloading"]').exists()).toBe(false)
+  })
+
   it('resets the warning when the chart changes to one with fewer groups', async () => {
     ofetchMock.mockImplementation(async (url: string) => {
       if (url.includes('/profile/')) return { profile: { header: [] }, columns: {} }

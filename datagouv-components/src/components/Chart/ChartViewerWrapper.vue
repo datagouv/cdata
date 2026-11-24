@@ -135,7 +135,6 @@ watch(status, (value) => {
 })
 onBeforeUnmount(() => clearTimeout(veilTimer))
 
-const pendingOperations = ref(0)
 const moreGroups = ref(false)
 const someSeriesFailed = ref(false)
 const seriesFailureMessage = ref<string | null>(null)
@@ -156,7 +155,7 @@ const displayedChart = computed(() => chartDataKey(props.chart) === chartDataKey
 // while the debounced reload runs. A chart that fails or does not load in time gets
 // no image.
 const CAPTURE_TIMEOUT = 10_000
-const showsRequestedChart = computed(() => pendingOperations.value === 0 && displayedChart.value === props.chart)
+const showsRequestedChart = computed(() => status.value !== 'pending' && displayedChart.value === props.chart)
 // The chart whose load failed: an error left by a previous chart, before the debounced
 // reload of the new one starts, must not end the capture.
 const failedChartKey = ref<string | null>(null)
@@ -218,7 +217,6 @@ async function fetchSeriesData() {
   const request = ++latestRequest
   const isStale = () => request !== latestRequest
   const requestedChart = props.chart
-  pendingOperations.value++
   status.value = 'pending'
   error.value = null
 
@@ -233,6 +231,7 @@ async function fetchSeriesData() {
       series.columns = columns
       series.data = {}
       resetNotes()
+      status.value = 'success'
       return
     }
 
@@ -287,6 +286,7 @@ async function fetchSeriesData() {
     someSeriesFailed.value = failures.length > 0
     seriesFailureMessage.value = failures.length > 0 ? tabularErrorMessage(failures[0]!.reason, t) : null
     moreGroups.value = results.some(result => result.moreGroups)
+    status.value = 'success'
   }
   catch (err) {
     if (isStale()) return
@@ -296,9 +296,6 @@ async function fetchSeriesData() {
     series.data = {}
     resetNotes()
   }
-  finally {
-    pendingOperations.value--
-  }
 }
 
 function retry() {
@@ -306,12 +303,4 @@ function retry() {
 }
 
 watchDebounced(() => chartDataKey(props.chart), fetchSeriesData, { debounce: config.searchDebounce ?? 300, immediate: true })
-
-watch(pendingOperations, (count) => {
-  if (count === 0) {
-    if (error.value === null && status.value === 'pending') {
-      status.value = 'success'
-    }
-  }
-})
 </script>
