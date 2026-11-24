@@ -935,12 +935,11 @@ test.describe('when a resource profile cannot be read', () => {
     await setupChart(page)
     const secondResourceId = await otherResourceId(page)
     let fail = true
-    let release: () => void = () => {}
+    // The configurator and the chart viewer both fetch the profile: hold and release them all.
+    const held: Array<() => void> = []
     await page.route(`**/api/resources/${secondResourceId}/profile/`, async (route) => {
       if (fail) return route.fulfill({ status: 500, body: 'down' })
-      await new Promise<void>((resolve) => {
-        release = resolve
-      })
+      await new Promise<void>(resolve => held.push(resolve))
       await route.fallback()
     })
 
@@ -950,7 +949,10 @@ test.describe('when a resource profile cannot be read', () => {
     fail = false
     await page.getByRole('button', { name: 'Réessayer' }).click()
     await expect(status).toHaveText('Chargement…')
-    release()
+    await expect.poll(() => held.length).toBeGreaterThan(0)
+    // A request reaching the route after this would be held forever.
+    await page.unroute(`**/api/resources/${secondResourceId}/profile/`)
+    held.forEach(release => release())
     await expect(status).toHaveText(/colonnes disponibles/)
   })
 
