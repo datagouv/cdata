@@ -14,8 +14,7 @@
     <div class="flex items-center justify-between gap-2">
       <BrandedButton
         size="xs"
-        color="tertiary"
-        class="[&&]:text-new-primary"
+        color="tertiary-blue"
         :icon="RiAddLine"
         @click="$emit('add-condition')"
       >

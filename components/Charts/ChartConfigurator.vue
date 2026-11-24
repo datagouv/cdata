@@ -86,7 +86,7 @@
               />
               {{ $t('Chargement…') }}
             </template>
-            <template v-else-if="selectedResource && columnsFailed.has(selectedResource)">
+            <template v-else-if="selectedProfile?.status === 'failed'">
               <RiErrorWarningLine
                 class="size-3"
                 aria-hidden="true"
@@ -112,7 +112,7 @@
             </template>
           </p>
           <BrandedButton
-            v-if="!sourceLoading && selectedResource && columnsFailed.has(selectedResource)"
+            v-if="!sourceLoading && selectedProfile?.status === 'failed'"
             size="xs"
             color="secondary"
             class="shrink-0"
@@ -172,7 +172,7 @@
                   {{ $t('Aucun graphique créé') }}
                 </p>
                 <p class="text-new-gray-medium text-sm mt-1.5 text-center">
-                  {{ $t('Utilisez l’assistant ou l’édition manuelle pour créer votre première visualisation.') }}
+                  {{ assistantEnabled ? $t('Utilisez l’assistant ou l’édition manuelle pour créer votre première visualisation.') : $t('Configurez votre première visualisation dans l’édition manuelle.') }}
                 </p>
               </div>
               <div v-else>
@@ -230,32 +230,25 @@
             </p>
           </div>
           <TabGroup
-            as="div"
+            underline
             class="flex flex-col lg:min-h-0 lg:flex-1"
             :selected-index="tabs.findIndex(tab => tab.key === selectedTab)"
             @change="selectedTab = tabs[$event]!.key"
           >
             <TabList
-              class="flex h-11 shrink-0 items-stretch gap-5 border-b border-gray-default px-6"
+              class="shrink-0 px-6"
               :aria-label="$t('Mode de création')"
             >
               <Tab
                 v-for="tab in tabs"
                 :key="tab.key"
-                v-slot="{ selected }"
-                as="template"
               >
-                <button
-                  class="flex items-center gap-1.5 border-b-2 px-1 text-xs transition-colors hover:bg-transparent focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-new-primary motion-reduce:transition-none"
-                  :class="selected ? 'border-new-primary text-new-primary' : 'border-transparent text-new-gray-medium hover:text-new-gray-dark'"
-                >
-                  <component
-                    :is="tab.icon"
-                    class="size-4"
-                    aria-hidden="true"
-                  />
-                  {{ tab.label }}
-                </button>
+                <component
+                  :is="tab.icon"
+                  class="size-4"
+                  aria-hidden="true"
+                />
+                {{ tab.label }}
               </Tab>
             </TabList>
 
@@ -323,8 +316,7 @@
                         <BrandedButton
                           v-if="totalRules === 0"
                           size="sm"
-                          color="tertiary"
-                          class="[&&]:text-new-primary"
+                          color="tertiary-blue"
                           :icon="RiAddLine"
                           @click="addGroup"
                         >
@@ -333,8 +325,7 @@
                         <BrandedButton
                           v-if="totalRules > 1"
                           size="sm"
-                          color="tertiary"
-                          class="[&&]:text-new-primary"
+                          color="tertiary-blue"
                           :icon="RiAddLine"
                           @click="addGroup"
                         >
@@ -727,7 +718,7 @@
                 v-if="mixedSeries"
                 id="chart-mixed-series"
                 type="warning"
-                class="mb-3 !py-2"
+                class="mb-3"
                 data-testid="chart-mixed-series"
               >
                 <p class="mb-0 text-xs">
@@ -749,7 +740,7 @@
                   v-if="saveBlocked && missingFields.length"
                   type="warning"
                   role="alert"
-                  class="flex flex-wrap items-center gap-x-3 gap-y-2 !py-2"
+                  class="flex flex-wrap items-center gap-x-3 gap-y-2"
                 >
                   <p class="mb-0 flex-1 text-xs">
                     {{ $t('Le titre et la description sont obligatoires pour enregistrer le graphique.') }}
@@ -773,20 +764,20 @@
 </template>
 
 <script setup lang="ts">
-import type { Resource, PaginatedArray, ChartForm, Chart, Filter, ColumnType, ColumnDefinition, ColumnsDefinition, DataSeriesType, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
-import { CHART_PAGE_SIZE, buildTypeConfig, buildColumnsFromProfile, defaultXColumn, fitsInChart, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, hasMixedSeries, humanJoin, SearchableSelect, SimpleBanner, Listbox, useTranslation } from '@datagouv/components-next'
+import type { Resource, PaginatedArray, ChartForm, Chart, Filter, ColumnType, ColumnDefinition, DataSeriesType, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
+import { CHART_PAGE_SIZE, buildTypeConfig, buildColumnsFromProfile, defaultXColumn, fitsInChart, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, hasMixedSeries, humanJoin, SearchableSelect, SimpleBanner, Listbox, Tab, TabGroup, TabList, TabPanel, TabPanels, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
 import { computed, defineAsyncComponent, nextTick, reactive, ref, useTemplateRef, watch } from 'vue'
-import { Disclosure, DisclosureButton, DisclosurePanel, Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/vue'
+import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
 import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartBoxLine, RiBarChartLine, RiErrorWarningLine, RiInformationLine, RiLineChartLine, RiLoader4Line, RiSettings3Line, RiSparklingLine, RiText } from '@remixicon/vue'
 import { isMeAdmin } from '~/utils/auth'
 import { applySerieCalculation, getSerieCalculation, getSerieColumnYOptions, keepValidSortCombined } from '~/utils/charts'
 import type { SerieCalculation } from '~/utils/charts'
 import { fromFilterGroups, toFilterGroups } from '~/utils/chartFilters'
 import type { FilterColumnOption, FilterGroupCombinator, FilterGroupsState } from '~/utils/chartFilters'
-import { toAssistantVisualization } from '~/utils/assistant'
+import { toAssistantVisualization, type ChartToolResult } from '~/utils/assistant'
 import ChartFilterGroup from './ChartFilterGroup.vue'
-import { createChartResultHandler } from './applyChartToolResult'
+import { applyChartToolResult } from './applyChartToolResult'
 import ProducerSelect from '../ProducerSelect.vue'
 import type { DatasetSuggest } from '~/types/types'
 
@@ -838,18 +829,16 @@ const props = defineProps<{
   initialChart?: Chart
 }>()
 
-const columns = ref<ColumnsDefinition>({})
-// Resources whose profile failed: unknown columns, not an empty resource.
-const columnsFailed = ref(new Set<string>())
-const columnsPending = ref(new Set<string>())
+// Columns by resource id. A failed profile means unknown columns, not an empty resource.
+const profiles = ref<Record<string, { status: 'pending' | 'failed' | 'ok', columns: Array<ColumnDefinition> }>>({})
 const producer = ref<Owned | null>(null)
 const dataset = ref<DatasetSuggest | null>(null)
 const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref<string>('')
 const chartViewerWrapperRef = ref<InstanceType<typeof ChartViewerWrapper> | null>(null)
 const datasetLoading = ref(false)
-const columnsLoading = computed(() => !!selectedResource.value && (columnsPending.value.has(selectedResource.value)
-  || (!(selectedResource.value in columns.value) && !columnsFailed.value.has(selectedResource.value))))
+const selectedProfile = computed(() => selectedResource.value ? profiles.value[selectedResource.value] : undefined)
+const columnsLoading = computed(() => !!selectedResource.value && (selectedProfile.value?.status ?? 'pending') === 'pending')
 const sourceLoading = computed(() => datasetLoading.value || columnsLoading.value)
 const assistantEnabled = Boolean(runtimeConfig.public.assistantEnabled)
 type EditorTab = 'assistant' | 'manual'
@@ -899,7 +888,7 @@ const savedChart = ref<Chart | null>(null)
 
 const chartForViewer = ref(toChartApi(form.value))
 // What the assistant sees of the chart, read when a message is sent; nothing without a chart.
-const visualization = computed(() => hasChart.value ? toAssistantVisualization(toChartApi(form.value), !!(props.initialChart || savedChart.value)) : null)
+const visualization = computed(() => hasChart.value ? toAssistantVisualization(toChartApi(form.value), !!savedChart.value) : null)
 
 const hasChart = computed(() => !!form.value.x_axis.column_x && form.value.series.length > 0)
 
@@ -924,7 +913,7 @@ const activeResource = computed(() => {
   return resource ? { title: resource.title, format: resource.format || null } : null
 })
 
-const resourceColumns = computed<Array<ColumnDefinition>>(() => columns.value[selectedResource.value] ?? [])
+const resourceColumns = computed<Array<ColumnDefinition>>(() => selectedProfile.value?.columns ?? [])
 
 const sourceText = computed<string>(() => {
   if (!dataset.value) return ''
@@ -949,8 +938,8 @@ const xAxisColumnProxy = computed<XAxisColumnOption | null>({
 })
 
 const xAxisColumnOptions = computed<Array<XAxisColumnOption>>(() =>
-  Object.entries(columns.value).flatMap(([resourceId, cols]) =>
-    cols.map(col => ({ name: col.name, type: col.type, resourceId })),
+  Object.entries(profiles.value).flatMap(([resourceId, profile]) =>
+    profile.columns.map(col => ({ name: col.name, type: col.type, resourceId })),
   ),
 )
 
@@ -1060,11 +1049,15 @@ function getDefaultXAxisType(columnType: ColumnType | undefined): XAxisType {
   return 'discrete'
 }
 
-const onChartResult = createChartResultHandler(() => form.value, () => selectedResource.value)
+function onChartResult(result: ChartToolResult) {
+  // The resource changed while the assistant was answering: the chart is for another one.
+  if (result.kind === 'create' && result.chart.series[0]?.resource_id !== selectedResource.value) return
+  applyChartToolResult(form.value, result)
+}
 
-function ensureSeriesHasColumnX(resourceId: string) {
+function ensureSeriesHasColumnX() {
   if (!form.value.x_axis.column_x) {
-    const column = defaultXColumn(columns.value[resourceId] ?? [])
+    const column = defaultXColumn(resourceColumns.value)
     if (column) {
       form.value.x_axis.column_x = column.name
       form.value.x_axis.type = getDefaultXAxisType(column.type)
@@ -1077,7 +1070,7 @@ function ensureSeriesHasColumnX(resourceId: string) {
   }
 }
 
-function ensureSeriesHasColumnY(resourceId: string) {
+function ensureSeriesHasColumnY() {
   if (form.value.series[0]?.column_y === '') {
     const xColumn = form.value.x_axis.column_x
     if (xColumn) {
@@ -1085,12 +1078,9 @@ function ensureSeriesHasColumnY(resourceId: string) {
       form.value.series[0].aggregate_y = 'count'
     }
     else {
-      const resourceColumns = columns.value[resourceId]
-      if (resourceColumns?.length) {
-        const nonIdColumns = resourceColumns.filter(c => c.name !== '__id')
-        if (nonIdColumns.length > 0) {
-          form.value.series[0].column_y = nonIdColumns[0].name
-        }
+      const nonIdColumns = resourceColumns.value.filter(c => c.name !== '__id')
+      if (nonIdColumns.length > 0) {
+        form.value.series[0].column_y = nonIdColumns[0].name
       }
     }
   }
@@ -1114,23 +1104,19 @@ async function loadMissingResourcesForChart(resourceIds: Array<string>) {
 }
 
 async function loadColumnsForResources(resourceIds: Array<string>) {
-  const idsToLoad = resourceIds.filter(id => !columns.value[id] || columns.value[id].length === 0)
+  const idsToLoad = resourceIds.filter(id => !profiles.value[id]?.columns.length)
   if (idsToLoad.length === 0) return
 
   await Promise.all(
     idsToLoad.map(async (id) => {
-      columnsFailed.value.delete(id)
-      columnsPending.value.add(id)
+      profiles.value[id] = { status: 'pending', columns: [] }
       try {
         const profile = await getProfile(id)
-        columns.value[id] = buildColumnsFromProfile(profile)
+        profiles.value[id] = { status: 'ok', columns: buildColumnsFromProfile(profile) }
       }
       catch (error) {
         console.error(`Failed to load columns for resource ${id}:`, error)
-        columnsFailed.value.add(id)
-      }
-      finally {
-        columnsPending.value.delete(id)
+        profiles.value[id] = { status: 'failed', columns: [] }
       }
     }),
   )
@@ -1321,21 +1307,19 @@ watch(dataset, async (newDataset) => {
   }
 }, { immediate: true })
 
-// Series moved by the last resource choice, whose columns the new profile checks.
-let movedSeries: Array<ChartForm['series'][number]> = []
-
 // The user chose a resource: the series take it along, from the resource they use.
 // Opening a chart or switching datasets sets selectedResource without moving them.
 function chooseResource(id: string) {
   const used = form.value.series[0]?.resource_id
-  movedSeries = used && used !== id ? form.value.series.filter(serie => serie.resource_id === used) : []
-  for (const serie of movedSeries) serie.resource_id = id
+  if (used && used !== id) {
+    for (const serie of form.value.series) {
+      if (serie.resource_id === used) serie.resource_id = id
+    }
+  }
   selectedResource.value = id
 }
 
 watch(selectedResource, async (r) => {
-  const moved = movedSeries
-  movedSeries = []
   if (r) {
     if (form.value.series.length === 0) {
       form.value.series.push({
@@ -1353,31 +1337,27 @@ watch(selectedResource, async (r) => {
     await loadColumnsForResources([r])
     // Another resource was selected while this one loaded: its columns must not reset the form.
     if (selectedResource.value !== r) return
-    applyResourceColumns(r, moved)
+    applyResourceColumns()
   }
 })
 
 async function retryColumns() {
   const r = selectedResource.value
   await loadColumnsForResources([r])
-  if (selectedResource.value === r) applyResourceColumns(r, [])
+  if (selectedResource.value === r) applyResourceColumns()
 }
 
-function applyResourceColumns(r: string, moved: Array<ChartForm['series'][number]>) {
-  const resourceColumns = columns.value[r]
-  if (resourceColumns && resourceColumns.length > 0) {
+// The chart must only name columns the selected resource has: those it lacks are cleared.
+function applyResourceColumns() {
+  if (resourceColumns.value.length > 0) {
     const currentXColumn = form.value.x_axis.column_x
-    const currentYColumn = form.value.series[0]?.column_y
-    const columnNames = resourceColumns.map(c => c.name)
+    const columnNames = resourceColumns.value.map(c => c.name)
 
     if (currentXColumn && !columnNames.includes(currentXColumn)) {
       form.value.x_axis.column_x = ''
     }
-    if (currentYColumn && !columnNames.includes(currentYColumn)) {
-      form.value.series[0].column_y = ''
-    }
-    // A series moved from another resource must not keep one of its columns.
-    for (const serie of moved) {
+    // A series moved from another resource may name a column this one lacks.
+    for (const serie of form.value.series.filter(serie => serie.resource_id === selectedResource.value)) {
       if (serie.column_y && !columnNames.includes(serie.column_y)) serie.column_y = ''
       if (serie.column_x_name_override && !columnNames.includes(serie.column_x_name_override)) {
         serie.column_x_name_override = null
@@ -1385,12 +1365,12 @@ function applyResourceColumns(r: string, moved: Array<ChartForm['series'][number
     }
   }
   // Unknown columns (failed profile) keep the chart as it is: saving it must not lose them.
-  else if (!columnsFailed.value.has(r)) {
+  else if (selectedProfile.value?.status !== 'failed') {
     form.value.x_axis.column_x = ''
     form.value.series[0].column_y = ''
   }
-  ensureSeriesHasColumnX(r)
-  ensureSeriesHasColumnY(r)
+  ensureSeriesHasColumnX()
+  ensureSeriesHasColumnY()
 }
 
 watch(
