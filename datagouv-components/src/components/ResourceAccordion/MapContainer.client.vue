@@ -24,8 +24,8 @@ type LayerImportInternals = {
   _serviceUrlImportInput: HTMLInputElement
   _formContainer: HTMLFormElement
   _hasGetCapResults: boolean
-  _getCapResponseWMSLayers: Array<WmsCapabilitiesLayer>
-  _addGetCapWMSLayer: (layerInfo: WmsCapabilitiesLayer) => void
+  _getCapResponseWMSLayers: Array<WmsCapabilitiesLayer> | null
+  _addGetCapWMSLayer: (layerInfo: WmsCapabilitiesLayer | undefined) => void
 }
 
 const props = defineProps<{ resource: Resource }>()
@@ -119,13 +119,11 @@ async function displayMap() {
 
   map.addControl(layerImport)
 
-  // Wait for the GetCapabilities response to be parsed before showing the layer. The
-  // layer lists start as empty arrays, so only this flag tells a parsed response apart.
-  // Poll as long as the library waits for the request (15 s): some capabilities
-  // documents, like the Géoplateforme's, weigh a megabyte or more.
+  // Wait for the GetCapabilities response to be parsed before trying to show the layer:
+  // the layer list starts as an empty array, so only this flag tells it apart.
   // TODO: use signal handling to know whether GetCapabilities failed or not
   const waitTimeout = 500
-  let retry = 30
+  let retry = 20
   function showLayer() {
     if (!layerImportInternals._hasGetCapResults) {
       retry--
