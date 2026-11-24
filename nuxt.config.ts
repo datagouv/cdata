@@ -90,6 +90,8 @@ export default defineNuxtConfig({
       title: 'data.gouv.fr',
       description: 'Plateforme des données publiques françaises : télécharger, partager et réutiliser les données de l\'État et des collectivités',
       apiBase: 'http://dev.local:7000',
+      // Shows the chart assistant: enable it only where udata has AI_BASE_URL set.
+      assistantEnabled: false,
       chartsApiBase: 'http://dev.local:7000',
       metricsApi: 'https://metric-api.data.gouv.fr',
       metricsSince: '2022-07-01',
@@ -138,6 +140,7 @@ export default defineNuxtConfig({
       guidesHarvestingUrl: 'https://guides.data.gouv.fr/moissonnage',
       guidesLabelsUrl: undefined, // TODO: add guide when created
       guidesCommunityResources: 'https://guides.data.gouv.fr/jeux-de-donnees/ressource-communautaire',
+      guidesAssistantMistakes: 'https://guides.data.gouv.fr/intelligence-artificielle/lassistant-dexploration-des-donnees-peut-faire-des-erreurs',
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
 

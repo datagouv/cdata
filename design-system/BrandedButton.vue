@@ -116,5 +116,5 @@ import { BrandedButton } from '@datagouv/components-next'
 import { RiLightbulbFlashLine } from '@remixicon/vue'
 import CdataLink from '~/components/CdataLink.vue'
 
-const colors = ['primary', 'secondary', 'tertiary', 'warning', 'danger', 'brown-illustration', 'green-illustration', 'white-flat'] as const
+const colors = ['primary', 'secondary', 'tertiary', 'tertiary-blue', 'warning', 'danger', 'brown-illustration', 'green-illustration', 'white-flat'] as const
 </script>

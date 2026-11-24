@@ -68,3 +68,13 @@ pnpm run test:e2e
 ## Paramètres fréquemment utilisés
 - `--project firefox`: Lance uniquement les tests pour firefox (existe aussi avec `--project chromium`)
 - `--only-changed`: Lance uniquement les tests modifiés depuis le dernier commit, et les tests qui importent un fichier modifié
+
+## Assistant factice
+
+Les tests du configurateur de graphiques (`tests/visualizations/chart-configurator.spec.ts`, `chart-assistant.spec.ts`) ne parlent jamais à un vrai assistant : chaque test qui ouvre l'assistant intercepte la requête du chat dans la page, avec `routeAssistantStream(page, stream)` (`tests/assistantApi.ts`) ou un `page.route('**/assistant/chat/**', route => route.abort())`. Un nouveau test doit faire de même, sinon il appelle l'assistant de l'`apiBase` configurée.
+
+L'onglet Assistant n'apparaît que si le serveur testé a `NUXT_PUBLIC_ASSISTANT_ENABLED=true` (en CI, c'est l'étape « Start cdata server ») : sans lui, les tests de l'assistant échouent.
+
+- `stream` est un flux Vercel AI (`createChartStream(resourceId, output)`, `updateChartStream()`, `errorStream(reason)`) ou une fonction du corps de la requête. `assistantChatStream` scripte une conversation : au premier message, un appel `create_chart` (dep / max `n_cum_dose1`, histogramme, tri `axis_y-desc`, limite 5, sur la ressource de la requête) ; aux suivants, un appel `update_chart` (`y_axis.unit = "doses"`).
+- `chart-assistant.spec.ts` scripte un graphique sur les colonnes du profil de la ressource mockée (`tests/visualizations/profile.json`).
+- Les données tabulaires sont mockées par `mockTabular` ; `setupChart` l'appelle, donc une route `/data/` propre à un test doit être déclarée **après** `setupChart` pour être prise en compte.

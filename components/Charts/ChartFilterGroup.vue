@@ -14,7 +14,7 @@
     <div class="flex items-center justify-between gap-2">
       <BrandedButton
         size="xs"
-        color="tertiary"
+        color="tertiary-blue"
         :icon="RiAddLine"
         @click="$emit('add-condition')"
       >
@@ -26,6 +26,7 @@
         color="tertiary"
         :icon="RiDeleteBinLine"
         icon-only
+        :aria-label="t('Supprimer le groupe')"
         @click="$emit('remove-group')"
       />
     </div>

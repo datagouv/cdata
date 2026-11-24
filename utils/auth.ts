@@ -52,6 +52,13 @@ export function isUserOrgAdmin(me: Me | null | undefined, organization: Organiza
   return organization.members.some(member => member.user.id === me.id && member.role === 'admin')
 }
 
+/** How a request to udata authenticates: with the dev API key when one is set, else with the session cookie. */
+export function apiAuthOptions(devApiKey: string | undefined): { headers: Record<string, string>, credentials: RequestCredentials | undefined } {
+  return devApiKey
+    ? { headers: { 'X-API-KEY': devApiKey }, credentials: undefined }
+    : { headers: {}, credentials: 'include' }
+}
+
 export const loadMe = async (meState: Ref<Me | null | undefined>) => {
   // Here we cannot use the `useAPI` composable because
   // we don't want the classic error management that redirect
@@ -74,20 +81,13 @@ export const loadMe = async (meState: Ref<Me | null | undefined>) => {
     }
   }
 
-  const headers: Record<string, string> = {}
-
-  if (cookie) {
-    headers['cookie'] = cookie
-  }
-  if (config.public.devApiKey) {
-    headers['X-API-KEY'] = config.public.devApiKey
-  }
+  const auth = apiAuthOptions(config.public.devApiKey)
 
   try {
     meState.value = await $fetch<Me | null>('/api/1/me/', {
       baseURL: config.public.apiBase,
-      credentials: config.public.devApiKey ? undefined : 'include',
-      headers,
+      credentials: auth.credentials,
+      headers: cookie ? { ...auth.headers, cookie } : auth.headers,
     })
     if (meState.value) {
       setCurrentUser(meState.value)

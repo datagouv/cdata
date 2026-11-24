@@ -2,7 +2,7 @@
 <template>
   <div
     :class="size === 'sm' ? markdownSmClasses : markdownClasses"
-    v-html="formatMarkdown(content, { minDepth: minHeading, noHeadings, followLinks })"
+    v-html="formatMarkdown(content, { minDepth: minHeading, noHeadings, followLinks, generated })"
   />
 </template>
 
@@ -16,10 +16,14 @@ withDefaults(defineProps<{
   size?: 'sm' | 'md'
   // Only for content written by the team, see formatMarkdown.
   followLinks?: boolean
+  // For untrusted generated content (assistant replies): images render as their alt text,
+  // and external links open in a new tab without referrer.
+  generated?: boolean
 }>(), {
   minHeading: 3,
   size: 'sm',
   noHeadings: false,
   followLinks: false,
+  generated: false,
 })
 </script>
