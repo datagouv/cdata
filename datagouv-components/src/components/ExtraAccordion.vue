@@ -3,18 +3,16 @@
     v-slot="{ open }"
     as="div"
   >
-    <header
-      class="flex flex-wrap items-center pb-6 mb-6 border-b border-gray-default"
-    >
-      <div class="fr-col">
+    <header class="flex flex-wrap items-center justify-between gap-3">
+      <div>
         <component
           :is="titleLevel"
-          class="subtitle uppercase m-0"
+          class="m-0 text-sm/5 font-medium uppercase text-gray-title"
         >
           {{ titleText }}
         </component>
       </div>
-      <div class="fr-col-auto space-x-4">
+      <div class="flex items-center gap-2">
         <slot name="buttons" />
         <DisclosureButton
           :as="BrandedButton"
@@ -33,23 +31,36 @@
         </DisclosureButton>
       </div>
     </header>
-    <DisclosurePanel :id="accordionId">
-      <div class="pb-6 mb-6 border-b border-gray-default">
+    <DisclosurePanel
+      :id="accordionId"
+      class="pt-6"
+    >
+      <div>
         <div
-          class="fr-grid-row fr-grid-row--gutters fr-text--sm fr-m-0"
+          class="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2"
           data-testid="extra-list"
         >
           <div
             v-for="(value, key) in extra"
             :key="key"
-            class="fr-col-12 fr-col-sm-6 fr-col-md-4"
+            class="min-w-0"
           >
-            <h3 class="subtitle mb-1">
+            <h3 class="m-0 mb-1 text-sm/5 font-normal text-gray-secondary [overflow-wrap:anywhere]">
               {{ key }}
             </h3>
-            <p class="text-sm m-0 text-gray-medium break-all">
-              {{ value }}
-            </p>
+            <CopyButton
+              class="max-w-full"
+              :text="display(value)"
+              :label="t('Copier {key}', { key })"
+              :copied-label="t('Copié')"
+              compact
+              icon-only
+              :show-tooltip="false"
+            >
+              <span class="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
+                {{ display(value) }}
+              </span>
+            </CopyButton>
           </div>
         </div>
       </div>
@@ -66,6 +77,7 @@ import {
 } from '@headlessui/vue'
 import { RiArrowDownSLine, RiArrowUpSLine } from '@remixicon/vue'
 import BrandedButton from './BrandedButton.vue'
+import CopyButton from './CopyButton.vue'
 import { useTranslation } from '../composables/useTranslation'
 
 const accordionId = useId()
@@ -77,4 +89,19 @@ defineProps<{
   extra: Record<string, unknown>
   titleLevel: 'h2' | 'h3' | 'h4' | 'h5' | 'h6' | 'div'
 }>()
+
+function display(value: unknown): string {
+  if (typeof value === 'string') return value
+  if (value === null) return 'null'
+  if (value === undefined) return '—'
+  if (typeof value === 'object') {
+    try {
+      return JSON.stringify(value)
+    }
+    catch {
+      return String(value)
+    }
+  }
+  return String(value)
+}
 </script>

@@ -104,6 +104,9 @@ import SchemaCard from './components/SchemaCard.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
 import StatBox from './components/StatBox.vue'
 import Tab from './components/Tabs/Tab.vue'
+import TechnicalValue from './components/TechnicalValue.vue'
+import CodeBlock from './components/CodeBlock.vue'
+import MetadataExtras from './components/MetadataExtras.vue'
 import TabGroup from './components/Tabs/TabGroup.vue'
 import TabList from './components/Tabs/TabList.vue'
 import TabPanel from './components/Tabs/TabPanel.vue'
@@ -449,6 +452,9 @@ export {
   StatBox,
   OpenApiViewer,
   Tab,
+  TechnicalValue,
+  CodeBlock,
+  MetadataExtras,
   TabGroup,
   TabList,
   TabPanel,

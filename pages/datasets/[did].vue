@@ -96,8 +96,8 @@
               ref="sidebar"
               class="pl-0 w-full shrink-0 md:w-[384px] space-y-4"
             >
-              <div class="space-y-1">
-                <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
+              <div>
+                <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
                   <template v-if="hasContactPointsWithSpecificRole">
                     {{ $t("Diffuseur") }}
                   </template>
@@ -105,11 +105,13 @@
                     {{ $t("Producteur") }}
                   </template>
                 </dt>
-                <dd class="p-0 text-sm">
+                <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
                   <OrganizationOwner
                     v-if="dataset.organization"
                     :organization="dataset.organization"
                     as="h2"
+                    name-size="sm"
+                    name-color="text-gray-title"
                   />
                   <AvatarWithName
                     v-if="dataset.owner"
@@ -136,9 +138,8 @@
 
               <div
                 v-if="dataset.contact_points.length"
-                class="space-y-1"
               >
-                <dt class="text-sm text-gray-plain font-bold mb-0 pb-0">
+                <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
                   <template v-if="hasContactPointsWithSpecificRole">
                     {{ $t("Attributions") }}
                   </template>
@@ -146,7 +147,7 @@
                     {{ $t("Contacts") }}
                   </template>
                 </dt>
-                <dd class="p-0 text-sm">
+                <dd class="m-0 space-y-1 p-0 text-sm/[22px] text-gray-title">
                   <ContactPoint
                     v-for="contact in dataset.contact_points"
                     :key="contact.id"
@@ -157,21 +158,26 @@
 
               <div
                 v-if="dataset.license && dataset.access_type === 'open'"
-                class="space-y-1"
               >
-                <dt class="text-sm text-gray-plain font-bold pb-0">
+                <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
                   {{ $t("Licence") }}
                 </dt>
-                <dd class="p-0 text-sm">
-                  <LicenseBadge :license="dataset.license" />
+                <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
+                  <TechnicalValue
+                    :value="dataset.license.title"
+                    :href="dataset.license.url"
+                    :copy-text="dataset.license.url || dataset.license.title"
+                    :label="$t('Copier la licence')"
+                    :copied-label="$t('Licence copiée !')"
+                  />
                 </dd>
               </div>
 
-              <div class="space-y-1">
-                <dt class="text-sm text-gray-plain font-bold pb-0">
+              <div>
+                <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
                   {{ $t("Dernière mise à jour") }}
                 </dt>
-                <dd class="p-0 text-sm">
+                <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
                   <FormattedDate :date="dataset.last_update" />
                 </dd>
               </div>
@@ -219,7 +225,7 @@
 
               <SimpleBanner
                 v-if="hideWarnings"
-                type="primary-frame"
+                type="gray"
                 class="text-sm"
               >
                 {{
@@ -300,8 +306,8 @@
 
               <SimpleBanner
                 v-if="dataset.harvest && 'remote_url' in dataset.harvest"
-                type="primary-frame"
-                class="text-sm"
+                type="gray"
+                :icon="RiExternalLinkLine"
               >
                 {{ $t("Ce jeu de données provient d'un portail externe.") }}
                 <CdataLink
@@ -309,6 +315,7 @@
                   rel="ugc nofollow noopener"
                   target="_blank"
                   external
+                  class="bg-none text-gray-title visited:text-gray-title underline decoration-1 underline-offset-3 hover:text-new-primary focus-visible:text-new-primary"
                 >
                   {{ $t("Voir la source originale.") }}
                 </CdataLink>
@@ -326,7 +333,10 @@
                   class="!m-0 text-sm"
                 >
                   <template #link>
-                    <CdataLink :href="dataset.extras['transport:url']">
+                    <CdataLink
+                      :href="dataset.extras['transport:url']"
+                      class="bg-none text-gray-title visited:text-gray-title underline decoration-1 underline-offset-3 hover:text-new-primary focus-visible:text-new-primary"
+                    >
                       {{
                         $t("le Point d'Accès National aux données de mobilités")
                       }}
@@ -345,7 +355,12 @@
                 >
                   <template #link>
                     <!-- eslint-disable-next-line vue/singleline-html-element-content-newline -->
-                    <CdataLink :href="ecologieUrl">ecologie.data.gouv.fr</CdataLink>
+                    <CdataLink
+                      :href="ecologieUrl"
+                      class="bg-none text-gray-title visited:text-gray-title underline decoration-1 underline-offset-3 hover:text-new-primary focus-visible:text-new-primary"
+                    >
+                      ecologie.data.gouv.fr
+                    </CdataLink>
                   </template>
                 </TranslationT>
               </SimpleBanner>
@@ -459,7 +474,7 @@
 </template>
 
 <script setup lang="ts">
-import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, LoadingBlock, BrandedButton, FormattedDate, StatBox, Toggletip, type TranslatedBadge, LabelTag, LicenseBadge, AppLink, MarkdownViewer, useMetrics, TranslationT, getDescriptionShort, type Resource, RESOURCE_EXPLORER_PAGE_SIZE, AccessTypeBadge, DatasetBadge, getDatasetStatus } from '@datagouv/components-next'
+import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, LoadingBlock, BrandedButton, FormattedDate, StatBox, Toggletip, type TranslatedBadge, LabelTag, AppLink, TechnicalValue, MarkdownViewer, useMetrics, TranslationT, getDescriptionShort, type Resource, RESOURCE_EXPLORER_PAGE_SIZE, AccessTypeBadge, DatasetBadge, getDatasetStatus } from '@datagouv/components-next'
 import {
   RiExternalLinkFill,
   RiExternalLinkLine,

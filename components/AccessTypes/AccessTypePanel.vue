@@ -1,7 +1,7 @@
 <template>
-  <div class="space-y-1">
+  <div class="space-y-1 text-sm/5 text-gray-title">
     <dt
-      class="text-gray-plain font-bold"
+      class="text-sm/5 font-normal text-gray-secondary"
       :class="{ 'sr-only': hideAccessLabel }"
     >
       {{ $t('Accès') }}
@@ -16,7 +16,7 @@
       </template>
     </dd>
     <template v-if="object.access_type === 'restricted'">
-      <dt class="text-gray-plain font-bold mt-2.5">
+      <dt class="mt-2.5 text-sm/5 font-normal text-gray-secondary">
         {{ $t('Publics éligibles') }}
       </dt>
       <dd

@@ -14,7 +14,7 @@
   <PreviewLoader v-else-if="loading" />
   <div
     v-else
-    class="fr-grid-row fr-grid-row--gutters"
+    class="min-w-0"
   >
     <div
       v-if="!hasColumnInfo"
@@ -28,23 +28,53 @@
         {{ t("Aucune structure de données détectée pour ce fichier.") }}
       </p>
     </div>
-    <template v-if="hasColumnInfo">
-      <div
-        v-for="(column, index) in columns"
-        :key="index"
-        class="fr-col-12 fr-col-sm-6 fr-col-md-4 fr-col-lg-3"
-      >
-        <h5 class="fr-text--sm fr-text--bold fr-mt-0 fr-mb-1v">
-          {{ column }}
-        </h5>
-        <code
-          v-if="columnsInfo[column]"
-          class="code"
-        >
-          {{ columnsInfo[column].format }}
-        </code>
-      </div>
-    </template>
+    <div
+      v-if="hasColumnInfo"
+      class="overflow-x-auto rounded border border-gray-default"
+    >
+      <table class="w-full border-collapse text-left text-sm/5">
+        <caption class="sr-only">
+          {{ t('Structure des données du fichier') }}
+        </caption>
+        <thead class="bg-gray-some text-gray-secondary">
+          <tr>
+            <th
+              scope="col"
+              class="px-4 py-3 font-medium"
+            >
+              {{ t('Colonne') }}
+            </th>
+            <th
+              scope="col"
+              class="px-4 py-3 font-medium"
+            >
+              {{ t('Format') }}
+            </th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-gray-default">
+          <tr
+            v-for="(column, index) in columns"
+            :key="index"
+          >
+            <th
+              scope="row"
+              class="px-4 py-3 font-normal text-gray-title"
+            >
+              {{ column }}
+            </th>
+            <td class="px-4 py-3">
+              <code
+                v-if="columnsInfo[column]"
+                class="font-mono text-[13px]/[18px] text-gray-title"
+              >
+                {{ columnsInfo[column].format }}
+              </code>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 

@@ -73,18 +73,20 @@
             </div>
             <aside
               ref="sidebar"
-              class="pl-0 w-full shrink-0 md:w-[384px] space-y-5"
+              class="pl-0 w-full shrink-0 md:w-[384px] space-y-6"
             >
-              <dl class="space-y-2.5 pl-0">
-                <div class="space-y-1">
-                  <dt class="text-gray-plain font-bold">
+              <dl class="m-0 space-y-4 p-0">
+                <div>
+                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
                     {{ $t('Producteur') }}
                   </dt>
-                  <dd class="p-0 m-0">
+                  <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
                     <OrganizationOwner
                       v-if="dataservice.organization"
                       :organization="dataservice.organization"
                       as="h2"
+                      name-size="sm"
+                      name-color="text-gray-title"
                     />
                     <AvatarWithName
                       v-if="dataservice.owner"
@@ -97,12 +99,11 @@
 
                 <div
                   v-if="dataservice.contact_points.length"
-                  class="space-y-1"
                 >
-                  <dt class="text-gray-plain font-bold">
+                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
                     {{ $t('Contact') }}
                   </dt>
-                  <dd class="p-0 m-0">
+                  <dd class="m-0 space-y-1 p-0 text-sm/[22px] text-gray-title">
                     <ContactPoint
                       v-for="contact in dataservice.contact_points"
                       :key="contact.id"
@@ -110,117 +111,104 @@
                     />
                   </dd>
                 </div>
+
+                <AccessTypePanel :object="dataservice" />
+
+                <div v-if="dataservice.base_api_url">
+                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                    {{ $t(`URL de base de l'API`) }}
+                  </dt>
+                  <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
+                    <TechnicalValue
+                      :value="dataservice.base_api_url"
+                      :href="dataservice.base_api_url"
+                      :label="$t(`Copier l'URL de base de l'API`)"
+                      :copied-label="$t('URL copiée !')"
+                    />
+                  </dd>
+                </div>
+
+                <div v-if="dataservice.rate_limiting || dataservice.rate_limiting_url">
+                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                    {{ $t(`Limite d'appels`) }}
+                  </dt>
+                  <dd class="m-0 space-y-1 p-0 text-sm/[22px] text-gray-title">
+                    <span v-if="dataservice.rate_limiting">{{ dataservice.rate_limiting }}</span>
+                    <TechnicalValue
+                      v-if="dataservice.rate_limiting_url"
+                      :value="dataservice.rate_limiting_url"
+                      :href="dataservice.rate_limiting_url"
+                      :label="$t(`Copier l'URL des limites d'appels`)"
+                      :copied-label="$t('URL copiée !')"
+                    />
+                  </dd>
+                </div>
+
+                <div>
+                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                    {{ $t('Taux de disponibilité') }}
+                  </dt>
+                  <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
+                    {{ dataservice.availability !== null ? `${dataservice.availability} %` : $t('Non communiqué') }}
+                  </dd>
+                </div>
+
+                <div v-if="dataservice.business_documentation_url">
+                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                    {{ $t('Documentation métier') }}
+                  </dt>
+                  <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
+                    <CdataLink
+                      :href="dataservice.business_documentation_url"
+                      external
+                      target="_blank"
+                      rel="ugc nofollow noopener"
+                      class="bg-none text-gray-title visited:text-gray-title underline decoration-1 underline-offset-3 hover:text-new-primary focus-visible:text-new-primary"
+                    >
+                      {{ $t('Consulter la documentation métier') }}
+                    </CdataLink>
+                  </dd>
+                </div>
+
+                <div v-if="dataservice.technical_documentation_url">
+                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                    {{ $t('Documentation technique') }}
+                  </dt>
+                  <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
+                    <CdataLink
+                      :href="dataservice.technical_documentation_url"
+                      external
+                      target="_blank"
+                      rel="ugc nofollow noopener"
+                      class="bg-none text-gray-title visited:text-gray-title underline decoration-1 underline-offset-3 hover:text-new-primary focus-visible:text-new-primary"
+                    >
+                      {{ $t('Consulter la documentation technique') }}
+                    </CdataLink>
+                  </dd>
+                </div>
+
+                <div v-if="dataservice.machine_documentation_url">
+                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                    {{ $t('Documentation machine') }}
+                  </dt>
+                  <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
+                    <CdataLink
+                      :href="dataservice.machine_documentation_url"
+                      external
+                      target="_blank"
+                      rel="ugc nofollow noopener"
+                      class="bg-none text-gray-title visited:text-gray-title underline decoration-1 underline-offset-3 hover:text-new-primary focus-visible:text-new-primary"
+                    >
+                      {{ $t('Swagger / OpenAPI') }}
+                    </CdataLink>
+                  </dd>
+                </div>
               </dl>
 
-              <section class="space-y-2">
-                <h3 class="text-base !mt-0 !mb-0 text-gray-title font-bold">
-                  {{ $t(`Conditions d'accès`) }}
-                </h3>
-                <dl class="pl-0">
-                  <AccessTypePanel
-                    :object="dataservice"
-                    hide-access-label
-                  />
-                </dl>
-              </section>
-
-              <section
+              <DataserviceQuality
                 v-if="dataservice.quality"
-                class="space-y-2"
-              >
-                <h3 class="text-base !mt-0 !mb-0 text-gray-title font-bold">
-                  {{ $t('Qualité des métadonnées') }}
-                </h3>
-                <DataserviceQuality :quality="dataservice.quality" />
-              </section>
-
-              <section class="space-y-2">
-                <h3 class="text-base !mt-0 !mb-0 text-gray-title font-bold">
-                  {{ $t('Caractéristiques techniques') }}
-                </h3>
-                <dl class="space-y-2.5 pl-0">
-                  <div
-                    v-if="dataservice.base_api_url"
-                    class="space-y-1"
-                  >
-                    <dt class="text-gray-plain font-bold">
-                      {{ $t(`URL de base de l'API`) }}
-                    </dt>
-                    <dd class="p-0 m-0">
-                      <a
-                        :href="dataservice.base_api_url"
-                        target="_blank"
-                        rel="ugc nofollow noopener"
-                        class="link block truncate"
-                      >
-                        {{ dataservice.base_api_url }}
-                      </a>
-                    </dd>
-                  </div>
-
-                  <div
-                    v-if="dataservice.rate_limiting || dataservice.rate_limiting_url"
-                    class="space-y-1"
-                  >
-                    <dt class="text-gray-plain font-bold">
-                      {{ $t(`Limite d'appels`) }}
-                    </dt>
-                    <dd class="p-0 m-0">
-                      <span
-                        v-if="dataservice.rate_limiting"
-                        class="mr-1"
-                      >{{ dataservice.rate_limiting }}</span>
-                      <a
-                        v-if="dataservice.rate_limiting_url"
-                        :href="dataservice.rate_limiting_url"
-                        :title="$t(`En savoir plus sur les limites d'appels`)"
-                        target="_blank"
-                        rel="ugc nofollow noopener"
-                        :class="dataservice.rate_limiting ? 'inline-flex items-center gap-1' : 'block truncate'"
-                      >
-                        {{ dataservice.rate_limiting ? $t("En savoir plus") : dataservice.rate_limiting_url }}
-                      </a>
-                    </dd>
-                  </div>
-
-                  <div class="space-y-1">
-                    <dt class="text-gray-plain font-bold">
-                      {{ $t('Taux de disponibilité') }}
-                    </dt>
-                    <dd class="p-0 m-0">
-                      <span v-if="dataservice.availability">
-                        {{ dataservice.availability }}%
-                      </span>
-                      <span v-else>
-                        {{ $t('Non communiqué') }}
-                      </span>
-                    </dd>
-                  </div>
-                </dl>
-                <div class="flex flex-wrap gap-2 pt-1">
-                  <BrandedButton
-                    v-if="dataservice.business_documentation_url"
-                    color="secondary"
-                    size="sm"
-                    :href="dataservice.business_documentation_url"
-                    new-tab
-                    rel="ugc nofollow noopener"
-                    @click="$matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : documentation métier')"
-                  >
-                    {{ $t('Documentation métier') }}
-                  </BrandedButton>
-                  <BrandedButton
-                    v-if="dataservice.machine_documentation_url"
-                    color="secondary"
-                    size="sm"
-                    :icon="RiArrowDownSLine"
-                    icon-right
-                    @click="openSwaggerFromSidebar"
-                  >
-                    {{ $t('Swagger') }}
-                  </BrandedButton>
-                </div>
-              </section>
+                :quality="dataservice.quality"
+              />
             </aside>
           </div>
         </div>
@@ -253,10 +241,7 @@
               :title="dataservice.title"
             />
           </SimpleBanner>
-          <div
-            v-if="dataservice.machine_documentation_url"
-            ref="swaggerBanner"
-          >
+          <div v-if="dataservice.machine_documentation_url">
             <SimpleBanner type="primary-frame">
               <button
                 type="button"
@@ -305,10 +290,11 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, DataserviceQuality, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, MarkdownViewer, getDescriptionShort, DataserviceBadge, getDataserviceStatus } from '@datagouv/components-next'
+import { isOrganizationCertified, DataserviceQuality, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, TechnicalValue, type Dataservice, AvatarWithName, MarkdownViewer, getDescriptionShort, DataserviceBadge, getDataserviceStatus } from '@datagouv/components-next'
 import { RiArrowDownSLine, RiArrowUpSLine } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import CdataLink from '~/components/CdataLink.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
@@ -327,8 +313,6 @@ const { $matomo } = useNuxtApp()
 
 const sidebar = useTemplateRef('sidebar')
 const header = useTemplateRef('header')
-const swaggerBanner = useTemplateRef<HTMLDivElement>('swaggerBanner')
-
 const { height: sidebarHeight } = useElementSize(sidebar)
 const { height: headerHeight } = useElementSize(header)
 
@@ -371,13 +355,6 @@ function showSwagger() {
   if (openSwagger.value) {
     $matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : ouvrir swagger')
   }
-}
-
-async function openSwaggerFromSidebar() {
-  openSwagger.value = true
-  $matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : ouvrir swagger depuis colonne info')
-  await nextTick()
-  swaggerBanner.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 onMounted(async () => {

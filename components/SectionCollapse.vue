@@ -3,10 +3,10 @@
     v-slot="{ open }"
     as="section"
     data-type="accordion"
-    class="border-t last:border-b border-y-gray-default py-2.5"
+    class="border-t border-y-gray-default py-8 last:border-b"
   >
-    <div class="flex flex-wrap items-center">
-      <h2 class="!text-sm uppercase !mb-0 w-full flex-none md:flex-1">
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2 class="!m-0 w-full flex-none !text-sm/5 font-medium uppercase text-gray-title md:flex-1">
         {{ title }}
       </h2>
       <div class="flex-none flex flex-wrap items-center gap-2">
@@ -23,7 +23,7 @@
       </div>
     </div>
     <DisclosurePanel
-      class="pt-2.5 pb-5"
+      class="pt-6"
     >
       <slot />
     </DisclosurePanel>

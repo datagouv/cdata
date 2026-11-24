@@ -1,8 +1,5 @@
 <template>
-  <div class="space-y-1 py-6">
-    <h3 class="uppercase text-gray-plain text-sm font-bold">
-      {{ t('Temporalité') }}
-    </h3>
+  <MetadataSection :title="t('Temporalité')">
     <DescriptionList>
       <div>
         <DescriptionListTerm>{{ t('Création') }}</DescriptionListTerm>
@@ -10,9 +7,21 @@
           <FormattedDate :date="dataset.created_at" />
         </DescriptionListDetails>
       </div>
+      <div>
+        <DescriptionListTerm>{{ t('Dernière modification de la fiche') }}</DescriptionListTerm>
+        <DescriptionListDetails>
+          <FormattedDate :date="dataset.last_modified" />
+        </DescriptionListDetails>
+      </div>
       <div v-if="dataset.frequency">
         <DescriptionListTerm>{{ t('Fréquence') }}</DescriptionListTerm>
         <DescriptionListDetails>{{ dataset.frequency.label }}</DescriptionListDetails>
+      </div>
+      <div v-if="dataset.frequency_date">
+        <DescriptionListTerm>{{ t('Prochaine mise à jour prévue') }}</DescriptionListTerm>
+        <DescriptionListDetails>
+          <FormattedDate :date="dataset.frequency_date" />
+        </DescriptionListDetails>
       </div>
       <div v-if="dataset.temporal_coverage">
         <DescriptionListTerm>{{ t('Couverture temporelle') }}</DescriptionListTerm>
@@ -21,14 +30,14 @@
         </DescriptionListDetails>
       </div>
       <div>
-        <DescriptionListTerm>{{ t('Dernière mise à jour') }}</DescriptionListTerm>
+        <DescriptionListTerm>{{ t('Dernière mise à jour des ressources') }}</DescriptionListTerm>
         <DescriptionListDetails>
           <FormattedDate :date="dataset.last_update" />
         </DescriptionListDetails>
       </div>
       <slot />
     </DescriptionList>
-  </div>
+  </MetadataSection>
 </template>
 
 <script setup lang="ts">
@@ -39,6 +48,7 @@ import DescriptionListTerm from '../DescriptionListTerm.vue'
 import DescriptionListDetails from '../DescriptionListDetails.vue'
 import DateRangeDetails from '../DateRangeDetails.vue'
 import FormattedDate from '../FormattedDate.vue'
+import MetadataSection from './MetadataSection.vue'
 
 defineProps<{
   dataset: DatasetV2WithFullObject

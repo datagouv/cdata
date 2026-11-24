@@ -39,6 +39,11 @@
           to="/design/cards"
         />
         <AdminSidebarLink
+          :icon="RiInformationLine"
+          :label="$t('Métadonnées')"
+          to="/design/metadata"
+        />
+        <AdminSidebarLink
           :icon="RiFileSearchLine"
           :label="$t('Recherche de jeux de données')"
           to="/design/dataset-search"
@@ -92,7 +97,7 @@
 </template>
 
 <script setup lang="ts">
-import { RiEyeLine, RiExternalLinkLine, RiFileSearchLine, RiIdCardLine, RiLineChartLine, RiListView, RiPriceTag3Line, RiRadioButtonLine, RiSearch2Line, RiSearchEyeLine, RiTranslate, RiUserSearchLine, RiListCheck } from '@remixicon/vue'
+import { RiEyeLine, RiExternalLinkLine, RiFileSearchLine, RiIdCardLine, RiInformationLine, RiLineChartLine, RiListView, RiPriceTag3Line, RiRadioButtonLine, RiSearch2Line, RiSearchEyeLine, RiTranslate, RiUserSearchLine, RiListCheck } from '@remixicon/vue'
 import AdminSidebarLink from '~/components/AdminSidebar/AdminSidebarLink/AdminSidebarLink.vue'
 import LogoOnly from '~/components/LogoOnly.vue'
 import Sidemenu from '~/components/Sidemenu/Sidemenu.global.vue'

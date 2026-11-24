@@ -1,11 +1,8 @@
 <template>
-  <div
+  <MetadataSection
     v-if="dataset.spatial"
-    class="space-y-1 py-6"
+    :title="t('Couverture spatiale')"
   >
-    <h3 class="uppercase text-gray-plain text-sm font-bold">
-      {{ t('Couverture spatiale') }}
-    </h3>
     <DescriptionList>
       <div v-if="dataset.spatial.zones && dataset.spatial.zones.length">
         <DescriptionListTerm>{{ t('Zones') }}</DescriptionListTerm>
@@ -26,7 +23,7 @@
       </div>
       <slot />
     </DescriptionList>
-  </div>
+  </MetadataSection>
 </template>
 
 <script setup lang="ts">
@@ -37,6 +34,7 @@ import type { DatasetV2WithFullObject } from '../../types/datasets'
 import DescriptionList from '../DescriptionList.vue'
 import DescriptionListTerm from '../DescriptionListTerm.vue'
 import DescriptionListDetails from '../DescriptionListDetails.vue'
+import MetadataSection from './MetadataSection.vue'
 
 const props = defineProps<{
   dataset: DatasetV2WithFullObject

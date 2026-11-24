@@ -1,8 +1,5 @@
 <template>
-  <div class="space-y-1 py-6">
-    <h3 class="uppercase text-gray-plain text-sm font-bold">
-      {{ t('Informations') }}
-    </h3>
+  <MetadataSection :title="t('Informations')">
     <DescriptionList>
       <div v-if="dataset.tags && dataset.tags.length">
         <DescriptionListTerm>{{ t('Mots-clés') }}</DescriptionListTerm>
@@ -18,26 +15,29 @@
       </div>
       <div>
         <DescriptionListTerm>{{ t('Identifiant') }}</DescriptionListTerm>
-        <DescriptionListDetails class="flex items-center gap-2">
-          {{ dataset.id }}
-          <CopyButton
-            class="!-mt-0.5"
+        <DescriptionListDetails>
+          <TechnicalValue
+            :value="dataset.id"
             :label="t(`Copier l'identifiant`)"
             :copied-label="t('Identifiant copié !')"
-            :text="dataset.id"
-            :hide-label="true"
           />
         </DescriptionListDetails>
       </div>
       <div v-if="dataset.license">
         <DescriptionListTerm>{{ t('Licence') }}</DescriptionListTerm>
         <DescriptionListDetails>
-          <LicenseBadge :license="dataset.license" />
+          <TechnicalValue
+            :value="dataset.license.title"
+            :href="dataset.license.url"
+            :copy-text="dataset.license.url || dataset.license.title"
+            :label="t('Copier la licence')"
+            :copied-label="t('Licence copiée !')"
+          />
         </DescriptionListDetails>
       </div>
       <slot />
     </DescriptionList>
-  </div>
+  </MetadataSection>
 </template>
 
 <script setup lang="ts">
@@ -48,9 +48,9 @@ import type { DatasetV2WithFullObject } from '../../types/datasets'
 import DescriptionList from '../DescriptionList.vue'
 import DescriptionListTerm from '../DescriptionListTerm.vue'
 import DescriptionListDetails from '../DescriptionListDetails.vue'
-import CopyButton from '../CopyButton.vue'
-import LicenseBadge from '../LicenseBadge.vue'
+import TechnicalValue from '../TechnicalValue.vue'
 import Tag from '../Tag.vue'
+import MetadataSection from './MetadataSection.vue'
 
 const props = defineProps<{
   dataset: DatasetV2WithFullObject

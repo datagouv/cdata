@@ -1,63 +1,87 @@
 <template>
-  <div
+  <MetadataSection
     v-if="schemas && schemas.length"
-    class="space-y-1 py-6"
+    :title="t('Schéma de données')"
   >
-    <h3 class="uppercase text-gray-plain text-sm font-bold">
-      {{ t('Schéma de données') }}
-    </h3>
-    <div class="space-y-4">
+    <template #title>
+      <span class="inline-flex items-center gap-1.5">
+        <Toggletip
+          :styled-button="false"
+          button-class="inline-flex rounded-sm text-gray-secondary hover:text-new-primary focus-visible:text-new-primary focus-visible:outline-2 focus-visible:outline-new-focus"
+        >
+          <RiInformationLine
+            class="size-4"
+            aria-hidden="true"
+          />
+          <span class="sr-only">{{ t(`Qu'est-ce qu'un schéma de données ?`) }}</span>
+          <template #toggletip>
+            <p class="m-0 text-sm/5 normal-case font-normal">
+              {{ t(`Les schémas de données permettent de décrire des modèles de données, découvrez comment les schémas améliorent la qualité des données et quels sont les cas d'usages possibles sur schema.data.gouv.fr.`) }}
+              <AppLink
+                v-if="config.schemasSiteUrl"
+                :to="config.schemasSiteUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-current underline underline-offset-3 hover:text-new-primary focus-visible:text-new-primary"
+              >
+                {{ t('En savoir plus sur schema.data.gouv.fr') }}
+              </AppLink>
+            </p>
+          </template>
+        </Toggletip>
+        {{ t('Schéma de données') }}
+      </span>
+    </template>
+    <div class="grid gap-4 sm:grid-cols-2">
       <div
         v-for="schema, index in schemas"
         :key="index"
-        class="flex flex-col md:flex-row gap-2 justify-between items-center"
+        class="flex min-w-0 flex-col gap-3 rounded border border-gray-default bg-white p-4"
       >
-        <p class="text-sm mb-0">
-          {{ t('Les fichiers du jeu de données suivent le schéma :') }}
-          <Tag :icon="RiCheckboxCircleLine">
-            {{ schema.name || schema.url }}
-          </Tag>
+        <h4 class="m-0 text-sm/5 font-medium text-gray-title [overflow-wrap:anywhere]">
+          {{ schema.name || schema.url }}
+        </h4>
+        <p
+          v-if="schema.version"
+          class="m-0 text-xs/4 text-gray-secondary"
+        >
+          {{ t('Version') }} : {{ schema.version }}
         </p>
-        <div v-if="schema.url || schema.name">
-          <BrandedButton
-            color="secondary"
-            :icon="RiBook2Line"
-            :href="schema.url ? schema.url : `${config.schemasSiteUrl}${schema.name}`"
+        <div class="mt-auto flex flex-col items-start gap-2 text-sm/5">
+          <AppLink
+            v-if="schema.url || schema.name"
+            :to="schemaDocumentationUrl(schema)"
+            class="bg-none text-gray-title underline underline-offset-3 hover:text-new-primary focus-visible:text-new-primary"
+            target="_blank"
+            rel="noopener noreferrer"
           >
-            {{ t('Voir la documentation du schéma') }}
-          </BrandedButton>
+            {{ t('Lire la documentation du schéma') }}
+          </AppLink>
+          <AppLink
+            v-if="schema.name"
+            :to="`${config.baseUrl}/datasets/search?schema=${encodeURIComponent(schema.name)}`"
+            class="bg-none text-gray-title underline underline-offset-3 hover:text-new-primary focus-visible:text-new-primary"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {{ t('Explorer les fichiers sur data.gouv.fr') }}
+          </AppLink>
         </div>
       </div>
-      <p
-        v-if="config.schemasSiteUrl && config.schemasSiteName"
-        class="text-sm"
-      >
-        <TranslationT keypath="Les schémas de données permettent de décrire des modèles de données, découvrez comment les schémas améliorent la qualité des données et quels sont les cas d'usages possibles sur {link}">
-          <template #link>
-            <AppLink
-              :to="config.schemasSiteUrl"
-              external
-            >
-              {{ config.schemasSiteName }}
-            </AppLink>
-          </template>
-        </TranslationT>
-      </p>
     </div>
-  </div>
+  </MetadataSection>
 </template>
 
 <script setup lang="ts">
-import { RiBook2Line, RiCheckboxCircleLine } from '@remixicon/vue'
 import { useTranslation } from '../../composables/useTranslation'
 import { useComponentsConfig } from '../../config'
 import { useFetch } from '../../functions/api'
 import type { Dataset, DatasetV2, DatasetV2WithFullObject } from '../../types/datasets'
 import type { Schema } from '../../types/schemas'
-import Tag from '../Tag.vue'
-import BrandedButton from '../BrandedButton.vue'
-import TranslationT from '../TranslationT.vue'
 import AppLink from '../AppLink.vue'
+import Toggletip from '../Toggletip.vue'
+import { RiInformationLine } from '@remixicon/vue'
+import MetadataSection from './MetadataSection.vue'
 
 const props = defineProps<{
   dataset: Dataset | DatasetV2 | DatasetV2WithFullObject
@@ -68,4 +92,11 @@ const config = useComponentsConfig()
 
 const { data } = await useFetch<Array<Schema>>(`/api/2/datasets/${props.dataset.id}/schemas/`)
 const schemas = data
+
+function schemaDocumentationUrl(schema: Schema): string | null {
+  if (schema.url) return schema.url
+  if (!schema.name || !config.schemasSiteUrl) return null
+  const base = config.schemasSiteUrl.endsWith('/') ? config.schemasSiteUrl : `${config.schemasSiteUrl}/`
+  return `${base}${schema.name}/`
+}
 </script>

@@ -1,21 +1,14 @@
 <template>
   <Toggletip
     :styled-button="false"
-    button-class="flex flex-col gap-1 rounded-sm p-1.5 -m-1.5 border-transparent -outline-offset-2 hover:bg-gray-some transition-colors w-full text-left"
+    button-class="flex flex-wrap items-center gap-2 min-h-6 rounded-sm p-1.5 -m-1.5 border-transparent -outline-offset-2 hover:bg-gray-some transition-colors w-full text-left"
     :button-props="{ title: t('Qualité des métadonnées') }"
   >
-    <span class="flex items-center gap-1">
-      <RiInformationLine
-        class="size-5 shrink-0"
-        aria-hidden="true"
-      />
-      <span class="text-sm text-gray-plain font-bold">
-        {{ t('Qualité des métadonnées:') }}
-      </span>
-    </span>
+    <span class="text-sm/5 font-normal text-gray-title">{{ t('Métadonnées') }}</span>
     <QualityScore
       :score="quality.score"
-      class="w-full"
+      compact
+      class="translate-y-px"
     />
     <template #toggletip>
       <DatasetQualityTooltipContent :quality />
@@ -60,7 +53,6 @@
 </template>
 
 <script setup lang="ts">
-import { RiInformationLine } from '@remixicon/vue'
 import type { Quality } from '../types/datasets'
 import QualityItemWarning from './QualityItemWarning.vue'
 import QualityScore from './QualityScore.vue'

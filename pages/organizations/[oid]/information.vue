@@ -189,7 +189,7 @@
       :title="$t('Informations techniques')"
       :button-text="$t('Voir les informations techniques')"
     >
-      <DescriptionList class="mb-2">
+      <DescriptionList>
         <div>
           <DescriptionListTerm>{{ $t('Dernière mise à jour') }}</DescriptionListTerm>
           <DescriptionListDetails>
@@ -198,19 +198,14 @@
         </div>
         <div>
           <DescriptionListTerm>{{ $t('Identifiant') }}</DescriptionListTerm>
-          <DescriptionListDetails class="flex items-center gap-2">
-            {{ organization.id }}
-            <CopyButton
-              class="!-mt-0.5"
+          <DescriptionListDetails>
+            <TechnicalValue
+              :value="organization.id"
               :label="$t(`Copier l'identifiant de l'organisation`)"
               :copied-label="$t(`Identifiant de l'organisation copié !`)"
-              :text="organization.id"
-              :hide-label="true"
             />
           </DescriptionListDetails>
         </div>
-      </DescriptionList>
-      <DescriptionList>
         <div>
           <DescriptionListTerm>{{ $t('Date de création') }}</DescriptionListTerm>
           <DescriptionListDetails>
@@ -223,70 +218,39 @@
       :title="$t('Intégrer sur votre site')"
       :button-text="$t('Voir les oembeds')"
     >
-      <h3 class="subtitle mb-1">
-        {{ $t('La recherche de jeux de données de l\'organisation') }}
-        <CopyButton
-          :hide-label="true"
-          :label="$t(`Copier l'intégration`)"
-          :copied-label="$t('Intégration copiée !')"
-          class="fr-my-1w fr-mr-1w"
-          :text="getOrganizationOEmbedHtml('search-dataset', organization.id)"
-        />
-      </h3>
-      <div class="embed-wrapper">
-        <textarea
-          ref="textAreaRef1"
-          :value="getOrganizationOEmbedHtml('search-dataset', organization.id)"
-          readonly="true"
-          rows="1"
-        />
-      </div>
-      <h3 class="subtitle mb-1">
-        {{ $t('La recherche des API de l\'organisation') }}
-        <CopyButton
-          :hide-label="true"
-          :label="$t(`Copier l'intégration`)"
-          :copied-label="$t('Intégration copiée !')"
-          class="fr-my-1w fr-mr-1w"
-          :text="getOrganizationOEmbedHtml('search-dataservice', organization.id)"
-        />
-      </h3>
-      <div class="embed-wrapper">
-        <textarea
-          ref="textAreaRef2"
-          :value="getOrganizationOEmbedHtml('search-dataservice', organization.id)"
-          readonly="true"
-          rows="1"
-        />
-      </div>
-      <h3 class="subtitle mb-1">
-        {{ $t('La liste des réutilisations de l\'organisation') }}
-        <CopyButton
-          :hide-label="true"
-          :label="$t(`Copier l'intégration`)"
-          :copied-label="$t('Intégration copiée !')"
-          class="fr-my-1w fr-mr-1w"
-          :text="getOrganizationOEmbedHtml('list-reuse', organization.id)"
-        />
-      </h3>
-      <div class="embed-wrapper">
-        <textarea
-          ref="textAreaRef3"
-          :value="getOrganizationOEmbedHtml('list-reuse', organization.id)"
-          readonly="true"
-          rows="1"
-        />
+      <div class="grid min-w-0 gap-6">
+        <article
+          v-for="embed in organizationEmbeds"
+          :key="embed.type"
+          class="min-w-0 space-y-2"
+        >
+          <h3 class="m-0 text-sm/5 font-medium text-gray-title">
+            {{ $t(embed.title) }}
+          </h3>
+          <CodeBlock
+            :code="getOrganizationOEmbedHtml(embed.type, organization.id)"
+            language="HTML"
+            :label="$t(`Copier l'intégration`)"
+            :copied-label="$t('Intégration copiée !')"
+          />
+        </article>
       </div>
     </SectionCollapse>
   </div>
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, CopyButton, FormattedDate, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, type Organization, toast } from '@datagouv/components-next'
+import { Avatar, BrandedButton, CodeBlock, FormattedDate, OrganizationLogo, OrganizationNameWithCertificate, StatBox, TechnicalValue, getOrganizationOEmbedHtml, type Organization, toast } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import MemberRoleBadge from '~/components/Organization/MemberRoleBadge.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
+
+const organizationEmbeds = [
+  { type: 'search-dataset', title: 'La recherche de jeux de données de l’organisation' },
+  { type: 'search-dataservice', title: 'La recherche des API de l’organisation' },
+  { type: 'list-reuse', title: 'La liste des réutilisations de l’organisation' },
+] as const
 
 const props = defineProps<{
   organization: Organization
