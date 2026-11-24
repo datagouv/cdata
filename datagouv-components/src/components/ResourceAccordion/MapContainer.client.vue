@@ -119,8 +119,7 @@ async function displayMap() {
 
   map.addControl(layerImport)
 
-  // Wait for the GetCapabilities response to be parsed before trying to show the layer:
-  // the layer list starts as an empty array, so only this flag tells it apart.
+  // Wait for the GetCapabilities response to be parsed before trying to show the layer
   // TODO: use signal handling to know whether GetCapabilities failed or not
   const waitTimeout = 500
   let retry = 20
