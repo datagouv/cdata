@@ -6,7 +6,7 @@
     <template v-if="dataset">
       <dl class="m-0 space-y-4 p-0">
         <div>
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ dataset.harvest ? $t('Diffuseur') : $t('Producteur') }}
           </dt>
           <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
@@ -21,7 +21,7 @@
           </dd>
         </div>
         <div v-if="dataset.contact_points.length">
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t('Attributions') }}
           </dt>
           <dd class="m-0 space-y-1 p-0 text-sm/[22px] text-gray-title">
@@ -33,7 +33,7 @@
           </dd>
         </div>
         <div v-if="dataset.license">
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t('Licence') }}
           </dt>
           <dd class="m-0 p-0">
@@ -47,7 +47,7 @@
           </dd>
         </div>
         <div>
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t('Dernière mise à jour') }}
           </dt>
           <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
@@ -84,7 +84,7 @@
     <template v-else-if="dataservice">
       <dl class="m-0 space-y-4 p-0">
         <div>
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t('Producteur') }}
           </dt>
           <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
@@ -99,7 +99,7 @@
           </dd>
         </div>
         <div v-if="dataservice.contact_points.length">
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t('Contact') }}
           </dt>
           <dd class="m-0 space-y-1 p-0 text-sm/[22px] text-gray-title">
@@ -112,7 +112,7 @@
         </div>
         <AccessTypePanel :object="dataservice" />
         <div v-if="dataservice.base_api_url">
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t(`URL de base de l'API`) }}
           </dt>
           <dd class="m-0 p-0">
@@ -125,7 +125,7 @@
           </dd>
         </div>
         <div v-if="dataservice.rate_limiting || dataservice.rate_limiting_url">
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t(`Limite d'appels`) }}
           </dt>
           <dd class="m-0 space-y-1 p-0 text-sm/[22px] text-gray-title">
@@ -140,7 +140,7 @@
           </dd>
         </div>
         <div>
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t('Taux de disponibilité') }}
           </dt>
           <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
@@ -148,7 +148,7 @@
           </dd>
         </div>
         <div v-if="dataservice.business_documentation_url">
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t('Documentation métier') }}
           </dt>
           <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
@@ -164,7 +164,7 @@
           </dd>
         </div>
         <div v-if="dataservice.technical_documentation_url">
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t('Documentation technique') }}
           </dt>
           <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
@@ -180,7 +180,7 @@
           </dd>
         </div>
         <div v-if="dataservice.machine_documentation_url">
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t('Documentation machine') }}
           </dt>
           <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
@@ -205,7 +205,7 @@
     <template v-else-if="reuse">
       <dl class="m-0 space-y-4 p-0">
         <div>
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t('Thématique') }}
           </dt>
           <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
@@ -213,7 +213,7 @@
           </dd>
         </div>
         <div>
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t('Type') }}
           </dt>
           <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
@@ -221,7 +221,7 @@
           </dd>
         </div>
         <div>
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t('Mots clés') }}
           </dt>
           <dd class="m-0 flex flex-wrap gap-2 p-0 text-sm/[22px] text-gray-title">
@@ -235,7 +235,7 @@
           </dd>
         </div>
         <div>
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t('Dernière mise à jour') }}
           </dt>
           <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
@@ -243,7 +243,7 @@
           </dd>
         </div>
         <div>
-          <dt class="mb-1 text-sm/5 font-normal text-gray-secondary">
+          <dt class="mb-0.5 text-sm/5 font-normal text-gray-secondary">
             {{ $t('Date de création') }}
           </dt>
           <dd class="m-0 p-0 text-sm/[22px] text-gray-title">

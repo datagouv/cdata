@@ -1,5 +1,5 @@
 <template>
-  <div class="space-y-1 text-sm/5 text-gray-title">
+  <div class="space-y-0.5 text-sm/5 text-gray-title">
     <dt
       class="text-sm/5 font-normal text-gray-secondary"
       :class="{ 'sr-only': hideAccessLabel }"
