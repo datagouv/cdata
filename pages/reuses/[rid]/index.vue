@@ -11,75 +11,7 @@
           :min-heading="3"
         />
         <div class="w-full md:col-span-3">
-          <dl class="p-0 space-y-5">
-            <div>
-              <dt class="font-bold text-sm pb-1">
-                {{ $t('Thématique') }}
-              </dt>
-              <dd class="p-0 text-sm text-mention-grey">
-                {{ topic }}
-              </dd>
-            </div>
-            <div>
-              <dt class="font-bold text-sm pb-1">
-                {{ $t('Type') }}
-              </dt>
-              <dd class="p-0 text-sm text-mention-grey">
-                {{ label }}
-              </dd>
-            </div>
-            <div>
-              <dt class="font-bold text-sm pb-1">
-                {{ $t('Mots clés') }}
-              </dt>
-              <dd class="flex flex-wrap gap-2 p-0 text-sm">
-                <Tag
-                  v-for="tag in reuse.tags"
-                  :key="tag"
-                >
-                  {{ tag }}
-                </Tag>
-                <span
-                  v-if="!reuse.tags?.length"
-                  class="text-mention-grey"
-                >
-                  {{ $t('Aucun mot clé') }}
-                </span>
-              </dd>
-            </div>
-            <div>
-              <dt class="font-bold text-sm pb-1">
-                {{ $t('Dernière mise à jour') }}
-              </dt>
-              <dd class="p-0 text-sm text-mention-grey">
-                <FormattedDate :date="reuse.last_modified" />
-              </dd>
-            </div>
-            <div>
-              <dt class="font-bold text-sm pb-1">
-                {{ $t('Date de création') }}
-              </dt>
-              <dd class="p-0 text-sm text-mention-grey">
-                <FormattedDate :date="reuse.created_at" />
-              </dd>
-            </div>
-            <div v-if="!metricsError">
-              <!-- ClientOnly: the loading skeletons of StatBox get their ids from
-                   `Math.random()`, which differ between the server and the client render. -->
-              <ClientOnly>
-                <!-- `?? null`: StatBox shows its loading skeletons on a strict `null`, and
-                     `data` is `undefined` until the request answers. -->
-                <StatBox
-                  :title="$t('Vues')"
-                  :data="reuseMetrics?.visits ?? null"
-                  size="sm"
-                  type="line"
-                  :summary="reuseMetrics?.visitsTotal ?? null"
-                  :since="metricsSince"
-                />
-              </ClientOnly>
-            </div>
-          </dl>
+          <ReuseSidebar :reuse />
         </div>
       </div>
     </section>
@@ -206,19 +138,14 @@
 </template>
 
 <script setup lang="ts">
-import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseV2, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, FormattedDate, useMetrics, MarkdownViewer, BrandedButton, Tag } from '@datagouv/components-next'
+import { DataserviceCard, type Dataservice, type Reuse, type ReuseV2, type DatasetV2, LoadingBlock, Pagination, MarkdownViewer, BrandedButton } from '@datagouv/components-next'
+import ReuseSidebar from '~/components/Reuses/ReuseSidebar.vue'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{
   reuse: Reuse
 }>()
-
-const config = useRuntimeConfig()
-
-const { label } = useReuseType(props.reuse.type)
-
-const { data: topics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/')
 
 const datasetsPage = ref(1)
 const datasetsPageSize = ref(10)
@@ -242,8 +169,6 @@ const dataservicesQuery = computed(() => {
 })
 const { data: dataservices } = await useAPI<PaginatedArray<Dataservice>>('/api/1/dataservices/', { query: dataservicesQuery })
 
-const topic = computed(() => getTopic(topics.value ?? [], props.reuse.topic))
-
 const { data: reuses, status } = await useAPI<PaginatedArray<ReuseV2>>(`/api/2/reuses/search/`, {
   params: {
     page: 1,
@@ -255,20 +180,4 @@ const { data: reuses, status } = await useAPI<PaginatedArray<ReuseV2>>(`/api/2/r
 
 // We want 3 reuses, but we don't want the one from the current page
 const relatedReusesData = computed(() => (reuses.value?.data ?? []).filter(r => props.reuse.id != r.id).slice(0, 3))
-
-const metricsSince = computed(() => {
-  // max of the start of metrics computing and the creation of the reuse on the platform
-  return [props.reuse.created_at, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
-})
-
-const { getReuseMetrics } = useMetrics()
-
-// `server: false` keeps the call out of the render: the metrics API is a third-party service
-// and its numbers are secondary to the page, so waiting for it would delay the whole page.
-// The box disappears on `error` rather than loading forever.
-const { data: reuseMetrics, error: metricsError } = useAsyncData(
-  'reuse-metrics',
-  () => props.reuse.id ? getReuseMetrics(props.reuse.id) : Promise.resolve(null),
-  { lazy: true, server: false, watch: [() => props.reuse.id] },
-)
 </script>

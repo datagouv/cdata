@@ -132,16 +132,17 @@
           <h3 class="mt-0 mb-6 border-b border-gray-default pb-4">
             Jeu de données
           </h3>
-          <DesignObjectMetadataSidebar
+          <DatasetSidebar
             v-if="richDataset"
             :dataset="richDataset"
+            :show-metrics="false"
           />
         </article>
         <article class="min-w-0 rounded border border-gray-default bg-white p-6">
           <h3 class="mt-0 mb-6 border-b border-gray-default pb-4">
             API
           </h3>
-          <DesignObjectMetadataSidebar
+          <DataserviceSidebar
             v-if="richDataservice"
             :dataservice="richDataservice"
           />
@@ -150,11 +151,10 @@
           <h3 class="mt-0 mb-6 border-b border-gray-default pb-4">
             Réutilisation
           </h3>
-          <DesignObjectMetadataSidebar
+          <ReuseSidebar
             v-if="richReuse"
             :reuse="richReuse"
-            :reuse-topic="reuseTopic"
-            :reuse-type="reuseType"
+            :show-metrics="false"
           />
         </article>
       </div>
@@ -329,16 +329,15 @@ import {
   type ContactPoint as ContactPointType,
   type Dataservice,
   type DatasetV2WithFullObject,
-  getTopic,
-  getType,
   type Organization,
   type Resource,
   type Reuse,
-  type ReuseTopic,
-  type ReuseType,
 } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
+import DataserviceSidebar from '~/components/Dataservices/DataserviceSidebar.vue'
+import DatasetSidebar from '~/components/Datasets/DatasetSidebar.vue'
+import ReuseSidebar from '~/components/Reuses/ReuseSidebar.vue'
 import DescriptionList from '~/components/DescriptionList/DescriptionList.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 
@@ -350,12 +349,7 @@ const { data: dataset, status: datasetStatus } = await useAPI<DatasetV2WithFullO
 })
 const { data: dataservice } = await useAPI<Dataservice>('/api/1/dataservices/api-tabulaire-data-gouv-fr-beta/', { lazy: true })
 const { data: reuse } = await useAPI<Reuse>('/api/1/reuses/itineriz-deplacements-professionnels-jop-paris-2024/', { lazy: true })
-const { data: reuseTopics } = await useAPI<Array<ReuseTopic>>('/api/1/reuses/topics/', { lazy: true })
-const { data: reuseTypes } = await useAPI<Array<ReuseType>>('/api/1/reuses/types/', { lazy: true })
 const { data: organization } = await useAPI<Organization>('/api/1/organizations/sante-publique-france/', { lazy: true })
-
-const reuseTopic = computed(() => reuse.value ? getTopic(reuseTopics.value ?? [], reuse.value.topic) : '')
-const reuseType = computed(() => reuse.value ? getType(reuseTypes.value ?? [], reuse.value.type) : '')
 
 const richContacts: Array<ContactPointType> = [
   {
