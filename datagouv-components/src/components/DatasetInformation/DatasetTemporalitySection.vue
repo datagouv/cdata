@@ -1,5 +1,8 @@
 <template>
-  <MetadataSection :title="t('Temporalité')">
+  <MetadataSection
+    v-if="hasValue"
+    :title="t('Temporalité')"
+  >
     <DescriptionList>
       <div>
         <DescriptionListTerm>{{ t('Création') }}</DescriptionListTerm>
@@ -13,20 +16,33 @@
           <FormattedDate :date="dataset.last_modified" />
         </DescriptionListDetails>
       </div>
-      <div v-if="dataset.frequency">
+      <div>
         <DescriptionListTerm>{{ t('Fréquence') }}</DescriptionListTerm>
-        <DescriptionListDetails>{{ dataset.frequency.label }}</DescriptionListDetails>
-      </div>
-      <div v-if="dataset.frequency_date">
-        <DescriptionListTerm>{{ t('Prochaine mise à jour prévue') }}</DescriptionListTerm>
         <DescriptionListDetails>
-          <FormattedDate :date="dataset.frequency_date" />
+          <template v-if="dataset.frequency">
+            {{ dataset.frequency.label }}
+          </template>
+          <MetadataEmptyValue v-else />
         </DescriptionListDetails>
       </div>
-      <div v-if="dataset.temporal_coverage">
+      <div>
+        <DescriptionListTerm>{{ t('Prochaine mise à jour prévue') }}</DescriptionListTerm>
+        <DescriptionListDetails>
+          <FormattedDate
+            v-if="dataset.frequency_date"
+            :date="dataset.frequency_date"
+          />
+          <MetadataEmptyValue v-else />
+        </DescriptionListDetails>
+      </div>
+      <div>
         <DescriptionListTerm>{{ t('Couverture temporelle') }}</DescriptionListTerm>
         <DescriptionListDetails>
-          <DateRangeDetails :range="dataset.temporal_coverage" />
+          <DateRangeDetails
+            v-if="dataset.temporal_coverage"
+            :range="dataset.temporal_coverage"
+          />
+          <MetadataEmptyValue v-else />
         </DescriptionListDetails>
       </div>
       <div>
@@ -49,10 +65,16 @@ import DescriptionListDetails from '../DescriptionListDetails.vue'
 import DateRangeDetails from '../DateRangeDetails.vue'
 import FormattedDate from '../FormattedDate.vue'
 import MetadataSection from './MetadataSection.vue'
+import MetadataEmptyValue from '../MetadataEmptyValue.vue'
+import { computed } from 'vue'
 
-defineProps<{
+const props = defineProps<{
   dataset: DatasetV2WithFullObject
 }>()
+
+// A category with no filled metadata at all is not shown.
+const hasValue = computed(() => Boolean(props.dataset.created_at || props.dataset.last_modified || props.dataset.frequency
+  || props.dataset.frequency_date || props.dataset.temporal_coverage || props.dataset.last_update))
 
 const { t } = useTranslation()
 </script>

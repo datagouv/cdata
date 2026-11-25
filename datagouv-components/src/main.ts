@@ -105,6 +105,7 @@ import SimpleBanner from './components/SimpleBanner.vue'
 import StatBox from './components/StatBox.vue'
 import Tab from './components/Tabs/Tab.vue'
 import TechnicalValue from './components/TechnicalValue.vue'
+import MetadataEmptyValue from './components/MetadataEmptyValue.vue'
 import CodeBlock from './components/CodeBlock.vue'
 import MetadataExtras from './components/MetadataExtras.vue'
 import TabGroup from './components/Tabs/TabGroup.vue'
@@ -454,6 +455,7 @@ export {
   OpenApiViewer,
   Tab,
   TechnicalValue,
+  MetadataEmptyValue,
   CodeBlock,
   MetadataExtras,
   TabGroup,

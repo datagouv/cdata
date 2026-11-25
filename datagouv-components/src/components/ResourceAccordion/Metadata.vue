@@ -9,6 +9,7 @@ import FormattedDate from '../FormattedDate.vue'
 import { filesize } from '../../functions/helpers'
 import MetadataExtras from '../MetadataExtras.vue'
 import TechnicalValue from '../TechnicalValue.vue'
+import MetadataEmptyValue from '../MetadataEmptyValue.vue'
 import Toggletip from '../Toggletip.vue'
 import { getResourceLabel, getResourceFilesize } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
@@ -75,17 +76,16 @@ const { t } = useTranslation()
           />
         </DescriptionListDetails>
       </div>
-      <div
-        v-if="resource.checksum"
-        class="min-w-0"
-      >
-        <DescriptionListTerm>{{ resource.checksum.type }}</DescriptionListTerm>
+      <div class="min-w-0">
+        <DescriptionListTerm>{{ resource.checksum?.type ?? t('Somme de contrôle') }}</DescriptionListTerm>
         <DescriptionListDetails>
           <TechnicalValue
+            v-if="resource.checksum"
             :value="resource.checksum.value"
             :label="t('Copier la somme de contrôle')"
             :copied-label="t('Somme de contrôle copiée !')"
           />
+          <MetadataEmptyValue v-else />
         </DescriptionListDetails>
       </div>
     </DescriptionList>
@@ -102,31 +102,32 @@ const { t } = useTranslation()
           <FormattedDate :date="resource.last_modified" />
         </DescriptionListDetails>
       </div>
-      <div
-        v-if="resourceFilesize !== null"
-        class="min-w-0"
-      >
+      <div class="min-w-0">
         <DescriptionListTerm>{{ t('Taille') }}</DescriptionListTerm>
         <DescriptionListDetails>
-          {{ filesize(resourceFilesize) }}
+          <template v-if="resourceFilesize !== null">
+            {{ filesize(resourceFilesize) }}
+          </template>
+          <MetadataEmptyValue v-else />
         </DescriptionListDetails>
       </div>
-      <div
-        v-if="resource.type"
-        class="min-w-0"
-      >
+      <div class="min-w-0">
         <DescriptionListTerm>{{ t('Type') }}</DescriptionListTerm>
         <DescriptionListDetails>
-          {{ getResourceLabel(resource.type) }}
+          <template v-if="resource.type">
+            {{ getResourceLabel(resource.type) }}
+          </template>
+          <MetadataEmptyValue v-else />
         </DescriptionListDetails>
       </div>
-      <div
-        v-if="resource.mime"
-        class="min-w-0"
-      >
+      <div class="min-w-0">
         <DescriptionListTerm>{{ t('Type MIME') }}</DescriptionListTerm>
         <DescriptionListDetails>
-          <code class="font-mono text-[13px]/[18px]">{{ resource.mime }}</code>
+          <code
+            v-if="resource.mime"
+            class="font-mono text-[13px]/[18px]"
+          >{{ resource.mime }}</code>
+          <MetadataEmptyValue v-else />
         </DescriptionListDetails>
       </div>
     </DescriptionList>

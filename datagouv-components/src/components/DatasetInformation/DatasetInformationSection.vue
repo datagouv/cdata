@@ -1,9 +1,12 @@
 <template>
   <MetadataSection :title="t('Informations')">
     <DescriptionList>
-      <div v-if="dataset.tags && dataset.tags.length">
+      <div>
         <DescriptionListTerm>{{ t('Mots-clés') }}</DescriptionListTerm>
-        <DescriptionListDetails class="flex flex-wrap gap-2 items-start">
+        <DescriptionListDetails
+          v-if="dataset.tags?.length"
+          class="flex flex-wrap gap-2 items-start"
+        >
           <Tag
             v-for="tag in dataset.tags"
             :key="tag"
@@ -11,6 +14,9 @@
           >
             {{ tag }}
           </Tag>
+        </DescriptionListDetails>
+        <DescriptionListDetails v-else>
+          <MetadataEmptyValue />
         </DescriptionListDetails>
       </div>
       <div>
@@ -23,16 +29,18 @@
           />
         </DescriptionListDetails>
       </div>
-      <div v-if="dataset.license">
+      <div>
         <DescriptionListTerm>{{ t('Licence') }}</DescriptionListTerm>
         <DescriptionListDetails>
           <TechnicalValue
+            v-if="dataset.license"
             :value="dataset.license.title"
             :href="dataset.license.url"
             :copy-text="dataset.license.url || dataset.license.title"
             :label="t('Copier la licence')"
             :copied-label="t('Licence copiée !')"
           />
+          <MetadataEmptyValue v-else />
         </DescriptionListDetails>
       </div>
       <slot />
@@ -51,6 +59,7 @@ import DescriptionListDetails from '../DescriptionListDetails.vue'
 import TechnicalValue from '../TechnicalValue.vue'
 import Tag from '../Tag.vue'
 import MetadataSection from './MetadataSection.vue'
+import MetadataEmptyValue from '../MetadataEmptyValue.vue'
 
 const props = defineProps<{
   dataset: DatasetV2WithFullObject

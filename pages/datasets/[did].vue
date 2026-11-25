@@ -136,9 +136,7 @@
                 </dd>
               </div>
 
-              <div
-                v-if="dataset.contact_points.length"
-              >
+              <div>
                 <DescriptionListTerm>
                   <template v-if="hasContactPointsWithSpecificRole">
                     {{ $t("Attributions") }}
@@ -153,23 +151,26 @@
                     :key="contact.id"
                     :contact
                   />
+                  <MetadataEmptyValue v-if="!dataset.contact_points.length" />
                 </dd>
               </div>
 
               <div
-                v-if="dataset.license && dataset.access_type === 'open'"
+                v-if="dataset.access_type === 'open'"
               >
                 <DescriptionListTerm>
                   {{ $t("Licence") }}
                 </DescriptionListTerm>
                 <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
                   <TechnicalValue
+                    v-if="dataset.license"
                     :value="dataset.license.title"
                     :href="dataset.license.url"
                     :copy-text="dataset.license.url || dataset.license.title"
                     :label="$t('Copier la licence')"
                     :copied-label="$t('Licence copiée !')"
                   />
+                  <MetadataEmptyValue v-else />
                 </dd>
               </div>
 
@@ -474,7 +475,7 @@
 </template>
 
 <script setup lang="ts">
-import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, LoadingBlock, BrandedButton, FormattedDate, StatBox, Toggletip, type TranslatedBadge, LabelTag, AppLink, TechnicalValue, MarkdownViewer, useMetrics, TranslationT, getDescriptionShort, type Resource, RESOURCE_EXPLORER_PAGE_SIZE, AccessTypeBadge, DatasetBadge, getDatasetStatus } from '@datagouv/components-next'
+import { ReadMore, MetadataEmptyValue, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, LoadingBlock, BrandedButton, FormattedDate, StatBox, Toggletip, type TranslatedBadge, LabelTag, AppLink, TechnicalValue, MarkdownViewer, useMetrics, TranslationT, getDescriptionShort, type Resource, RESOURCE_EXPLORER_PAGE_SIZE, AccessTypeBadge, DatasetBadge, getDatasetStatus } from '@datagouv/components-next'
 import {
   RiExternalLinkFill,
   RiExternalLinkLine,
