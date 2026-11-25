@@ -28,6 +28,7 @@
     <div class="flex justify-between">
       <BrandedButton
         v-if="config.public.publishingReuseFeedbackUrl"
+        class="-ms-4"
         :href="config.public.publishingReuseFeedbackUrl"
         color="tertiary"
         :icon="RiLightbulbLine"

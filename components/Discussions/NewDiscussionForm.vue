@@ -10,6 +10,7 @@
       <BrandedButton
         :icon="RiCloseLine"
         color="tertiary"
+        class="-me-3"
         size="xs"
         @click="$emit('close')"
       >

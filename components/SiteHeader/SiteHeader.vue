@@ -257,7 +257,7 @@
           <div class="fr-header__tools">
             <div class="fr-header__tools-links">
               <ClientOnly v-if="me">
-                <ul class="list-none flex space-x-7">
+                <ul class="list-none flex -me-4">
                   <li class="flex gap-2 items-center">
                     <BrandedButton
                       :href="me.page"
@@ -387,7 +387,7 @@
               </ClientOnly>
               <ul
                 v-else
-                class="list-none flex space-x-7"
+                class="list-none flex -me-4"
               >
                 <li>
                   <BrandedButton

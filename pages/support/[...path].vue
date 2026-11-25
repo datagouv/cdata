@@ -31,7 +31,7 @@
           description="Les guides vous accompagnent pas à pas pour publier, explorer et réutiliser les données ouvertes en toute simplicité."
         >
           <template #link>
-            <div class="flex flex-col items-end mt-1 *:font-bold *:h-8">
+            <div class="flex flex-col items-end mt-1 -me-4 *:font-bold *:min-h-8">
               <BrandedButton
                 href="https://guides.data.gouv.fr/guide-data.gouv.fr"
                 color="tertiary"
@@ -69,7 +69,7 @@
           description="Echangez avec la communauté, partagez vos retours sur la plateforme et demandez l'ouverture de données."
         >
           <template #link>
-            <div class="flex flex-col items-end mt-1 *:font-bold *:h-8">
+            <div class="flex flex-col items-end mt-1 -me-4 *:font-bold *:min-h-8">
               <BrandedButton
                 href="https://forum.data.gouv.fr/c/recherche-et-ouverture-de-donnees/"
                 color="tertiary"

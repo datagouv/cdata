@@ -14,7 +14,7 @@
         v-if="sortable"
         color="tertiary"
         size="2xs"
-        class="shrink-0 ml-2"
+        class="shrink-0 ml-2 -my-2"
         icon-only
         :icon="sorted === 'desc' ? RiArrowUpLine : RiArrowDownLine"
         :class="sorted ? '' : 'opacity-50'"
