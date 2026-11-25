@@ -116,9 +116,9 @@ const resolvedLogoSizeClass = computed(() => props.logoSizeClass || (hasBadges.v
   color: var(--color-gray-title);
   font-family: var(--font-marianne);
 }
-/* With badges, the logo spans the name and the badges: aligned on their top. */
-.organization-owner[data-long-name="true"],
-.organization-owner[data-has-badges="true"] {
+/* The name and the badges are centred on the logo; a long name, on several lines, starts at
+   the top of the logo instead. */
+.organization-owner[data-long-name="true"] {
   align-items: flex-start;
 }
 

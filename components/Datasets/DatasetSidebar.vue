@@ -16,7 +16,7 @@
           v-if="dataset.organization"
           :organization="dataset.organization"
           as="h2"
-          name-size="sm"
+          name-size="base"
           name-color="text-gray-title"
         />
         <AvatarWithName
