@@ -135,11 +135,13 @@
       :quality="dataservice.quality"
       hide-warnings
     />
+    <AccessRequestButton :object="dataservice" />
   </aside>
 </template>
 
 <script setup lang="ts">
 import { AvatarWithName, DataserviceQuality, TechnicalValue, type Dataservice } from '@datagouv/components-next'
+import AccessRequestButton from '~/components/AccessTypes/AccessRequestButton.vue'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import CdataLink from '~/components/CdataLink.vue'
 import ContactPoint from '~/components/ContactPoint.vue'

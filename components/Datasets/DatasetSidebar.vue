@@ -208,6 +208,11 @@
       </dd>
     </div>
 
+    <AccessRequestButton
+      v-if="dataset.access_type !== 'open'"
+      :object="dataset"
+    />
+
     <SimpleBanner
       v-if="dataset.harvest && 'remote_url' in dataset.harvest"
       type="gray"
@@ -274,6 +279,7 @@
 <script setup lang="ts">
 import { AvatarWithName, DatasetQuality, FormattedDate, LabelTag, SimpleBanner, StatBox, TechnicalValue, Toggletip, TranslationT, useMetrics, type DatasetV2WithFullObject, type TranslatedBadge } from '@datagouv/components-next'
 import { RiExternalLinkLine } from '@remixicon/vue'
+import AccessRequestButton from '~/components/AccessTypes/AccessRequestButton.vue'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import DescriptionListTerm from '~/components/DescriptionList/DescriptionListTerm.vue'

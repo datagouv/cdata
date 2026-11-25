@@ -2,24 +2,6 @@
   <MetadataSection :title="t('Informations')">
     <DescriptionList>
       <div>
-        <DescriptionListTerm>{{ t('Mots-clés') }}</DescriptionListTerm>
-        <DescriptionListDetails
-          v-if="dataset.tags?.length"
-          class="flex flex-wrap gap-2 items-start"
-        >
-          <Tag
-            v-for="tag in dataset.tags"
-            :key="tag"
-            :to="getTagUrl(tag)"
-          >
-            {{ tag }}
-          </Tag>
-        </DescriptionListDetails>
-        <DescriptionListDetails v-else>
-          <MetadataEmptyValue />
-        </DescriptionListDetails>
-      </div>
-      <div>
         <DescriptionListTerm>{{ t('Identifiant') }}</DescriptionListTerm>
         <DescriptionListDetails>
           <TechnicalValue
@@ -41,6 +23,24 @@
             :copied-label="t('Licence copiée !')"
           />
           <MetadataEmptyValue v-else />
+        </DescriptionListDetails>
+      </div>
+      <div>
+        <DescriptionListTerm>{{ t('Mots-clés') }}</DescriptionListTerm>
+        <DescriptionListDetails
+          v-if="dataset.tags?.length"
+          class="flex flex-wrap gap-2 items-start"
+        >
+          <Tag
+            v-for="tag in dataset.tags"
+            :key="tag"
+            :to="getTagUrl(tag)"
+          >
+            {{ tag }}
+          </Tag>
+        </DescriptionListDetails>
+        <DescriptionListDetails v-else>
+          <MetadataEmptyValue />
         </DescriptionListDetails>
       </div>
       <slot />

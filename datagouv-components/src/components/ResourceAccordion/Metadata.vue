@@ -2,7 +2,6 @@
 import { computed } from 'vue'
 import { RiInformationLine } from '@remixicon/vue'
 import type { Resource } from '../../types/resources'
-import DescriptionList from '../DescriptionList.vue'
 import DescriptionListDetails from '../DescriptionListDetails.vue'
 import DescriptionListTerm from '../DescriptionListTerm.vue'
 import FormattedDate from '../FormattedDate.vue'
@@ -26,7 +25,8 @@ const { t } = useTranslation()
 
 <template>
   <div class="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-5 sm:grid-cols-2">
-    <DescriptionList class="!flex !flex-col">
+    <!-- One column per list: the two lists make the two columns of the grid. -->
+    <dl class="m-0 grid min-w-0 grid-cols-1 gap-y-5 p-0">
       <div class="min-w-0">
         <DescriptionListTerm>{{ t('URL') }}</DescriptionListTerm>
         <DescriptionListDetails>
@@ -88,8 +88,9 @@ const { t } = useTranslation()
           <MetadataEmptyValue v-else />
         </DescriptionListDetails>
       </div>
-    </DescriptionList>
-    <DescriptionList class="!flex !flex-col">
+    </dl>
+    <!-- One column per list: the two lists make the two columns of the grid. -->
+    <dl class="m-0 grid min-w-0 grid-cols-1 gap-y-5 p-0">
       <div class="min-w-0">
         <DescriptionListTerm>{{ t('Créée le') }}</DescriptionListTerm>
         <DescriptionListDetails>
@@ -130,7 +131,7 @@ const { t } = useTranslation()
           <MetadataEmptyValue v-else />
         </DescriptionListDetails>
       </div>
-    </DescriptionList>
+    </dl>
     <MetadataExtras
       v-if="hasExtras"
       class="border-y border-gray-default py-4 sm:col-span-2"
