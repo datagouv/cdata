@@ -10,11 +10,11 @@
     :data-icon-right="iconRight ? 'true' : undefined"
     :to="href && !isDisabled ? href : undefined"
     :type="href ? undefined : (type || 'button')"
-    :role="href ? 'link' : undefined"
+    :role="href && isDisabled ? 'link' : undefined"
     :tabindex="href && isDisabled ? -1 : undefined"
     :aria-disabled="isDisabled ? 'true' : undefined"
     :aria-busy="loading ? 'true' : undefined"
-    :aria-label="$attrs['aria-label'] || (isIconOnly ? $attrs.title : undefined)"
+    :aria-label="ariaLabel"
     :target="href && newTab ? '_blank' : undefined"
     :rel="href && newTab ? 'noopener noreferrer' : undefined"
     @click.capture="preventWhenDisabled"
@@ -70,6 +70,7 @@ import {
   computed,
   inject,
   Text,
+  useAttrs,
   useSlots,
 } from 'vue'
 import { RiExternalLinkLine, RiLoader4Line } from '@remixicon/vue'
@@ -152,6 +153,17 @@ const hasLabel = computed(() => hasSlotContent(slots.default))
 // A button without a visible label is at least square, like an icon-only button.
 const isIconOnly = computed(() => props.iconOnly || !hasLabel.value)
 
+// The slot (visible or sr-only) is the accessible name. The `title` is only a fallback
+// when there is no slot at all, so that it does not replace a more precise label. An
+// explicit `aria-label` replaces the content, so it gets the new-tab mention too.
+const attrs = useAttrs()
+const ariaLabel = computed(() => {
+  const label = (attrs['aria-label'] ?? attrs.ariaLabel) as string | undefined
+  if (label) return props.href && props.newTab ? `${label} (${t('nouvel onglet')})` : label
+  if (!hasLabel.value) return attrs.title as string | undefined
+  return undefined
+})
+
 // A disabled or loading button only gets `aria-disabled`, not the `disabled`
 // attribute: it stays focusable, so keyboard and screen reader users keep their
 // place while it loads and can still reach it to read why it is disabled.
@@ -217,6 +229,7 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
   line-height: var(--branded-button-line-height);
   text-align: center;
   text-decoration: none;
+  white-space: normal;
   cursor: pointer;
 }
 
@@ -348,12 +361,12 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
 }
 
 /*
- * Long labels may wrap. `break-word` rather than `anywhere`: a button squeezed by a flex or
- * table parent never gets narrower than its longest word.
+ * Long labels may wrap, between words only: a button squeezed by a flex or table parent
+ * never gets narrower than its longest word (no `min-width: 0`, and `break-word` rather
+ * than `anywhere`). The label inherits `white-space` from the button, so a parent can
+ * still keep it on one line with `whitespace-nowrap`.
  */
 .branded-button__label {
-  min-width: 0;
-  white-space: normal;
   overflow-wrap: break-word;
 }
 
