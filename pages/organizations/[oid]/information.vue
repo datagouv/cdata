@@ -185,72 +185,19 @@
         </div>
       </div>
     </SectionCollapse>
-    <SectionCollapse
-      :title="$t('Informations techniques')"
-      :button-text="$t('Voir les informations techniques')"
-    >
-      <DescriptionList>
-        <div>
-          <DescriptionListTerm>{{ $t('Dernière mise à jour') }}</DescriptionListTerm>
-          <DescriptionListDetails>
-            <FormattedDate :date="organization.last_modified" />
-          </DescriptionListDetails>
-        </div>
-        <div>
-          <DescriptionListTerm>{{ $t('Identifiant') }}</DescriptionListTerm>
-          <DescriptionListDetails>
-            <TechnicalValue
-              :value="organization.id"
-              :label="$t(`Copier l'identifiant de l'organisation`)"
-              :copied-label="$t(`Identifiant de l'organisation copié !`)"
-            />
-          </DescriptionListDetails>
-        </div>
-        <div>
-          <DescriptionListTerm>{{ $t('Date de création') }}</DescriptionListTerm>
-          <DescriptionListDetails>
-            <FormattedDate :date="organization.created_at" />
-          </DescriptionListDetails>
-        </div>
-      </DescriptionList>
-    </SectionCollapse>
-    <SectionCollapse
-      :title="$t('Intégrer sur votre site')"
-      :button-text="$t('Voir les oembeds')"
-    >
-      <div class="grid min-w-0 gap-6">
-        <article
-          v-for="embed in organizationEmbeds"
-          :key="embed.type"
-          class="grid min-w-0 gap-3"
-        >
-          <h3 class="m-0 text-sm/5 font-medium text-gray-title">
-            {{ $t(embed.title) }}
-          </h3>
-          <CodeBlock
-            :code="getOrganizationOEmbedHtml(embed.type, organization.id)"
-            language="HTML"
-            :label="$t(`Copier l'intégration`)"
-            :copied-label="$t('Intégration copiée !')"
-          />
-        </article>
-      </div>
-    </SectionCollapse>
+    <OrganizationTechnicalSection :organization />
+    <OrganizationEmbedSection :organization />
   </div>
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, CodeBlock, FormattedDate, OrganizationLogo, OrganizationNameWithCertificate, StatBox, TechnicalValue, getOrganizationOEmbedHtml, type Organization, toast } from '@datagouv/components-next'
+import { Avatar, BrandedButton, OrganizationLogo, OrganizationNameWithCertificate, StatBox, type Organization, toast } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import MemberRoleBadge from '~/components/Organization/MemberRoleBadge.vue'
+import OrganizationEmbedSection from '~/components/Organization/OrganizationEmbedSection.vue'
+import OrganizationTechnicalSection from '~/components/Organization/OrganizationTechnicalSection.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
-
-const organizationEmbeds = [
-  { type: 'search-dataset', title: 'La recherche de jeux de données de l’organisation' },
-  { type: 'search-dataservice', title: 'La recherche des API de l’organisation' },
-  { type: 'list-reuse', title: 'La liste des réutilisations de l’organisation' },
-] as const
 
 const props = defineProps<{
   organization: Organization

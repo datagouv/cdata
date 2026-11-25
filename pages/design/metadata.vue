@@ -184,11 +184,13 @@
         Métadonnées présentes dans l’onglet Informations d’une organisation, hors statistiques,
         téléchargements et membres avec avatars.
       </p>
-      <div class="rounded border border-gray-default bg-white p-6">
-        <DesignOrganizationMetadata
-          v-if="organization"
-          :organization
-        />
+      <!-- The same sections as the organization page: closed accordions, as there. -->
+      <div
+        v-if="organization"
+        class="border-x border-gray-default bg-white px-6"
+      >
+        <OrganizationTechnicalSection :organization />
+        <OrganizationEmbedSection :organization />
       </div>
     </section>
 
@@ -337,6 +339,8 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import DataserviceSidebar from '~/components/Dataservices/DataserviceSidebar.vue'
 import DatasetSidebar from '~/components/Datasets/DatasetSidebar.vue'
+import OrganizationEmbedSection from '~/components/Organization/OrganizationEmbedSection.vue'
+import OrganizationTechnicalSection from '~/components/Organization/OrganizationTechnicalSection.vue'
 import ReuseSidebar from '~/components/Reuses/ReuseSidebar.vue'
 import DescriptionList from '~/components/DescriptionList/DescriptionList.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
