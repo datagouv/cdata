@@ -103,7 +103,7 @@ export async function setupAndSaveChart(page: Page, options: SetupAndSaveChartOp
     { timeout: 30000 },
   )
 
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
   const saveResponse = await saveResponsePromise
   const chartData = (await saveResponse.json()) as Chart
   await imageResponsePromise
