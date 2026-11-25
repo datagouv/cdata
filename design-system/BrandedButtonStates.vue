@@ -268,6 +268,38 @@
     </section>
 
     <section
+      data-capture="form-guard"
+      class="space-y-4"
+    >
+      <h2 class="text-xl font-bold mb-4">
+        Soumission bloquée pendant le chargement
+      </h2>
+      <form
+        class="flex flex-wrap items-center gap-3"
+        @submit.prevent="submitCount++"
+      >
+        <input
+          class="fr-input w-60"
+          aria-label="Champ de test"
+          placeholder="Entrée ici ne doit pas soumettre"
+        >
+        <BrandedButton
+          type="submit"
+          :loading="formLoading"
+        >
+          Enregistrer
+        </BrandedButton>
+        <BrandedButton
+          color="secondary"
+          @click="formLoading = !formLoading"
+        >
+          {{ formLoading ? 'Arrêter le chargement' : 'Lancer le chargement' }}
+        </BrandedButton>
+        <span data-testid="submit-count">Soumissions : {{ submitCount }}</span>
+      </form>
+    </section>
+
+    <section
       data-capture="legacy"
       class="space-y-4"
     >
@@ -318,6 +350,10 @@
 <script setup lang="ts">
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import { RiAddLine, RiDownloadLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
+import { ref } from 'vue'
+
+const formLoading = ref(true)
+const submitCount = ref(0)
 
 const colors = ['primary', 'secondary', 'tertiary', 'danger', 'warning', 'white-flat'] as const
 const sizes = ['2xs', 'xs', 'sm', 'lg'] as const

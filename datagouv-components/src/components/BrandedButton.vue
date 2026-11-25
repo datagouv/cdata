@@ -10,7 +10,6 @@
     :data-icon-right="iconRight ? 'true' : undefined"
     :to="href && !isDisabled ? href : undefined"
     :type="href ? undefined : (type || 'button')"
-    :disabled="href ? undefined : isDisabled"
     :role="href ? 'link' : undefined"
     :tabindex="href && isDisabled ? -1 : undefined"
     :aria-disabled="isDisabled ? 'true' : undefined"
@@ -153,8 +152,11 @@ const hasLabel = computed(() => hasSlotContent(slots.default))
 // A button without a visible label is at least square, like an icon-only button.
 const isIconOnly = computed(() => props.iconOnly || !hasLabel.value)
 
-// A disabled link is rendered as a `<span>` and a loading button is disabled,
-// but listeners set by the parent must not run either.
+// A disabled or loading button only gets `aria-disabled`, not the `disabled`
+// attribute: it stays focusable, so keyboard and screen reader users keep their
+// place while it loads and can still reach it to read why it is disabled.
+// Its activation (and form submission for `type="submit"`) is blocked here,
+// before the listeners set by the parent. A disabled link is rendered as a `<span>`.
 function preventWhenDisabled(event: Event) {
   if (!isDisabled.value) return
   event.preventDefault()
@@ -307,8 +309,16 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
   filter: brightness(0.95);
 }
 
-.branded-button[data-size]:not([aria-disabled="true"]):active {
-  box-shadow: inset 0 0 0 1px currentColor;
+.branded-button[data-color="primary"]:not([aria-disabled="true"]):active {
+  background-color: var(--color-new-primary-clic);
+}
+
+.branded-button:is([data-color="secondary"], [data-color="tertiary"], [data-color="tertiary-blue"], [data-color="warning"], [data-color="danger"], [data-color="white-flat"]):not([aria-disabled="true"]):active {
+  background-color: var(--color-gray-active);
+}
+
+.branded-button:is([data-color="brown-illustration"], [data-color="green-illustration"]):not([aria-disabled="true"]):active {
+  filter: brightness(0.9);
 }
 
 .branded-button[data-size]:focus-visible {
@@ -395,14 +405,19 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
   }
 }
 
-/* Touch targets */
+/*
+ * Touch targets: an invisible 44px hit area centered on the button, so that
+ * compact buttons keep their visual size and the layout does not change.
+ */
 @media (pointer: coarse) {
-  .branded-button[data-size] {
-    min-height: max(calc(var(--spacing) * 11), var(--branded-button-height));
-  }
-
-  .branded-button[data-size]:is([data-icon-only="true"], :has(.branded-button__label--mobile-hidden)) {
-    min-width: max(calc(var(--spacing) * 11), var(--branded-button-height));
+  .branded-button[data-size]::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, calc(var(--spacing) * 11));
+    height: max(100%, calc(var(--spacing) * 11));
+    transform: translate(-50%, -50%);
   }
 }
 
