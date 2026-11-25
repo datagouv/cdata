@@ -59,7 +59,7 @@
         <Divider>{{ $t('ou') }}</Divider>
 
         <p class="text-center">
-          {{ $t('Utilisez la double authentification de ProConnect, avec un compte ProConnect à la même adresse email.') }}
+          {{ $t('Votre compte ProConnect doit avoir la même adresse email que ce compte.') }}
         </p>
         <ProConnectButton
           :label="$t('Se connecter avec')"
