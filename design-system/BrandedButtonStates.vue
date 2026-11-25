@@ -2,7 +2,7 @@
   <div class="space-y-12">
     <section data-capture="sizes">
       <h2 class="text-xl font-bold mb-4">
-        Couleurs × tailles
+        Couleurs recommandées × tailles
       </h2>
       <div class="overflow-x-auto">
         <table class="border-separate border-spacing-3">
@@ -46,7 +46,7 @@
 
     <section data-capture="states">
       <h2 class="text-xl font-bold mb-4">
-        Couleurs × états (taille standard)
+        Couleurs recommandées × états (taille standard)
       </h2>
       <div class="overflow-x-auto">
         <table class="border-separate border-spacing-3">
@@ -268,6 +268,27 @@
     </section>
 
     <section
+      data-capture="legacy"
+      class="space-y-4"
+    >
+      <h2 class="text-xl font-bold mb-4">
+        Conservés pour compatibilité (à ne plus utiliser)
+      </h2>
+      <div class="flex flex-wrap items-center gap-4">
+        <BrandedButton
+          v-for="color in legacyColors"
+          :key="color"
+          :color
+        >
+          {{ color }}
+        </BrandedButton>
+        <BrandedButton size="xl">
+          xl
+        </BrandedButton>
+      </div>
+    </section>
+
+    <section
       data-capture="lab"
       class="space-y-4"
     >
@@ -298,8 +319,10 @@
 import { BannerAction, BrandedButton } from '@datagouv/components-next'
 import { RiAddLine, RiDownloadLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
 
-const colors = ['primary', 'secondary', 'tertiary', 'tertiary-blue', 'warning', 'danger', 'white-flat', 'brown-illustration', 'green-illustration'] as const
-const sizes = ['2xs', 'xs', 'sm', 'lg', 'xl'] as const
+const colors = ['primary', 'secondary', 'tertiary', 'danger', 'warning', 'white-flat'] as const
+const sizes = ['2xs', 'xs', 'sm', 'lg'] as const
+// Kept for backward compatibility only
+const legacyColors = ['tertiary-blue', 'brown-illustration', 'green-illustration'] as const
 
 const states = [
   { label: 'Défaut', text: 'Publier', props: {} },
@@ -316,7 +339,7 @@ const states = [
 // Same list as src/buttonExamples.js in the former Design Lab
 const labExamples = [
   ...(['primary', 'secondary', 'tertiary', 'warning', 'danger', 'white-flat', 'brown-illustration', 'green-illustration'] as const).map(color => ({ label: color, props: { color } })),
-  ...sizes.map(size => ({ label: `Taille ${size}`, props: { size } })),
+  ...(['2xs', 'xs', 'sm', 'lg', 'xl'] as const).map(size => ({ label: `Taille ${size}`, props: { size } })),
   { label: 'Désactivé', props: { disabled: true } },
   { label: 'Chargement', props: { loading: true } },
   { label: 'Avec icône', props: { icon: RiAddLine } },

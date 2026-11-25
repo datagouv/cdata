@@ -79,11 +79,25 @@ import AppLink from './AppLink.vue'
 import { bannerActionTypeKey } from './BannerAction.vue'
 import { useTranslation } from '../composables/useTranslation'
 
+/**
+ * Recommended colors:
+ * - `primary`: the main action of a group;
+ * - `secondary`: an alternative action;
+ * - `tertiary`: a low-emphasis action;
+ * - `danger`: a destructive action;
+ * - `warning`: an admin action, for now;
+ * - `white-flat`: a button on a dark or illustrated background.
+ *
+ * Kept for backward compatibility, not to be used in new code:
+ * - `tertiary-blue`: renders like `tertiary`;
+ * - `brown-illustration` and `green-illustration`: use `primary`.
+ */
 export type ColorType = 'primary' | 'secondary' | 'tertiary' | 'tertiary-blue' | 'warning' | 'danger' | 'brown-illustration' | 'green-illustration' | 'white-flat'
 
 defineOptions({ inheritAttrs: false })
 
 const props = withDefaults(defineProps<{
+  /** `xl` is kept for backward compatibility, use `lg` in new code. */
   size?: '2xs' | 'xs' | 'sm' | 'lg' | 'xl'
   color?: ColorType
   disabled?: boolean
@@ -240,9 +254,9 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
 
 /* Colors */
 .branded-button[data-color="secondary"] {
-  border-color: var(--color-new-primary);
+  border-color: var(--color-new-gray-dark);
   background-color: var(--color-white);
-  color: var(--color-new-primary);
+  color: var(--color-new-gray-dark);
 }
 
 .branded-button:is([data-color="tertiary"], [data-color="tertiary-blue"]) {

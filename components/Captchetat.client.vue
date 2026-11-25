@@ -14,7 +14,7 @@
           :icon="RiVolumeUpLine"
           :title="$t('Énoncer le code du captcha')"
           icon-only
-          size="xl"
+          size="lg"
           color="tertiary"
           keep-margins-even-without-borders
           @click="playSound"
@@ -23,7 +23,7 @@
           :icon="RiRefreshLine"
           :title="$t('Générer un nouveau captcha')"
           color="tertiary"
-          size="xl"
+          size="lg"
           icon-only
           keep-margins-even-without-borders
           @click="() => refresh()"

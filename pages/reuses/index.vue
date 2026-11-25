@@ -58,7 +58,7 @@
           </div>
 
           <BrandedButton
-            color="green-illustration"
+            color="primary"
             class="mt-8 w-full md:w-auto"
             :href="config.public.reusesOnboardingUsecases"
           >
