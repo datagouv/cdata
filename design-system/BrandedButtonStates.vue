@@ -325,7 +325,7 @@
       class="space-y-4"
     >
       <h2 class="text-xl font-bold mb-4">
-        Exemples du Lab (buttons-01)
+        Exemples par prop
       </h2>
       <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div
@@ -372,7 +372,7 @@ const states = [
   { label: 'Lien désactivé', text: 'Voir', props: { href: '/datasets', disabled: true } },
 ]
 
-// Same list as src/buttonExamples.js in the former Design Lab
+// One example per prop and state
 const labExamples = [
   ...(['primary', 'secondary', 'tertiary', 'warning', 'danger', 'white-flat', 'brown-illustration', 'green-illustration'] as const).map(color => ({ label: color, props: { color } })),
   ...(['2xs', 'xs', 'sm', 'lg', 'xl'] as const).map(size => ({ label: `Taille ${size}`, props: { size } })),
