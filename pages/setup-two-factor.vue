@@ -6,7 +6,7 @@
       </h1>
 
       <p>
-        {{ $t('En plus de votre email et mot de passe, vous allez devoir utiliser un code de double authentification.') }}
+        {{ $t('Votre compte doit être protégé par une double authentification : configurez une application d\'authentification, ou utilisez celle de ProConnect.') }}
       </p>
       <div class="space-y-6">
         <SimpleBanner
