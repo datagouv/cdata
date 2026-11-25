@@ -3,7 +3,7 @@
     v-slot="{ open }"
     as="section"
     data-type="accordion"
-    class="border-t border-y-gray-default py-8 last:border-b"
+    class="border-t border-y-gray-default py-4 last:border-b"
   >
     <div class="flex flex-wrap items-center justify-between gap-3">
       <h2 class="!m-0 w-full flex-none !text-sm/5 font-medium uppercase text-gray-title md:flex-1">

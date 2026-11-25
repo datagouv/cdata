@@ -222,7 +222,7 @@
         <article
           v-for="embed in organizationEmbeds"
           :key="embed.type"
-          class="min-w-0 space-y-2"
+          class="grid min-w-0 gap-3"
         >
           <h3 class="m-0 text-sm/5 font-medium text-gray-title">
             {{ $t(embed.title) }}

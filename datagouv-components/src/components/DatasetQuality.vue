@@ -1,58 +1,68 @@
 <template>
-  <Toggletip
-    :styled-button="false"
-    button-class="flex flex-wrap items-center gap-2 min-h-6 rounded-sm p-1.5 -m-1.5 border-transparent -outline-offset-2 hover:bg-gray-some transition-colors w-full text-left"
-    :button-props="{ title: t('Qualité des métadonnées') }"
-  >
-    <span class="text-sm/5 font-normal text-gray-title">{{ t('Métadonnées') }}</span>
-    <QualityScore
-      :score="quality.score"
-      compact
-      class="translate-y-px"
-    />
-    <template #toggletip>
-      <DatasetQualityTooltipContent :quality />
+  <!-- Same display for datasets and dataservices, as on their pages in production: the label
+       and the information icon, the full-width score, then the missing items. -->
+  <div class="grid gap-2">
+    <Toggletip
+      :styled-button="false"
+      button-class="grid w-full gap-1.5 rounded-sm p-1.5 -m-1.5 border-transparent -outline-offset-2 text-left transition-colors hover:bg-gray-some"
+      :button-props="{ title: t('Qualité des métadonnées') }"
+    >
+      <span class="flex items-center justify-between gap-2">
+        <span class="text-sm/5 font-normal text-gray-secondary">{{ t('Qualité des métadonnées') }}</span>
+        <RiInformationLine
+          class="size-4 shrink-0 text-gray-secondary"
+          aria-hidden="true"
+        />
+      </span>
+      <QualityScore
+        :score="quality.score"
+        class="w-full"
+      />
+      <template #toggletip>
+        <DatasetQualityTooltipContent :quality />
+      </template>
+    </Toggletip>
+    <template v-if="!hideWarnings">
+      <ul class="m-0 list-none space-y-1 p-0">
+        <QualityItemWarning
+          :quality-item="quality.dataset_description_quality"
+          :message="t('Description des données non renseignée')"
+        />
+        <QualityItemWarning
+          :quality-item="quality.resources_documentation"
+          :message="t('Documentation des fichiers manquante')"
+        />
+        <QualityItemWarning
+          :quality-item="quality.license"
+          :message="t('Licence non renseignée')"
+        />
+        <QualityItemWarning
+          :quality-item="quality.update_frequency && quality.update_fulfilled_in_time"
+          :message="quality.update_frequency ? t('Fréquence de mise à jour non respectée') : t('Fréquence de mise à jour non renseignée')"
+        />
+        <QualityItemWarning
+          :quality-item="quality.has_open_format"
+          :message="t('Formats de fichiers non standards')"
+        />
+        <QualityItemWarning
+          :quality-item="quality.temporal_coverage"
+          :message="t('Couverture temporelle non renseignée')"
+        />
+        <QualityItemWarning
+          :quality-item="quality.spatial"
+          :message="t('Couverture spatiale non renseignée')"
+        />
+        <QualityItemWarning
+          :quality-item="quality.all_resources_available"
+          :message="t('Certains fichiers ne sont pas disponibles')"
+        />
+      </ul>
     </template>
-  </Toggletip>
-  <template v-if="!hideWarnings">
-    <ul class="list-none pl-0">
-      <QualityItemWarning
-        :quality-item="quality.dataset_description_quality"
-        :message="t('Description des données non renseignée')"
-      />
-      <QualityItemWarning
-        :quality-item="quality.resources_documentation"
-        :message="t('Documentation des fichiers manquante')"
-      />
-      <QualityItemWarning
-        :quality-item="quality.license"
-        :message="t('Licence non renseignée')"
-      />
-      <QualityItemWarning
-        :quality-item="quality.update_frequency && quality.update_fulfilled_in_time"
-        :message="quality.update_frequency ? t('Fréquence de mise à jour non respectée') : t('Fréquence de mise à jour non renseignée')"
-      />
-      <QualityItemWarning
-        :quality-item="quality.has_open_format"
-        :message="t('Formats de fichiers non standards')"
-      />
-      <QualityItemWarning
-        :quality-item="quality.temporal_coverage"
-        :message="t('Couverture temporelle non renseignée')"
-      />
-      <QualityItemWarning
-        :quality-item="quality.spatial"
-        :message="t('Couverture spatiale non renseignée')"
-      />
-      <QualityItemWarning
-        :quality-item="quality.all_resources_available"
-        :message="t('Certains fichiers ne sont pas disponibles')"
-      />
-    </ul>
-  </template>
+  </div>
 </template>
 
 <script setup lang="ts">
+import { RiInformationLine } from '@remixicon/vue'
 import type { Quality } from '../types/datasets'
 import QualityItemWarning from './QualityItemWarning.vue'
 import QualityScore from './QualityScore.vue'

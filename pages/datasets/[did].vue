@@ -97,14 +97,14 @@
               class="pl-0 w-full shrink-0 md:w-[384px] space-y-4"
             >
               <div>
-                <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                <DescriptionListTerm>
                   <template v-if="hasContactPointsWithSpecificRole">
                     {{ $t("Diffuseur") }}
                   </template>
                   <template v-else>
                     {{ $t("Producteur") }}
                   </template>
-                </dt>
+                </DescriptionListTerm>
                 <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
                   <OrganizationOwner
                     v-if="dataset.organization"
@@ -139,14 +139,14 @@
               <div
                 v-if="dataset.contact_points.length"
               >
-                <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                <DescriptionListTerm>
                   <template v-if="hasContactPointsWithSpecificRole">
                     {{ $t("Attributions") }}
                   </template>
                   <template v-else>
                     {{ $t("Contacts") }}
                   </template>
-                </dt>
+                </DescriptionListTerm>
                 <dd class="m-0 space-y-1 p-0 text-sm/[22px] text-gray-title">
                   <ContactPoint
                     v-for="contact in dataset.contact_points"
@@ -159,9 +159,9 @@
               <div
                 v-if="dataset.license && dataset.access_type === 'open'"
               >
-                <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                <DescriptionListTerm>
                   {{ $t("Licence") }}
-                </dt>
+                </DescriptionListTerm>
                 <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
                   <TechnicalValue
                     :value="dataset.license.title"
@@ -174,9 +174,9 @@
               </div>
 
               <div>
-                <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                <DescriptionListTerm>
                   {{ $t("Dernière mise à jour") }}
-                </dt>
+                </DescriptionListTerm>
                 <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
                   <FormattedDate :date="dataset.last_update" />
                 </dd>
@@ -483,6 +483,7 @@ import {
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
+import DescriptionListTerm from '~/components/DescriptionList/DescriptionListTerm.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'

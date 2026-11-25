@@ -77,9 +77,9 @@
             >
               <dl class="m-0 space-y-4 p-0">
                 <div>
-                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                  <DescriptionListTerm>
                     {{ $t('Producteur') }}
-                  </dt>
+                  </DescriptionListTerm>
                   <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
                     <OrganizationOwner
                       v-if="dataservice.organization"
@@ -100,9 +100,9 @@
                 <div
                   v-if="dataservice.contact_points.length"
                 >
-                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                  <DescriptionListTerm>
                     {{ $t('Contact') }}
-                  </dt>
+                  </DescriptionListTerm>
                   <dd class="m-0 space-y-1 p-0 text-sm/[22px] text-gray-title">
                     <ContactPoint
                       v-for="contact in dataservice.contact_points"
@@ -115,9 +115,9 @@
                 <AccessTypePanel :object="dataservice" />
 
                 <div v-if="dataservice.base_api_url">
-                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                  <DescriptionListTerm>
                     {{ $t(`URL de base de l'API`) }}
-                  </dt>
+                  </DescriptionListTerm>
                   <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
                     <TechnicalValue
                       :value="dataservice.base_api_url"
@@ -129,9 +129,9 @@
                 </div>
 
                 <div v-if="dataservice.rate_limiting || dataservice.rate_limiting_url">
-                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                  <DescriptionListTerm>
                     {{ $t(`Limite d'appels`) }}
-                  </dt>
+                  </DescriptionListTerm>
                   <dd class="m-0 space-y-1 p-0 text-sm/[22px] text-gray-title">
                     <span v-if="dataservice.rate_limiting">{{ dataservice.rate_limiting }}</span>
                     <TechnicalValue
@@ -145,18 +145,18 @@
                 </div>
 
                 <div>
-                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                  <DescriptionListTerm>
                     {{ $t('Taux de disponibilité') }}
-                  </dt>
+                  </DescriptionListTerm>
                   <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
                     {{ dataservice.availability !== null ? `${dataservice.availability} %` : $t('Non communiqué') }}
                   </dd>
                 </div>
 
                 <div v-if="dataservice.business_documentation_url">
-                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                  <DescriptionListTerm>
                     {{ $t('Documentation métier') }}
-                  </dt>
+                  </DescriptionListTerm>
                   <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
                     <CdataLink
                       :href="dataservice.business_documentation_url"
@@ -171,9 +171,9 @@
                 </div>
 
                 <div v-if="dataservice.technical_documentation_url">
-                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                  <DescriptionListTerm>
                     {{ $t('Documentation technique') }}
-                  </dt>
+                  </DescriptionListTerm>
                   <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
                     <CdataLink
                       :href="dataservice.technical_documentation_url"
@@ -188,9 +188,9 @@
                 </div>
 
                 <div v-if="dataservice.machine_documentation_url">
-                  <dt class="mb-1.5 text-sm/5 font-normal text-gray-secondary">
+                  <DescriptionListTerm>
                     {{ $t('Documentation machine') }}
-                  </dt>
+                  </DescriptionListTerm>
                   <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
                     <CdataLink
                       :href="dataservice.machine_documentation_url"
@@ -296,6 +296,7 @@ import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import CdataLink from '~/components/CdataLink.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
+import DescriptionListTerm from '~/components/DescriptionList/DescriptionListTerm.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
 import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'

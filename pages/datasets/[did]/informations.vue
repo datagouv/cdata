@@ -34,7 +34,7 @@
     <DatasetEmbedSection :dataset="dataset" />
     <div>
       <MetadataExtras
-        class="border-b border-gray-default py-8"
+        class="border-b border-gray-default py-4"
         :button-text="$t('Voir les extras')"
         :title-text="$t('Extras du jeu de données')"
         :extra="dataset.extras"
@@ -42,7 +42,7 @@
       />
       <MetadataExtras
         v-if="dataset.harvest"
-        class="border-b border-gray-default py-8"
+        class="border-b border-gray-default py-4"
         :button-text="$t('Voir les extras du moissonnage')"
         :title-text="$t('Moissonnage')"
         :extra="dataset.harvest"

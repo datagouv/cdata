@@ -132,7 +132,7 @@ const { t } = useTranslation()
     </DescriptionList>
     <MetadataExtras
       v-if="hasExtras"
-      class="border-y border-gray-default py-8 sm:col-span-2"
+      class="border-y border-gray-default py-4 sm:col-span-2"
       :button-text="t('Voir les extras')"
       :title-text="t('Extras de la ressource')"
       title-level="h5"

@@ -104,7 +104,7 @@
             <DatasetSchemaSection :dataset="data" />
             <DatasetEmbedSection :dataset="data" />
             <MetadataExtras
-              class="border-b border-gray-default py-8"
+              class="border-b border-gray-default py-4"
               button-text="Voir les extras"
               title-text="Extras du jeu de données"
               :extra="data.extras"
