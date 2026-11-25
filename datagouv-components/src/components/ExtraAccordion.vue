@@ -53,9 +53,7 @@
               :text="display(value)"
               :label="t('Copier {key}', { key })"
               :copied-label="t('Copié')"
-              compact
-              icon-only
-              :show-tooltip="false"
+              variant="inline"
             >
               <span class="block min-w-0 overflow-hidden text-ellipsis whitespace-nowrap">
                 {{ display(value) }}

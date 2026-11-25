@@ -220,25 +220,53 @@
           <h3 class="mt-0 mb-5">
             CopyButton
           </h3>
-          <div class="flex flex-wrap items-center gap-4">
-            <CopyButton
-              text="demo-dataset"
-              label="Copier l’identifiant"
-              copied-label="Identifiant copié !"
-            />
-            <CopyButton
-              text="demo-dataset"
-              label="Copier l’identifiant"
-              copied-label="Identifiant copié !"
-              hide-label
-            />
-            <CopyButton
-              text="demo-dataset"
-              label="Copier l’identifiant"
-              copied-label="Identifiant copié !"
-              icon-only
-            />
-          </div>
+          <DescriptionList>
+            <div>
+              <DescriptionListTerm>variant="reveal" (par défaut) : libellé au survol</DescriptionListTerm>
+              <DescriptionListDetails>
+                <CopyButton
+                  text="demo-dataset"
+                  label="Copier l’identifiant"
+                  copied-label="Identifiant copié !"
+                />
+              </DescriptionListDetails>
+            </div>
+            <div>
+              <DescriptionListTerm>variant="label" : libellé toujours visible</DescriptionListTerm>
+              <DescriptionListDetails>
+                <CopyButton
+                  text="demo-dataset"
+                  label="Copier l’identifiant"
+                  copied-label="Identifiant copié !"
+                  variant="label"
+                />
+              </DescriptionListDetails>
+            </div>
+            <div>
+              <DescriptionListTerm>variant="icon"</DescriptionListTerm>
+              <DescriptionListDetails>
+                <CopyButton
+                  text="demo-dataset"
+                  label="Copier l’identifiant"
+                  copied-label="Identifiant copié !"
+                  variant="icon"
+                />
+              </DescriptionListDetails>
+            </div>
+            <div>
+              <DescriptionListTerm>variant="inline"</DescriptionListTerm>
+              <DescriptionListDetails>
+                <CopyButton
+                  text="5c4ae55a634f4117716d5656"
+                  label="Copier l’identifiant"
+                  copied-label="Identifiant copié !"
+                  variant="inline"
+                >
+                  5c4ae55a634f4117716d5656
+                </CopyButton>
+              </DescriptionListDetails>
+            </div>
+          </DescriptionList>
         </article>
 
         <article

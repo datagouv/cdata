@@ -16,18 +16,16 @@
         :text="copyText ?? value"
         :label
         :copied-label
-        compact
-        icon-only
-        :show-tooltip="false"
+        variant="icon"
+        size="sm"
+        :tooltip="false"
       />
       <CopyButton
         v-else
         :text="copyText ?? value"
         :label
         :copied-label
-        compact
-        icon-only
-        :show-tooltip="false"
+        variant="inline"
       >
         <code :title="value"><span class="proposal-middle-truncate">{{ value }}</span></code>
       </CopyButton>

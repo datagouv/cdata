@@ -25,8 +25,8 @@ const visibleCopiedLabel = computed(() => props.copiedLabel || t('Copié'))
       <span class="proposal-code-block-language">{{ language }}</span>
       <CopyButton
         class="proposal-code-block-copy"
-        icon-only
-        :show-tooltip="false"
+        variant="icon"
+        :tooltip="false"
         :label="visibleCopyLabel"
         :copied-label="visibleCopiedLabel"
         :text="code"

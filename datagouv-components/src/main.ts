@@ -134,6 +134,7 @@ import { ofetch } from 'ofetch'
 import { useTranslation } from './composables/useTranslation'
 
 export type { SegmentedControlOption } from './components/SegmentedControl.vue'
+export type { CopyButtonVariant } from './components/CopyButton.vue'
 
 // Same name as the Badge component on purpose: as a type, `Badge` is the udata badge (spd, hvd, certified…)
 export type Badge = BadgeObject
