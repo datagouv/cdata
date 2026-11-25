@@ -12,6 +12,7 @@
       Buttons
     </h1>
 
+    <DSBrandedButtonStates class="mb-12" />
     <DSBrandedButton />
     <DSSegmentedControl />
   </div>
@@ -20,5 +21,6 @@
 <script setup lang="ts">
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import DSBrandedButton from '~/design-system/BrandedButton.vue'
+import DSBrandedButtonStates from '~/design-system/BrandedButtonStates.vue'
 import DSSegmentedControl from '~/design-system/SegmentedControl.vue'
 </script>
