@@ -630,6 +630,7 @@ onMounted(() => {
     proconnect_identity_mismatch: { type: 'error', text: t('Ce compte est protégé par la double authentification d\'une autre identité ProConnect : connectez-vous avec celle-ci, ou contactez-nous si vous en avez changé.') },
     proconnect_second_factor_required: { type: 'error', text: t('Ce compte est protégé par la double authentification de ProConnect : connectez-vous avec votre clé ou votre application d\'authentification. Un code reçu par email ne suffit pas.') },
     proconnect_other_account: { type: 'error', text: t('Votre identité ProConnect correspond à une autre adresse email que celle de ce compte : configurez une application d\'authentification sur cette page.') },
+    proconnect_failed: { type: 'error', text: t('La connexion avec ProConnect n’a pas abouti : réessayez, ou configurez une application d’authentification sur cette page.') },
     proconnect_second_factor_missing: { type: 'error', text: t('ProConnect ne nous a pas transmis de double authentification : connectez-vous à ProConnect avec une clé ou une application d\'authentification, ou configurez une application ci-dessus.') },
     proconnect_only_available: { type: 'info', text: t('Vous êtes maintenant connecté. Pour mieux protéger votre compte, vous pouvez vous connecter uniquement avec ProConnect depuis votre profil.') },
   }
