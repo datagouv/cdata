@@ -91,31 +91,35 @@
         >
           {{ userMessageText(message.parts) }}
         </div>
-        <template
-          v-for="(item, index) in displayItems(message)"
-          v-else
-          :key="index"
-        >
-          <ToolTrace
-            v-if="item.kind === 'trace'"
-            :trace="item.trace"
+        <template v-else>
+          <AssistantTimeline
+            v-if="message === liveMessage && liveTimeline"
+            :timeline="liveTimeline"
             class="mb-2"
           />
-          <ThinkingBlock
-            v-else-if="item.kind === 'thinking'"
-            :text="item.text"
+          <ReasoningBlock
+            v-else-if="messageDisplay(message).reasoning.length"
+            :sentences="messageDisplay(message).reasoning"
+            class="mb-2"
+          />
+          <ToolsBlock
+            v-if="messageDisplay(message).traces.length"
+            :traces="messageDisplay(message).traces"
+            :live="message === liveMessage"
             class="mb-2"
           />
           <MarkdownViewer
-            v-else-if="item.kind === 'text'"
-            :content="item.text"
+            v-for="(text, index) in messageDisplay(message).texts"
+            :key="index"
+            :content="text"
             generated
           />
         </template>
       </article>
-      <AssistantThinking
-        v-if="busy"
-        :responding="replyStarted"
+      <!-- Before the SDK creates the assistant message (status submitted). -->
+      <AssistantTimeline
+        v-if="liveTimeline && !liveMessage"
+        :timeline="liveTimeline"
       />
     </div>
 
@@ -251,14 +255,15 @@
 import { RiAddLine, RiArrowUpLine, RiFocus3Line, RiStopMiniLine, RiTableLine } from '@remixicon/vue'
 import { computed, nextTick, ref, toRef, watch } from 'vue'
 import { MarkdownViewer, Tag, useTranslation, type ColumnDefinition } from '@datagouv/components-next'
-import ToolTrace from './ToolTrace.vue'
-import AssistantThinking from './AssistantThinking.vue'
-import ThinkingBlock from './ThinkingBlock.vue'
+import AssistantTimeline from './AssistantTimeline.vue'
+import ReasoningBlock from './ReasoningBlock.vue'
+import ToolsBlock from './ToolsBlock.vue'
 import { useAssistantChat } from './useAssistantChat'
 import { chartToolResults, isNearChatBottom } from '~/utils/assistant'
 import { useAssistantErrorMessage } from './useAssistantErrorMessage'
-import { useChatDisplayItems, type ChatDisplayItem } from './useChatDisplayItems'
+import { useChatDisplayItems, type ChatMessageDisplay } from './useChatDisplayItems'
 import { useStarterQuestions } from './useStarterQuestions'
+import { useTurnTimeline } from './useTurnTimeline'
 import type { AssistantVisualization, ChartToolResult } from '~/utils/assistant'
 
 const props = defineProps<{
@@ -329,16 +334,18 @@ watch(messages, () => {
 type ChatMessage = (typeof messages.value)[number]
 
 const buildChatDisplayItems = useChatDisplayItems()
-const displayItemsCache = new WeakMap<ChatMessage, Array<ChatDisplayItem>>()
+const messageDisplayCache = new WeakMap<ChatMessage, ChatMessageDisplay>()
 
-function displayItems(message: ChatMessage): Array<ChatDisplayItem> {
-  let items = displayItemsCache.get(message)
-  if (!items) {
-    items = buildChatDisplayItems(message.parts)
-    displayItemsCache.set(message, items)
+function messageDisplay(message: ChatMessage): ChatMessageDisplay {
+  let display = messageDisplayCache.get(message)
+  if (!display) {
+    display = buildChatDisplayItems(message.parts)
+    messageDisplayCache.set(message, display)
   }
-  return items
+  return display
 }
+
+const buildTimeline = useTurnTimeline()
 
 // Each update lists every chart of the conversation again: one already applied must not undo the user's form changes since.
 const emittedToolCalls = new Set<string>()
@@ -359,10 +366,12 @@ const busy = computed(() => status.value === 'submitted' || status.value === 'st
 const assistantErrorMessage = useAssistantErrorMessage()
 const errorMessage = computed(() => (error.value ? assistantErrorMessage(error.value) : null))
 const conversationUnreadable = computed(() => (error.value as { statusCode?: unknown } | undefined)?.statusCode === 409)
-const replyStarted = computed(() => {
+// The message the turn is being written in, once the SDK has created it.
+const liveMessage = computed(() => {
   const last = messages.value.at(-1)
-  return last?.role === 'assistant' && displayItems(last).length > 0
+  return busy.value && last?.role === 'assistant' ? last : null
 })
+const liveTimeline = computed(() => (busy.value ? buildTimeline(liveMessage.value?.parts ?? []) : null))
 
 // User input is plain text, not markdown: render it as-is.
 function userMessageText(parts: Array<{ type: string, text?: unknown }>): string {
