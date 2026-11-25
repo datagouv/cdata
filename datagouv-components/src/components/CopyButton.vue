@@ -1,7 +1,7 @@
 <template>
   <button
     type="button"
-    class="text-sm mb-0 md:whitespace-nowrap relative p-1 text-gray-medium leading-none text-left"
+    class="text-sm font-medium mb-0 md:whitespace-nowrap relative p-1 text-gray-medium leading-none text-left"
     :class="{ 'border bg-white rounded-sm text-gray-title': hideLabel }"
     @click="copy"
   >
