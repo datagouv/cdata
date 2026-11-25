@@ -33,3 +33,16 @@
 .close-button {
   @apply w-10 leading-0 text-lg;
 }
+
+/* Breadcrumb placed on a coloured hero background (OnboardingHero, EditoHeader).
+   Links inherit the container colour and the separator chevrons use currentColor,
+   so a single white colour covers the whole breadcrumb. The hero owns the
+   vertical spacing, so DSFR's own breadcrumb margins are dropped. */
+.hero-breadcrumb .fr-breadcrumb {
+  margin: 0;
+  color: #fff;
+}
+
+.hero-breadcrumb .fr-breadcrumb__link[aria-current]:not([aria-current="false"]) {
+  color: rgba(255, 255, 255, 0.8);
+}

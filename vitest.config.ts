@@ -13,9 +13,20 @@ export default defineConfig({
       '~': fileURLToPath(new URL('.', import.meta.url)),
     },
   },
+  // Nuxt injects these flags at build time; under vitest we run the server side of
+  // the universal code, which is the only side able to read HttpOnly cookies.
+  define: {
+    'import.meta.server': 'true',
+    'import.meta.client': 'false',
+  },
   test: {
-    include: ['tests-unit/**/*.spec.ts'],
     environment: 'node',
     setupFiles: ['./tests-unit/setup.ts'],
+    projects: [
+      { extends: true, test: { name: 'unit', include: ['tests-unit/**/*.spec.ts'] } },
+      // Calls the real Tabular API: run on a schedule (.github/workflows/tabular-api-contract.yml),
+      // not on each change, which cannot break it and should not fail on the API being slow
+      { extends: true, test: { name: 'contract', include: ['tests-contract/**/*.spec.ts'] } },
+    ],
   },
 })

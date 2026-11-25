@@ -1,0 +1,43 @@
+<template>
+  <Suspense v-if="config.public.tabularApiPreviewResourcesId">
+    <TabularExplorer
+      :resource-id="config.public.tabularApiPreviewResourcesId"
+      :initial-filters="initialFilters"
+    >
+      <TabularToolbar class="py-3" />
+      <div class="hidden md:block">
+        <TabularActiveFilters
+          with-clear
+          class="pb-3"
+        />
+      </div>
+      <TabularTable />
+      <TabularMobileFilters />
+    </TabularExplorer>
+    <template #fallback>
+      <TabularSkeleton />
+    </template>
+  </Suspense>
+  <SimpleBanner
+    v-else
+    class="mt-2"
+    type="warning"
+  >
+    {{ t('Liste des fichiers non disponible.') }}
+  </SimpleBanner>
+</template>
+
+<script setup lang="ts">
+import { SimpleBanner, TabularActiveFilters, TabularExplorer, TabularMobileFilters, TabularSkeleton, TabularTable, TabularToolbar } from '@datagouv/components-next'
+import { buildFiltersFromQuery } from '~/utils/previewDashboard'
+
+const config = useRuntimeConfig()
+const route = useRoute()
+
+const { t } = useTranslation()
+
+// The query only seeds the filters, it is never pushed back: /admin keys its
+// NuxtPage on the full path, so every filter click would remount the page and
+// reset sort and visible columns.
+const initialFilters = buildFiltersFromQuery(route.query)
+</script>

@@ -1,21 +1,34 @@
 <template>
   <div>
-    <EditoHeader
-      color="purple"
-      :title="$t('Rechercher une API')"
-      :subtitle="$t('parmi les {count} API sur {site}', {
-        count: site?.metrics.dataservices || 0,
-        site: config.public.title,
-      })"
-      :placeholder="$t('ex: SIRENE')"
-      search-url="/dataservices/search"
-      :link-label="$t(`Qu'est-ce qu'une API ?`)"
-      :link-url="config.public.guideDataservices"
-    />
+    <HeroBanner color="purple">
+      <template #breadcrumb>
+        <Breadcrumb>
+          <BreadcrumbItem to="/">
+            {{ $t('Accueil') }}
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            {{ $t('API') }}
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </template>
+      <EditoSearchForm
+        color="purple"
+        :title="$t('Rechercher une API')"
+        :subtitle="$t('parmi les {count} API sur {site}', {
+          count: site?.metrics.dataservices || 0,
+          site: config.public.title,
+        })"
+        :placeholder="$t('ex: SIRENE')"
+        search-url="/dataservices/search"
+        :link-label="$t(`Qu'est-ce qu'une API ?`)"
+        :link-url="config.public.guideDataservices"
+      />
+    </HeroBanner>
     <EditoBlocs
       v-if="siteBlocs.length > 0 || isEditing"
       :blocs="siteBlocs"
       editable
+      follow-links
       main-color="brown-illustration"
       :on-save="saveBlocs"
     />
@@ -243,7 +256,10 @@
 import { BrandedButton } from '@datagouv/components-next'
 import { RiExternalLinkFill, RiArrowRightLine } from '@remixicon/vue'
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
-import EditoHeader from '~/components/Pages/EditoHeader.vue'
+import HeroBanner from '~/components/HeroBanner.vue'
+import EditoSearchForm from '~/components/Pages/EditoSearchForm.vue'
+import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 
 const config = useRuntimeConfig()
@@ -255,8 +271,6 @@ const description = t('Vous recherchez une API publique pour automatiser des tâ
 useSeoMeta({
   title,
   description,
-  ogTitle: title,
-  ogDescription: description,
 })
 defineOgImage('MainPage.takumi', {
   title: 'API',
@@ -264,16 +278,6 @@ defineOgImage('MainPage.takumi', {
 })
 
 const route = useRoute()
-
-onMounted(async () => {
-  const hasFacets = Object.keys(route.query).some(key =>
-    ['q', 'sort', 'is_restricted', 'organization', 'page'].includes(key),
-  )
-
-  if (hasFacets) {
-    await navigateTo({ path: '/dataservices/search', query: route.query })
-  }
-})
 
 const { site, blocs: siteBlocs, saveBlocs } = await useSiteBlocs('dataservices_blocs', ['metrics'])
 

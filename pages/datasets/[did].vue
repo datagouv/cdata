@@ -28,12 +28,12 @@
             :subject="{ id: dataset.id, class: 'Dataset' }"
           />
           <BrandedButton
-            v-if="exploreUrl"
-            :href="exploreUrl"
-            :icon="RiExternalLinkFill"
+            v-if="exploreHref"
+            :href="exploreHref"
+            :icon="newExplorerEnabled ? RiFullscreenLine : RiExternalLinkFill"
             icon-right
             size="xs"
-            new-tab
+            :new-tab="!newExplorerEnabled"
             @click="$matomo.trackEvent('Jeux de données', 'Explorer les données', 'Bouton : explorer les données')"
           >
             {{ $t("Explorer les données") }}
@@ -45,6 +45,13 @@
           />
         </div>
       </div>
+      <PendingReportsBanner
+        v-if="dataset"
+        :subject="{ class: 'Dataset', value: dataset }"
+        with-object-actions
+        class="mt-4"
+        @refresh="refresh"
+      />
     </div>
     <LoadingBlock
       v-if="dataset"
@@ -58,30 +65,10 @@
             <div class="flex-1 overflow-x-hidden">
               <div ref="header">
                 <div class="flex gap-3 mb-2">
-                  <AdminBadge
-                    v-if="dataset.deleted"
-                    :icon="RiDeleteBinLine"
-                    size="sm"
-                    type="secondary"
-                  >
-                    {{ $t("Supprimé") }}
-                  </AdminBadge>
-                  <AdminBadge
-                    v-if="dataset.private"
-                    :icon="RiLockLine"
-                    size="sm"
-                    type="secondary"
-                  >
-                    {{ $t("Brouillon") }}
-                  </AdminBadge>
-                  <AdminBadge
-                    v-if="dataset.archived"
-                    :icon="RiLockLine"
-                    size="sm"
-                    type="secondary"
-                  >
-                    {{ $t("Archivé") }}
-                  </AdminBadge>
+                  <DatasetBadge
+                    v-if="getDatasetStatus(dataset) !== 'public'"
+                    :dataset
+                  />
                 </div>
                 <h1 class="text-2xl text-gray-title font-extrabold mb-6">
                   {{ dataset.title }}
@@ -185,7 +172,7 @@
                   {{ $t("Dernière mise à jour") }}
                 </dt>
                 <dd class="p-0 text-sm">
-                  {{ formatDate(dataset.last_update) }}
+                  <FormattedDate :date="dataset.last_update" />
                 </dd>
               </div>
 
@@ -194,24 +181,33 @@
                 :object="dataset"
               />
 
-              <div class="grid gap-4 xl:grid-cols-2">
-                <StatBox
-                  :title="$t('Vues')"
-                  :data="datasetVisits"
-                  size="sm"
-                  type="line"
-                  :summary="datasetVisitsTotal"
-                  :since="metricsSince"
-                />
-                <StatBox
-                  v-if="dataset.access_type === 'open'"
-                  :title="$t('Téléchargements')"
-                  :data="datasetDownloadsResources"
-                  size="sm"
-                  type="line"
-                  :summary="datasetDownloadsResourcesTotal"
-                  :since="metricsSince"
-                />
+              <div
+                v-if="!metricsError"
+                class="grid gap-4 xl:grid-cols-2"
+              >
+                <!-- ClientOnly: the loading skeletons of StatBox get their ids from
+                     `Math.random()`, which differ between the server and the client render. -->
+                <ClientOnly>
+                  <!-- `?? null`: StatBox shows its loading skeletons on a strict `null`, and
+                       `data` is `undefined` until the request answers. -->
+                  <StatBox
+                    :title="$t('Vues')"
+                    :data="datasetMetrics?.visits ?? null"
+                    size="sm"
+                    type="line"
+                    :summary="datasetMetrics?.visitsTotal ?? null"
+                    :since="metricsSince"
+                  />
+                  <StatBox
+                    v-if="dataset.access_type === 'open'"
+                    :title="$t('Téléchargements')"
+                    :data="datasetMetrics?.downloads ?? null"
+                    size="sm"
+                    type="line"
+                    :summary="datasetMetrics?.downloadsTotal ?? null"
+                    :since="metricsSince"
+                  />
+                </ClientOnly>
               </div>
 
               <div v-if="dataset.access_type === 'open'">
@@ -339,9 +335,7 @@
                 </TranslationT>
               </SimpleBanner>
               <SimpleBanner
-                v-if="
-                  'ecospheres-indicateurs' in dataset.extras
-                "
+                v-if="ecologieUrl"
                 type="primary-frame"
               >
                 <TranslationT
@@ -350,9 +344,8 @@
                   class="!m-0 text-sm"
                 >
                   <template #link>
-                    <CdataLink :href="`https://${siteConfig.url.includes('demo') ? 'demo.': ''}ecologie.data.gouv.fr/indicators/${dataset.id}`">
-                      ecologie.data.gouv.fr
-                    </CdataLink>
+                    <!-- eslint-disable-next-line vue/singleline-html-element-content-newline -->
+                    <CdataLink :href="ecologieUrl">ecologie.data.gouv.fr</CdataLink>
                   </template>
                 </TranslationT>
               </SimpleBanner>
@@ -375,13 +368,10 @@
           >
             <div class="space-y-3.5">
               <div>
-                <AdminBadge
-                  :icon="RiLockLine"
+                <AccessTypeBadge
+                  :access-type="dataset.access_type"
                   size="xs"
-                  type="pink"
-                >
-                  {{ $t('Accès restreint') }}
-                </AdminBadge>
+                />
               </div>
               <p class="font-bold text-xl">
                 {{ $t('Ces données ne sont accessibles que sur habilitation') }}
@@ -418,6 +408,7 @@
                 :icon="RiExternalLinkLine"
                 icon-right
                 :href="dataset.authorization_request_url"
+                rel="ugc nofollow noopener"
               >
                 {{ $t('Faire une demande d\'habilitation') }}
               </BrandedButton>
@@ -468,53 +459,30 @@
 </template>
 
 <script setup lang="ts">
+import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, LoadingBlock, BrandedButton, FormattedDate, StatBox, Toggletip, type TranslatedBadge, LabelTag, LicenseBadge, AppLink, MarkdownViewer, useMetrics, TranslationT, getDescriptionShort, type Resource, RESOURCE_EXPLORER_PAGE_SIZE, AccessTypeBadge, DatasetBadge, getDatasetStatus } from '@datagouv/components-next'
 import {
-  ReadMore,
-  AvatarWithName,
-  type DatasetV2WithFullObject,
-  SimpleBanner,
-  DatasetQuality,
-  isOrganizationCertified,
-  LoadingBlock,
-  type Resource,
-  BrandedButton,
-  useFormatDate,
-  StatBox,
-  Toggletip,
-  type TranslatedBadge,
-  LabelTag,
-  LicenseBadge,
-  AppLink,
-  MarkdownViewer,
-  useMetrics,
-  type DatasetMetrics,
-  TranslationT,
-  getDescriptionShort,
-  RESOURCE_EXPLORER_PAGE_SIZE,
-} from '@datagouv/components-next'
-import {
-  RiDeleteBinLine,
   RiExternalLinkFill,
   RiExternalLinkLine,
-  RiLockLine,
+  RiFullscreenLine,
 } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import type { PaginatedArray } from '~/types/types'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import { useElementSize } from '@vueuse/core'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 const config = useRuntimeConfig()
 const siteConfig = useSiteConfig()
 const route = useRoute()
-const { formatDate } = useFormatDate()
 const { t } = useTranslation()
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const sidebar = useTemplateRef('sidebar')
@@ -524,17 +492,17 @@ const { height: sidebarHeight } = useElementSize(sidebar)
 const { height: headerHeight } = useElementSize(header)
 
 const url = computed(() => `/api/2/datasets/${route.params.did}/`)
-const { data: dataset, status } = await useAPI<DatasetV2WithFullObject>(url, {
+const { data: dataset, status, refresh } = await useAPI<DatasetV2WithFullObject>(url, {
   headers: {
     'X-Get-Datasets-Full-Objects': 'True',
   },
-  redirectOn404: true,
+  showErrorPage: true,
   redirectOnSlug: 'did',
 })
 
 const title = computed(() => t('Jeu de données - {title} | {site}', { title: dataset.value?.title ?? '', site: config.public.title }))
 const robots = computed(() => dataset.value && dataset.value.archived ? 'noindex' : undefined)
-const description = computed(() => dataset.value ? getDescriptionShort(dataset.value) : '')
+const description = computed(() => normalizeSeoDescription(dataset.value ? getDescriptionShort(dataset.value) : undefined))
 
 useSeoMeta({
   title,
@@ -607,6 +575,8 @@ onMounted(async () => {
   ])
 })
 
+const { enabled: newExplorerEnabled } = useNewExplorer()
+
 // Use the same cache key as ResourceExplorer's `main` fetch (dataset id + identical params)
 // so Nuxt dedupes the two into a single request on the resources tab. Every part of the key
 // must stay byte-for-byte identical to the explorer's `mainParams`, otherwise the keys diverge
@@ -629,9 +599,31 @@ const exploreUrl = computed(() => {
   return null
 })
 
-const { data: badgeTranslations } = await useAPI<Record<string, string>>(
-  '/api/1/datasets/badges',
-)
+// A single "Explorer" entry point on every tab of the dataset, pointing at the explorer
+// the visitor is actually on: the legacy one, external and limited to the resources it
+// knows how to preview, or the fullscreen page, which handles any resource. Uses the slug
+// so the fullscreen page doesn't answer with a slug redirect.
+const exploreHref = computed(() => {
+  if (!newExplorerEnabled.value) return exploreUrl.value
+  return dataset.value?.resources.total ? `/explore/${dataset.value.slug}` : null
+})
+
+// ecologie.data.gouv.fr shows indicators and the datasets of its universe, both
+// flagged by an extra. Indicators win.
+const ecologieUrl = computed(() => {
+  if (!dataset.value) return null
+  const base = `https://${siteConfig.url.includes('demo') ? 'demo.' : ''}ecologie.data.gouv.fr`
+  if ('ecospheres-indicateurs' in dataset.value.extras) return `${base}/indicators/${dataset.value.slug}`
+  if (dataset.value.extras['ecologie:universe']) return `${base}/datasets/${dataset.value.slug}`
+  return null
+})
+
+// The badge labels are a reference list needed only to name the badges this
+// dataset carries: most datasets carry none, and fetching it for them would be
+// one request per page view for nothing.
+const { data: badgeTranslations } = await useFetch('/nuxt-api/dataset-badges', {
+  immediate: Boolean(dataset.value?.badges?.length),
+})
 
 const badges = computed(() =>
   (dataset.value?.badges ?? []).map<TranslatedBadge>(b => ({
@@ -647,21 +639,24 @@ const metricsSince = computed(() => {
 })
 
 const { getDatasetMetrics } = useMetrics()
-const datasetMetrics = ref<DatasetMetrics | null>(null)
 
-watchEffect(async () => {
-  if (!dataset.value || !dataset.value.id) return
-  datasetMetrics.value = await getDatasetMetrics(dataset.value.id)
+// `server: false` keeps the call out of the render: the metrics API is a third-party service
+// and its numbers are secondary to the page, so waiting for it would delay the whole page.
+// The boxes disappear on `error` rather than presenting a zero the API never returned.
+const { data: datasetMetrics, error: metricsError } = useAsyncData(
+  'dataset-metrics',
+  () => dataset.value?.id ? getDatasetMetrics(dataset.value.id) : Promise.resolve(null),
+  { lazy: true, server: false, watch: [() => dataset.value?.id] },
+)
+
+// Same reasoning as the badge labels above: only a restricted dataset names a
+// reason category, which is 0.3% of them.
+const { data: reasonCategories } = await useFetch('/nuxt-api/access-type-reason-categories', {
+  immediate: Boolean(dataset.value?.access_type_reason_category),
 })
 
-const datasetVisits = computed(() => datasetMetrics.value?.visits ?? {})
-const datasetDownloadsResources = computed(() => datasetMetrics.value?.downloads ?? {})
-const datasetVisitsTotal = computed(() => datasetMetrics.value?.visitsTotal ?? 0)
-const datasetDownloadsResourcesTotal = computed(() => datasetMetrics.value?.downloadsTotal ?? 0)
-
-const { data: categories } = await useAPI<Array<{ value: string, label: string, definition: string }>>('/api/1/access_type/reason_categories/')
 const category = computed(() => {
   if (!dataset.value?.access_type_reason_category) return null
-  return categories.value?.find(c => c.value === dataset.value?.access_type_reason_category)
+  return reasonCategories.value?.find(c => c.value === dataset.value?.access_type_reason_category)
 })
 </script>

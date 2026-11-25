@@ -1,8 +1,11 @@
 <template>
   <div class="relative">
     <div :class="{ 'opacity-50 min-h-64': loading }">
+      <!-- Keep the previous content while reloading, dimmed under the loader:
+           dropping it collapses the page height, which makes the browser clamp
+           the scroll and throws the reader back to the top. -->
       <slot
-        v-if="!loading && !hasError && data"
+        v-if="!hasError && data"
         :data="data"
       />
       <slot
@@ -18,7 +21,9 @@
       v-if="loading"
       class="absolute inset-0 flex justify-center items-center min-h-64"
     >
-      <AnimatedLoader class="size-24" />
+      <slot name="loader">
+        <AnimatedLoader class="size-24" />
+      </slot>
     </div>
   </div>
 </template>
@@ -35,6 +40,7 @@ const props = defineProps<{
 defineSlots<{
   default: (props: { data: NonNullable<T> }) => unknown
   error: () => unknown
+  loader: () => unknown
 }>()
 
 const loading = computed(() => {

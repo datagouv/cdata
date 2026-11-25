@@ -1,6 +1,6 @@
 import type { APIRequestContext } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, deleteDatasets } from '../helpers'
+import { API_BASE, createDataset, createDiscussion, deleteDatasets, gotoHydrated } from '../helpers'
 
 const createdDatasets: Array<string> = []
 const createdDataservices: Array<string> = []
@@ -12,18 +12,6 @@ test.afterEach(async ({ request }) => {
   }
 })
 
-async function createDiscussion(request: APIRequestContext, subjectClass: 'Dataset' | 'Dataservice', subjectId: string, title: string) {
-  const response = await request.post(`${API_BASE}/api/1/discussions/`, {
-    data: {
-      subject: { class: subjectClass, id: subjectId },
-      title,
-      // The comment must not repeat the title: tests locate discussions by title text
-      comment: 'Premier message de la discussion.',
-    },
-  })
-  return await response.json()
-}
-
 type Subject = { id: string }
 
 // The plan requires the discussions flows on datasets AND on another type
@@ -33,7 +21,7 @@ const SUBJECT_CONFIGS = [
     type: 'Dataset' as const,
     publicBase: 'datasets',
     adminBase: 'admin/datasets',
-    deepLinkBanner: 'Vous consultez une discussion spécifique sur ce jeu de donnée.',
+    deepLinkBanner: 'Vous consultez une discussion spécifique sur ce jeu de données.',
     create: async (request: APIRequestContext, uniqueId: number): Promise<Subject> => {
       const dataset = await createDataset(request, `Test discussions ${uniqueId}`, 'Dataset pour tester les discussions')
       createdDatasets.push(dataset.id)
@@ -64,10 +52,9 @@ for (const config of SUBJECT_CONFIGS) {
     test('owner can reply and close a discussion', async ({ page, request }) => {
       const uniqueId = Date.now()
       const subject = await config.create(request, uniqueId)
-      await createDiscussion(request, config.type, subject.id, `Discussion à clôturer ${uniqueId}`)
+      await createDiscussion(request, { class: config.type, id: subject.id }, `Discussion à clôturer ${uniqueId}`)
 
-      await page.goto(`/${config.publicBase}/${subject.id}/discussions`)
-      await page.waitForLoadState('networkidle')
+      await gotoHydrated(page, `/${config.publicBase}/${subject.id}/discussions`)
 
       await page.getByText(`Discussion à clôturer ${uniqueId}`, { exact: true }).click()
       await page.getByRole('button', { name: 'Répondre' }).first().click()
@@ -90,10 +77,9 @@ for (const config of SUBJECT_CONFIGS) {
     test('author can edit a comment', async ({ page, request }) => {
       const uniqueId = Date.now()
       const subject = await config.create(request, uniqueId)
-      await createDiscussion(request, config.type, subject.id, `Discussion à éditer ${uniqueId}`)
+      await createDiscussion(request, { class: config.type, id: subject.id }, `Discussion à éditer ${uniqueId}`)
 
-      await page.goto(`/${config.publicBase}/${subject.id}/discussions`)
-      await page.waitForLoadState('networkidle')
+      await gotoHydrated(page, `/${config.publicBase}/${subject.id}/discussions`)
 
       await page.getByText(`Discussion à éditer ${uniqueId}`, { exact: true }).click()
       await page.getByRole('button', { name: 'Modifier' }).first().click()
@@ -110,11 +96,10 @@ for (const config of SUBJECT_CONFIGS) {
     test('deep-link to a discussion shows a banner', async ({ page, request }) => {
       const uniqueId = Date.now()
       const subject = await config.create(request, uniqueId)
-      const discussion = await createDiscussion(request, config.type, subject.id, `Discussion deep-link ${uniqueId}`)
-      await createDiscussion(request, config.type, subject.id, `Autre discussion ${uniqueId}`)
+      const discussion = await createDiscussion(request, { class: config.type, id: subject.id }, `Discussion deep-link ${uniqueId}`)
+      await createDiscussion(request, { class: config.type, id: subject.id }, `Autre discussion ${uniqueId}`)
 
-      await page.goto(`/${config.publicBase}/${subject.id}/discussions?discussion_id=${discussion.id}`)
-      await page.waitForLoadState('networkidle')
+      await gotoHydrated(page, `/${config.publicBase}/${subject.id}/discussions?discussion_id=${discussion.id}`)
 
       await expect(page.getByText(config.deepLinkBanner)).toBeVisible()
       await expect(page.getByText(`Discussion deep-link ${uniqueId}`, { exact: true })).toBeVisible()
@@ -128,11 +113,10 @@ for (const config of SUBJECT_CONFIGS) {
     test('can search within discussions', async ({ page, request }) => {
       const uniqueId = Date.now()
       const subject = await config.create(request, uniqueId)
-      await createDiscussion(request, config.type, subject.id, `Sujet alpha ${uniqueId}`)
-      await createDiscussion(request, config.type, subject.id, `Sujet beta ${uniqueId}`)
+      await createDiscussion(request, { class: config.type, id: subject.id }, `Sujet alpha ${uniqueId}`)
+      await createDiscussion(request, { class: config.type, id: subject.id }, `Sujet beta ${uniqueId}`)
 
-      await page.goto(`/${config.publicBase}/${subject.id}/discussions`)
-      await page.waitForLoadState('networkidle')
+      await gotoHydrated(page, `/${config.publicBase}/${subject.id}/discussions`)
 
       // The global header search has the same placeholder: target the searchbox
       await page.getByRole('searchbox', { name: 'Recherche' }).fill(`Sujet alpha ${uniqueId}`)
@@ -141,11 +125,52 @@ for (const config of SUBJECT_CONFIGS) {
       await expect(page.getByText(`Sujet beta ${uniqueId}`, { exact: true })).not.toBeVisible()
     })
 
+    test('admin table links the title and shows the last message', async ({ page, request }) => {
+      const uniqueId = Date.now()
+      const subject = await config.create(request, uniqueId)
+      const discussion = await createDiscussion(request, { class: config.type, id: subject.id }, `Discussion listée ${uniqueId}`)
+
+      await gotoHydrated(page, `/${config.adminBase}/${subject.id}/discussions`)
+
+      // Exact match: the eye button's label contains the title too
+      const titleLink = page.getByRole('link', { name: `Discussion listée ${uniqueId}`, exact: true })
+      await expect(titleLink).toHaveAttribute('href', new RegExp(`/discussions\\?discussion_id=${discussion.id}$`))
+
+      await expect(page.getByText('Premier message de la discussion.')).toBeVisible()
+
+      await titleLink.click()
+      await expect(page.getByText(config.deepLinkBanner)).toBeVisible()
+    })
+
+    test('admin table opens the whole thread in a modal', async ({ page, request }) => {
+      const uniqueId = Date.now()
+      const subject = await config.create(request, uniqueId)
+      const discussion = await createDiscussion(request, { class: config.type, id: subject.id }, `Discussion à déplier ${uniqueId}`)
+      await request.post(`${API_BASE}/api/1/discussions/${discussion.id}/`, {
+        data: { comment: 'Réponse visible seulement dans la modale' },
+      })
+
+      await gotoHydrated(page, `/${config.adminBase}/${subject.id}/discussions`)
+
+      // The table only shows the last comment: the first one lives behind the modal
+      await expect(page.getByText('Premier message de la discussion.')).not.toBeVisible()
+
+      await page.getByRole('button', { name: `Répondre à la discussion Discussion à déplier ${uniqueId}` }).click()
+
+      const dialog = page.getByRole('dialog')
+      await expect(dialog.getByText('Premier message de la discussion.')).toBeVisible()
+      await expect(dialog.getByText('Réponse visible seulement dans la modale')).toBeVisible()
+      // The trigger already said "respond": the form is open without a second click
+      await expect(dialog.getByRole('textbox', { name: /Votre message/ })).toBeVisible()
+      // Mounted already open: what the owner receives on the thread is read all the same.
+      await expect(dialog.getByTitle('Ne plus suivre cette discussion')).toBeEnabled()
+    })
+
     test('admin page can filter open and closed discussions', async ({ page, request }) => {
       const uniqueId = Date.now()
       const subject = await config.create(request, uniqueId)
-      await createDiscussion(request, config.type, subject.id, `Discussion ouverte ${uniqueId}`)
-      const closed = await createDiscussion(request, config.type, subject.id, `Discussion fermée ${uniqueId}`)
+      await createDiscussion(request, { class: config.type, id: subject.id }, `Discussion ouverte ${uniqueId}`)
+      const closed = await createDiscussion(request, { class: config.type, id: subject.id }, `Discussion fermée ${uniqueId}`)
       await request.post(`${API_BASE}/api/1/discussions/${closed.id}/`, {
         data: {
           comment: 'Clôture via API pour le test',
@@ -153,8 +178,7 @@ for (const config of SUBJECT_CONFIGS) {
         },
       })
 
-      await page.goto(`/${config.adminBase}/${subject.id}/discussions`)
-      await page.waitForLoadState('networkidle')
+      await gotoHydrated(page, `/${config.adminBase}/${subject.id}/discussions`)
 
       await expect(page.getByText(`Discussion ouverte ${uniqueId}`, { exact: true })).toBeVisible()
       await expect(page.getByText(`Discussion fermée ${uniqueId}`, { exact: true })).toBeVisible()

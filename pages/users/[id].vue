@@ -40,6 +40,10 @@
         />
       </div>
     </div>
+    <PendingReportsBanner
+      :subject="{ class: 'User', value: user }"
+      class="mt-4"
+    />
     <div class="mt-4 space-y-12">
       <div class="flex justify-between items-center gap-2">
         <div class="flex items-center space-x-8">
@@ -65,39 +69,39 @@
         </div>
         <div class="flex flex-col items-end gap-2">
           <div class="flex flex-wrap gap-2">
-            <AdminBadge
+            <Badge
               size="xs"
-              type="secondary"
+              tone="neutral"
             >
               {{ $t('{n} jeux de données', { n: user.metrics.datasets }) }}
-            </AdminBadge>
-            <AdminBadge
+            </Badge>
+            <Badge
               size="xs"
-              type="secondary"
+              tone="neutral"
             >
               {{ $t('{n} réutilisations | {n} réutilisation | {n} réutilisations', { n: user.metrics.reuses }) }}
-            </AdminBadge>
-            <AdminBadge
+            </Badge>
+            <Badge
               size="xs"
-              type="secondary"
+              tone="neutral"
             >
               {{ $t('{n} API', { n: user.metrics.dataservices }) }}
-            </AdminBadge>
+            </Badge>
           </div>
 
           <div class="flex flex-wrap gap-2">
-            <AdminBadge
+            <Badge
               size="xs"
-              type="secondary"
+              tone="neutral"
             >
               {{ $t('{n} abonnés | {n} abonné | {n} abonnés', { n: user.metrics.followers }) }}
-            </AdminBadge>
-            <AdminBadge
+            </Badge>
+            <Badge
               size="xs"
-              type="secondary"
+              tone="neutral"
             >
               {{ $t('{n} personnes suivies | 1 personne suivie | {n} personnes suivies', { n: user.metrics.following }) }}
-            </AdminBadge>
+            </Badge>
           </div>
         </div>
       </div>
@@ -211,20 +215,21 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, MarkdownViewer, OrganizationCard, Pagination, ReuseCard } from '@datagouv/components-next'
-import type { DatasetV2, Reuse, User } from '@datagouv/components-next'
+import { Avatar, BrandedButton, MarkdownViewer, OrganizationCard, Pagination, ReuseCard, Badge } from '@datagouv/components-next'
+import type { DatasetV2, ReuseV2, User } from '@datagouv/components-next'
 import { RiEdit2Line } from '@remixicon/vue'
 import { DatasetCardLg } from '#components'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import DeleteUserModal from '~/components/User/DeleteUserModal.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import type { PaginatedArray } from '~/types/types'
 
 const me = useMaybeMe()
 
 const route = useRoute()
-const url = computed(() => `/api/1/users/${route.params.id}`)
-const { data: user } = await useAPI<User>(url, { redirectOn404: true, redirectOnSlug: 'id' })
+const url = computed(() => `/api/1/users/${route.params.id}/`)
+const { data: user } = await useAPI<User>(url, { showErrorPage: true, redirectOnSlug: 'id' })
 
 const title = computed(() => user.value ? `${user.value.first_name} ${user.value.last_name}` : null)
 useSeoMeta({
@@ -247,7 +252,7 @@ const datasetsParams = computed(() => {
     owner: user.value?.id,
   }
 })
-const { data: datasets } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/datasets`, { query: datasetsParams })
+const { data: datasets } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/datasets/`, { query: datasetsParams })
 
 const reusesPage = ref(1)
 const reusesParams = computed(() => {
@@ -257,7 +262,7 @@ const reusesParams = computed(() => {
     owner: user.value?.id,
   }
 })
-const { data: reuses } = await useAPI<PaginatedArray<Reuse>>(`/api/1/reuses`, { query: reusesParams })
+const { data: reuses } = await useAPI<PaginatedArray<ReuseV2>>(`/api/2/reuses/`, { query: reusesParams })
 
 const followedDatasetsPage = ref(1)
 const followedDatasetsParams = computed(() => {
@@ -267,5 +272,5 @@ const followedDatasetsParams = computed(() => {
     followed_by: user.value?.id,
   }
 })
-const { data: followedDatasets } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/datasets`, { query: followedDatasetsParams })
+const { data: followedDatasets } = await useAPI<PaginatedArray<DatasetV2>>(`/api/2/datasets/`, { query: followedDatasetsParams })
 </script>

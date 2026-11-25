@@ -1,18 +1,30 @@
 <template>
   <div>
     <BannerNotif
-      type="warning"
+      tone="warning"
       :icon="RiSendPlaneLine"
       class="mb-4"
       :badge="$t('Transfert en attente')"
-      :user="transfer.user"
       :date="new Date(transfer.created)"
     >
+      <template #avatar>
+        <Avatar
+          v-if="requester.class === 'User'"
+          :user="requester"
+          rounded
+          :size="24"
+        />
+        <OrganizationLogo
+          v-else
+          :organization="requester"
+          size-class="size-6"
+        />
+      </template>
       <template #title>
         <a
-          :href="transfer.user.page"
-          class="link"
-        >{{ transfer.user.first_name }} {{ transfer.user.last_name }}</a>
+          :href="requester.page"
+          class="link font-bold"
+        >{{ requester.class === 'User' ? `${requester.first_name} ${requester.last_name}` : requester.name }}</a>
         {{ $t('a demandé un transfert') }}
       </template>
       <template #subtitle>
@@ -22,7 +34,7 @@
         />
         &nbsp;
         <template v-if="transfer.recipient.class === 'Organization'">
-          {{ $t('vers votre organization') }}
+          {{ $t('vers votre organisation') }}
           <a
             :href="transfer.recipient.page"
             class="link"
@@ -47,7 +59,6 @@
           color="primary"
           size="xs"
           :icon="RiCheckLine"
-          :aria-controls="modalId"
           @click="isOpen = true"
         >
           {{ $t('Accepter') }}
@@ -57,15 +68,14 @@
           color="danger"
           size="xs"
           :icon="RiCloseLine"
-          :aria-controls="modalId"
           @click="isOpen = true"
         >
           {{ $t('Refuser') }}
         </BrandedButton>
       </template>
     </BannerNotif>
-    <ModalClient
-      :modal-id="modalId"
+    <Modal
+      :id="modalId"
       :opened="isOpen"
       :title="$t('Transfert en attente')"
       size="lg"
@@ -104,15 +114,15 @@
           </BrandedButton>
         </div>
       </template>
-    </ModalClient>
+    </Modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton } from '@datagouv/components-next'
+import { Avatar, BrandedButton, OrganizationLogo } from '@datagouv/components-next'
 import { RiCheckLine, RiCloseLine, RiSendPlaneLine } from '@remixicon/vue'
-import ModalClient from './Modal/Modal.client.vue'
-import type { TransferRequest } from '~/types/types'
+import Modal from './Modal/Modal.vue'
+import type { TransferParty, TransferRequest } from '~/types/types'
 
 const props = withDefaults(defineProps<{
   transfer: TransferRequest
@@ -125,6 +135,10 @@ const emit = defineEmits<{
 }>()
 
 const { $api } = useNuxtApp()
+
+// Without a recorded requester, fall back on the owner: only the owning user or an admin of the owning
+// organization (or a site admin) can request a transfer
+const requester = computed<TransferParty>(() => props.transfer.user ? { ...props.transfer.user, class: 'User' } : props.transfer.owner)
 
 const modalId = useId()
 const isOpen = ref(false)

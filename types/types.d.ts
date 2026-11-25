@@ -36,10 +36,6 @@ export type PublishingFormAccordionState = AccordionFunctionalState | DSFRInfoSt
 
 export type AccordionState = DSFRFormDefaultState | AccordionFunctionalState | DSFRInfoState
 
-export type AdminBadgeState = DSFRFormDefaultState | FormFunctionalState | DSFRInfoState
-
-export type AdminBadgeType = 'primary' | 'secondary' | 'warning' | 'danger' | 'success' | 'default' | 'pink'
-
 export type DatasetSortedBy = 'title' | 'created' | 'last_update' | 'reuses' | 'followers' | 'views'
 
 export type ResourceSortedBy = 'title' | 'type' | 'format' | 'created_at' | 'last_modified'
@@ -106,6 +102,13 @@ export type Member = {
 
 export type EditingMember = Member & {
   newRole?: MemberRole
+}
+
+export type OrganizationRole = {
+  id: MemberRole
+  label: string
+  // Optional: udata versions before 17.7 do not expose it.
+  description?: string
 }
 
 export type MultiSelectOption = {
@@ -332,11 +335,14 @@ export type ContactPointInForm = ContactPoint | NewContactPoint
 export type LinkToSubjectFallback = { customTitle: string, customUrl: string | undefined }
 export type LinkToSubject = Dataset | DatasetV2 | DatasetV2WithFullObject | Omit<Dataset, 'resources' | 'community_resources'> | Reuse | Dataservice | Organization | Thread | User | LinkToSubjectFallback
 
+export type TransferParty = (User & { class: 'User' }) | (Organization & { class: 'Organization' })
+
 export type TransferRequest = {
   id: string
-  user: User
-  owner: (User & { class: 'User' }) | (Organization & { class: 'Organization' })
-  recipient: (User & { class: 'User' }) | (Organization & { class: 'Organization' })
+  // Transfers created before December 2024 did not record who requested them
+  user: User | null
+  owner: TransferParty
+  recipient: TransferParty
   subject: (Dataset & { class: 'Dataset' }) | (Reuse & { class: 'Reuse' }) | (Dataservice & { class: 'Dataservice' })
   comment: string
   created: string

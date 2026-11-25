@@ -10,7 +10,9 @@
   >
     <div>
       <div class="text-gray-900">
-        {{ title }}
+        <slot name="title">
+          {{ title }}
+        </slot>
       </div>
       <div
         v-if="$slots.default"
@@ -34,7 +36,9 @@ export const bannerActionTypeKey = Symbol() as InjectionKey<'primary' | 'danger'
 <script setup lang="ts">
 const props = defineProps<{
   type: 'primary' | 'danger' | 'warning'
-  title: string
+  // Optional so the title can be a slot, for instance to make it the toggle of a
+  // disclosure whose panel lives in the banner
+  title?: string
 }>()
 
 provide(bannerActionTypeKey, props.type)

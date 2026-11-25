@@ -65,14 +65,20 @@
         class="mt-1 mb-0 text-xs"
       >
         {{ t("depuis ") }}
-        {{ formatDate(since, { dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }) }}
+        <FormattedDate
+          :date="since"
+          :options="{ dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }"
+        />
       </p>
       <p class="mt-1 mb-0 text-xs text-success-darkest">
         <strong>
           + {{ summarize(lastValue, 2) }}
         </strong>
-        {{ t(" en ") }}
-        {{ formatDate(lastMonth, { dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }) }}
+        {{ t("en") }}
+        <FormattedDate
+          :date="lastMonth"
+          :options="{ dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }"
+        />
       </p>
     </template>
   </div>
@@ -138,23 +144,28 @@
         />
       </div>
     </div>
-    <p
+    <Badge
       v-if="lastValue && lastMonth"
-      class="mt-2 font-normal normal-case fr-badge fr-badge--no-icon fr-badge--success"
+      tone="success"
+      class="mt-2"
     >
-      <strong class="mr-1">
+      <strong>
         + {{ summarize(lastValue, 2) }}
       </strong>
-      {{ t(" en ") }}
-      {{ formatDate(lastMonth, { dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }) }}
-    </p>
+      {{ t("en") }}
+      <FormattedDate
+        :date="lastMonth"
+        :options="{ dateStyle: undefined, year: 'numeric', month: 'short', day: undefined }"
+      />
+    </Badge>
   </div>
 </template>
 
 <script setup lang="ts">
 import { computed } from 'vue'
 import { ContentLoader } from 'vue-content-loader'
-import { useFormatDate } from '../functions/dates'
+import Badge from './Badge.vue'
+import FormattedDate from './FormattedDate.vue'
 import { summarize } from '../functions/helpers'
 import { useTranslation } from '../composables/useTranslation'
 import SmallChart from './SmallChart.vue'
@@ -169,7 +180,6 @@ const props = defineProps<{
 }>()
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 
 const months = computed(() => props.data ? Object.keys(props.data) : [])
 const values = computed(() => props.data ? Object.values(props.data) : [])

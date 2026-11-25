@@ -11,7 +11,10 @@
         :class="{ 'rotate-180': open }"
       />
     </button>
-    <div v-if="open || !isMobile">
+    <!-- Collapsing with CSS rather than `v-if` on a JS media query: the server has no
+         viewport, so it always renders the desktop state and a narrow client would drop
+         the whole panel during hydration. -->
+    <div :class="{ 'hidden md:block': !open }">
       <p
         :id="titleId"
         class="text-sm font-bold leading-tight mb-6 hidden md:block"
@@ -26,13 +29,11 @@
 <script setup lang="ts">
 import { ref, useId } from 'vue'
 import { RiArrowDownSLine } from '@remixicon/vue'
-import { useMediaQuery } from '@vueuse/core'
 
 defineProps<{
   buttonText: string
 }>()
 
 const titleId = useId()
-const isMobile = useMediaQuery('(max-width: 767px)')
 const open = ref(false)
 </script>

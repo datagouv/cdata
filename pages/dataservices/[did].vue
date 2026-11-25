@@ -34,6 +34,13 @@
           />
         </div>
       </div>
+      <PendingReportsBanner
+        v-if="dataservice"
+        :subject="{ class: 'Dataservice', value: dataservice }"
+        with-object-actions
+        class="mt-4"
+        @refresh="refresh"
+      />
     </div>
     <LoadingBlock
       v-if="dataservice"
@@ -47,30 +54,10 @@
             <div class="flex-1 overflow-x-hidden">
               <div ref="header">
                 <div class="flex gap-3 mb-2">
-                  <AdminBadge
-                    v-if="dataservice.deleted_at"
-                    :icon="RiDeleteBinLine"
-                    size="sm"
-                    type="secondary"
-                  >
-                    {{ $t('Supprimé') }}
-                  </AdminBadge>
-                  <AdminBadge
-                    v-if="dataservice.private"
-                    :icon="RiLockLine"
-                    size="sm"
-                    type="secondary"
-                  >
-                    {{ $t('Brouillon') }}
-                  </AdminBadge>
-                  <AdminBadge
-                    v-if="dataservice.archived_at"
-                    :icon="RiLockLine"
-                    size="sm"
-                    type="secondary"
-                  >
-                    {{ $t('Archivé') }}
-                  </AdminBadge>
+                  <DataserviceBadge
+                    v-if="getDataserviceStatus(dataservice) !== 'public'"
+                    :dataservice
+                  />
                 </div>
                 <h1 class="text-2xl text-gray-title mb-6 font-extrabold">
                   {{ dataservice.title }}
@@ -137,6 +124,16 @@
                 </dl>
               </section>
 
+              <section
+                v-if="dataservice.quality"
+                class="space-y-2"
+              >
+                <h3 class="text-base !mt-0 !mb-0 text-gray-title font-bold">
+                  {{ $t('Qualité des métadonnées') }}
+                </h3>
+                <DataserviceQuality :quality="dataservice.quality" />
+              </section>
+
               <section class="space-y-2">
                 <h3 class="text-base !mt-0 !mb-0 text-gray-title font-bold">
                   {{ $t('Caractéristiques techniques') }}
@@ -153,7 +150,7 @@
                       <a
                         :href="dataservice.base_api_url"
                         target="_blank"
-                        rel="noopener noreferrer"
+                        rel="ugc nofollow noopener"
                         class="link block truncate"
                       >
                         {{ dataservice.base_api_url }}
@@ -178,7 +175,7 @@
                         :href="dataservice.rate_limiting_url"
                         :title="$t(`En savoir plus sur les limites d'appels`)"
                         target="_blank"
-                        rel="noopener noreferrer"
+                        rel="ugc nofollow noopener"
                         :class="dataservice.rate_limiting ? 'inline-flex items-center gap-1' : 'block truncate'"
                       >
                         {{ dataservice.rate_limiting ? $t("En savoir plus") : dataservice.rate_limiting_url }}
@@ -207,6 +204,7 @@
                     size="sm"
                     :href="dataservice.business_documentation_url"
                     new-tab
+                    rel="ugc nofollow noopener"
                     @click="$matomo.trackEvent('API', `Accéder à l'api`, 'Bouton : documentation métier')"
                   >
                     {{ $t('Documentation métier') }}
@@ -290,6 +288,7 @@
           class="mt-12"
           :links="[
             { label: $t('Informations'), href: `/dataservices/${route.params.did}` },
+            { label: $t('Réutilisations'), href: `/dataservices/${route.params.did}/reuses`, count: dataservice.metrics.reuses ?? 0 },
             { label: $t('Discussions'), href: `/dataservices/${route.params.did}/discussions`, count: dataservice.metrics.discussions ?? 0 },
           ]"
         />
@@ -306,19 +305,20 @@
 </template>
 
 <script setup lang="ts">
-import { isOrganizationCertified, BrandedButton, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, MarkdownViewer, getDescriptionShort } from '@datagouv/components-next'
-import { RiArrowDownSLine, RiArrowUpSLine, RiDeleteBinLine, RiLockLine } from '@remixicon/vue'
-import AdminBadge from '~/components/AdminBadge/AdminBadge.vue'
+import { isOrganizationCertified, BrandedButton, DataserviceQuality, LoadingBlock, OpenApiViewer, ReadMore, SimpleBanner, type Dataservice, AvatarWithName, MarkdownViewer, getDescriptionShort, DataserviceBadge, getDataserviceStatus } from '@datagouv/components-next'
+import { RiArrowDownSLine, RiArrowUpSLine } from '@remixicon/vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import ContactPoint from '~/components/ContactPoint.vue'
 import OrganizationOwner from '~/components/OrganizationOwner.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
 import ReportModal from '~/components/Spam/ReportModal.vue'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import { useElementSize } from '@vueuse/core'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const config = useRuntimeConfig()
@@ -333,10 +333,10 @@ const { height: sidebarHeight } = useElementSize(sidebar)
 const { height: headerHeight } = useElementSize(header)
 
 const url = computed(() => `/api/1/dataservices/${route.params.did}/`)
-const { data: dataservice, status } = await useAPI<Dataservice>(url, { redirectOn404: true, redirectOnSlug: 'did' })
+const { data: dataservice, status, refresh } = await useAPI<Dataservice>(url, { showErrorPage: true, redirectOnSlug: 'did' })
 
 const title = computed(() => `API - ${dataservice.value?.title} | ${config.public.title}`)
-const description = computed(() => dataservice.value ? getDescriptionShort(dataservice.value) : '')
+const description = computed(() => normalizeSeoDescription(dataservice.value ? getDescriptionShort(dataservice.value) : undefined))
 const robots = computed(() => dataservice.value && dataservice.value.archived_at ? 'noindex' : 'all')
 
 useSeoMeta({

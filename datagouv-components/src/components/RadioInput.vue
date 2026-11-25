@@ -26,6 +26,7 @@
     </span>
     <span
       v-if="loading || count !== undefined"
+      data-testid="radio-count"
       class="text-xs font-bold px-1 py-0.5 rounded"
       :class="isSelected && highlighted ? 'bg-white/20 text-white' : 'bg-gray-200 text-gray-600'"
     >

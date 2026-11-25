@@ -82,7 +82,7 @@
                             <BrandedButton
                               :href="me.page"
                               color="tertiary"
-                              :icon="NuxtImg"
+                              :icon="Avatar"
                               :icon-attrs="{
                                 'src': getUserAvatar(me, 24),
                                 'loading': 'lazy',
@@ -122,7 +122,7 @@
                         >
                           <li>
                             <BrandedButton
-                              :href="{ path: '/login', query: { next: route.fullPath } }"
+                              :href="{ path: '/login', query: { next: nextAfterAuth } }"
                               color="tertiary"
                               size="lg"
                               :icon="RiLockLine"
@@ -136,7 +136,7 @@
                             <BrandedButton
                               color="tertiary"
                               size="lg"
-                              :href="{ path: '/register', query: { next: route.fullPath } }"
+                              :href="{ path: '/register', query: { next: nextAfterAuth } }"
                               class="w-full"
                               :icon="RiAccountCircleLine"
                               @click="close"
@@ -262,7 +262,7 @@
                     <BrandedButton
                       :href="me.page"
                       color="tertiary"
-                      :icon="NuxtImg"
+                      :icon="Avatar"
                       :icon-attrs="{
                         'src': getUserAvatar(me, 24),
                         'loading': 'lazy',
@@ -289,9 +289,21 @@
                       {{ pendingNotifications.total }}
                       <template #toggletip="{ close }">
                         <div class="flex justify-between border-b border-gray-default">
-                          <h5 class="fr-text--sm fr-my-0 fr-p-2v">
+                          <h5 class="fr-text--sm fr-my-0 fr-p-2v flex-1">
                             {{ t("Notifications") }}
                           </h5>
+                          <NuxtLink
+                            to="/admin/me/notifications"
+                            :title="t('Gérer mes notifications')"
+                            class="bg-none border-l border-gray-default close-button flex items-center justify-center"
+                            @click="close"
+                          >
+                            <RiSettings3Line
+                              class="size-4"
+                              aria-hidden="true"
+                            />
+                            <span class="sr-only">{{ t('Gérer mes notifications') }}</span>
+                          </NuxtLink>
                           <button
                             type="button"
                             :title="t('Fermer')"
@@ -380,7 +392,7 @@
                 <li>
                   <BrandedButton
                     color="tertiary"
-                    :href="{ path: '/login', query: { next: route.fullPath } }"
+                    :href="{ path: '/login', query: { next: nextAfterAuth } }"
                     :icon="RiLockLine"
                   >
                     {{ $t("Se connecter") }}
@@ -389,7 +401,7 @@
                 <li>
                   <BrandedButton
                     color="tertiary"
-                    :href="{ path: '/register', query: { next: route.fullPath } }"
+                    :href="{ path: '/register', query: { next: nextAfterAuth } }"
                     :icon="RiAccountCircleLine"
                   >
                     {{ $t("S'enregistrer") }}
@@ -518,10 +530,9 @@
 </template>
 
 <script setup lang="ts">
-import { NuxtImg as _NuxtImg } from '#components'
-import type { Component } from 'vue'
+import type { FunctionalComponent } from 'vue'
 import { BrandedButton, Toggletip, useGetUserAvatar, toast } from '@datagouv/components-next'
-import { RiAccountCircleLine, RiAddLine, RiCheckLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiTerminalLine, RiLineChartLine, RiServerLine, RiArticleLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
+import { RiAccountCircleLine, RiAddLine, RiCheckLine, RiDatabase2Line, RiInbox2Line, RiLockLine, RiMenuLine, RiSearchLine, RiTerminalLine, RiLineChartLine, RiServerLine, RiArticleLine, RiBarChartBoxLine, RiSettings3Line, RiLogoutBoxRLine, RiBuilding2Line, RiCloseLine } from '@remixicon/vue'
 import { Disclosure, DisclosureButton, DisclosurePanel, Menu, MenuButton, MenuItem, MenuItems, Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
 import CdataLink from '../CdataLink.vue'
 import LogoAsText from '../LogoAsText.vue'
@@ -530,8 +541,8 @@ import { useMarkAsRead } from '~/composables/useMarkAsRead'
 import { useNotifications } from '~/composables/useNotifications.client'
 import { useLogout, useMaybeMe } from '~/utils/auth'
 
-// @ts-expect-error @nuxt/image v2 types mark the default slot as required (only used with `custom` prop), making NuxtImg incompatible with Component
-const NuxtImg: Component = _NuxtImg
+// BrandedButton takes its icon as a component: the avatar is a plain image wrapped in one.
+const Avatar: FunctionalComponent = (_props, { attrs }) => h('img', attrs)
 
 defineProps<{
   fluid?: boolean
@@ -542,12 +553,22 @@ const { t } = useTranslation()
 const config = useRuntimeConfig()
 const appConfig = useAppConfig()
 const me = useMaybeMe()
-const currentRoute = useRoute()
 const router = useRouter()
 const route = useRoute()
 const { isLoading } = useLoadingIndicator()
 const { refreshNotifications, loadMoreNotifications, pendingNotifications, nextPage, notificationsCombinedList, notificationsToRead } = useNotifications()
 const { markWithoutActionAsRead, loading } = useMarkAsRead()
+
+// On an auth page, `next` must keep pointing at the original destination instead of the
+// current page: a self-referencing `next` makes the login and register links generate a
+// new URL on every hop (/login?next=/register?next=/login?next=…), an infinite URL space
+// that crawlers walk endlessly, each hop being a full SSR render.
+const nextAfterAuth = computed(() => {
+  if (!isUnloggedSecurityRoute(route.path)) return route.fullPath
+
+  const next = Array.isArray(route.query.next) ? route.query.next[0] : route.query.next
+  return next || undefined
+})
 
 const menu = [
   { label: t('Données'), link: '/datasets' },
@@ -571,16 +592,17 @@ const publishMenu = [
   { label: t('Une réutilisation'), icon: RiLineChartLine, link: '/admin/reuses/new' },
   { label: t('Un moissonneur'), icon: RiServerLine, link: '/admin/harvesters/new' },
   { label: t('Une organisation'), icon: RiBuilding2Line, link: '/admin/organizations/new' },
-  { label: t('Un article'), icon: RiArticleLine, link: '/admin/posts/new', show: isMeAdmin() },
+  { label: t('Un article'), icon: RiArticleLine, link: '/admin/posts/new', show: () => isAdmin(me.value) },
+  { label: t('Un graphique'), icon: RiBarChartBoxLine, link: '/admin/beta/chart', show: () => isAdmin(me.value) },
 ]
 
-const filteredPublishMenu = computed(() => publishMenu.filter(item => !('show' in item) || item.show))
+const filteredPublishMenu = computed(() => publishMenu.filter(item => item.show?.() ?? true))
 
 function getAriaCurrent(link: string) {
-  if (currentRoute.path === link) {
+  if (route.path === link) {
     return 'page'
   }
-  const routesInPath = router.getRoutes().map(route => route.path).filter(path => currentRoute.path.startsWith(path))
+  const routesInPath = router.getRoutes().map(({ path }) => path).filter(path => route.path.startsWith(path))
   return routesInPath.includes(link)
 }
 
@@ -593,15 +615,22 @@ const logout = async () => {
 onMounted(() => {
   // TODO: remove this logic when we don't rely on udata flash messages
   // following https://github.com/opendatateam/udata/pull/3348
-  const FLASH_MESSAGES: Record<string, { type: 'success' | 'error', text: string }> = {
+  const FLASH_MESSAGES: Record<string, { type: 'success' | 'error' | 'info', text: string }> = {
     logout: { type: 'success', text: t('Vous êtes maintenant déconnecté.') },
     connected: { type: 'success', text: t('Vous êtes maintenant connecté.') },
     change_email: { type: 'success', text: t('Merci. Les instructions de confirmation pour changer votre adresse email ont été envoyées à l\'adresse mail cible.') },
     post_confirm: { type: 'success', text: t('Votre adresse email est maintenant confirmée. Vous êtes maintenant connecté.') },
     change_email_confirmed: { type: 'success', text: t('Votre nouvelle adresse email est maintenant confirmée.') },
-    change_email_expired: { type: 'error', text: t('Le code de vérification de votre adresse email a expiré, un nouveau mail vous a été envoyé.') },
+    change_email_expired: { type: 'error', text: t('Le lien de vérification de votre adresse email a expiré, refaites la demande depuis votre profil.') },
     change_email_invalid: { type: 'error', text: t('Le code de vérification de votre adresse email est incorrect.') },
     change_email_already_taken: { type: 'error', text: t('Cette adresse email est déjà utilisée par un autre compte. Votre adresse email n\'a pas été modifiée.') },
+    proconnect_reauth_success: { type: 'success', text: t('Compte confirmé.') },
+    proconnect_reauth_failed: { type: 'error', text: t('La confirmation de votre identité avec ProConnect a échoué. Veuillez réessayer.') },
+    proconnect_reauth_unavailable: { type: 'error', text: t('Votre session n’a pas été ouverte avec ProConnect : confirmez votre identité avec votre mot de passe.') },
+    proconnect_reauth_identity_mismatch: { type: 'error', text: t('Vous vous êtes identifié sur ProConnect avec une autre adresse email que celle de ce compte ({email}).', { email: me.value?.email ?? '' }) },
+    proconnect_identity_mismatch: { type: 'error', text: t('Ce compte est protégé par la double authentification d\'une autre identité ProConnect : connectez-vous avec celle-ci, ou contactez-nous si vous en avez changé.') },
+    proconnect_second_factor_required: { type: 'error', text: t('Ce compte est protégé par la double authentification de ProConnect : connectez-vous avec votre clé ou votre application d\'authentification. Un code reçu par email ne suffit pas.') },
+    proconnect_only_available: { type: 'info', text: t('Vous êtes maintenant connecté. Pour mieux protéger votre compte, vous pouvez vous connecter uniquement avec ProConnect depuis votre profil.') },
   }
 
   if (route.query.flash) {
@@ -621,6 +650,9 @@ onMounted(() => {
     if (message) {
       toast[message.type](message.text)
     }
+
+    // Consume the flash: strip it from the URL so it can't resurface on a later reload.
+    router.replace({ query: { ...route.query, flash: undefined, info: undefined, error: undefined } })
   }
 })
 

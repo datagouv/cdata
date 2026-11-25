@@ -5,7 +5,6 @@
       :button-text="$t('Aide')"
       :on-right="true"
       :fixed="true"
-      :show-border="false"
     >
       <template #title>
         <span
@@ -119,7 +118,8 @@
               :placeholder="$t('Recherchez une fréquence…')"
               :get-option-id="(frequency) => frequency.label"
               :display-value="(frequency) => frequency.label"
-              :options="frequencies ?? []"
+              :options="frequencies"
+              :group-by="groupFrequency"
               :multiple="false"
               :required="true"
               :error-text="getFirstError('frequency')"
@@ -157,6 +157,7 @@
           </BrandedButton>
           <BrandedButton
             color="primary"
+            :loading
             @click="submit"
           >
             {{ $t("Suivant") }}
@@ -169,7 +170,6 @@
 
 <script setup lang="ts">
 import { BrandedButton, PaddedContainer, SimpleBanner, SearchableSelect } from '@datagouv/components-next'
-import type { Frequency } from '@datagouv/components-next'
 import { ref } from 'vue'
 import Alert from '~/components/Alert/Alert.vue'
 import InputGroup from '~/components/InputGroup/InputGroup.vue'
@@ -181,6 +181,10 @@ import RequiredExplanation from '~/components/RequiredExplanation/RequiredExplan
 import { useForm, required, minLength } from '~/composables/useForm'
 import type { DatasetForm } from '~/types/types'
 
+defineProps<{
+  loading: boolean
+}>()
+
 const emit = defineEmits<{
   (e: 'previous' | 'next'): void
 }>()
@@ -189,7 +193,7 @@ const titleAccordionId = useId()
 const descriptionAccordionId = useId()
 const frequencyAccordionId = useId()
 
-const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies/', { lazy: true })
+const { frequencies, groupFrequency } = await useFrequencies()
 
 const datasetForm = defineModel<DatasetForm>({ required: true })
 

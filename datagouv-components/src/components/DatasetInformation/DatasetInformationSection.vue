@@ -7,16 +7,13 @@
       <div v-if="dataset.tags && dataset.tags.length">
         <DescriptionListTerm>{{ t('Mots-clés') }}</DescriptionListTerm>
         <DescriptionListDetails class="flex flex-wrap gap-2 items-start">
-          <AppLink
+          <Tag
             v-for="tag in dataset.tags"
             :key="tag"
-            class="fr-raw-link"
             :to="getTagUrl(tag)"
           >
-            <Tag type="secondary">
-              {{ tag }}
-            </Tag>
-          </AppLink>
+            {{ tag }}
+          </Tag>
         </DescriptionListDetails>
       </div>
       <div>
@@ -46,24 +43,24 @@
 <script setup lang="ts">
 import { useTranslation } from '../../composables/useTranslation'
 import { useComponentsConfig } from '../../config'
+import type { RouteLocationRaw } from 'vue-router'
 import type { DatasetV2WithFullObject } from '../../types/datasets'
 import DescriptionList from '../DescriptionList.vue'
 import DescriptionListTerm from '../DescriptionListTerm.vue'
 import DescriptionListDetails from '../DescriptionListDetails.vue'
-import AppLink from '../AppLink.vue'
 import CopyButton from '../CopyButton.vue'
 import LicenseBadge from '../LicenseBadge.vue'
 import Tag from '../Tag.vue'
 
 const props = defineProps<{
   dataset: DatasetV2WithFullObject
-  tagUrl?: (tag: string) => string
+  tagUrl?: (tag: string) => string | RouteLocationRaw
 }>()
 
 const { t } = useTranslation()
 const config = useComponentsConfig()
 
-function getTagUrl(tag: string): string {
+function getTagUrl(tag: string): string | RouteLocationRaw {
   if (props.tagUrl) {
     return props.tagUrl(tag)
   }

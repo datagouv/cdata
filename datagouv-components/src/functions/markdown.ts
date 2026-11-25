@@ -1,6 +1,7 @@
 import type hast from 'hast'
 import behead, { type Options } from 'remark-behead'
 import remarkBreaks from 'remark-breaks'
+import rehypeExternalLinks from 'rehype-external-links'
 import rehypeHighlight from 'rehype-highlight'
 import remarkParse from 'remark-parse'
 import remarkRehype from 'remark-rehype'
@@ -26,6 +27,20 @@ function rehypeLazyLoad(this: Processor): Transformer {
         ...(el.properties || {}),
         loading: 'lazy',
       }
+    })
+    return htmlAST
+  }
+}
+
+// Replaces images with their alt text, so rendering never fetches a URL
+// chosen by the content (an image URL can carry data out of the page).
+function rehypeNoImages(this: Processor): Transformer {
+  return function transformer(htmlAST: Node): Node {
+    visit(htmlAST as hast.Root, 'element', function visitor(el, index, parent) {
+      if (el.tagName !== 'img' || !parent || index === undefined) return
+      const alt = el.properties?.alt
+      parent.children.splice(index, 1, { type: 'text', value: typeof alt === 'string' ? alt : '' })
+      return index
     })
     return htmlAST
   }
@@ -57,15 +72,19 @@ function rehypeNoHeadings(this: Processor): Transformer {
   }
 }
 
-export function formatMarkdown(md: string, config: number | { minDepth: number, noHeadings: boolean } = 3) {
+export function formatMarkdown(md: string, config: number | { minDepth: number, noHeadings: boolean, followLinks?: boolean, generated?: boolean } = 3) {
   let minDepth: number
   let noHeadings = false
+  let followLinks = false
+  let generated = false
   if (typeof config === 'number') {
     minDepth = config
   }
   else {
     minDepth = config.minDepth
     noHeadings = config.noHeadings
+    followLinks = config.followLinks ?? false
+    generated = config.generated ?? false
   }
   const result = unified()
     .use(behead, { minDepth: minDepth > 1 ? minDepth : undefined } as Options)
@@ -84,6 +103,15 @@ export function formatMarkdown(md: string, config: number | { minDepth: number, 
     .use(rehypeHighlight)
     .use(rehypeSlug)
     .use(rehypeSanitize)
+    .use(generated ? [rehypeNoImages] : [])
+    // Markdown mostly comes from users: links leaving the site must not pass on its search
+    // ranking, or they become worth spamming for. `followLinks` is for content written by the team.
+    // Generated content also opens its links aside: it sits next to unsaved work.
+    .use(rehypeExternalLinks, {
+      rel: followLinks ? [] : ['ugc', 'nofollow', 'noopener', ...(generated ? ['noreferrer'] : [])],
+      target: generated ? '_blank' : undefined,
+      protocols: ['http', 'https', 'mailto'],
+    })
     // Serialize syntax tree to HTML
     .use(rehypeStringify)
     .use(noHeadings ? [rehypeLazyLoad, rehypeNoHeadings] : [rehypeLazyLoad])

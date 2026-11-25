@@ -4,10 +4,14 @@
     :class="{
       'mx-0 px-0': noMarginsAndPadding,
     }"
-    :aria-labelledby="legendId"
+    :aria-labelledby="legend ? legendId : undefined"
   >
-    <div class="mb-3 w-full flex items-center space-x-2">
+    <div
+      v-if="legend || $slots.legendAside"
+      class="mb-3 w-full flex items-center space-x-2"
+    >
       <legend
+        v-if="legend"
         :id="legendId"
         class="fr-fieldset__legend w-auto"
         :class="{
@@ -30,7 +34,7 @@
 const legendId = useId()
 
 defineProps<{
-  legend: string
+  legend?: string
   noMarginsAndPadding?: boolean
 }>()
 </script>

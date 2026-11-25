@@ -1,9 +1,18 @@
-import { test as base } from '@playwright/test'
+import { test as base, type ConsoleMessage } from '@playwright/test'
+import { fakeMatomo } from './matomo'
+import { fakeMetricsApi } from './metricsApi'
+
+// `msg.text()` flattens an `Error` argument to its bare message (e.g. "Error"),
+// dropping the stack on Firefox. Resolve the args to recover `error.stack`, along
+// with `String(error)`: Firefox's stack only lists the frames, without the message.
+const fullText = (msg: ConsoleMessage) =>
+  Promise.all(msg.args().map(arg => arg.evaluate(v => (v instanceof Error ? `${String(v)}\n${v.stack}` : v)).catch(() => null)))
+    .then(parts => parts.filter(p => p != null).join(' ') || msg.text())
 
 const IGNORED_MESSAGES = [
   // Cookie secure flag doesn't work in dev (HTTP)
   'non-HTTPS cookie',
-  // TODO: find a way to only ignore this in redirect tests (e.g. a per-test option)
+  // TODO: move this to the `allowedConsoleMessages` option of the redirect tests
   // instead of globally silencing 404 errors. Example test that needs this:
   //   test('/datasets/slug/ → /datasets/slug', async ({ page }) => {
   //     await page.goto('/datasets/slug/')
@@ -15,44 +24,71 @@ const IGNORED_MESSAGES = [
   'OpaqueResponseBlocking',
   // Firefox warning about scroll-linked positioning, not actionable
   'scroll-linked positioning effect',
+  // Firefox of Playwright 1.65, when a routed streamed response is fulfilled: not raised with
+  // Playwright 1.64 on the same build of the app
+  'The execution of microtasks on this page was reordered',
   // Nuxt wraps 404 errors during app init, same root cause as "Page not found:"
   'error caught during app initialization',
 ]
 
 // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
-export const test = base.extend<{ assertNoConsoleErrors: void }>({
-  assertNoConsoleErrors: [async ({ page }, use) => {
-    const warnings: string[] = []
-    const errors: string[] = []
+export const test = base.extend<{ allowedConsoleMessages: Array<string>, assertNoConsoleErrors: void, metricsApi: void, matomo: void }>({
+  // A test that provokes an error on purpose declares the message it expects,
+  // rather than adding it to the list above and silencing it for every test.
+  allowedConsoleMessages: [[], { option: true }],
+  // Routed only when the server under test does not reach them on tests/fake-services.ts: a
+  // route makes every request of the page go through Playwright, with the browser cache off.
+  metricsApi: [async ({ context }, use) => {
+    if (!process.env.FAKE_SERVICES_URL) await fakeMetricsApi(context)
+    await use()
+  }, { auto: true }],
+  matomo: [async ({ context }, use) => {
+    if (!process.env.FAKE_SERVICES_URL) await fakeMatomo(context)
+    await use()
+  }, { auto: true }],
+  assertNoConsoleErrors: [async ({ page, allowedConsoleMessages }, use) => {
+    const warnings: Array<Promise<string>> = []
+    const errors: Array<Promise<string>> = []
+    const ignoredMessages = [...IGNORED_MESSAGES, ...allowedConsoleMessages]
 
     page.on('console', (msg) => {
       const text = msg.text()
-      if (IGNORED_MESSAGES.some(ignored => text.includes(ignored))) return
+      if (ignoredMessages.some(ignored => text.includes(ignored))) return
+      // Firefox blames the code Playwright evaluates in the page ("debugger eval code"),
+      // e.g. the trace snapshot taken after an action, when it lands while the next page
+      // is still loading. The same warning raised by the app's own code still fails.
+      if (text.includes('Layout was forced before the page was fully loaded') && text.includes('debugger eval code')) return
 
       const type = msg.type()
       if (type === 'warning') {
-        warnings.push(text)
+        warnings.push(fullText(msg))
       }
       if (type === 'error') {
-        errors.push(text)
+        errors.push(fullText(msg))
       }
     })
 
     page.on('pageerror', (error) => {
-      if (IGNORED_MESSAGES.some(ignored => error.message.includes(ignored))) return
-      errors.push(error.message)
+      if (ignoredMessages.some(ignored => error.message.includes(ignored))) return
+      errors.push(Promise.resolve(error.stack ?? error.message))
     })
 
     await use()
 
-    for (const w of warnings) {
+    // Filtered again on the full text: on Firefox, `msg.text()` of an `Error` argument
+    // misses its message, so the check above cannot match it.
+    const isReported = (text: string) => !ignoredMessages.some(ignored => text.includes(ignored))
+    const resolvedWarnings = (await Promise.all(warnings)).filter(isReported)
+    const resolvedErrors = (await Promise.all(errors)).filter(isReported)
+
+    for (const w of resolvedWarnings) {
       base.info().annotations.push({ type: 'warning', description: w })
     }
-    for (const e of errors) {
+    for (const e of resolvedErrors) {
       base.info().annotations.push({ type: 'error', description: e })
     }
 
-    const all = [...errors, ...warnings]
+    const all = [...resolvedErrors, ...resolvedWarnings]
     if (all.length > 0) {
       throw new Error(`Console errors/warnings:\n${all.join('\n')}`)
     }

@@ -1,5 +1,5 @@
 import { DESCRIPTION_SHORT_MAX_LENGTH } from '~/datagouv-components/src/functions/description'
-import { validateAlbertConfig, callAlbertAPI } from './utils/albert-helpers'
+import { callAlbertAPI } from './utils/albert-helpers'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -11,8 +11,6 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Title and description are required',
     })
   }
-
-  validateAlbertConfig()
 
   const messages = [
     {
@@ -57,11 +55,9 @@ export default defineEventHandler(async (event) => {
     },
   ]
 
-  // Models available for text generation:
-  // - openweight-small (replaces albert-small)
-  // - openweight-medium (replaces albert-large)
-  // - openweight-large
-  const generatedDescriptionShort = await callAlbertAPI(messages, 'openweight-small')
+  // To list available models:
+  // curl -sS -H "Authorization: Bearer $ALBERT_API_KEY" -H "Content-Type: application/json" "https://albert.api.etalab.gouv.fr/v1/models"
+  const generatedDescriptionShort = await callAlbertAPI(messages, 'openweight-large')
 
   // Ensure the description doesn't exceed maxChars
   const finalDescriptionShort = generatedDescriptionShort.length > DESCRIPTION_SHORT_MAX_LENGTH

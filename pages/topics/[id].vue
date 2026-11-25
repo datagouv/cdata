@@ -70,21 +70,26 @@
             {{ topic.name }}
           </h1>
 
-          <p class="text-sm text-gray-medium m-0">
-            {{ $t('Mis à jour {date}', { date: formatDate(topic.last_modified) }) }}
-          </p>
+          <TranslationT
+            tag="p"
+            class="text-sm text-gray-medium m-0"
+            keypath="Mis à jour {date}"
+          >
+            <template #date>
+              <FormattedDate :date="topic.last_modified" />
+            </template>
+          </TranslationT>
 
           <div
             v-if="topic.tags.length"
-            class="flex flex-wrap gap-0.5"
+            class="flex flex-wrap gap-2"
           >
-            <span
+            <Tag
               v-for="tag in topic.tags"
               :key="tag"
-              class="text-xs px-2 py-1 rounded-xl bg-gray-default"
             >
               {{ tag }}
-            </span>
+            </Tag>
           </div>
         </header>
       </div>
@@ -109,23 +114,22 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, getDescriptionShort, LoadingBlock, OrganizationLogo, OrganizationNameWithCertificate, useFormatDate, type TopicV2 } from '@datagouv/components-next'
+import { Avatar, FormattedDate, getDescriptionShort, LoadingBlock, OrganizationLogo, OrganizationNameWithCertificate, Tag, type TopicV2, TranslationT } from '@datagouv/components-next'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditButton from '~/components/Buttons/EditButton.vue'
 import type { Thread } from '~/types/discussions'
 import type { PaginatedArray } from '~/types/types'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const route = useRoute()
 const config = useRuntimeConfig()
 
-const { formatDate } = useFormatDate()
-
 const url = computed(() => `/api/2/topics/${route.params.id}/`)
-const { data: topic, status } = await useAPI<TopicV2>(url, { redirectOn404: true, redirectOnSlug: 'id' })
+const { data: topic, status } = await useAPI<TopicV2>(url, { showErrorPage: true, redirectOnSlug: 'id' })
 
 const { data: discussions } = await useAPI<PaginatedArray<Thread>>('/api/1/discussions/', {
   query: { for: topic.value?.id, page_size: 1 },
@@ -133,10 +137,14 @@ const { data: discussions } = await useAPI<PaginatedArray<Thread>>('/api/1/discu
 const discussionsCount = computed(() => discussions.value?.total ?? 0)
 
 const title = computed(() => `${topic.value?.name} | ${config.public.title}`)
-const description = computed(() => topic.value ? getDescriptionShort(topic.value) : '')
+const description = computed(() => normalizeSeoDescription(topic.value ? getDescriptionShort(topic.value) : undefined))
 
+// Topics are curated collections, most of them built for a third-party portal
+// (ecospheres…). Indexing them here makes our copy compete with — and outrank —
+// the portal's own page, so we keep the whole section out of the search index.
 useSeoMeta({
   title,
   description,
+  robots: 'noindex',
 })
 </script>

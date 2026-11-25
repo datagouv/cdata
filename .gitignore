@@ -19,6 +19,7 @@ logs
 .fleet
 .idea
 .claude
+.worktrees
 .tool-versions
 
 # Local env files
@@ -33,3 +34,6 @@ logs
 /playwright/.cache/
 playwright/.auth
 tests/**/screenshots/
+
+# Local design docs / specs (not tracked)
+/docs/

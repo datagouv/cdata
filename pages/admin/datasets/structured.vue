@@ -29,6 +29,7 @@
       v-model:use-spreadsheet="useSpreadsheet"
       :schema="associateSchemaForm.selectedSchema"
       :publication-mode="publicationMode"
+      :loading="saving"
       @previous="moveToStep(1)"
       @next="dataNext"
       @open-sheet="openSheet"
@@ -39,12 +40,14 @@
       v-model:resources="resources"
       :schema="associateSchemaForm.selectedSchema"
       :publication-mode="publicationMode"
+      :loading="saving"
       @previous="moveToStep(2)"
       @next="dataNext"
     />
     <Step3DescribeDataset
       v-if="currentStep === 3 && associateSchemaForm.selectedSchema && associateSchemaForm.owned?.organization"
       v-model="datasetForm"
+      :loading="saving"
       @previous="goBackFromStep3"
       @next="describeNext"
     />
@@ -69,6 +72,7 @@ import type { DatasetForm, EnrichedLicense, ResourceForm, SpatialGranularity, Ta
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import type { AssociateSchemaForm } from '~/types/schema'
+import { goToStep } from '~/utils/scroll'
 
 const { t } = useTranslation()
 const config = useRuntimeConfig()
@@ -83,6 +87,7 @@ const USE_SPREADSHEET_STATE = 'structured-use-spreadsheet'
 const NEW_DATASET_STATE = 'structured-new-dataset'
 const PUBLICATION_MODE_STATE = 'structured-publication-mode'
 const UPLOADED_FILE_STATE = 'strutured-uploaded-file'
+const PUBLISHED_STATE = 'structured-published'
 
 const steps = computed(() => ([
   t('Associez un schéma'),
@@ -120,6 +125,12 @@ const file = useState<File | null>(UPLOADED_FILE_STATE, () => null)
 const resources = useState<Array<ResourceForm>>(DATASET_FILES_STATE, () => [])
 const newDataset = useState<Dataset | null>(NEW_DATASET_STATE, () => null)
 const publicationMode = useState<SchemaPublicationMode>(PUBLICATION_MODE_STATE, () => 'new')
+// Files sent to an existing dataset: the form still holds them, publishing it again would
+// send them twice
+const published = useState(PUBLISHED_STATE, () => false)
+
+// A second click on "Publier" while the files upload would send them again
+const saving = ref(false)
 
 const currentStep = computed(() => {
   const step = route.query.step as string
@@ -133,12 +144,27 @@ const currentStepNumber = computed(() => {
   return step
 })
 
+// Every step of the wizard lives under the same path, so without this they would all
+// share one title in the tab bar and in the history
+useSeoMeta({
+  title: () => `${steps.value[currentStepNumber.value - 1] ?? ''} - ${t('Publication structurée')}`,
+  robots: 'noindex',
+})
+
 const isCurrentStepValid = computed(() => {
   const step = currentStepNumber.value
 
   if (step < 1) return false
   if (step > steps.value.length) return false
   if (step === 4 && !newDataset.value) return false
+  // The form only lives in `useState`, so a page reload past the first step lands on a
+  // screen missing its schema and producer instead of a working one. The last step is
+  // left out: `save()` empties the form once published, and that screen only reads
+  // `newDataset`.
+  if (step > 1 && step < 4 && !(associateSchemaForm.value.selectedSchema && associateSchemaForm.value.owned)) return false
+  // Once the files are sent, coming back to these steps starts the wizard over instead of
+  // showing a form that would send them again
+  if (step > 1 && step < 4 && published.value) return false
 
   return true
 })
@@ -147,7 +173,7 @@ function moveToStep(step: '2-sheet' | 1 | 2 | 3 | 4) {
   if (step !== '2-sheet') {
     file.value = null
   }
-  return navigateTo({ path: route.path, query: { ...route.query, step } })
+  return goToStep(route, { ...route.query, step })
 }
 
 function dataNext() {
@@ -182,6 +208,8 @@ function openSheet(fileToOpen?: File) {
 }
 
 async function save() {
+  if (saving.value || published.value) return
+  saving.value = true
   try {
     start()
 
@@ -216,27 +244,33 @@ async function save() {
 
     if (results.every(f => f.status !== 'rejected')) {
       if (publicationMode.value === 'existing') {
-        await navigateTo(`/datasets/${dataset.slug}`)
-        clearNuxtState(NEW_DATASET_STATE)
+        published.value = true
+        await navigateTo(`/datasets/${dataset.slug}`, { replace: true })
       }
       else {
         await moveToStep(4)
+        clearForm()
       }
-      associateSchemaForm.value = {
-        owned: null,
-        existingDataset: null,
-        selectedSchema: null,
-      }
-      clearNuxtState(USE_SPREADSHEET_STATE)
-      clearNuxtState(DATASET_FORM_STATE)
-      clearNuxtState(DATASET_FILES_STATE)
-      clearNuxtState(PUBLICATION_MODE_STATE)
-      clearNuxtState(UPLOADED_FILE_STATE)
     }
   }
   finally {
     finish()
+    saving.value = false
   }
+}
+
+// `reset` puts back each initial value: deleting the keys would leave the screen still
+// displayed reading `undefined`
+function clearForm() {
+  clearNuxtState([
+    ASSOCIATE_SCHEMA_FORM_STATE,
+    USE_SPREADSHEET_STATE,
+    DATASET_FORM_STATE,
+    DATASET_FILES_STATE,
+    PUBLICATION_MODE_STATE,
+    UPLOADED_FILE_STATE,
+    PUBLISHED_STATE,
+  ], { reset: true })
 }
 
 async function updateDataset(asPrivate: boolean) {
@@ -268,13 +302,21 @@ async function updateDataset(asPrivate: boolean) {
 // avoid wiping the dataset created for the current flow on later steps.
 onMounted(() => {
   if (currentStep.value === 1) {
+    if (published.value) clearForm()
     clearNuxtState(NEW_DATASET_STATE)
   }
 })
 
-watchEffect(() => {
-  if (!isCurrentStepValid.value) {
-    moveToStep(1)
+// Once published, the form is emptied when the page is gone rather than right away: the
+// dataset page loads first, and the form would empty itself on screen in the meantime.
+// Coming back to the wizard instead (a step, a cancelled navigation) starts it over:
+// the step guard sends later steps to the first one, which empties the form.
+onUnmounted(() => {
+  if (published.value) {
+    clearForm()
+    clearNuxtState(NEW_DATASET_STATE)
   }
 })
+
+useStepGuard(currentStep, isCurrentStepValid, () => moveToStep(1))
 </script>

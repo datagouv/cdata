@@ -90,7 +90,7 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, DataserviceCard, Pagination, type Dataservice, type DatasetV2, type Reuse } from '@datagouv/components-next'
+import { BrandedButton, DataserviceCard, Pagination, type Dataservice, type DatasetV2, type ReuseV2 } from '@datagouv/components-next'
 import type { PaginatedArray } from '~/types/types'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 
@@ -113,10 +113,7 @@ const reusesQuery = computed(() => ({
   page_size: 6,
 }))
 
-const { data: reuses } = await useAPI<PaginatedArray<Reuse>>('/api/1/reuses/', {
+const { data: reuses } = await useAPI<PaginatedArray<ReuseV2>>('/api/2/reuses/', {
   query: reusesQuery,
-  headers: {
-    'X-Fields': reusesXFields,
-  },
 })
 </script>

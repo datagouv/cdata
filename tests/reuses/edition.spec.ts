@@ -1,5 +1,5 @@
 import { test, expect } from '../base'
-import { API_BASE, clickOutside } from '../helpers'
+import { API_BASE, clickOutside, gotoHydrated } from '../helpers'
 
 // Smallest valid PNG (1x1 pixel): the reuse form requires an image to save
 const PNG_1X1 = Buffer.from(
@@ -8,11 +8,48 @@ const PNG_1X1 = Buffer.from(
 )
 
 const createdReuses: Array<string> = []
+const createdDataservices: Array<string> = []
 
 test.afterEach(async ({ request }) => {
   for (const id of createdReuses.splice(0)) {
     await request.delete(`${API_BASE}/api/1/reuses/${id}/`)
   }
+  for (const id of createdDataservices.splice(0)) {
+    await request.delete(`${API_BASE}/api/1/dataservices/${id}/`)
+  }
+})
+
+test('lists the dataservices linked to a reuse in its admin page', async ({ page, request }) => {
+  const uniqueId = Date.now()
+  const dataserviceTitle = `API liée ${uniqueId}`
+
+  const dataserviceResponse = await request.post(`${API_BASE}/api/1/dataservices/`, {
+    data: {
+      title: dataserviceTitle,
+      description: 'API liée à une réutilisation',
+    },
+  })
+  const dataservice = await dataserviceResponse.json()
+  createdDataservices.push(dataservice.id)
+
+  const reuseResponse = await request.post(`${API_BASE}/api/1/reuses/`, {
+    data: {
+      title: `Test reuse dataservices ${uniqueId}`,
+      description: 'Réutilisation pour tester la liste de ses API',
+      url: `https://example.com/reuse-dataservices-${uniqueId}`,
+      type: 'application',
+      topic: 'others',
+      dataservices: [dataservice.id],
+    },
+  })
+  const reuse = await reuseResponse.json()
+  createdReuses.push(reuse.id)
+
+  // The reuse API only returns references for its dataservices: the card needs
+  // the full objects (metrics, owner…) to render
+  await gotoHydrated(page, `/admin/reuses/${reuse.id}/dataservices`)
+
+  await expect(page.getByRole('link', { name: dataserviceTitle })).toBeVisible()
 })
 
 test('can edit a reuse and changes are visible on the public page', async ({ page, request }) => {
@@ -43,8 +80,7 @@ test('can edit a reuse and changes are visible on the public page', async ({ pag
   })
   expect(imageUpload.ok()).toBeTruthy()
 
-  await page.goto(`/admin/reuses/${reuse.id}/`)
-  await page.waitForLoadState('networkidle')
+  await gotoHydrated(page, `/admin/reuses/${reuse.id}/`)
 
   // The image must be loaded in the form, otherwise saving is refused
   await expect(page.locator('img[src*="/images/"]')).toBeVisible()

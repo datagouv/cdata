@@ -68,24 +68,27 @@
           </AdminContentWithTooltip>
         </td>
         <td>
-          <DatasetBadge :dataset />
+          <DatasetBadge
+            size="xs"
+            :dataset
+          />
         </td>
         <td>
-          {{ formatDate(dataset.created_at) }}
+          <FormattedDate :date="dataset.created_at" />
         </td>
         <td>
           <div v-if="dataset.id in activities">
-            <p>{{ formatDate(activities[dataset.id].created_at) }}</p>
+            <p><FormattedDate :date="activities[dataset.id].created_at" /></p>
             <p class="inline-flex items-center">
               {{ t('par ') }}
-              <AvatarWithName
+              <ActivityActor
                 class="fr-ml-1v"
-                :user="activities[dataset.id].actor"
+                :actor="activities[dataset.id].actor"
               />
             </p>
           </div>
           <template v-else>
-            {{ formatDate(dataset.last_modified) }}
+            <FormattedDate :date="dataset.last_modified" />
           </template>
         </td>
         <td class="font-mono text-right">
@@ -93,7 +96,7 @@
         </td>
         <td>
           <Tooltip>
-            <DatasetQualityScore
+            <QualityScore
               class="w-full"
               :score="dataset.quality.score"
             />
@@ -133,14 +136,13 @@
 </template>
 
 <script setup lang="ts">
-import { DatasetQualityScore, DatasetQualityTooltipContent, BrandedButton, AvatarWithName, Tooltip, useFormatDate } from '@datagouv/components-next'
+import { QualityScore, DatasetQualityTooltipContent, BrandedButton, ActivityActor, Tooltip, FormattedDate, DatasetBadge } from '@datagouv/components-next'
 import type { Activity, Dataset, DatasetV2 } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminContentWithTooltip from '../../AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import AdminTable from '../Table/AdminTable.vue'
 import AdminTableTh from '../Table/AdminTableTh.vue'
 import type { DatasetSortedBy, SortDirection } from '~/types/types'
-import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
 
 const emit = defineEmits<{
   (event: 'sort', column: DatasetSortedBy, direction: SortDirection): void
@@ -156,7 +158,6 @@ const props = withDefaults(defineProps<{
 })
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 
 const config = useRuntimeConfig()
 

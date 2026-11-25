@@ -45,14 +45,15 @@ import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
 import type { Post } from '~/types/posts'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const { t } = useTranslation()
 
 const route = useRoute()
-const url = computed(() => `/api/1/posts/${route.params.id}`)
-const { data: post } = await useAPI<Post>(url, { redirectOn404: true })
+const url = computed(() => `/api/1/posts/${route.params.id}/`)
+const { data: post } = await useAPI<Post>(url, { showErrorPage: true, key: adminPostKey(String(route.params.id)) })
 </script>

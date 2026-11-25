@@ -25,8 +25,11 @@ export function useTwoFactorSetup() {
       qrcode.value = renderSVG(response.tf_authr_uri)
       totpKey.value = response.tf_authr_key
     }
-    catch {
-      toast.error(t('Erreur de récupération du qrcode'))
+    catch (e) {
+      // udata refuses the setup when the account's second factor is at ProConnect, and says so.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const setupErrors: Array<string> | undefined = (e as any)?.response?._data?.response?.field_errors?.setup
+      toast.error(setupErrors?.join(', ') || t('Erreur de récupération du qrcode'))
     }
     finally {
       loading.value = false

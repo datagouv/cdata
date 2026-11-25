@@ -24,25 +24,28 @@ export type TabularProfileResponse = {
   indexes: null
 }
 
+// Only CSV resources go through csv-detective: for the other formats the API
+// indexes (parquet…), the profile is reduced to the column names, their types
+// and the row count. Everything csv-detective produces is therefore optional.
 export type TabularProfile = {
   header: string[]
   columns: Record<string, TabularColumnInfo>
-  formats: Record<string, string[]>
-  profile: Record<string, TabularColumnProfile>
-  encoding: string
-  separator: string
-  categorical: string[]
   total_lines: number
-  nb_duplicates: number
-  columns_fields: Record<string, TabularColumnInfo>
-  columns_labels: Record<string, TabularColumnInfo>
-  header_row_idx: number
-  heading_columns: number
-  trailing_columns: number
+  formats?: Record<string, string[]>
+  profile?: Record<string, TabularColumnProfile>
+  encoding?: string
+  separator?: string
+  categorical?: string[]
+  nb_duplicates?: number
+  columns_fields?: Record<string, TabularColumnInfo>
+  columns_labels?: Record<string, TabularColumnInfo>
+  header_row_idx?: number
+  heading_columns?: number
+  trailing_columns?: number
 }
 
 export type TabularColumnInfo = {
-  score: number
+  score?: number
   format: string
   python_type: string
 }
@@ -51,8 +54,8 @@ export type TabularColumnProfile = {
   tops: TabularTopValue[]
   nb_distinct: number
   nb_missing_values: number
-  min?: number
-  max?: number
+  min?: number | string
+  max?: number | string
   std?: number
   mean?: number
 }
@@ -62,7 +65,18 @@ export type TabularTopValue = {
   count: number
 }
 
-export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean'
+export type ColumnType = 'number' | 'categorical' | 'text' | 'date' | 'boolean' | 'year'
+
+export const DATE_FILTER_OPERATORS = ['is', 'before', 'after', 'between'] as const
+export type DateFilterOperator = typeof DATE_FILTER_OPERATORS[number]
+
+export type DateFilter = {
+  operator: DateFilterOperator
+  /** ISO calendar date (YYYY-MM-DD). */
+  start: string
+  /** ISO calendar date, the inclusive upper bound. Only set when `operator` is 'between'. */
+  end?: string
+}
 
 export type ColumnFilters = {
   in?: string[]
@@ -71,6 +85,14 @@ export type ColumnFilters = {
   max?: number
   contains?: string
   null?: 'only' | 'exclude'
+  date?: DateFilter
+}
+
+// A short URL param standing for a single-operator filter on one column, e.g.
+// `?administration=Mairie` for `{ Administration: { contains: 'Mairie' } }`.
+export type TabularUrlAlias = {
+  column: string
+  operator: 'contains' | 'exact'
 }
 
 export type SortDirection = 'asc' | 'desc'
@@ -78,9 +100,4 @@ export type SortDirection = 'asc' | 'desc'
 export type SortConfig = {
   column: string
   direction: SortDirection
-}
-
-export type BadgeStyle = {
-  backgroundColor: string
-  color: string
 }

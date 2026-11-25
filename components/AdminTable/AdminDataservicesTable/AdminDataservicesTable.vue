@@ -54,26 +54,31 @@
         </td>
         <td>
           <DataserviceBadge
+            size="xs"
             :dataservice
           />
         </td>
         <td>
-          <AccessTypeBadge :access-type="dataservice.access_type" />
+          <AccessTypeBadge
+            :access-type="dataservice.access_type"
+            size="xs"
+            bare
+          />
         </td>
-        <td>{{ formatDate(dataservice.created_at) }}</td>
+        <td><FormattedDate :date="dataservice.created_at" /></td>
         <td>
           <div v-if="dataservice.id in activities">
-            <p>{{ formatDate(activities[dataservice.id].created_at) }}</p>
+            <p><FormattedDate :date="activities[dataservice.id].created_at" /></p>
             <p class="inline-flex items-center">
               {{ t('par ') }}
-              <AvatarWithName
+              <ActivityActor
                 class="fr-ml-1v"
-                :user="activities[dataservice.id].actor"
+                :actor="activities[dataservice.id].actor"
               />
             </p>
           </div>
           <template v-else>
-            {{ formatDate(dataservice.metadata_modified_at) }}
+            <FormattedDate :date="dataservice.metadata_modified_at" />
           </template>
         </td>
         <td>{{ dataservice.rate_limiting }}</td>
@@ -108,14 +113,12 @@
 
 <script setup lang="ts">
 import type { Activity, Dataservice } from '@datagouv/components-next'
-import { AvatarWithName, BrandedButton, useFormatDate } from '@datagouv/components-next'
+import { ActivityActor, BrandedButton, FormattedDate, DataserviceBadge, AccessTypeBadge } from '@datagouv/components-next'
 import { RiEyeLine, RiPencilLine } from '@remixicon/vue'
 import AdminTable from '../../../components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../../../components/AdminTable/Table/AdminTableTh.vue'
 import AdminContentWithTooltip from '../../../components/AdminContentWithTooltip/AdminContentWithTooltip.vue'
 import type { DataserviceSortedBy, SortDirection } from '~/types/types'
-import AccessTypeBadge from '~/components/AccessTypes/AccessTypeBadge.vue'
-import DataserviceBadge from '~/components/AdminBadge/DataserviceBadge.vue'
 
 const props = withDefaults(defineProps<{
   activities?: Record<string, Activity>
@@ -131,7 +134,6 @@ defineEmits<{
 }>()
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 
 function sorted(column: DataserviceSortedBy) {
   if (props.sortedBy === column) {

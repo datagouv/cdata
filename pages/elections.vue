@@ -98,7 +98,7 @@ const elections = [
   {
     slug: 'autres',
     title: t('Autres données électorales et démocratiques'),
-    description: t('Cette page rassemble les données des autres scrutins (élections sénatoriales, élections européennes...) des référendums et des consultations.'),
+    description: t('Cette page rassemble les données des autres scrutins (élections régionales, élections européennes...) des référendums et des consultations.'),
     to: '/posts/autres-donnees-relatives-aux-elections',
     image: '/nuxt_images/autres.png',
   },

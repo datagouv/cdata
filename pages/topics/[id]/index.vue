@@ -56,7 +56,7 @@
 </template>
 
 <script setup lang="ts">
-import { MarkdownViewer, Pagination, type DatasetV2, type Reuse, type TopicV2 } from '@datagouv/components-next'
+import { MarkdownViewer, Pagination, type DatasetV2, type ReuseV2, type TopicV2 } from '@datagouv/components-next'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import type { PaginatedArray } from '~/types/types'
 
@@ -86,8 +86,7 @@ const reusesQuery = computed(() => ({
 // If we ever need the TopicElement data (title/description/extras attached to
 // the element), we could instead query /api/2/topics/{id}/elements/ for both
 // datasets and reuses.
-const { data: reuses } = await useAPI<PaginatedArray<Reuse>>('/api/2/reuses/search/', {
-  headers: { 'X-Fields': reusesXFields },
+const { data: reuses } = await useAPI<PaginatedArray<ReuseV2>>('/api/2/reuses/search/', {
   query: reusesQuery,
 })
 </script>

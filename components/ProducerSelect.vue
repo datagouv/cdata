@@ -12,6 +12,7 @@
       :multiple="false"
       :error-text
       :warning-text
+      :required
       data-testid="producer-select"
     >
       <template #option="{ option }">
@@ -21,19 +22,19 @@
             :organization="option.organization"
             size-class="size-5"
           />
-          <NuxtImg
+          <img
             v-else
             class="rounded-full border border-gray-default size-5"
             :src="getUserAvatar(option.owner, 24)"
             alt=""
-          />
+          >
           <span v-if="option.organization">{{ option.organization.name }}</span>
           <span v-else>{{ option.owner.first_name }} {{ option.owner.last_name }}</span>
         </div>
       </template>
     </SearchableSelect>
   </div>
-  <div v-if="!hasOrganizations">
+  <div v-if="!hasOrganizations && !hideNoOrganizationNotice">
     <br>
     <PaddedContainer
       class="flex flex-col items-center"
@@ -68,11 +69,13 @@ const props = withDefaults(defineProps<{
   required?: boolean
   organizationsOnly?: boolean
   organizationPermissionNeed?: 'delete' | 'edit' | 'harvest' | 'members' | 'private' | null
+  hideNoOrganizationNotice?: boolean
 }>(), {
   all: false,
   required: false,
   organizationsOnly: false,
   organizationPermissionNeed: null,
+  hideNoOrganizationNotice: false,
 })
 const model = defineModel<Owned | null>({ required: true })
 

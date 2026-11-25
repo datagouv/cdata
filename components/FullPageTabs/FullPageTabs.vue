@@ -13,7 +13,7 @@
           <CdataLink
             class="!bg-none bg-blue-action-low px-4 py-2 aria-current-page:text-new-primary aria-current-page:border-t-2 aria-current-page:border-t-new-primary aria-current-page:bg-white aria-current-page:border-x aria-current-page:border-x-gray-default hover:aria-current-page:!bg-white active:aria-current-page:!bg-white hover:!bg-blue-action-low-hover active:!bg-blue-action-low-active"
             :to="link.href"
-            :aria-current="isCurrentUrl(link.href) ? 'page': false"
+            :aria-current="isCurrentTab(link.href) ? 'page': false"
           >
             {{ link.label }}
             <sup
@@ -31,12 +31,12 @@
 </template>
 
 <script setup lang="ts">
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   links: Array<{ href: string, label: string, count?: number }>
   as?: string
 }>(), {
   as: 'h2',
 })
 
-const isCurrentUrl = useIsCurrentUrl()
+const isCurrentTab = useIsCurrentTab(() => props.links)
 </script>

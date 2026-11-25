@@ -1,25 +1,7 @@
 <template>
   <div>
-    <SimpleBanner
-      v-if="newlyCreatedToken"
-      type="warning"
-      class="mb-4"
-    >
-      <div class="font-bold mb-1">
-        {{ $t("Copiez ce token maintenant, il ne sera plus affiché.") }}
-      </div>
-      <div class="flex items-center gap-2">
-        <code class="text-sm break-all">{{ newlyCreatedToken }}</code>
-        <CopyButton
-          :label="$t('Copier le token')"
-          :copied-label="$t('Token copié')"
-          :text="newlyCreatedToken"
-        />
-      </div>
-    </SimpleBanner>
-
     <div
-      v-if="tokens.length === 0 && !newlyCreatedToken"
+      v-if="tokens.length === 0"
       class="text-sm text-gray-500 mb-4"
     >
       {{ $t("Aucun token API. Créez-en un pour accéder à l'API.") }}
@@ -28,21 +10,55 @@
     <div
       v-for="token in tokens"
       :key="token.id"
+      data-testid="api-token"
       class="flex items-center justify-between gap-4 py-3 border-b border-gray-200 last:border-b-0"
     >
       <div class="min-w-0">
-        <div class="text-sm truncate">
-          <span class="font-medium">{{ token.name || `${token.token_prefix}…` }}</span>
-          <span
-            v-if="token.name"
-            class="text-gray-400 ml-1"
-          >{{ token.token_prefix }}…</span>
+        <div class="flex items-center gap-2 text-sm">
+          <div class="truncate">
+            <span class="font-medium">{{ token.name || `${token.token_prefix}…` }}</span>
+            <span
+              v-if="token.name"
+              class="text-gray-400 ml-1"
+            >{{ token.token_prefix }}…</span>
+          </div>
+          <Badge
+            v-if="token.scopes.includes('sysadmin')"
+            tone="warning"
+            size="xs"
+          >
+            {{ $t('Sysadmin') }}
+          </Badge>
         </div>
         <div class="text-xs text-gray-500">
-          <span>{{ $t('Créé {date}', { date: formatRelativeIfRecentDate(token.created_at) }) }}</span>
-          <span v-if="token.last_used_at"> · {{ $t('Utilisé {date}', { date: formatRelativeIfRecentDate(token.last_used_at) }) }}</span>
+          <TranslationT keypath="Créé {date}">
+            <template #date>
+              <FormattedDate
+                :date="token.created_at"
+                format="relative"
+              />
+            </template>
+          </TranslationT>
+          <template v-if="token.last_used_at">
+            ·
+            <TranslationT keypath="Utilisé {date}">
+              <template #date>
+                <FormattedDate
+                  :date="token.last_used_at"
+                  format="relative"
+                />
+              </template>
+            </TranslationT>
+          </template>
           <span v-else> · {{ $t('Jamais utilisé') }}</span>
-          <span v-if="token.expires_at"> · {{ $t('Expire le {date}', { date: formatDate(token.expires_at) }) }}</span>
+          <template v-if="token.expires_at">
+            ·
+            <TranslationT keypath="Expire le {date}">
+              <template #date>
+                <FormattedDate :date="token.expires_at" />
+              </template>
+            </TranslationT>
+          </template>
           <template v-if="token.user_agents.length === 1">
             · {{ token.user_agents[0] }}
           </template>
@@ -69,10 +85,10 @@
     </div>
 
     <div class="mt-4">
-      <CreateApiTokenModal @created="onTokenCreated" />
+      <CreateApiTokenModal />
     </div>
 
-    <ModalClient
+    <Modal
       :opened="!!tokenToRevoke"
       :title="$t('Révoquer ce token ?')"
       size="lg"
@@ -98,9 +114,9 @@
           </BrandedButton>
         </div>
       </template>
-    </ModalClient>
+    </Modal>
 
-    <ModalClient
+    <Modal
       :opened="!!userAgentsModalList"
       :title="$t('User agents')"
       size="lg"
@@ -115,34 +131,27 @@
           {{ ua }}
         </li>
       </ul>
-    </ModalClient>
+    </Modal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, CopyButton, SimpleBanner, toast, useFormatDate } from '@datagouv/components-next'
+import { Badge, BrandedButton, FormattedDate, toast, TranslationT } from '@datagouv/components-next'
 import { RiDeleteBin6Line } from '@remixicon/vue'
-import type { ApiToken, ApiTokenCreated } from '~/types/api-tokens'
+import type { ApiToken } from '~/types/api-tokens'
 import CreateApiTokenModal from './CreateApiTokenModal.vue'
-import ModalClient from '~/components/Modal/Modal.client.vue'
+import Modal from '~/components/Modal/Modal.vue'
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { formatDate, formatRelativeIfRecentDate } = useFormatDate()
 
 const tokens = ref<ApiToken[]>([])
-const newlyCreatedToken = ref<string | null>(null)
 const revoking = ref(false)
 const tokenToRevoke = ref<ApiToken | null>(null)
 const userAgentsModalList = ref<string[] | null>(null)
 
 async function fetchTokens() {
   tokens.value = await $api<ApiToken[]>('/api/1/me/api_tokens/')
-}
-
-async function onTokenCreated(created: ApiTokenCreated) {
-  newlyCreatedToken.value = created.token
-  await fetchTokens()
 }
 
 async function revokeToken(token: ApiToken) {

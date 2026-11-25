@@ -25,6 +25,22 @@ test.describe('Login page', () => {
     await expect(page).toHaveURL(`${baseURL}/datasets/search`)
   })
 
+  test('hands the next param to udata when signing in with ProConnect', async ({ page }) => {
+    let requested: URL | undefined
+    // Stop at udata: the round-trip itself goes through ProConnect.
+    await page.route('**/api/1/proconnect/**', (route) => {
+      requested = new URL(route.request().url())
+      return route.abort()
+    })
+    await page.goto('/login?next=%2Foauth%2Fauthorize%3Fclient_id%3Dabc')
+    await page.waitForLoadState('networkidle')
+
+    await page.getByRole('button', { name: 'Se connecter avec ProConnect' }).click()
+
+    await expect.poll(() => requested?.pathname).toBe('/api/1/proconnect/login/')
+    expect(requested?.searchParams.get('next')).toBe('/oauth/authorize?client_id=abc')
+  })
+
   test('shows an error with a wrong password and stays on the login page', async ({ page }) => {
     await page.goto('/login')
     await page.waitForLoadState('networkidle')
@@ -36,6 +52,25 @@ test.describe('Login page', () => {
     await expect(page.locator('.fr-error-text').first()).toBeVisible()
     await expect(page.locator('.fr-error-text').first()).not.toBeEmpty()
     await expect(page).toHaveURL(/\/login/)
+  })
+
+  test('keeps the next param intact across failed attempts', async ({ page, baseURL }) => {
+    await page.goto('/login?next=%2Fdatasets%2Fsearch')
+    await page.waitForLoadState('networkidle')
+
+    for (const wrongPassword of ['wrong-password', 'wrong-password-again']) {
+      await page.getByLabel('Mot de passe').fill(wrongPassword)
+      await page.getByLabel('Adresse email').fill('normal@example.com')
+      await page.getByRole('button', { name: 'Se connecter' }).first().click()
+
+      await expect(page.locator('.fr-error-text').first()).toBeVisible()
+      await expect(page).toHaveURL(url => url.pathname === '/login' && url.searchParams.get('next') === '/datasets/search')
+    }
+
+    await page.getByLabel('Mot de passe').fill('@1337Password42')
+    await page.getByRole('button', { name: 'Se connecter' }).first().click()
+
+    await expect(page).toHaveURL(`${baseURL}/datasets/search`)
   })
 
   test('shows an error with an unknown account', async ({ page }) => {

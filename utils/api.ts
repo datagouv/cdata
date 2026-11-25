@@ -6,7 +6,7 @@ import type { ApiFetch, PaginatedArray } from '~/types/types'
 */
 export async function useAPI<T, U = T>(
   url: MaybeRefOrGetter<string>,
-  options?: UseFetchOptions<T, U> & { redirectOn404?: boolean, redirectOnSlug?: string, raw?: boolean },
+  options?: UseFetchOptions<T, U> & { showErrorPage?: boolean, redirectOnSlug?: string, raw?: boolean },
 ) {
   const { setCurrentOrganization, setCurrentUser } = useCurrentOwned()
   const isAdmin = isMeAdmin()
@@ -16,12 +16,12 @@ export async function useAPI<T, U = T>(
   // for the useFetch())…
   const nuxtApp = useNuxtApp()
 
-  const redirectOn404 = options && 'redirectOn404' in options && options.redirectOn404
+  const showErrorPage = options && 'showErrorPage' in options && options.showErrorPage
   const redirectOnSlug = options && 'redirectOnSlug' in options && options.redirectOnSlug
   const isRaw = options?.raw
   const fetchOptions = { ...options }
   if (!isRaw) {
-    fetchOptions.$fetch = redirectOn404 ? useNuxtApp().$apiWith404 : useNuxtApp().$api
+    fetchOptions.$fetch = showErrorPage ? useNuxtApp().$apiWithErrorPage : useNuxtApp().$api
   }
   const response = await useFetch(url, fetchOptions)
 
@@ -62,6 +62,45 @@ export function getDataFromSSRPayload(key: string, nuxtApp: NuxtApp) {
   return nuxtApp.payload.data[key] ? nuxtApp.payload.data[key] : undefined
 }
 
+/**
+ * Extract a human-readable error message from an API error response body.
+ * Handles non-JSON responses (e.g. HTML error pages) gracefully.
+ */
+export function getApiErrorMessage(data: unknown): string {
+  if (!data || typeof data !== 'object') {
+    if (typeof data === 'string' && data.length) {
+      console.warn('[API] Non-JSON error response:', data.slice(0, 200))
+    }
+    return ''
+  }
+
+  const record = data as Record<string, unknown>
+
+  if ('error' in record && typeof record.error === 'string') {
+    return record.error
+  }
+
+  if ('message' in record && typeof record.message === 'string') {
+    return record.message
+  }
+
+  if ('errors' in record && typeof record.errors === 'object' && record.errors !== null) {
+    return Object.entries(record.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
+  }
+
+  if (
+    'response' in record
+    && record.response
+    && typeof record.response === 'object'
+    && 'errors' in record.response
+    && Array.isArray((record.response as Record<string, unknown>).errors)
+  ) {
+    return ((record.response as Record<string, unknown>).errors as string[]).join(' ; ')
+  }
+
+  return ''
+}
+
 export function usePostApiWithCsrf() {
   const { $api } = useNuxtApp()
 
@@ -96,12 +135,11 @@ export async function apiFetchAll<T>(
      */
 
   const results: T[] = []
-  let nextPage: string | null = null
 
   // Initial query
   let response = await api<PaginatedArray<T>>(baseUrl)
   results.push(...response.data)
-  nextPage = response.next_page
+  let nextPage: string | null = response.next_page
 
   // Pagination
   while (nextPage) {

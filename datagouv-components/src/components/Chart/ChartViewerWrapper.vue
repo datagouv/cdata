@@ -1,46 +1,186 @@
 <template>
-  <LoadingBlock
-    :status="status"
-    :data="series"
-  >
-    <template #default="{ data }">
-      <ChartViewer
-        :chart="chart"
-        :series="data"
-      />
-    </template>
-    <template #error>
-      <div class="text-center py-8 text-gray-500">
-        {{ t('Une erreur est survenue lors du chargement des données du graphique.') }}
+  <div>
+    <div class="relative">
+      <LoadingBlock
+        :status="blockStatus"
+        :data="series"
+      >
+        <template #default="{ data }">
+          <!-- Reloads keep the chart on screen; only a slow one veils it. -->
+          <div
+            :class="veiled ? 'opacity-50' : ''"
+            class="transition-opacity motion-reduce:transition-none"
+            :aria-busy="veiled || undefined"
+            :data-testid="veiled ? 'chart-reloading' : undefined"
+          >
+            <ChartViewer
+              ref="chartViewerRef"
+              :chart="displayedChart"
+              :series="data"
+            />
+          </div>
+        </template>
+        <template #loader>
+          <ChartLoader />
+        </template>
+        <template #error>
+          <div class="flex flex-col items-center gap-3 px-4 py-8 text-center text-gray-500">
+            <p
+              role="alert"
+              class="m-0"
+            >
+              {{ errorMessage ?? t('Une erreur est survenue lors du chargement des données du graphique.') }}
+            </p>
+            <BrandedButton
+              v-if="canRetry"
+              color="tertiary"
+              size="xs"
+              :icon="RiRefreshLine"
+              data-testid="chart-retry"
+              @click="retry"
+            >
+              {{ t('Réessayer') }}
+            </BrandedButton>
+          </div>
+        </template>
+      </LoadingBlock>
+      <!-- Out of LoadingBlock: a live region only announces what is added once it exists.
+      A truncated chart gets a white veil over its whole area, so it is not read as the whole data. -->
+      <div
+        role="status"
+        data-testid="chart-notes"
+        class="pointer-events-none absolute inset-0 flex items-center justify-center p-6"
+        :class="truncated ? 'bg-white/85' : ''"
+      >
+        <p
+          v-if="truncated"
+          class="m-0 flex max-w-md items-start gap-2 text-sm font-medium text-new-gray-dark"
+          data-testid="chart-truncation-warning"
+        >
+          <RiAlertLine
+            class="size-4 shrink-0 mt-0.5"
+            aria-hidden="true"
+          />
+          <span>{{ truncationWarning(displayedChart.x_axis.column_x, displayedChart.x_axis.sort_x_by, t) }}</span>
+        </p>
       </div>
-    </template>
-  </LoadingBlock>
+    </div>
+    <div role="status">
+      <p
+        v-if="blockStatus === 'success' && someSeriesFailed"
+        class="flex items-start gap-1.5 px-4 pb-3 mt-1 mb-0 text-xs text-gray-medium"
+        data-testid="chart-series-error"
+      >
+        <RiErrorWarningLine
+          class="size-4 shrink-0"
+          aria-hidden="true"
+        />
+        <span>{{ seriesFailureNote }}</span>
+      </p>
+    </div>
+  </div>
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, reactive, ref, shallowRef, watch } from 'vue'
+import { RiAlertLine, RiErrorWarningLine, RiRefreshLine } from '@remixicon/vue'
+import BrandedButton from '../BrandedButton.vue'
+import ChartLoader from './ChartLoader.vue'
 import ChartViewer from './ChartViewer.vue'
 import LoadingBlock from '../../components/LoadingBlock.vue'
 import { useComponentsConfig } from '../../config'
-import { fetchTabularData, useGetProfile } from '../../functions/tabularApi'
-import type { Chart, ChartForApi, ColumnsDefinition } from '../../types/visualizations'
+import { fetchTabularData, TabularApiError, tabularErrorMessage, useGetProfile, type FetchTabularDataOptions } from '../../functions/tabularApi'
+import type { Chart, ChartForApi, ColumnDefinition, ColumnsDefinition } from '../../types/visualizations'
 import { useTranslation } from '../../composables/useTranslation'
-import { watchDebounced } from '@vueuse/shared'
+import { until, watchDebounced } from '@vueuse/shared'
 import { buildColumnsFromProfile } from '../../functions/charts'
+import { CHART_PAGE_SIZE, chartDataKey, chartRequestSortDirection, groupsBeyondPage, truncationWarning } from '../../functions/chartData'
 
 const props = defineProps<{
   chart: Chart | ChartForApi
 }>()
 
 const { t } = useTranslation()
+const chartViewerRef = ref<InstanceType<typeof ChartViewer> | null>(null)
+
 const config = useComponentsConfig()
 const getProfile = useGetProfile()
 
 const status = ref<'idle' | 'pending' | 'success' | 'error'>('idle')
 const error = ref<Error | null>(null)
+const errorMessage = computed(() => tabularErrorMessage(error.value, t))
+// Retrying a query tabular-api refused would only get the same refusal.
+const canRetry = computed(() => !(error.value instanceof TabularApiError) || error.value.retryable)
 
-const pendingOperations = ref(0)
+// The full loader only covers the first load: reloads are short (debounced
+// form edits), so hiding the chart each time would flicker. A reload slower
+// than RELOAD_VEIL_DELAY dims the current chart instead.
+const RELOAD_VEIL_DELAY = 300
+const hasRendered = ref(false)
+const veiled = ref(false)
+let veilTimer: ReturnType<typeof setTimeout> | undefined
+const blockStatus = computed(() => {
+  if (status.value === 'error') return 'error'
+  return hasRendered.value ? 'success' : 'pending'
+})
+watch(status, (value) => {
+  clearTimeout(veilTimer)
+  veiled.value = false
+  if (value === 'success') hasRendered.value = true
+  if (value === 'pending' && hasRendered.value) {
+    veilTimer = setTimeout(() => {
+      veiled.value = true
+    }, RELOAD_VEIL_DELAY)
+  }
+})
+onBeforeUnmount(() => clearTimeout(veilTimer))
 
+const moreGroups = ref(false)
+const someSeriesFailed = ref(false)
+const seriesFailureMessage = ref<string | null>(null)
+const seriesFailureNote = computed(() => [t('Une série n’a pas pu être chargée.'), seriesFailureMessage.value].filter(Boolean).join(' '))
+
+function resetNotes() {
+  moreGroups.value = false
+  someSeriesFailed.value = false
+  seriesFailureMessage.value = null
+}
+
+// The viewer gets a new chart only with its data: a new Y column or aggregate
+// would otherwise be looked up in the previous rows and draw empty axes.
+const loadedChart = shallowRef<Chart | ChartForApi>(props.chart)
+const displayedChart = computed(() => chartDataKey(props.chart) === chartDataKey(loadedChart.value) ? props.chart : loadedChart.value)
+
+// A save right after an edit would otherwise capture the previous chart, still shown
+// while the debounced reload runs. A chart that fails or does not load in time gets
+// no image.
+const CAPTURE_TIMEOUT = 10_000
+const showsRequestedChart = computed(() => status.value !== 'pending' && displayedChart.value === props.chart)
+// The chart whose load failed: an error left by a previous chart, before the debounced
+// reload of the new one starts, must not end the capture.
+const failedChartKey = ref<string | null>(null)
+const requestedChartFailed = computed(() => status.value === 'error' && failedChartKey.value === chartDataKey(props.chart))
+const captureSettled = computed(() => showsRequestedChart.value || requestedChartFailed.value)
+async function capture(): Promise<string | null> {
+  await until(captureSettled).toBe(true, { timeout: CAPTURE_TIMEOUT })
+  if (!showsRequestedChart.value) return null
+  await nextTick()
+  return chartViewerRef.value?.capture() ?? null
+}
+
+defineExpose({ capture })
+
+// With an X order the limit keeps the first values of the fetched extract,
+// which are right; a Y order ranks only that extract, so it still warns.
+const truncated = computed(() => {
+  if (blockStatus.value !== 'success') return false
+  const { limit, sort_x_by } = displayedChart.value.x_axis
+  if (sort_x_by !== 'axis_y' && limit != null && limit <= CHART_PAGE_SIZE) return false
+  return moreGroups.value
+})
+
+// `data` is keyed by series index (several series can read the same
+// resource), `columns` by resource id.
 const series = reactive<{
   data: Record<string, Array<Record<string, unknown>>>
   columns: ColumnsDefinition
@@ -49,126 +189,118 @@ const series = reactive<{
   columns: {},
 })
 
-const resourceIds = computed(() => {
-  return props.chart.series
-    .filter(s => s.resource_id)
-    .map(s => s.resource_id)
-})
+// Columns by resource id, kept across reloads: a new title or sort needs no new profile.
+// The request is kept, so overlapping loads share it; a failed one is dropped for the next load.
+const profileCache = new Map<string, Promise<Array<ColumnDefinition>>>()
 
-async function fetchSeriesProfile() {
-  pendingOperations.value++
-  status.value = 'pending'
-  error.value = null
-
-  try {
-    if (props.chart.series.length === 0) {
-      status.value = 'success'
-      series.data = {}
-      series.columns = {}
-      return
-    }
-
-    const fetchPromises = props.chart.series
-      .filter(serie => serie.resource_id)
-      .map(async (serie) => {
-        return {
-          id: serie.resource_id,
-          profile: await getProfile(serie.resource_id),
-        }
-      })
-
-    const results = (await Promise.allSettled(fetchPromises))
-      .filter(r => r.status === 'fulfilled')
-      .map(r => r.value)
-    series.columns = Object.fromEntries(results.map(result => [
-      result.id,
-      buildColumnsFromProfile(result.profile),
-    ]))
+function profileColumns(id: string): Promise<Array<ColumnDefinition>> {
+  let request = profileCache.get(id)
+  if (!request) {
+    request = getProfile(id).then(buildColumnsFromProfile)
+    profileCache.set(id, request)
+    request.catch(() => {
+      if (profileCache.get(id) === request) profileCache.delete(id)
+    })
   }
-  catch (err) {
-    error.value = err instanceof Error ? err : new Error('Failed to fetch series profile')
-    status.value = 'error'
-    console.error(err)
-    series.columns = {}
-    series.data = {}
-  }
-  finally {
-    pendingOperations.value--
-  }
+  return request
 }
 
+async function loadColumns(chart: Chart | ChartForApi): Promise<ColumnsDefinition> {
+  const ids = [...new Set(chart.series.map(serie => serie.resource_id).filter(Boolean))]
+  const settled = await Promise.allSettled(ids.map(async id => [id, await profileColumns(id)] as const))
+  return Object.fromEntries(settled.filter(r => r.status === 'fulfilled').map(r => r.value))
+}
+
+let latestRequest = 0
+
 async function fetchSeriesData() {
-  pendingOperations.value++
+  const request = ++latestRequest
+  const isStale = () => request !== latestRequest
+  const requestedChart = props.chart
   status.value = 'pending'
   error.value = null
 
   try {
+    // The viewer looks the columns of a series up by its resource: they come with the
+    // data, or the previous chart would be drawn with the new resources' columns.
+    const columnsPromise = loadColumns(requestedChart)
     if (props.chart.series.length === 0 || !props.chart.x_axis.column_x) {
-      status.value = 'success'
+      const columns = await columnsPromise
+      if (isStale()) return
+      loadedChart.value = requestedChart
+      series.columns = columns
       series.data = {}
+      resetNotes()
+      status.value = 'success'
       return
     }
 
+    const sortDirection = chartRequestSortDirection(props.chart)
     const fetchPromises = props.chart.series
-      .filter((serie) => {
+      .map((serie, index) => ({ serie, index }))
+      .filter(({ serie }) => {
         const xColumn = serie.column_x_name_override ?? props.chart.x_axis.column_x
         return xColumn && serie.resource_id && serie.column_y
       })
-      .map(async (serie) => {
+      .map(async ({ serie, index }) => {
         const xColumn = serie.column_x_name_override ?? props.chart.x_axis.column_x
+        const options: FetchTabularDataOptions = {
+          columns: serie.aggregate_y ? undefined : [xColumn, serie.column_y],
+          resourceId: serie.resource_id,
+          page: 1,
+          pageSize: CHART_PAGE_SIZE,
+          sort: { column: xColumn, direction: sortDirection },
+          groupBy: xColumn,
+          aggregation: serie.column_y && serie.aggregate_y
+            ? {
+                column: serie.column_y,
+                type: serie.aggregate_y,
+              }
+            : undefined,
+          filters: serie.filters ?? undefined,
+        }
+        const response = await fetchTabularData(config, options)
         return {
-          id: serie.resource_id,
-          data: await fetchTabularData(config, {
-            columns: serie.aggregate_y ? undefined : [xColumn, serie.column_y],
-            resourceId: serie.resource_id,
-            page: 1,
-            pageSize: 100,
-            groupBy: xColumn,
-            aggregation: serie.column_y && serie.aggregate_y
-              ? {
-                  column: serie.column_y,
-                  type: serie.aggregate_y,
-                }
-              : undefined,
-            filters: serie.filters ?? undefined,
+          key: String(index),
+          rows: response.data,
+          moreGroups: groupsBeyondPage({
+            rowCount: response.data.length,
+            aggregated: !!options.aggregation,
+            total: response.meta.total,
+            next: response.links.next,
           }),
         }
       })
 
-    const results = (await Promise.allSettled(fetchPromises))
-      .filter(r => r.status === 'fulfilled')
-      .map(r => r.value)
+    const [settled, columns] = await Promise.all([Promise.allSettled(fetchPromises), columnsPromise])
+    if (isStale()) return
+    const results = settled.filter(r => r.status === 'fulfilled').map(r => r.value)
+    const failures = settled.filter(r => r.status === 'rejected')
+    if (results.length === 0 && failures.length > 0) throw failures[0]!.reason
+    loadedChart.value = requestedChart
+    series.columns = columns
     series.data = Object.fromEntries(results.map(result => [
-      result.id,
-      result.data.data,
+      result.key,
+      result.rows,
     ]))
+    someSeriesFailed.value = failures.length > 0
+    seriesFailureMessage.value = failures.length > 0 ? tabularErrorMessage(failures[0]!.reason, t) : null
+    moreGroups.value = results.some(result => result.moreGroups)
+    status.value = 'success'
   }
   catch (err) {
+    if (isStale()) return
     error.value = err instanceof Error ? err : new Error('Failed to fetch series data')
     status.value = 'error'
+    failedChartKey.value = chartDataKey(requestedChart)
     series.data = {}
-  }
-  finally {
-    pendingOperations.value--
+    resetNotes()
   }
 }
 
-watch(resourceIds, async () => {
-  await fetchSeriesProfile()
-}, { immediate: true })
+function retry() {
+  fetchSeriesData()
+}
 
-watchDebounced([
-  () => props.chart.series,
-  () => props.chart.x_axis.column_x,
-], async () => {
-  await fetchSeriesData()
-}, { debounce: config.searchDebounce ?? 300, immediate: true, deep: true })
-
-watch(pendingOperations, (count) => {
-  if (count === 0) {
-    if (error.value === null && status.value === 'pending') {
-      status.value = 'success'
-    }
-  }
-})
+watchDebounced(() => chartDataKey(props.chart), fetchSeriesData, { debounce: config.searchDebounce ?? 300, immediate: true })
 </script>

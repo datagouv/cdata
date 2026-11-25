@@ -13,12 +13,20 @@
     />
     <div
       v-if="pageData"
-      class="flex justify-between items-end"
+      class="flex justify-between items-end gap-4"
     >
-      <h2 class="text-sm font-bold uppercase m-0">
+      <h2 class="text-sm font-bold uppercase m-0 shrink-0">
         {{ t('{n} signalements | {n} signalement | {n} signalements', pageData.total) }}
       </h2>
-      <div class="flex-none flex flex-wrap items-center md:gap-x-6 gap-2">
+      <div class="min-w-0 flex flex-wrap items-center justify-end md:gap-x-6 gap-2">
+        <FilterChip
+          v-if="subjectId"
+          class="max-w-96"
+          :name="t('Objet')"
+          :value="subjectLabel || subjectId"
+          :remove-label="t('Retirer le filtre sur l\'objet')"
+          @remove="removeSubjectFilter"
+        />
         <SearchableSelect
           v-model="filterStatus"
           :placeholder="$t('Filtrer par statut')"
@@ -143,27 +151,30 @@
                   <div v-if="subjects[report.id].value">
                     <DatasetBadge
                       v-if="subjects[report.id].type === 'Dataset'"
+                      size="xs"
                       :dataset="(subjects[report.id].value as DatasetV2)"
                     />
                     <DataserviceBadge
                       v-else-if="subjects[report.id].type === 'Dataservice'"
+                      size="xs"
                       :dataservice="(subjects[report.id].value as Dataservice)"
                     />
                     <ReuseBadge
                       v-else-if="subjects[report.id].type === 'Reuse'"
+                      size="xs"
                       :reuse="(subjects[report.id].value as Reuse)"
                     />
                     <div v-else>
                       —
                     </div>
                   </div>
-                  <AdminBadge
+                  <Badge
                     v-else
-                    type="danger"
+                    tone="danger"
                     size="xs"
                   >
                     {{ $t('Supprimé') }}
-                  </AdminBadge>
+                  </Badge>
                 </template>
                 <div
                   v-else
@@ -175,9 +186,14 @@
               <td>
                 <template v-if="subjects[report.id]">
                   <div v-if="subjects[report.id].value">
-                    <div>
-                      {{ t('Créé le {date}', { date: formatDate(getSubjectCreatedDate(report, subjects[report.id])) }) }}
-                    </div>
+                    <TranslationT
+                      tag="div"
+                      keypath="Créé le {date}"
+                    >
+                      <template #date>
+                        <FormattedDate :date="getSubjectCreatedDate(report, subjects[report.id])" />
+                      </template>
+                    </TranslationT>
                     <p
                       v-if="getSubjectCreatedBy(report, subjects[report.id])"
                       class="flex items-center min-w-0"
@@ -190,12 +206,19 @@
                       />
                     </p>
                     <div v-if="report.subject && report.subject.id in activities">
-                      <div>{{ t('Modifié le {date}', { date: formatDate(activities[report.subject.id].created_at) }) }}</div>
+                      <TranslationT
+                        tag="div"
+                        keypath="Modifié le {date}"
+                      >
+                        <template #date>
+                          <FormattedDate :date="activities[report.subject.id].created_at" />
+                        </template>
+                      </TranslationT>
                       <p class="flex items-center min-w-0">
                         {{ t('par ') }}
-                        <AvatarWithName
+                        <ActivityActor
                           class="fr-ml-1v min-w-0"
-                          :user="activities[report.subject.id].actor"
+                          :actor="activities[report.subject.id].actor"
                         />
                       </p>
                     </div>
@@ -209,36 +232,19 @@
                 </div>
               </td>
               <td>
-                <div>{{ formatDate(report.reported_at) }}</div>
-                <p
-                  v-if="report.by"
-                  class="inline-flex items-center"
-                >
+                <div><FormattedDate :date="report.reported_at" /></div>
+                <p class="inline-flex items-center">
                   {{ t('par ') }}
-                  <AvatarWithName
+                  <ReportAuthor
                     class="fr-ml-1v"
-                    :user="report.by"
+                    :class="{ 'text-gray-plain': !report.by }"
+                    :report
                   />
-                </p>
-                <p
-                  v-else
-                  class="inline-flex items-center"
-                >
-                  {{ t('par ') }}
-                  <span
-                    class="fr-ml-1v inline-flex items-center space-x-1 text-gray-plain"
-                  >
-                    <component
-                      :is="report.reason === 'auto_spam' ? RiRobot2Line : RiSpyLine"
-                      class="size-3.5 shrink-0"
-                    />
-                    <span class="font-bold">{{ report.reason === 'auto_spam' ? t('Spam bot') : t('Anonyme') }}</span>
-                  </span>
                 </p>
               </td>
               <td>
                 <div class="font-bold">
-                  {{ reasons?.find((reason) => reason.value === report.reason)?.label || report.reason }}
+                  {{ getReportReasonLabel(report, reasons) }}
                 </div>
                 {{ report.message }}
               </td>
@@ -281,8 +287,8 @@
                     :icon="RiEyeOffLine"
                     icon-only
                     keep-margins-even-without-borders
-                    :disabled="'private' in subjects[report.id].value! && (subjects[report.id].value as any).private"
-                    :title="$t('Cacher l\'objet')"
+                    :disabled="isHideBlocked(subjects[report.id].value)"
+                    :title="isLockedByDoi(subjects[report.id].value) ? $t('Un jeu de données porteur d\'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.') : $t('Cacher l\'objet')"
                     @click="switchPrivate(report, report.subject)"
                   />
                   <div
@@ -292,13 +298,13 @@
                     —
                   </div>
                   <AdminDeleteModal
-                    v-if="report.subject && getDeleteUrl(report, report.subject)"
+                    v-if="report.subject"
                     :title="report.subject_embed_id ? $t('Êtes-vous sûr de vouloir supprimer ce commentaire ?') : $t('Êtes-vous sûr de vouloir supprimer cet objet ?')"
-                    :delete-url="getDeleteUrl(report, report.subject)!"
+                    :delete-url="getDeleteUrl(report.subject, report.subject_embed_id)"
                     :delete-button-label="$t('Supprimer')"
                     :deletable-object="subjects[report.id].value!"
                     :object-type="getObjectType(report.subject.class)"
-                    :object-title="getSubjectTitle(subjects[report.id]?.value)"
+                    :object-title="getReportSubjectTitle(subjects[report.id]?.value)"
                     @deleted="() => { fetchFullSubject(report, report.subject!); refresh() }"
                   >
                     <template #button="{ attrs, listeners }">
@@ -308,8 +314,8 @@
                         :icon="RiDeleteBinLine"
                         icon-only
                         keep-margins-even-without-borders
-                        :disabled="isSubjectDeleted(subjects[report.id].value)"
-                        :title="$t('Supprimer l\'objet')"
+                        :disabled="isSubjectDeleted(subjects[report.id].value) || isLockedByDoi(subjects[report.id].value)"
+                        :title="isLockedByDoi(subjects[report.id].value) ? $t('Un jeu de données porteur d\'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.') : $t('Supprimer l\'objet')"
                         v-bind="attrs"
                         v-on="listeners"
                       />
@@ -345,24 +351,22 @@
 
 <script setup lang="ts">
 import type { Report, ReportReason, ReportSubject, Activity, Dataservice, DatasetV2, Organization, Reuse, User, UserReference } from '@datagouv/components-next'
-import { AvatarWithName, LoadingBlock, Pagination, SearchableSelect, useFormatDate, BrandedButton } from '@datagouv/components-next'
+import { ActivityActor, AvatarWithName, FilterChip, FormattedDate, LoadingBlock, Pagination, SearchableSelect, BrandedButton, TranslationT, Badge, DatasetBadge, DataserviceBadge, ReuseBadge } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
-import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine, RiRobot2Line, RiSpyLine } from '@remixicon/vue'
+import { RiCheckLine, RiDeleteBinLine, RiEyeOffLine } from '@remixicon/vue'
 import type { PaginatedArray } from '~/types/types'
-import type { ObjectType } from '~/types/delete'
+import ReportAuthor from '~/components/Spam/ReportAuthor.vue'
+import { dismissReport, switchSubjectToPrivate } from '~/api/reports'
+import { getDeleteUrl, getObjectType, getReportReasonLabel, getReportSubjectTitle, getSwitchToPrivateMethodAndUrl, isHideBlocked, isLockedByDoi } from '~/utils/reports'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import AdminTable from '~/components/AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '~/components/AdminTable/Table/AdminTableTh.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
 import type { Thread } from '~/types/discussions'
-import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
-import DataserviceBadge from '~/components/AdminBadge/DataserviceBadge.vue'
-import ReuseBadge from '~/components/AdminBadge/ReuseBadge.vue'
 import TabLinks from '~/components/TabLinks.vue'
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 const { $api } = useNuxtApp()
 
 useSeoMeta({ title: t('Modération'), robots: 'noindex' })
@@ -376,8 +380,8 @@ const filterStatusValue = computed(() => filterStatus.value.id === null ? undefi
 const basePath = '/admin/site/moderation'
 const subjectTypeTabs = [
   { href: basePath, label: t('Tous') },
-  { href: `${basePath}?type=Dataset`, label: t('Datasets') },
-  { href: `${basePath}?type=Dataservice`, label: t('Dataservices') },
+  { href: `${basePath}?type=Dataset`, label: t('Jeux de données') },
+  { href: `${basePath}?type=Dataservice`, label: t('API') },
   { href: `${basePath}?type=Reuse`, label: t('Réutilisations') },
   { href: `${basePath}?type=Organization`, label: t('Organisations') },
   { href: `${basePath}?type=Discussion`, label: t('Discussions') },
@@ -393,14 +397,38 @@ const subjectType = computed(() => {
   return undefined
 })
 
+// Set by the "other reports" link of the banner on the reported object's page
+const subjectId = computed(() => typeof route.query.subject === 'string' ? route.query.subject : undefined)
+
 const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Report>>(`/api/1/reports/`, { query: {
   handled: filterStatusValue,
   subject_type: subjectType,
+  subject: subjectId,
   page: page,
-  pageSize: pageSize,
+  page_size: pageSize,
   sort: '-reported_at',
 } })
 const { data: reasons } = await useAPI<Array<ReportReason>>('/api/1/reports/reasons/', { lazy: true })
+
+// Saved on each report when it is created, so it is there even once the object is deleted. Kept once
+// read: dismissing the last pending reports, or switching the status, can leave no report to read it from
+const subjectLabel = ref<string | null>(null)
+watch(pageData, async () => {
+  if (!subjectId.value || subjectLabel.value) return
+  const label = pageData.value?.data[0]?.subject_label
+  if (label) {
+    subjectLabel.value = label
+    return
+  }
+  // Opened once every report of the object is handled: any of them, whatever its status, has the label
+  const anyReport = await $api<PaginatedArray<Report>>('/api/1/reports/', { query: { subject: subjectId.value, page_size: 1 } })
+  subjectLabel.value = anyReport.data[0]?.subject_label ?? null
+}, { immediate: true })
+
+function removeSubjectFilter() {
+  const { subject: _subject, ...query } = route.query
+  navigateTo({ query })
+}
 
 const getSubjectUrl = (subject: ReportSubject) => {
   return {
@@ -455,50 +483,13 @@ watchEffect(async () => {
 })
 
 const dismiss = async (report: Report) => {
-  await $api(`/api/1/reports/${report.id}`, {
-    method: 'PATCH',
-    body: {
-      dismissed_at: new Date(),
-    },
-  })
+  await dismissReport(report)
   await refresh()
 }
 
-const getSwitchToPrivateMethodAndUrl = (subject: ReportSubject): { method: 'PUT' | 'PATCH', url: string } | null => {
-  return {
-    Dataset: { method: 'PUT' as const, url: `/api/1/datasets/${subject.id}/` },
-    Dataservice: { method: 'PATCH' as const, url: `/api/1/dataservices/${subject.id}/` },
-    Reuse: { method: 'PUT' as const, url: `/api/1/reuses/${subject.id}/` },
-    Organization: null,
-    Discussion: null,
-    User: null,
-  }[subject.class]
-}
-
 const switchPrivate = async (report: Report, subject: ReportSubject) => {
-  const methodAndUrl = getSwitchToPrivateMethodAndUrl(subject)
-  if (!methodAndUrl) return
-
-  await $api(methodAndUrl.url, {
-    method: methodAndUrl.method,
-    body: { private: true },
-  })
+  await switchSubjectToPrivate(subject)
   await fetchFullSubject(report, subject)
-}
-
-const getDeleteUrl = (report: Report, subject: ReportSubject): string | null => {
-  if (subject.class === 'Discussion' && report.subject_embed_id) {
-    return `/api/1/discussions/${subject.id}/comments/${report.subject_embed_id}/`
-  }
-
-  return {
-    Dataset: `/api/1/datasets/${subject.id}/`,
-    Dataservice: `/api/1/dataservices/${subject.id}/`,
-    Reuse: `/api/1/reuses/${subject.id}/`,
-    Organization: `/api/1/organizations/${subject.id}/`,
-    Discussion: `/api/1/discussions/${subject.id}/`,
-    User: `/api/1/users/${subject.id}/`,
-  }[subject.class]
 }
 
 const isSubjectDeleted = (subject: RecordSubjectFullObject['value']) => {
@@ -538,25 +529,6 @@ const getDiscussionAuthor = (report: Report, thread: Thread) => {
     if (comment) return comment.posted_by
   }
   return thread.user
-}
-
-const getObjectType = (subjectClass: string): ObjectType => {
-  return {
-    Dataset: 'dataset' as ObjectType,
-    Dataservice: 'dataservice' as ObjectType,
-    Reuse: 'reuse' as ObjectType,
-    Organization: 'organization' as ObjectType,
-    Discussion: 'discussion' as ObjectType,
-    User: 'user' as ObjectType,
-  }[subjectClass] || 'dataset'
-}
-
-const getSubjectTitle = (subject: RecordSubjectFullObject['value']): string | undefined => {
-  if (!subject) return undefined
-  if ('title' in subject) return subject.title
-  if ('name' in subject) return subject.name
-  if ('first_name' in subject) return `${subject.first_name} ${subject.last_name}`.trim() || subject.slug
-  return undefined
 }
 </script>
 

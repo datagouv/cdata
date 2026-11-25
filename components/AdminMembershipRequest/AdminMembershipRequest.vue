@@ -4,14 +4,14 @@
     v-if="request.kind === 'invitation'"
     class="relative bg-white shadow rounded-sm p-5 mt-3"
   >
-    <AdminBadge
+    <Badge
       class="absolute top-0 left-2.5 -translate-y-1/2"
       size="sm"
-      type="secondary"
+      tone="neutral"
       :icon="RiMailSendLine"
     >
       {{ $t('Invitation envoyée') }}
-    </AdminBadge>
+    </Badge>
 
     <div class="flex flex-wrap justify-between gap-5">
       <div class="space-y-1">
@@ -50,12 +50,11 @@
               class="text-sm text-gray-medium"
             >
               {{ t('Rôle proposé :') }}
-              <AdminBadge
-                size="xs"
-                :type="getRoleBadgeType(request.role)"
-              >
-                {{ roleLabel }}
-              </AdminBadge>
+              <MemberRoleBadge
+                v-if="request.role"
+                :role="request.role"
+                :label="roleLabel"
+              />
             </div>
           </div>
         </div>
@@ -71,7 +70,10 @@
           </div>
         </div>
         <div class="text-sm/6 text-gray-medium">
-          {{ formatDate(new Date(request.created), { dateStyle: 'long', timeStyle: 'short' }) }}
+          <FormattedDate
+            :date="request.created"
+            :options="{ dateStyle: 'long', timeStyle: 'short' }"
+          />
         </div>
       </div>
       <div
@@ -93,13 +95,20 @@
   <!-- Membership request (by a user) -->
   <BannerNotif
     v-else
-    type="primary"
+    tone="primary"
     :icon="RiUserAddLine"
     :badge="$t(`Demande de rattachement`)"
-    :user="request.user!"
     :date="new Date(request.created)"
   >
+    <template #avatar>
+      <Avatar
+        :user="request.user!"
+        rounded
+        :size="24"
+      />
+    </template>
     <template #title>
+      <span class="font-bold">{{ request.user!.first_name }} {{ request.user!.last_name }}</span>
       <code
         v-if="request.user?.email"
         class="text-gray-medium bg-gray-lower px-1 text-sm rounded-sm break-all"
@@ -117,6 +126,7 @@
         color="primary"
         size="xs"
         :icon="RiCheckLine"
+        :loading="loading"
         @click="accept"
       >
         {{ $t('Accepter la demande') }}
@@ -173,7 +183,7 @@
               <BrandedButton
                 type="submit"
                 color="primary"
-                :disabled="loading || !refuseComment"
+                :disabled="loading"
                 :form="refuseFormId"
               >
                 {{ t("Refuser la demande") }}
@@ -187,13 +197,12 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, useFormatDate } from '@datagouv/components-next'
+import { Avatar, BrandedButton, FormattedDate, Badge } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiCheckLine, RiMailLine, RiMailSendLine, RiUserAddLine } from '@remixicon/vue'
 import InputGroup from '../InputGroup/InputGroup.vue'
 import ModalWithButton from '../Modal/ModalWithButton.vue'
-import AdminBadge from '../AdminBadge/AdminBadge.vue'
-import type { MemberRole } from '@datagouv/components-next'
+import MemberRoleBadge from '../Organization/MemberRoleBadge.vue'
 import type { PendingMembershipRequest } from '~/types/types'
 
 const props = defineProps<{
@@ -207,10 +216,9 @@ const emits = defineEmits<{
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { formatDate } = useFormatDate()
 const loading = ref(false)
 
-const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })
+const { data: roles } = await useOrganizationRoles()
 
 const roleLabel = computed(() => {
   if (!roles.value || !props.request.role) return null

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { escapeCsvValue, filesize, summarize } from '~/datagouv-components/src/functions/helpers'
+import { escapeCsvValue, filesize, isEqualExcept, isSafeHttpUrl, removeKeys, summarize } from '~/datagouv-components/src/functions/helpers'
 
 describe('escapeCsvValue', () => {
   // Expected values come from RFC 4180, not from the implementation
@@ -24,6 +24,33 @@ describe('escapeCsvValue', () => {
   })
 })
 
+describe('isSafeHttpUrl', () => {
+  it('accepts absolute http(s) URLs', () => {
+    expect(isSafeHttpUrl('https://example.com/data.parquet')).toBe(true)
+    expect(isSafeHttpUrl('http://example.com/data.parquet')).toBe(true)
+  })
+
+  it('rejects dangerous or non-http schemes', () => {
+    expect(isSafeHttpUrl('javascript:alert(document.domain)')).toBe(false)
+    expect(isSafeHttpUrl('JaVaScRiPt:alert(1)')).toBe(false)
+    expect(isSafeHttpUrl('data:text/html,<script>alert(1)</script>')).toBe(false)
+    expect(isSafeHttpUrl('vbscript:msgbox(1)')).toBe(false)
+    expect(isSafeHttpUrl('file:///etc/passwd')).toBe(false)
+  })
+
+  it('rejects relative and protocol-relative URLs', () => {
+    expect(isSafeHttpUrl('//evil.tld/x')).toBe(false)
+    expect(isSafeHttpUrl('/datasets/r/123')).toBe(false)
+    expect(isSafeHttpUrl('')).toBe(false)
+  })
+
+  it('rejects non-string values', () => {
+    expect(isSafeHttpUrl(undefined)).toBe(false)
+    expect(isSafeHttpUrl(null)).toBe(false)
+    expect(isSafeHttpUrl(1234)).toBe(false)
+  })
+})
+
 describe('summarize', () => {
   it('uses 1000-based units', () => {
     expect(summarize(0)).toEqual('0')
@@ -36,6 +63,38 @@ describe('summarize', () => {
     expect(summarize(1000, 1)).toEqual('1K')
     expect(summarize(1500, 1)).toEqual('1.5K')
     expect(summarize(1500)).toEqual('2K')
+  })
+})
+
+describe('removeKeys', () => {
+  it('drops the listed keys and keeps the others in order', () => {
+    const params = { q: 'écoles', badge: 'hvd', sort: '-created', page: 3, page_size: 20 }
+
+    expect(removeKeys(params, ['sort', 'page', 'page_size'])).toEqual({ q: 'écoles', badge: 'hvd' })
+    expect(Object.keys(removeKeys(params, ['badge']))).toEqual(['q', 'sort', 'page', 'page_size'])
+  })
+
+  it('leaves the original object untouched and ignores absent keys', () => {
+    const params = { q: 'écoles' }
+
+    expect(removeKeys(params, ['page'])).toEqual({ q: 'écoles' })
+    expect(params).toEqual({ q: 'écoles' })
+  })
+})
+
+describe('isEqualExcept', () => {
+  const params = { q: 'écoles', badge: 'hvd', sort: '-created', page: 3, page_size: 20 }
+
+  it('ignores the listed keys', () => {
+    expect(isEqualExcept(params, { ...params, sort: '-title', page: 1 }, ['sort', 'page'])).toBe(true)
+  })
+
+  it('reports a difference on any other key', () => {
+    expect(isEqualExcept(params, { ...params, badge: 'spd' }, ['sort', 'page'])).toBe(false)
+  })
+
+  it('reports a difference when a key is added or removed', () => {
+    expect(isEqualExcept(params, removeKeys(params, ['badge']) as typeof params, ['sort', 'page'])).toBe(false)
   })
 })
 

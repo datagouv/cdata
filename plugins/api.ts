@@ -1,14 +1,22 @@
 import { toast } from '@datagouv/components-next'
+import { getApiErrorMessage } from '~/utils/api'
+import { apiAuthOptions } from '~/utils/auth'
 
 export default defineNuxtPlugin({
   async setup(nuxtApp) {
     const config = useRuntimeConfig()
-    const token = useToken()
     const cookie = useRequestHeader('cookie')
     const route = useRoute()
     const { t, locale } = useTranslation()
+    const freshAfterWrite = useCookie<boolean>(config.public.freshAfterWriteCookieName, {
+      maxAge: config.public.freshAfterWriteSeconds,
+      sameSite: 'lax',
+      // Rewrite the cookie even when the value is unchanged, to push its expiry back
+      // on every write.
+      refresh: true,
+    })
 
-    const makeApi = (apiOptions: { sendJson: boolean, redirectOn404: boolean }) => {
+    const makeApi = (apiOptions: { sendJson: boolean, showErrorPage: boolean }) => {
       return $fetch.create({
         baseURL: config.public.apiBase,
         onRequest({ options }) {
@@ -16,14 +24,12 @@ export default defineNuxtPlugin({
             options.headers.set('Content-Type', 'application/json')
           }
           options.headers.set('Accept', 'application/json')
-          if (config.public.devApiKey) {
-            options.headers.set('X-API-KEY', config.public.devApiKey)
+          const auth = apiAuthOptions(config.public.devApiKey)
+          for (const [name, value] of Object.entries(auth.headers)) {
+            options.headers.set(name, value)
           }
-          else {
-            options.credentials = 'include'
-          }
-          if (token.value) {
-            options.headers.set('Authentication-Token', token.value)
+          if (auth.credentials) {
+            options.credentials = auth.credentials
           }
           if (cookie) {
             options.headers.set('Cookie', cookie)
@@ -35,9 +41,17 @@ export default defineNuxtPlugin({
             options.query['lang'] = locale
           }
         },
-        async onResponseError({ response, options }) {
+        onResponse({ response, options }) {
+          // Only content writes go through `/api/`: the security views (login, logout,
+          // register…) change no rendered page, and the session they open or close
+          // already changes the nginx cache key.
+          if (response.ok && options.method && ['POST', 'PUT', 'PATCH', 'DELETE'].includes(options.method) && new URL(response.url).pathname.startsWith('/api/')) {
+            freshAfterWrite.value = true
+          }
+        },
+        async onResponseError({ request, response, options }) {
           if (response.status === 404) {
-            if (apiOptions.redirectOn404) {
+            if (apiOptions.showErrorPage) {
               await nuxtApp.runWithContext(() => showError({ statusCode: 404, statusMessage: 'Page Not Found' }))
             }
             else {
@@ -46,13 +60,29 @@ export default defineNuxtPlugin({
             }
           }
 
+          if (response.status === 410 && apiOptions.showErrorPage) {
+            await nuxtApp.runWithContext(() => showError({ statusCode: 410, statusMessage: 'Gone' }))
+            return
+          }
+
           if (response.status === 401) {
-            if (response._data?.response && typeof response._data.response === 'object' && response._data.response?.reauth_required === true) {
-              await nuxtApp.runWithContext(() => navigateTo({ path: '/verify', query: { next: route.fullPath } }))
+            const reauthRequired = response._data?.response && typeof response._data.response === 'object' && response._data.response?.reauth_required === true
+            const path = reauthRequired ? '/verify' : '/login'
+
+            // Coming from the very page we would send the user to, the 401 is the expected
+            // answer to wrong credentials rather than a sign they must authenticate.
+            // Redirecting would nest `next` into itself on every attempt
+            // (/login?next=/login?next=…) and lose the actual destination.
+            // Replacing the current entry keeps the back button from returning to a page
+            // that asks udata again, and gets sent straight back here.
+            if (route.path !== path) {
+              await nuxtApp.runWithContext(() => navigateTo({ path, query: { next: route.fullPath } }, { replace: true }))
             }
-            else {
-              await nuxtApp.runWithContext(() => navigateTo({ path: '/login', query: { next: route.fullPath } }))
-            }
+          }
+
+          if (response.status === 424 && typeof request === 'string' && request.includes('/geopf/')) {
+            // Means "not connected": callers handle this themselves (prompt to reconnect).
+            return
           }
 
           if (response.status === 429) {
@@ -65,26 +95,7 @@ export default defineNuxtPlugin({
             return
           }
 
-          let message = ''
-          if (response._data) {
-            try {
-              if ('error' in response._data) {
-                message = response._data.error
-              }
-              else if ('message' in response._data) {
-                message = response._data.message
-              }
-              else if ('errors' in response._data && typeof response._data.errors === 'object') {
-                message = Object.entries(response._data.errors).map(([key, value]) => `${key}: ${value}`).join(' ; ')
-              }
-              else if ('response' in response._data && 'errors' in response._data.response && Array.isArray(response._data.response.errors)) {
-                message = response._data.response.errors.join(' ; ')
-              }
-            }
-            catch (e) {
-              console.error(e)
-            }
-          }
+          const message = getApiErrorMessage(response._data)
 
           if (options?.method && ['POST', 'PUT', 'PATCH'].includes(options.method) && response.status === 400) {
             toast.error(t(`Le formulaire contient des erreurs. ${message}`))
@@ -104,9 +115,9 @@ export default defineNuxtPlugin({
     // Expose to useNuxtApp().$api
     return {
       provide: {
-        api: makeApi({ sendJson: true, redirectOn404: false }),
-        fileApi: makeApi({ sendJson: false, redirectOn404: false }),
-        apiWith404: makeApi({ sendJson: true, redirectOn404: true }),
+        api: makeApi({ sendJson: true, showErrorPage: false }),
+        fileApi: makeApi({ sendJson: false, showErrorPage: false }),
+        apiWithErrorPage: makeApi({ sendJson: true, showErrorPage: true }),
       },
     }
   },

@@ -55,7 +55,7 @@ import AppLink from './AppLink.vue'
 import { bannerActionTypeKey } from './BannerAction.vue'
 import AnimatedLoader from './AnimatedLoader.vue'
 
-export type ColorType = 'primary' | 'secondary' | 'tertiary' | 'warning' | 'danger' | 'brown-illustration' | 'green-illustration' | 'white-flat'
+export type ColorType = 'primary' | 'secondary' | 'tertiary' | 'tertiary-blue' | 'warning' | 'danger' | 'brown-illustration' | 'green-illustration' | 'white-flat'
 
 const props = withDefaults(defineProps<{
   size?: '2xs' | 'xs' | 'sm' | 'lg' | 'xl'
@@ -121,6 +121,7 @@ const colors = computed(() => {
       ? 'text-new-disabled-text bg-white !border-new-disabled-background'
       : 'text-new-gray-dark bg-white !border-new-gray-dark [&&]:hover:!bg-gray-some',
     'tertiary': `text-gray-plain !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
+    'tertiary-blue': `text-new-primary !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'warning': `text-new-warning bg-white !border-new-warning ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'danger': `!text-new-error bg-white !border-new-error ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
     'brown-illustration': `!border-none bg-new-brown-illustration text-white ${!isDisabled.value ? '[&&]:hover:!bg-new-brown-illustration/90' : ''}`,
@@ -141,7 +142,7 @@ const sizes = computed(() => {
 })
 
 const hasBorders = computed(() => {
-  return props.color !== 'tertiary'
+  return props.color !== 'tertiary' && props.color !== 'tertiary-blue'
 })
 
 const removePaddingsIfNoBorders = computed(() => {

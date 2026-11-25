@@ -1,8 +1,12 @@
 <template>
-  <div class="divide-y max-h-96 overflow-y-auto">
-    <div
+  <ul
+    class="m-0 p-0 list-none divide-y max-h-96 overflow-y-auto"
+    :aria-label="$t('Notifications')"
+  >
+    <li
       v-for="notification in notifications"
       :key="notification.id"
+      class="p-0"
     >
       <NotificationsMembershipRequest
         v-if="notification.details.class === 'MembershipRequestNotificationDetails'"
@@ -41,8 +45,8 @@
         v-else-if="notification.details.class === 'DataserviceCreatedNotificationDetails'"
         :notification="notification as DataserviceCreatedNotification"
       />
-    </div>
-  </div>
+    </li>
+  </ul>
 </template>
 
 <script setup lang="ts">
@@ -62,6 +66,7 @@ watchEffect(async () => {
     if (notification.details.class !== 'DiscussionNotificationDetails' || notification.details.discussion.subject.id in subjectsPromises.value) continue
 
     const id = notification.details.discussion.subject.id
+    subjects.value[id] = null // The subject is rendered before it is fetched, `null` hides it until then
     subjectsPromises.value[id] = getSubject($api, notification.details.discussion.subject)
       .then((subject) => {
         subjects.value[id] = subject // Working because there is no conflicts between IDs from different types

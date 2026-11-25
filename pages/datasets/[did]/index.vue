@@ -1,9 +1,35 @@
 <template>
   <div class="space-y-5">
+    <BannerAction
+      type="primary"
+      :title="newExplorerEnabled ? $t('Vous utilisez la nouvelle navigation dans les ressources') : $t('Vous utilisez l\'ancienne navigation dans les ressources')"
+    >
+      <template #button>
+        <div class="flex flex-wrap items-center justify-end gap-x-4 gap-y-2">
+          <a
+            v-if="newExplorerEnabled && feedbackUrl"
+            :href="feedbackUrl"
+            target="_blank"
+            rel="noopener"
+            class="fr-link fr-reset-link shrink-0"
+          >{{ $t("Donner votre avis") }}</a>
+          <BrandedButton
+            size="xs"
+            @click="toggleExplorer"
+          >
+            {{ newExplorerEnabled ? $t("Revenir sur l'ancienne navigation") : $t("Utiliser la nouvelle navigation") }}
+          </BrandedButton>
+        </div>
+      </template>
+    </BannerAction>
+
     <ResourceExplorer
-      v-if="useNewExplorer"
+      v-if="newExplorerEnabled"
       :dataset
+      :can-edit="dataset.permissions.edit_resources"
+      :explore-to="exploreTo"
       no-results-image="/illustrations/dataset.svg"
+      @select="feedbackResource = $event"
     />
     <DatasetsLegacyResourceList
       v-else
@@ -15,23 +41,51 @@
 </template>
 
 <script setup lang="ts">
-import { ResourceExplorer, type DatasetV2 } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, getResourceExternalUrl, ResourceExplorer, type DatasetV2, type Resource } from '@datagouv/components-next'
 
-defineProps<{ dataset: DatasetV2 }>()
+const props = defineProps<{ dataset: DatasetV2 }>()
 
 const route = useRoute()
 
-// Feature flag: ?new_explorer=1 to enable, ?new_explorer=0 to disable, persisted in cookie
-const newExplorerCookie = useCookie('new_explorer', { maxAge: 60 * 60 * 24 * 7, path: '/' })
-const queryFlag = route.query.new_explorer as string | undefined
-if (queryFlag === '1') {
-  newExplorerCookie.value = '1'
+// Feedback form link for the banner; only shown when configured. Query params
+// pre-fill the form with what the visitor was looking at: the dataset, the
+// resource shown in the explorer (forwarded via `select`, unknown during SSR)
+// and a simplified "Browser - device" string (client-side only, so it appears
+// after hydration).
+const feedbackBaseUrl = useRuntimeConfig().public.explorerFeedbackUrl
+const feedbackResource = ref<Resource | null>(null)
+const feedbackUserAgent = ref<string | null>(null)
+onMounted(() => {
+  feedbackUserAgent.value = getSimplifiedUserAgent(navigator.userAgent)
+})
+const feedbackUrl = computed(() => {
+  if (!feedbackBaseUrl) return ''
+  return buildExplorerFeedbackUrl(feedbackBaseUrl, {
+    dataset: props.dataset,
+    resourceExternalUrl: feedbackResource.value ? getResourceExternalUrl(props.dataset, feedbackResource.value) : null,
+    resourceFormat: feedbackResource.value?.format ?? null,
+    simplifiedUserAgent: feedbackUserAgent.value,
+  })
+})
+
+// Opens the fullscreen explorer on the current resource, next to the download button.
+// Slug rather than id, so the explorer doesn't answer with a canonical redirect.
+const exploreTo = (resource: Resource) => `/explore/${props.dataset.slug}?resource_id=${resource.id}`
+
+const { enabled: newExplorerEnabled, setEnabled } = useNewExplorer()
+
+const router = useRouter()
+
+// Toggling the reactive flag swaps the explorer in place (no reload). Going back
+// to the old navigation drops ?resource_id: it doesn't carry the same meaning there.
+function toggleExplorer() {
+  const enable = !newExplorerEnabled.value
+  setEnabled(enable)
+  if (!enable && route.query.resource_id) {
+    const { resource_id: _, ...query } = route.query
+    router.replace({ query })
+  }
 }
-else if (queryFlag === '0') {
-  newExplorerCookie.value = null
-}
-// useCookie uses `destr` which deserializes '1' as the number 1
-const useNewExplorer = computed(() => String(newExplorerCookie.value) === '1')
 
 // A resource selected via ?resource_id duplicates content from the main dataset page,
 // so it must stay out of the search index. Kept at the page level (not in a child

@@ -1,4 +1,4 @@
-import { validateAlbertConfig, callAlbertAPI, parseTags } from './utils/albert-helpers'
+import { callAlbertAPI, parseTags } from './utils/albert-helpers'
 
 export default defineEventHandler(async (event) => {
   const body = await readBody(event)
@@ -10,8 +10,6 @@ export default defineEventHandler(async (event) => {
       statusMessage: 'Title, description and type are required',
     })
   }
-
-  validateAlbertConfig()
 
   const messages = [
     {
@@ -66,11 +64,9 @@ export default defineEventHandler(async (event) => {
     },
   ]
 
-  // Models available for text generation:
-  // - openweight-small (replaces albert-small)
-  // - openweight-medium (replaces albert-large)
-  // - openweight-large
-  const generatedTags = await callAlbertAPI(messages, 'openweight-small')
+  // To list available models:
+  // curl -sS -H "Authorization: Bearer $ALBERT_API_KEY" -H "Content-Type: application/json" "https://albert.api.etalab.gouv.fr/v1/models"
+  const generatedTags = await callAlbertAPI(messages, 'openweight-large')
 
   // Parse the comma-separated tags and clean them
   const tags = parseTags(generatedTags, nbTags)

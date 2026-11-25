@@ -85,7 +85,7 @@
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, Pagination, type Organization, type Reuse, type User } from '@datagouv/components-next'
+import { LoadingBlock, Pagination, type Organization, type ReuseV2, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { RiSearchLine } from '@remixicon/vue'
@@ -131,7 +131,7 @@ const params = computed(() => {
   }
 })
 
-const { data: pageData, status, refresh } = await useAPI<PaginatedArray<Reuse>>('/api/1/reuses/', { lazy: true, query: params })
+const { data: pageData, status, refresh } = await useAPI<PaginatedArray<ReuseV2>>('/api/2/reuses/', { lazy: true, query: params })
 
 watch(qDebounced, () => {
   page.value = 1

@@ -87,4 +87,6 @@ const { data: results, status } = await useAPI<PaginatedArray<Dataset>>('/api/2/
   params,
   lazy: true,
 })
+
+showErrorWhenPageOutOfRange(page.value, pageSize, results.value?.total)
 </script>

@@ -1,7 +1,7 @@
 <template>
   <header class="space-y-1">
     <div class="flex gap-3 sm:items-center sm:justify-between flex-col sm:flex-row">
-      <h3 class="m-0 text-base/normal text-gray-title flex items-center space-x-1">
+      <h3 class="m-0 text-base/normal text-gray-title flex items-start space-x-1">
         <RiLockLine
           v-if="thread.closed"
           class="size-4"
@@ -16,7 +16,7 @@
       </h3>
       <div
         v-if="showActions"
-        class="space-x-2"
+        class="flex items-center gap-2 shrink-0"
       >
         <BrandedButton
           v-if="isMeAdmin() && thread.spam?.status === 'potential_spam'"
@@ -26,6 +26,17 @@
         >
           {{ $t('Marquer comme non spam') }}
         </BrandedButton>
+        <FollowToggle
+          v-if="me && followState !== undefined"
+          :scope="{ class: 'Discussion', id: thread.id }"
+          event="discussion"
+          :state="followState"
+          :follow-label="$t('Suivre cette discussion')"
+          :unfollow-label="$t('Ne plus suivre cette discussion')"
+          :followed-message="$t('Vous suivez cette discussion')"
+          :unfollowed-message="mutedMessage({ scope: { class: 'Discussion', id: thread.id }, event: 'discussion' }, thread.title)"
+          icon-only
+        />
         <EditCommentModal
           v-if="firstComment.permissions.edit"
           :subject
@@ -59,14 +70,18 @@ import { RiLockLine } from '@remixicon/vue'
 import { BrandedButton, CopyButton } from '@datagouv/components-next'
 import ReportModal from '../Spam/ReportModal.vue'
 import DeleteThreadModal from './DeleteThreadModal.vue'
+import FollowToggle from '../Notifications/FollowToggle.vue'
 import DiscussionCommentHeader from './DiscussionCommentHeader.vue'
 import EditCommentModal from './EditCommentModal.vue'
 import type { DiscussionSubjectTypes, Thread } from '~/types/discussions'
+import type { FollowState } from '~/types/notifications'
 
 const props = withDefaults(defineProps<{
   thread: Thread
   subject: DiscussionSubjectTypes
   showActions?: boolean
+  // What its follow button shows, read by the list of threads; no button without it.
+  followState?: FollowState
 }>(), {
   showActions: false,
 })
@@ -74,6 +89,8 @@ const emit = defineEmits<{
   change: []
 }>()
 
+const me = useMaybeMe()
+const { mutedMessage } = useNotificationLabels()
 const firstComment = computed(() => props.thread.discussion[0])
 
 const { $api } = useNuxtApp()

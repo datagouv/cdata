@@ -32,14 +32,13 @@
               <dt class="font-bold text-sm pb-1">
                 {{ $t('Mots clés') }}
               </dt>
-              <dd class="flex flex-wrap gap-0.5 p-0 text-sm">
-                <span
+              <dd class="flex flex-wrap gap-2 p-0 text-sm">
+                <Tag
                   v-for="tag in reuse.tags"
                   :key="tag"
-                  class="text-xs px-2 py-1 rounded-xl bg-gray-default"
                 >
                   {{ tag }}
-                </span>
+                </Tag>
                 <span
                   v-if="!reuse.tags?.length"
                   class="text-mention-grey"
@@ -53,7 +52,7 @@
                 {{ $t('Dernière mise à jour') }}
               </dt>
               <dd class="p-0 text-sm text-mention-grey">
-                {{ formatDate(reuse.last_modified) }}
+                <FormattedDate :date="reuse.last_modified" />
               </dd>
             </div>
             <div>
@@ -61,18 +60,24 @@
                 {{ $t('Date de création') }}
               </dt>
               <dd class="p-0 text-sm text-mention-grey">
-                {{ formatDate(reuse.created_at) }}
+                <FormattedDate :date="reuse.created_at" />
               </dd>
             </div>
-            <div>
-              <StatBox
-                :title="$t('Vues')"
-                :data="metricsViews"
-                size="sm"
-                type="line"
-                :summary="metricsViewsTotal"
-                :since="metricsSince"
-              />
+            <div v-if="!metricsError">
+              <!-- ClientOnly: the loading skeletons of StatBox get their ids from
+                   `Math.random()`, which differ between the server and the client render. -->
+              <ClientOnly>
+                <!-- `?? null`: StatBox shows its loading skeletons on a strict `null`, and
+                     `data` is `undefined` until the request answers. -->
+                <StatBox
+                  :title="$t('Vues')"
+                  :data="reuseMetrics?.visits ?? null"
+                  size="sm"
+                  type="line"
+                  :summary="reuseMetrics?.visitsTotal ?? null"
+                  :since="metricsSince"
+                />
+              </ClientOnly>
             </div>
           </dl>
         </div>
@@ -201,7 +206,7 @@
 </template>
 
 <script setup lang="ts">
-import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, useFormatDate, MarkdownViewer, BrandedButton } from '@datagouv/components-next'
+import { DataserviceCard, type Dataservice, getTopic, useReuseType, StatBox, type Reuse, type ReuseV2, type ReuseTopic, type DatasetV2, LoadingBlock, Pagination, FormattedDate, useMetrics, MarkdownViewer, BrandedButton, Tag } from '@datagouv/components-next'
 import ReuseCard from '~/components/Reuses/ReuseCard.vue'
 import type { PaginatedArray } from '~/types/types'
 
@@ -210,8 +215,6 @@ const props = defineProps<{
 }>()
 
 const config = useRuntimeConfig()
-
-const { formatDate } = useFormatDate()
 
 const { label } = useReuseType(props.reuse.type)
 
@@ -241,10 +244,7 @@ const { data: dataservices } = await useAPI<PaginatedArray<Dataservice>>('/api/1
 
 const topic = computed(() => getTopic(topics.value ?? [], props.reuse.topic))
 
-const { data: reuses, status } = await useAPI<PaginatedArray<Reuse>>(`/api/2/reuses/search/`, {
-  headers: {
-    'X-Fields': reusesXFields,
-  },
+const { data: reuses, status } = await useAPI<PaginatedArray<ReuseV2>>(`/api/2/reuses/search/`, {
   params: {
     page: 1,
     page_size: 4,
@@ -261,13 +261,14 @@ const metricsSince = computed(() => {
   return [props.reuse.created_at, config.public.metricsSince].reduce((max, c) => c > max ? c : max)
 })
 
-const metricsViews = ref<null | Record<string, number>>(null)
-const metricsViewsTotal = ref<null | number>(null)
+const { getReuseMetrics } = useMetrics()
 
-watchEffect(async () => {
-  if (!props.reuse.id) return
-  const metrics = await getReuseMetrics(props.reuse.id)
-  metricsViews.value = metrics.reuseViews
-  metricsViewsTotal.value = metrics.reuseViewsTotal
-})
+// `server: false` keeps the call out of the render: the metrics API is a third-party service
+// and its numbers are secondary to the page, so waiting for it would delay the whole page.
+// The box disappears on `error` rather than loading forever.
+const { data: reuseMetrics, error: metricsError } = useAsyncData(
+  'reuse-metrics',
+  () => props.reuse.id ? getReuseMetrics(props.reuse.id) : Promise.resolve(null),
+  { lazy: true, server: false, watch: [() => props.reuse.id] },
+)
 </script>

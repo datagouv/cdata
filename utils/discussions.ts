@@ -1,6 +1,7 @@
-import { throwOnNever, type Dataservice, type DatasetV2, type Reuse } from '@datagouv/components-next'
-import { RiArticleLine, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
+import { throwOnNever, type Dataservice, type DatasetV2, type Reuse, type TopicV2, type TranslationFunction } from '@datagouv/components-next'
+import { RiArticleLine, RiBookShelfLine, RiBuilding2Line, RiChat3Line, RiDatabase2Line, RiLineChartLine, RiTerminalLine } from '@remixicon/vue'
 import type { Comment, DiscussionSubject, DiscussionSubjectTypes, Thread } from '~/types/discussions'
+import type { Post } from '~/types/posts'
 import type { ApiFetch } from '~/types/types'
 
 export async function getSubject(api: ApiFetch, subject: DiscussionSubject): Promise<DiscussionSubjectTypes | null> {
@@ -11,6 +12,10 @@ export async function getSubject(api: ApiFetch, subject: DiscussionSubject): Pro
       return await api<DatasetV2>(`/api/2/datasets/${subject.id}/`)
     case 'Reuse':
       return await api<Reuse>(`/api/1/reuses/${subject.id}/`)
+    case 'Post':
+      return await api<Post>(`/api/1/posts/${subject.id}/`)
+    case 'Topic':
+      return await api<TopicV2>(`/api/2/topics/${subject.id}/`)
     default:
       return null
   };
@@ -50,7 +55,7 @@ export function getSubjectPage(subject: DiscussionSubjectTypes) {
   return throwOnNever(subject, `Unknown type ${subject}`)
 };
 
-export function getSubjectTypeIcon(subjectClass: DiscussionSubject['class']) {
+export function getSubjectTypeIcon(subjectClass: DiscussionSubject['class'] | 'Discussion') {
   switch (subjectClass) {
     case 'Dataservice':
       return RiTerminalLine
@@ -60,10 +65,36 @@ export function getSubjectTypeIcon(subjectClass: DiscussionSubject['class']) {
       return RiArticleLine
     case 'Reuse':
       return RiLineChartLine
-    default:
-      return ''
+    case 'Topic':
+      return RiBookShelfLine
+    case 'Organization':
+      return RiBuilding2Line
+    case 'Discussion':
+      return RiChat3Line
   };
+  return throwOnNever(subjectClass, `Unknown type ${subjectClass}`)
 };
+
+// How a sentence points at a subject of this class: "ce jeu de données", "cette API"…
+export function getSubjectDemonstrative(t: TranslationFunction, subjectClass: DiscussionSubject['class'] | 'Discussion') {
+  switch (subjectClass) {
+    case 'Dataservice':
+      return t('cette API')
+    case 'Dataset':
+      return t('ce jeu de données')
+    case 'Post':
+      return t('cet article')
+    case 'Reuse':
+      return t('cette réutilisation')
+    case 'Topic':
+      return t('cette thématique')
+    case 'Organization':
+      return t('cette organisation')
+    case 'Discussion':
+      return t('cette discussion')
+  };
+  return throwOnNever(subjectClass, `Unknown type ${subjectClass}`)
+}
 
 export function getDiscussionUrl(discussionId: string, subject: DiscussionSubjectTypes | null) {
   if (!subject) {

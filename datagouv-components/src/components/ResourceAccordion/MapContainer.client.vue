@@ -1,19 +1,31 @@
 <template>
-  <PreviewUnavailable v-if="hasError">
-    {{ t("L'aperçu cartographique de ce fichier n'a pas pu être chargé.") }}
-  </PreviewUnavailable>
+  <PreviewError
+    v-if="hasError"
+    :resource="resource"
+    error-type="map_load"
+  />
   <div
     v-else
-    id="map"
     ref="mapRef"
+    class="size-full"
   />
 </template>
 
 <script setup lang = "ts">
 import { onMounted, ref, useTemplateRef } from 'vue'
-import PreviewUnavailable from './PreviewUnavailable.vue'
+import { toast } from 'vue-sonner'
+import PreviewError from './PreviewError.vue'
 import type { Resource } from '../../types/resources'
 import { useTranslation } from '../../composables/useTranslation'
+
+type WmsCapabilitiesLayer = { Name: string }
+
+type LayerImportInternals = {
+  _serviceUrlImportInput: HTMLInputElement
+  _formContainer: HTMLFormElement
+  _getCapResponseWMSLayers: Array<WmsCapabilitiesLayer> | null
+  _addGetCapWMSLayer: (layerInfo: WmsCapabilitiesLayer | undefined) => void
+}
 
 const props = defineProps<{ resource: Resource }>()
 
@@ -38,7 +50,6 @@ async function displayMap() {
     import('ol/control/ScaleLine'),
     import('ol/layer/Tile'),
     import('ol/source/OSM'),
-    // @ts-expect-error no types provided
     import('geopf-extensions-openlayers'),
   ])
 
@@ -94,12 +105,16 @@ async function displayMap() {
   map.addControl(attributions)
 
   const layerImport = new LayerImport({
+    // @ts-expect-error `position` is handled by the base control but missing from the published types
     position: 'bottom-left',
     listable: true,
     layerTypes: ['WMS'],
   })
-  layerImport._serviceUrlImportInput.value = props.resource.url
-  layerImport._formContainer.dispatchEvent(new CustomEvent('submit', { cancelable: true }))
+  // LayerImport has no public API to load a service URL: we fill and submit its form,
+  // then add the resource's layer once the GetCapabilities response is parsed.
+  const layerImportInternals = layerImport as unknown as LayerImportInternals
+  layerImportInternals._serviceUrlImportInput.value = props.resource.url
+  layerImportInternals._formContainer.dispatchEvent(new CustomEvent('submit', { cancelable: true }))
 
   map.addControl(layerImport)
 
@@ -108,7 +123,7 @@ async function displayMap() {
   const waitTimeout = 500
   let retry = 20
   function showLayer() {
-    if (!layerImport._getCapResponseWMSLayers) {
+    if (!layerImportInternals._getCapResponseWMSLayers) {
       retry--
       if (retry > 0)
         setTimeout(showLayer, waitTimeout)
@@ -116,9 +131,13 @@ async function displayMap() {
         hasError.value = true
     }
     else {
-      // @ts-expect-error no typing from library
-      const layerInfo = layerImport._getCapResponseWMSLayers.filter(layer => layer.Name == props.resource.title)[0]
-      layerImport._addGetCapWMSLayer(layerInfo)
+      const layerInfo = layerImportInternals._getCapResponseWMSLayers.filter(layer => layer.Name == props.resource.title)[0]
+      // The service responded but no layer matched automatically: keep the map up
+      // (the user can add it via the import control) and signal it.
+      if (!layerInfo)
+        toast.info(t('La couche n\'a pas pu être détectée automatiquement. Ajoutez-la via l\'outil d\'import de couches depuis la carte'))
+      else
+        layerImportInternals._addGetCapWMSLayer(layerInfo)
     }
   }
   setTimeout(showLayer, waitTimeout)
@@ -128,10 +147,3 @@ onMounted(() => {
   displayMap()
 })
 </script>
-
-<style>
-  #map {
-    width: 100%;
-    height: 500px;
-  }
-</style>

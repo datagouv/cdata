@@ -42,13 +42,13 @@
       </div>
 
       <OnboardingLogoGrid :label="$t('Ils réutilisent les données de {site}', { site: config.public.title })">
-        <NuxtImg
+        <img
           v-for="logo in reuserLogos"
           :key="logo.name"
           :src="`/nuxt_images/onboarding/logo-${logo.name}.png`"
           :alt="logo.label"
           class="h-20 object-contain"
-        />
+        >
       </OnboardingLogoGrid>
     </OnboardingSection>
 

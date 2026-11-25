@@ -22,7 +22,7 @@ test('sidebar displays correct metadata values', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Caractéristiques techniques' })).toBeVisible()
 
   // Technical block
-  await expect(page.getByText(`URL de base de l'API`)).toBeVisible()
+  await expect(page.getByText(`URL de base de l'API`, { exact: true })).toBeVisible()
   await expect(
     page.locator('aside a[href="https://opendata.caissedesdepots.fr/api/explore/v2.1/"]'),
   ).toBeVisible()
@@ -53,4 +53,17 @@ test('discussions tab is accessible', async ({ page }) => {
   await discussionsTab.click()
 
   await expect(page).toHaveURL(`/dataservices/${DATASERVICE_SLUG}/discussions`)
+})
+
+test('reuses tab is accessible', async ({ page }) => {
+  await page.goto(`/dataservices/${DATASERVICE_SLUG}`)
+  // Wait for Vue hydration before clicking NuxtLink (fix flaky test on Firefox)
+  await page.waitForLoadState('networkidle')
+
+  const reusesTab = page.locator(`a[href="/dataservices/${DATASERVICE_SLUG}/reuses"]`)
+  await expect(reusesTab).toBeVisible()
+
+  await reusesTab.click()
+
+  await expect(page).toHaveURL(`/dataservices/${DATASERVICE_SLUG}/reuses`)
 })

@@ -6,7 +6,9 @@
     <DescriptionList>
       <div>
         <DescriptionListTerm>{{ t('Création') }}</DescriptionListTerm>
-        <DescriptionListDetails>{{ formatDate(dataset.created_at) }}</DescriptionListDetails>
+        <DescriptionListDetails>
+          <FormattedDate :date="dataset.created_at" />
+        </DescriptionListDetails>
       </div>
       <div v-if="dataset.frequency">
         <DescriptionListTerm>{{ t('Fréquence') }}</DescriptionListTerm>
@@ -20,7 +22,9 @@
       </div>
       <div>
         <DescriptionListTerm>{{ t('Dernière mise à jour') }}</DescriptionListTerm>
-        <DescriptionListDetails>{{ formatDate(dataset.last_update) }}</DescriptionListDetails>
+        <DescriptionListDetails>
+          <FormattedDate :date="dataset.last_update" />
+        </DescriptionListDetails>
       </div>
       <slot />
     </DescriptionList>
@@ -29,17 +33,16 @@
 
 <script setup lang="ts">
 import { useTranslation } from '../../composables/useTranslation'
-import { useFormatDate } from '../../functions/dates'
 import type { DatasetV2WithFullObject } from '../../types/datasets'
 import DescriptionList from '../DescriptionList.vue'
 import DescriptionListTerm from '../DescriptionListTerm.vue'
 import DescriptionListDetails from '../DescriptionListDetails.vue'
 import DateRangeDetails from '../DateRangeDetails.vue'
+import FormattedDate from '../FormattedDate.vue'
 
 defineProps<{
   dataset: DatasetV2WithFullObject
 }>()
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 </script>

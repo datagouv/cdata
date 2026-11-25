@@ -1,47 +1,53 @@
 <template>
-  <ObjectCard>
-    <ObjectCardHeader
-      :icon="RiChat3Line"
-      :url="discussionUrl || discussion.self_web_url || '#'"
-    >
+  <ObjectCard
+    :url="discussionUrl || discussion.self_web_url || '#'"
+    :icon="RiChat3Line"
+  >
+    <template #title>
       {{ discussion.title }}
-    </ObjectCardHeader>
+    </template>
 
-    <div
-      v-if="discussion.organization || discussion.user"
-      class="text-sm flex flex-wrap md:flex-nowrap gap-y-1 items-center truncate"
-    >
+    <ObjectCardMeta class="mt-2">
       <ObjectCardOwner
+        v-if="discussion.organization || discussion.user"
+        show-details
         :organization="discussion.organization"
         :owner="discussion.user"
         :organization-url="organizationUrl"
       />
-      <RiSubtractLine
-        aria-hidden="true"
-        class="size-4 flex-none fill-gray-medium"
-      />
-      <span class="text-gray-medium whitespace-nowrap">
-        {{ t('Posté {date}', { date: formatDate(discussion.created) }) }}
-      </span>
-    </div>
-
-    <ObjectCardShortDescription :text="firstMessageContent" />
-
+      <TranslationT
+        tag="span"
+        class="tabular-nums"
+        keypath="Posté {date}"
+      >
+        <template #date>
+          <FormattedDate
+            :date="discussion.created"
+            format="relative"
+            :options="{ dateStyle: 'long', timeStyle: 'short' }"
+          />
+        </template>
+      </TranslationT>
+    </ObjectCardMeta>
+    <ObjectCardShortDescription
+      :text="firstMessageContent"
+      class="mt-2 max-md:hidden"
+    />
     <slot />
   </ObjectCard>
 </template>
 
 <script setup lang="ts">
-import { RiChat3Line, RiSubtractLine } from '@remixicon/vue'
+import { RiChat3Line } from '@remixicon/vue'
 import { computed } from 'vue'
 import type { RouteLocationRaw } from 'vue-router'
-import { useFormatDate } from '../functions/dates'
-import { useTranslation } from '../composables/useTranslation'
 import type { Thread } from '../types/discussions'
+import FormattedDate from './FormattedDate.vue'
 import ObjectCard from './ObjectCard.vue'
-import ObjectCardHeader from './ObjectCardHeader.vue'
+import ObjectCardMeta from './ObjectCardMeta.vue'
 import ObjectCardOwner from './ObjectCardOwner.vue'
 import ObjectCardShortDescription from './ObjectCardShortDescription.vue'
+import TranslationT from './TranslationT.vue'
 
 const props = defineProps<{
   discussion: Thread
@@ -49,15 +55,5 @@ const props = defineProps<{
   organizationUrl?: RouteLocationRaw
 }>()
 
-const { t } = useTranslation()
-const { formatRelativeIfRecentDate } = useFormatDate()
-
 const firstMessageContent = computed(() => props.discussion.discussion?.[0]?.content)
-
-const formatDate = (dateString: string) => {
-  return formatRelativeIfRecentDate(dateString, {
-    dateStyle: 'long',
-    timeStyle: 'short',
-  })
-}
 </script>

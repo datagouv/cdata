@@ -1,4 +1,5 @@
 import { useComponentsConfig } from '../config'
+import { hasTabularParsingError } from '../functions/resources'
 import type { Resource } from '../types/resources'
 
 /**
@@ -20,7 +21,7 @@ export const useHasTabularData = () => {
     return (
       config.tabularApiUrl
       && resource.extras['analysis:parsing:parsing_table']
-      && !resource.extras['analysis:parsing:error']
+      && !hasTabularParsingError(resource)
       && !sourceUnreachable
       && (config.tabularAllowRemote || resource.filetype === 'file')
     )

@@ -11,7 +11,7 @@
         </div>
         <div class="fr-col">
           <p class="fr-m-0 fr-text--bold">
-            {{ $t('Your dataset is created!') }}
+            {{ $t('Votre jeu de données est maintenant créé !') }}
           </p>
           <p class="fr-m-0 fr-text--xs">
             {{ $t('Vous pouvez maintenant le publier ou le sauvegarder en brouillon.') }}

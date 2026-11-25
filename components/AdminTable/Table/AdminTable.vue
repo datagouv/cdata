@@ -1,6 +1,9 @@
 <template>
   <div class="fr-table fr-mb-2w">
-    <table class="lg:!table">
+    <table
+      class="lg:!table"
+      :class="{ 'table-fixed': fixed }"
+    >
       <slot />
     </table>
     <div
@@ -17,8 +20,12 @@ import { AnimatedLoader } from '@datagouv/components-next'
 
 withDefaults(defineProps<{
   loading?: boolean
+  // Fixes column widths to what the <th>s declare, instead of auto-sizing
+  // to content (which lets a long cell blow out every other column's width).
+  fixed?: boolean
 }>(), {
   loading: false,
+  fixed: false,
 })
 </script>
 

@@ -5,6 +5,7 @@
       :post="postForm"
       type="update"
       :submit-label="t('Sauvegarder')"
+      :loading
       @submit="save"
     />
   </div>
@@ -19,13 +20,14 @@ const { t } = useTranslation()
 const { $api } = useNuxtApp()
 
 const route = useRoute()
+const absoluteUrlToRelative = useAbsoluteUrlToRelative()
 const url = computed(() => `/api/1/posts/${route.params.id}/`)
-const { data: post, refresh } = await useAPI<Post>(url, { redirectOn404: true })
+const { data: post, refresh } = await useAPI<Post>(url, { showErrorPage: true })
 const postForm = computed(() => post.value ? postToForm(post.value) : null)
 
 watchEffect(() => {
   if (post.value?.body_type === 'blocs') {
-    navigateTo(`/posts/${post.value.slug}?edit=true`)
+    navigateTo({ path: absoluteUrlToRelative(post.value.page), query: { edit: 'true' } })
   }
 })
 

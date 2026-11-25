@@ -17,7 +17,7 @@
       />
       <span
         class="copy-label"
-        :class="{ 'sr-only': hideLabel }"
+        :class="{ 'sr-only': hideLabel || iconOnly }"
       >{{ copiedLabel }}</span>
     </span>
     <span
@@ -32,7 +32,7 @@
       />
       <span
         class="copy-link copy-label"
-        :class="{ 'sr-only': hideLabel }"
+        :class="{ 'sr-only': hideLabel || iconOnly }"
       >{{ label }}</span>
     </span>
   </button>
@@ -49,9 +49,13 @@ const props = withDefaults(defineProps<{
   label: string
   copiedLabel: string
   hideLabel?: boolean
+  // Like hideLabel but keeps the default icon and has no bordered box — just the
+  // plain copy icon with an sr-only label.
+  iconOnly?: boolean
   reverse?: boolean
 }>(), {
   hideLabel: false,
+  iconOnly: false,
   reverse: false,
 })
 

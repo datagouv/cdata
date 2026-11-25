@@ -21,9 +21,10 @@
 
     <DescribePost
       v-if="currentStep === 1"
-      :post="postForm"
+      v-model="postForm"
       type="create"
       :submit-label="t('Suivant')"
+      :loading
       @submit="postNext"
     />
     <PostContentForm
@@ -31,6 +32,7 @@
       :post="postForm"
       type="create"
       :submit-label="t('Sauvegarder')"
+      :loading
       @submit="save"
     />
     <div class="h-64" />
@@ -44,11 +46,13 @@ import DescribePost from '~/components/Posts/DescribePost.vue'
 import PostContentForm from '~/components/Posts/PostContentForm.vue'
 import Stepper from '~/components/Stepper/Stepper.vue'
 import type { Post, PostForm } from '~/types/posts'
+import { goToStep } from '~/utils/scroll'
 
 const { t } = useTranslation()
 const route = useRoute()
 const { $api, $fileApi } = useNuxtApp()
 const me = useMe()
+const absoluteUrlToRelative = useAbsoluteUrlToRelative()
 
 const steps = computed(() => [
   t('Décrivez votre article'),
@@ -59,6 +63,7 @@ const POST_FORM_STATE = 'post-form'
 
 const postForm = useState<PostForm>(POST_FORM_STATE, () => ({
   name: '',
+  slug: '',
   body_type: 'markdown',
   blocs: [],
   content: '',
@@ -66,23 +71,20 @@ const postForm = useState<PostForm>(POST_FORM_STATE, () => ({
   credit_url: '',
   headline: '',
   kind: 'news',
+  parent: null,
   published: null,
+  sidemenu: false,
   owner: me.value,
   tags: [],
   image: null,
 } satisfies PostForm))
-
-const POST_LOADING_STATE = 'post-loading'
 
 const newPost = useState<Post | null>(
   'new-post',
   () => null,
 )
 
-const loading = useState<boolean>(
-  POST_LOADING_STATE,
-  () => false,
-)
+const loading = ref(false)
 
 const currentStep = computed(() => parseInt(route.query.step as string) || 1)
 const isCurrentStepValid = computed(() => {
@@ -94,7 +96,7 @@ const isCurrentStepValid = computed(() => {
 })
 
 function moveToStep(step: number) {
-  return navigateTo({ path: route.path, query: { ...route.query, step } })
+  return goToStep(route, { ...route.query, step })
 }
 
 async function postNext(form: PostForm) {
@@ -121,26 +123,36 @@ async function save(form: { content: string }) {
     if (postForm.value.image && typeof postForm.value.image !== 'string') {
       const formData = new FormData()
       formData.set('file', postForm.value.image)
-      await $fileApi(`/api/1/posts/${newPost.value.id}/image/`, {
-        method: 'POST',
-        body: formData,
-      })
+      try {
+        await $fileApi(`/api/1/posts/${newPost.value.id}/image/`, {
+          method: 'POST',
+          body: formData,
+        })
+      }
+      catch {
+        // The error is already toasted by $fileApi. The post exists anyway: staying on the
+        // creation form would let a retry create it a second time, the image can be fixed
+        // from the edit page.
+      }
     }
     if (newPost.value.body_type === 'blocs') {
-      await navigateTo(`/posts/${newPost.value.slug}?edit=true`)
+      await navigateTo({ path: absoluteUrlToRelative(newPost.value.page), query: { edit: 'true' } })
     }
     else {
       await navigateTo(`/admin/posts/${newPost.value.id}`)
     }
   }
   finally {
-    clearNuxtState(POST_LOADING_STATE)
+    loading.value = false
   }
 }
 
-watchEffect(() => {
-  if (!isCurrentStepValid.value) {
-    moveToStep(1)
-  }
+// Once the post exists, the next creation must start from scratch: its slug would otherwise
+// be rejected as already used. Cleared when leaving the page so the form does not empty
+// itself on screen while the post page loads.
+onUnmounted(() => {
+  if (newPost.value) clearNuxtState([POST_FORM_STATE, 'new-post'])
 })
+
+useStepGuard(currentStep, isCurrentStepValid, () => moveToStep(1))
 </script>

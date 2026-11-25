@@ -2,7 +2,7 @@ import type { App, Plugin } from 'vue'
 import type { Activity, ActivityKey } from './types/activity.js'
 import type { PaginatedArray } from './types/api.js'
 import type { ContactPoint, ContactPointRole } from './types/contact_point.js'
-import type { Badge, Badges, TranslatedBadge } from './types/badges'
+import type { Badge as BadgeObject, Badges, TranslatedBadge } from './types/badges'
 import type { DatasetReference, Dataset, DatasetV2, DatasetV2WithFullObject, NewDataset, Quality, Rel } from './types/datasets'
 import type { DataserviceReference, NewDataservice, Dataservice } from './types/dataservices'
 import type { AccessType, AccessAudience, AccessAudienceCondition, AccessAudienceType, WithAccessType, AccessTypeForm } from './types/access_types'
@@ -13,33 +13,43 @@ import type { License } from './types/licenses'
 import type { Member, MemberRole, NewOrganization, Organization, OrganizationOrSuggest, OrganizationReference, OrganizationSuggest } from './types/organizations'
 import type { Owned, OwnedWithFullObject, OwnedWithId } from './types/owned'
 import type { Comment, Thread } from './types/discussions'
-import type { PageBloc, ContentBloc, BlocWithTitle, DatasetsListBloc, DataservicesListBloc, ReusesListBloc, LinkInBloc, LinksListBloc, MarkdownBloc, AccordionItemBloc, AccordionListBloc, HeroBloc } from './types/pages'
-import type { Post } from './types/posts'
-import type { ReuseReference, NewReuse, Reuse, ReuseTopic, ReuseType } from './types/reuses'
+import type { PageBloc, SectionBloc, SectionContentBloc, BlocWidth, LeafBloc, ObjectBloc, TitleBloc, DatasetBloc, DataserviceBloc, ReuseBloc, ExploreBloc, LinkInBloc, LinksListBloc, MarkdownBloc, AccordionContentBloc, AccordionItemBloc, AccordionListBloc, ButtonBloc, ImageBloc, CardBloc, ColumnBloc, ColumnContentBloc, SectionColor } from './types/pages'
+import type { Post, PostAncestor } from './types/posts'
+import type { ReuseReference, NewReuse, Reuse, ReuseV2, ReuseTopic, ReuseType } from './types/reuses'
 import type { RegisteredSchema, Schema, SchemaDetails, SchemaField, SchemaPath, SchemaPublicationMode, SchemaResponseData, SchemaVersion, ValidataError } from './types/schemas'
 import type { TopicV2, TopicElement, TopicElementClass, TopicElementRel } from './types/topics'
 import type { CommunityResource, FileResourceFileType, RemoteResourceFileType, ResourceFileType, ResourceGroup, ResourceType, Resource } from './types/resources'
 import type { Site } from './types/site'
-import type { Weight, WellType } from './types/ui'
+import type { BadgeTone, Weight, WellType } from './types/ui'
 import type { User, UserReference } from './types/users'
 import type { Report, ReportSubject, ReportReason } from './types/reports'
-import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm, CombinedSort, ColumnDefinition, ColumnsDefinition } from './types/visualizations'
-import type { ColumnType } from './components/TabularExplorer/types'
+import type { Chart, ChartForm, ChartForApi, FilterCondition, Filter, AndFilters, OrFilters, GenericFilter, XAxisType, XAxisSortBy, SortDirection, XAxis, XAxisForm, UnitPosition, YAxis, DataSeriesType, DataSeries, DataSeriesForm, CombinedSort, ColumnDefinition, ColumnsDefinition } from './types/visualizations'
+import type { ColumnFilters, ColumnType, TabularRow, TabularUrlAlias } from './components/TabularExplorer/types'
 import type { GlobalSearchConfig, SearchType, SearchTypeConfig, SortOption, HiddenFilter, BuiltInFilterKey, DatasetSearchConfig, DatasetSearchFilters, DataserviceSearchConfig, DataserviceSearchFilters, ReuseSearchConfig, ReuseSearchFilters, OrganizationSearchConfig, OrganizationSearchFilters, TopicSearchConfig, TopicSearchFilters } from './types/search'
 import { getDefaultDatasetConfig, getDefaultDataserviceConfig, getDefaultReuseConfig, getDefaultOrganizationConfig, getDefaultTopicConfig, getDefaultGlobalSearchConfig, defaultDatasetSortOptions, defaultDataserviceSortOptions, defaultReuseSortOptions, defaultOrganizationSortOptions } from './types/search'
 import { useSearchFilter } from './composables/useSearchFilter'
 import type { UseSearchFilterOptions } from './composables/useSearchFilter'
 
+import AccessTypeBadge from './components/AccessTypeBadge.vue'
+import ActivityActor from './components/ActivityList/ActivityActor.vue'
 import ActivityList from './components/ActivityList/ActivityList.vue'
 import UserActivityList from './components/ActivityList/UserActivityList.vue'
 import AnimatedLoader from './components/AnimatedLoader.vue'
 import AppLink from './components/AppLink.vue'
 import Avatar from './components/Avatar.vue'
 import AvatarWithName from './components/AvatarWithName.vue'
+import Badge from './components/Badge.vue'
 import BannerAction from './components/BannerAction.vue'
 import BrandedButton from './components/BrandedButton.vue'
+import ChartBadge from './components/ChartBadge.vue'
+import ChartCard from './components/ChartCard.vue'
 import CopyButton from './components/CopyButton.vue'
+import DataserviceBadge from './components/DataserviceBadge.vue'
 import DataserviceCard from './components/DataserviceCard.vue'
+import DataserviceQuality from './components/DataserviceQuality.vue'
+import DataserviceQualityInline from './components/DataserviceQualityInline.vue'
+import DataserviceQualityTooltipContent from './components/DataserviceQualityTooltipContent.vue'
+import DatasetBadge from './components/DatasetBadge.vue'
 import DatasetCard from './components/DatasetCard.vue'
 import DataStructure from './components/ResourceAccordion/DataStructure.vue'
 import Downloads from './components/ResourceAccordion/Downloads.vue'
@@ -48,22 +58,26 @@ import DescriptionListTerm from './components/DescriptionListTerm.vue'
 import DescriptionListDetails from './components/DescriptionListDetails.vue'
 import DiscussionMessageCard from './components/DiscussionMessageCard.vue'
 import DateRangeDetails from './components/DateRangeDetails.vue'
+import FilterChip from './components/FilterChip.vue'
+import FormattedDate from './components/FormattedDate.vue'
 import { DatasetInformationSection, DatasetTemporalitySection, DatasetSpatialSection, DatasetSchemaSection, DatasetEmbedSection } from './components/DatasetInformation'
 import LeafletMap from './components/LeafletMap.vue'
 import LicenseBadge from './components/LicenseBadge.vue'
 import Tag from './components/Tag.vue'
 import DatasetQuality from './components/DatasetQuality.vue'
 import DatasetQualityInline from './components/DatasetQualityInline.vue'
-import DatasetQualityItem from './components/DatasetQualityItem.vue'
-import DatasetQualityScore from './components/DatasetQualityScore.vue'
+import QualityItem from './components/QualityItem.vue'
+import QualityScore from './components/QualityScore.vue'
 import ProgressBar from './components/ProgressBar.vue'
 import DatasetQualityTooltipContent from './components/DatasetQualityTooltipContent.vue'
 import ExtraAccordion from './components/ExtraAccordion.vue'
 import LabelTag from './components/DatasetLabelTag.vue'
 import LoadingBlock from './components/LoadingBlock.vue'
 import MarkdownViewer from './components/MarkdownViewer.vue'
+import ObjectStatusBadge from './components/ObjectStatusBadge.vue'
+import OrganizationBadge from './components/OrganizationBadge.vue'
 import OrganizationCard from './components/OrganizationCard.vue'
-import OrganizationHorizontalCard from './components/OrganizationHorizontalCard.vue'
+import OrganizationTypeBadge from './components/OrganizationTypeBadge.vue'
 import ObjectCardOwner from './components/ObjectCardOwner.vue'
 import OrganizationLogo from './components/OrganizationLogo.vue'
 import OrganizationNameWithCertificate from './components/OrganizationNameWithCertificate.vue'
@@ -83,8 +97,8 @@ import ResourceExplorer from './components/ResourceExplorer/ResourceExplorer.vue
 import ResourceExplorerSidebar from './components/ResourceExplorer/ResourceExplorerSidebar.vue'
 import ResourceExplorerViewer from './components/ResourceExplorer/ResourceExplorerViewer.vue'
 import OpenApiViewer from './components/OpenApiViewer/OpenApiViewer.vue'
+import ReuseBadge from './components/ReuseBadge.vue'
 import ReuseCard from './components/ReuseCard.vue'
-import ReuseHorizontalCard from './components/ReuseHorizontalCard.vue'
 import ReuseDetails from './components/ReuseDetails.vue'
 import SchemaCard from './components/SchemaCard.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
@@ -98,17 +112,28 @@ import Tooltip from './components/Tooltip.vue'
 import Toggletip from './components/Toggletip.vue'
 import TopicCard from './components/TopicCard.vue'
 import TranslationT from './components/TranslationT.vue'
+import SegmentedControl from './components/SegmentedControl.vue'
 import GlobalSearch from './components/Search/GlobalSearch.vue'
 import SearchInput from './components/Search/SearchInput.vue'
 import SearchableSelect from './components/Form/SearchableSelect.vue'
 import SelectGroup from './components/Form/SelectGroup.vue'
 import Listbox from './components/Form/Listbox.vue'
 import InfiniteLoader from './components/InfiniteLoader.vue'
+import TabularActiveFilters from './components/TabularExplorer/TabularActiveFilters.vue'
 import TabularExplorer from './components/TabularExplorer/TabularExplorer.vue'
+import TabularMobileFilters from './components/TabularExplorer/TabularMobileFilters.vue'
+import TabularTable from './components/TabularExplorer/TabularTable.vue'
+import TabularToolbar from './components/TabularExplorer/TabularToolbar.vue'
+import TabularSkeleton from './components/TabularExplorer/TabularSkeleton.vue'
 import type { UseFetchFunction } from './functions/api.types'
 import { configKey, useComponentsConfig, type PluginConfig } from './config.js'
 import { ofetch } from 'ofetch'
 import { useTranslation } from './composables/useTranslation'
+
+export type { SegmentedControlOption } from './components/SegmentedControl.vue'
+
+// Same name as the Badge component on purpose: as a type, `Badge` is the udata badge (spd, hvd, certified…)
+export type Badge = BadgeObject
 
 export { Toaster, toast } from 'vue-sonner'
 
@@ -120,6 +145,8 @@ export * from './composables/useTranslation'
 export * from './composables/useHasTabularData'
 export * from './composables/useResourceCapabilities'
 export * from './composables/useTabularProfile'
+export * from './composables/useDatasetResources'
+export * from './composables/useResizable'
 
 export * from './functions/activities'
 export * from './functions/datasets'
@@ -130,8 +157,10 @@ export * from './functions/markdown'
 export * from './functions/matomo'
 export * from './functions/metrics'
 export * from './functions/never'
+export * from './functions/objectStatus'
 export * from './functions/organizations'
 export * from './functions/owned'
+export * from './functions/previewErrors'
 export * from './functions/resources'
 export * from './functions/reuses'
 export * from './functions/schemas'
@@ -139,6 +168,7 @@ export * from './functions/tabular'
 export * from './functions/users'
 export * from './functions/tabularApi'
 export * from './functions/charts'
+export { CHART_PAGE_SIZE } from './functions/chartData'
 export * from './types/access_types'
 
 export type {
@@ -168,7 +198,7 @@ export type {
   AccessTypeForm,
   Activity,
   ActivityKey,
-  Badge,
+  BadgeTone,
   Badges,
   CommunityResource,
   ContactPoint,
@@ -201,19 +231,31 @@ export type {
   OwnedWithFullObject,
   OwnedWithId,
   PageBloc,
-  ContentBloc,
-  BlocWithTitle,
-  DatasetsListBloc,
-  DataservicesListBloc,
-  ReusesListBloc,
+  SectionBloc,
+  SectionContentBloc,
+  BlocWidth,
+  LeafBloc,
+  ObjectBloc,
+  TitleBloc,
+  DatasetBloc,
+  DataserviceBloc,
+  ReuseBloc,
+  ExploreBloc,
   LinkInBloc,
   LinksListBloc,
   MarkdownBloc,
+  AccordionContentBloc,
   AccordionItemBloc,
   AccordionListBloc,
-  HeroBloc,
+  ButtonBloc,
+  ImageBloc,
+  CardBloc,
+  ColumnBloc,
+  ColumnContentBloc,
+  SectionColor,
   PaginatedArray,
   Post,
+  PostAncestor,
   Thread,
   Quality,
   RegisteredSchema,
@@ -228,6 +270,7 @@ export type {
   ResourceType,
   ReuseReference,
   Reuse,
+  ReuseV2,
   ReuseTopic,
   ReuseType,
   Schema,
@@ -254,11 +297,15 @@ export type {
   ChartForApi,
   CombinedSort,
   ColumnDefinition,
+  ColumnFilters,
   ColumnType,
   ColumnsDefinition,
+  TabularRow,
+  TabularUrlAlias,
   FilterCondition,
   Filter,
   AndFilters,
+  OrFilters,
   GenericFilter,
   XAxisType,
   XAxisSortBy,
@@ -325,15 +372,25 @@ const datagouv: Plugin<PluginConfig> = {
 export {
   datagouv,
   useComponentsConfig,
+  AccessTypeBadge,
+  ActivityActor,
   ActivityList,
   AnimatedLoader,
   AppLink,
   Avatar,
   AvatarWithName,
+  Badge,
   BannerAction,
   BrandedButton,
+  ChartBadge,
+  ChartCard,
   CopyButton,
+  DataserviceBadge,
   DataserviceCard,
+  DataserviceQuality,
+  DataserviceQualityInline,
+  DataserviceQualityTooltipContent,
+  DatasetBadge,
   DatasetCard,
   DataStructure,
   Downloads,
@@ -348,10 +405,12 @@ export {
   DiscussionMessageCard,
   DatasetQuality,
   DatasetQualityInline,
-  DatasetQualityItem,
-  DatasetQualityScore,
+  QualityItem,
+  QualityScore,
   DatasetQualityTooltipContent,
   DateRangeDetails,
+  FilterChip,
+  FormattedDate,
   ExtraAccordion,
   LabelTag,
   LeafletMap,
@@ -359,8 +418,10 @@ export {
   LoadingBlock,
   Tag,
   MarkdownViewer,
+  ObjectStatusBadge,
+  OrganizationBadge,
   OrganizationCard,
-  OrganizationHorizontalCard,
+  OrganizationTypeBadge,
   OrganizationLogo,
   OrganizationNameWithCertificate,
   OwnerType,
@@ -380,9 +441,9 @@ export {
   ObjectCardOwner,
   ResourceIcon,
   ResourceSelector,
+  ReuseBadge,
   ReuseCard,
   ReuseDetails,
-  ReuseHorizontalCard,
   SchemaCard,
   SimpleBanner,
   StatBox,
@@ -398,10 +459,16 @@ export {
   TranslationT,
   UserActivityList,
   GlobalSearch,
+  SegmentedControl,
   SearchInput,
   SearchableSelect,
   SelectGroup,
   Listbox,
   InfiniteLoader,
+  TabularActiveFilters,
   TabularExplorer,
+  TabularMobileFilters,
+  TabularSkeleton,
+  TabularTable,
+  TabularToolbar,
 }

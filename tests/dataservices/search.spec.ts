@@ -1,4 +1,5 @@
 import { test, expect } from '../base'
+import { gotoHydrated } from '../helpers'
 
 test('page loads with results', async ({ page }) => {
   await page.goto('/dataservices/search')
@@ -14,7 +15,8 @@ test('page loads with results', async ({ page }) => {
 })
 
 test('search filters results', async ({ page }) => {
-  await page.goto('/dataservices/search')
+  // Typing before hydration fills an input nothing listens to yet
+  await gotoHydrated(page, '/dataservices/search')
 
   const searchInput = page.getByPlaceholder('ex: SIRENE')
   await searchInput.fill('explore')

@@ -57,5 +57,6 @@ test('can upload a large file with CRLF at chunk boundary (chunked upload)', asy
 
   // Go to the dataset page and verify the file is present
   await page.getByRole('link', { name: uniqueTitle }).click()
-  await expect(page.getByText('test-chunked-upload.csv')).toBeVisible()
+  // In the resource list: the viewer header names the selected file too.
+  await expect(page.getByRole('complementary', { name: 'Ressources' }).getByText('test-chunked-upload.csv')).toBeVisible()
 })

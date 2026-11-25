@@ -5,6 +5,7 @@
       :button-text="$t('Aide')"
       :on-right="true"
       :fixed="true"
+      :show-border="false"
     >
       <template #title>
         <span
@@ -96,6 +97,12 @@
           </p>
         </Accordion>
       </AccordionGroup>
+      <div
+        v-if="$slots.aside"
+        class="mt-8"
+      >
+        <slot name="aside" />
+      </div>
     </Sidemenu>
     <form
       class="fr-col-12 fr-col-md-7"
@@ -129,6 +136,7 @@
         <fieldset
           v-if="isMeAdmin() && type === 'update'"
           class="fr-fieldset"
+          :disabled="!canEdit"
         >
           <legend
             id="featured-legend"
@@ -148,6 +156,7 @@
           v-if="type === 'create'"
           class="fr-fieldset"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -171,6 +180,7 @@
         <fieldset
           class="fr-fieldset"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -273,12 +283,14 @@
             class="fr-fieldset__element"
             :accordion="addDescriptionAccordionId"
           >
+            <!-- The markdown editor is a contenteditable, not a form control: the enclosing disabled fieldset does not reach it. -->
             <InputGroup
               v-model="reuseForm.description"
               class="mb-3"
               :label="t('Description')"
               :required="true"
               type="markdown"
+              :disabled="!canEdit"
               :has-error="!!getFirstError('description')"
               :has-warning="!!getFirstWarning('description')"
               :error-text="getFirstError('description')"
@@ -361,9 +373,11 @@
             :accordion="addImageAccordionId"
             @blur="touch('image')"
           >
+            <!-- The drop zone is a plain div, not a form control: the enclosing disabled fieldset does not reach it. -->
             <UploadGroup
               :label="$t('Image de couverture')"
               type="drop"
+              :disabled="!canEdit"
               accept=".jpeg, .jpg, .png"
               :hint-text="$t('Taille max : 4 Mo. Formats acceptés : JPG, JPEG, PNG')"
               :has-error="!!getFirstError('image')"
@@ -377,12 +391,12 @@
               v-if="imagePreview"
               class="text-center"
             >
-              <NuxtImg
+              <img
                 :src="imagePreview"
                 class="border mx-auto max-h-40 aspect-square"
                 loading="lazy"
                 alt=""
-              />
+              >
             </div>
             <SimpleBanner
               v-if="getFirstWarning('image')"
@@ -416,9 +430,12 @@ import { humanJoin } from '~/utils/helpers'
 import type { ReuseForm, Tag } from '~/types/types'
 
 const reuseForm = defineModel<ReuseForm>({ required: true })
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   type: 'create' | 'update'
-}>()
+  canEdit?: boolean
+}>(), {
+  canEdit: true,
+})
 
 const emit = defineEmits<{
   (event: 'feature' | 'submit'): void

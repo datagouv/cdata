@@ -1,24 +1,24 @@
 <template>
   <div class="relative bg-white shadow rounded-sm p-5 mt-3">
-    <AdminBadge
+    <Badge
       class="absolute top-0 left-2.5 -translate-y-1/2"
       size="sm"
-      type="primary"
+      tone="primary"
       :icon="RiUserAddLine"
     >
       {{ $t('Invitation') }}
-    </AdminBadge>
+    </Badge>
 
     <div class="flex flex-wrap justify-between gap-5">
       <div class="space-y-1">
         <div class="flex flex-wrap items-start gap-2">
-          <NuxtImg
+          <img
             v-if="invitation.organization.logo"
             class="rounded-sm border border-gray-default size-10 object-contain bg-white"
             :src="invitation.organization.logo"
             loading="lazy"
             alt=""
-          />
+          >
           <div
             v-else
             class="size-10 rounded-sm border border-gray-default bg-gray-lower flex items-center justify-center"
@@ -37,12 +37,10 @@
               class="text-sm text-gray-medium"
             >
               {{ t('Rôle proposé :') }}
-              <AdminBadge
-                size="xs"
-                :type="getRoleBadgeType(invitation.role)"
-              >
-                {{ roleLabel }}
-              </AdminBadge>
+              <MemberRoleBadge
+                :role="invitation.role"
+                :label="roleLabel"
+              />
             </div>
           </div>
         </div>
@@ -58,7 +56,10 @@
           </div>
         </div>
         <div class="text-sm/6 text-gray-medium">
-          {{ formatDate(new Date(invitation.created), { dateStyle: 'long', timeStyle: 'short' }) }}
+          <FormattedDate
+            :date="invitation.created"
+            :options="{ dateStyle: 'long', timeStyle: 'short' }"
+          />
         </div>
       </div>
       <div class="flex gap-2.5 items-start">
@@ -85,11 +86,10 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, useFormatDate } from '@datagouv/components-next'
+import { BrandedButton, FormattedDate, Badge } from '@datagouv/components-next'
 import { ref } from 'vue'
 import { RiBuilding2Line, RiCheckLine, RiUserAddLine } from '@remixicon/vue'
-import AdminBadge from '../AdminBadge/AdminBadge.vue'
-import type { MemberRole } from '@datagouv/components-next'
+import MemberRoleBadge from '~/components/Organization/MemberRoleBadge.vue'
 import type { OrgInvitation } from '~/types/types'
 
 const props = defineProps<{
@@ -101,10 +101,9 @@ const emits = defineEmits<{
 
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { formatDate } = useFormatDate()
 const loading = ref(false)
 
-const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })
+const { data: roles } = await useOrganizationRoles()
 
 const roleLabel = computed(() => {
   if (!roles.value) return null

@@ -118,7 +118,7 @@
           {{ $t("Précédent") }}
         </BrandedButton>
         <BrandedButton
-          :loading="isLoading"
+          :loading
           color="primary"
           @click="submit"
         >
@@ -139,6 +139,7 @@ import type { ResourceForm } from '~/types/types'
 const props = defineProps<{
   schema: RegisteredSchema | null
   publicationMode: SchemaPublicationMode
+  loading: boolean
 }>()
 
 const emit = defineEmits<{
@@ -146,8 +147,6 @@ const emit = defineEmits<{
   next: []
   openSheet: [file?: File]
 }>()
-
-const { isLoading } = useLoadingIndicator()
 const resources = defineModel<Array<ResourceForm>>('resources', { required: true })
 const useSpreadsheet = defineModel<boolean>('useSpreadsheet', { required: true })
 

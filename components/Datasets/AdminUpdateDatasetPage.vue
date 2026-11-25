@@ -8,7 +8,6 @@
       v-if="datasetForm"
       v-model="datasetForm"
       type="update"
-      :harvested
       :badges="dataset.badges"
       :submit-label="t('Sauvegarder')"
       :can-edit="dataset.permissions.edit"
@@ -17,12 +16,38 @@
       @badges-change="pendingBadges = $event"
       @submit="save"
     >
-      <template
-        v-if="dataset.permissions.edit"
-        #top
-      >
+      <template #aside>
+        <!-- Read again once saved: editing by hand makes a member follow it. -->
+        <SubjectNotifications
+          :key="dataset.last_modified"
+          :scope="{ class: 'Dataset', id: dataset.id }"
+        />
+      </template>
+      <template #top>
+        <PendingReportsBanner
+          class="mb-4"
+          :subject="{ class: 'Dataset', value: dataset }"
+        />
+        <SimpleBanner
+          v-if="!dataset.permissions.edit"
+          class="mb-4"
+          type="primary"
+        >
+          <p
+            class="font-bold"
+            :class="dataset.organization ? 'mb-1' : 'm-0'"
+          >
+            {{ $t("Vous ne pouvez pas modifier ce jeu de données") }}
+          </p>
+          <p
+            v-if="dataset.organization"
+            class="m-0 text-xs/5"
+          >
+            {{ $t("Demandez à un administrateur de {org} de vous donner accès à ce jeu de données.", { org: dataset.organization.name }) }}
+          </p>
+        </SimpleBanner>
         <BannerAction
-          v-if="!dataset.deleted && !dataset.archived"
+          v-if="dataset.permissions.edit && !dataset.deleted && !dataset.archived"
           class="mb-4"
           type="primary"
           :title="$t('Modifier la visibilité du jeu de données')"
@@ -43,10 +68,17 @@
               <strong>{{ $t('public') }}</strong>
             </template>
           </TranslationT>
+          <div
+            v-if="isDatasetLockedByDoi(dataset)"
+            class="mt-1"
+          >
+            {{ $t("Un jeu de données porteur d'un DOI ne peut plus repasser en brouillon.") }}
+          </div>
 
           <template #button>
             <BrandedButton
               :loading="isLoading"
+              :disabled="isDatasetLockedByDoi(dataset)"
               @click="switchDatasetPrivate"
             >
               {{ dataset.private ? $t('Publier le jeu de données') : $t('Passer en brouillon') }}
@@ -54,7 +86,7 @@
           </template>
         </BannerAction>
         <BannerAction
-          v-if="dataset.deleted"
+          v-if="dataset.permissions.edit && dataset.deleted"
           class="mb-4"
           type="warning"
           :title="$t('Restaurer ce jeu de données')"
@@ -80,6 +112,88 @@
             :label="$t('Transférer  le jeu de données')"
           />
           <BannerAction
+            v-if="getDatasetDoi(dataset)"
+            type="primary"
+          >
+            <template #title>
+              {{ $t('DOI du jeu de données :') }}
+              <a
+                :href="`https://doi.org/${getDatasetDoi(dataset)}`"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="link"
+              >
+                {{ getDatasetDoi(dataset) }}
+              </a>
+              <Badge
+                v-if="!dataset.doi"
+                size="xs"
+                tone="neutral"
+                class="ml-1"
+              >
+                {{ $t('Moissonné') }}
+              </Badge>
+            </template>
+            <template v-if="isDatasetLockedByDoi(dataset)">
+              {{ $t("Un jeu de données porteur d'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.") }}
+            </template>
+            <template v-else>
+              {{ $t("Ce DOI est déclaré par la source du moissonnage, qui en reste gestionnaire.") }}
+            </template>
+
+            <template #button>
+              <BrandedButton
+                :icon="doiCopied ? RiCheckLine : RiFileCopyLine"
+                @click="copyDoi(getDatasetDoi(dataset)!)"
+              >
+                {{ doiCopied ? $t('DOI copié !') : $t('Copier le DOI') }}
+              </BrandedButton>
+            </template>
+          </BannerAction>
+          <BannerAction
+            v-if="!getDatasetDoi(dataset) && isMeAdmin()"
+            type="primary"
+            :title="$t('Créer un DOI')"
+          >
+            {{ doiBlockedReason(dataset) ?? $t("Un DOI est définitif : une fois créé, le jeu de données ne pourra plus être supprimé, seulement archivé.") }}
+
+            <template #button>
+              <ModalWithButton :title="$t('Êtes-vous sûr de vouloir créer un DOI pour ce jeu de données ?')">
+                <template #button="{ attrs, listeners }">
+                  <BrandedButton
+                    :icon="RiFingerprintLine"
+                    :disabled="!!doiBlockedReason(dataset)"
+                    v-bind="attrs"
+                    v-on="listeners"
+                  >
+                    {{ $t('Créer un DOI') }}
+                  </BrandedButton>
+                </template>
+                <p class="m-0">
+                  {{ $t("Un DOI est définitif : une fois créé, le jeu de données ne pourra plus être supprimé, seulement archivé.") }}
+                </p>
+                <template #footer="{ close }">
+                  <div class="flex-1 flex justify-end space-x-4">
+                    <BrandedButton
+                      color="secondary"
+                      :loading="isLoading"
+                      @click="close"
+                    >
+                      {{ $t('Annuler') }}
+                    </BrandedButton>
+                    <BrandedButton
+                      color="primary"
+                      :loading="isLoading"
+                      @click="mintDoi(close)"
+                    >
+                      {{ $t('Créer le DOI') }}
+                    </BrandedButton>
+                  </div>
+                </template>
+              </ModalWithButton>
+            </template>
+          </BannerAction>
+          <BannerAction
             type="warning"
             :title="dataset.archived ? $t('Désarchiver le jeu de données') : $t('Archiver le jeu de données')"
           >
@@ -96,7 +210,7 @@
             </template>
           </BannerAction>
           <BannerAction
-            v-if="!dataset.deleted"
+            v-if="!dataset.deleted && !isDatasetLockedByDoi(dataset)"
             type="danger"
             :title="$t('Supprimer le jeu de données')"
           >
@@ -135,11 +249,15 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, LoadingBlock, TranslationT, toast } from '@datagouv/components-next'
-import type { Badge, DatasetV2WithFullObject } from '@datagouv/components-next'
-import { RiArchiveLine, RiArrowGoBackLine, RiDeleteBin6Line } from '@remixicon/vue'
+// Badge is both the component and the udata badge type
+import { Badge, BannerAction, BrandedButton, LoadingBlock, SimpleBanner, TranslationT, toast } from '@datagouv/components-next'
+import type { DatasetV2WithFullObject } from '@datagouv/components-next'
+import { RiArchiveLine, RiArrowGoBackLine, RiCheckLine, RiDeleteBin6Line, RiFileCopyLine, RiFingerprintLine } from '@remixicon/vue'
 import DescribeDataset from '~/components/Datasets/DescribeDataset.vue'
 import AdminDeleteModal from '~/components/Admin/AdminDeleteModal.vue'
+import PendingReportsBanner from '~/components/Spam/PendingReportsBanner.vue'
+import ModalWithButton from '~/components/Modal/ModalWithButton.vue'
+import SubjectNotifications from '~/components/Notifications/SubjectNotifications.vue'
 import { updateBadges } from '~/api/badges'
 import type { DatasetForm } from '~/types/types'
 
@@ -154,18 +272,43 @@ const { data: dataset, status, refresh } = await useAPI<DatasetV2WithFullObject>
   headers: {
     'X-Get-Datasets-Full-Objects': 'True',
   },
-  redirectOn404: true,
+  showErrorPage: true,
 })
 
 const datasetForm = ref<DatasetForm | null>(null)
-const harvested = ref(false)
 const pendingBadges = ref<Array<Badge> | null>(null)
 watchEffect(() => {
   if (dataset.value) {
     datasetForm.value = datasetToForm(dataset.value)
-    harvested.value = isHarvested(dataset.value)
   }
 })
+
+const doiBlockedReason = useDoiBlockedReason()
+
+const doiCopied = ref(false)
+async function copyDoi(doi: string) {
+  try {
+    await navigator.clipboard.writeText(doi)
+    doiCopied.value = true
+    setTimeout(() => doiCopied.value = false, 2000)
+  }
+  catch {
+    toast.error(t('Impossible de copier dans le presse-papier'))
+  }
+}
+
+async function mintDoi(close: () => void) {
+  isLoading.value = true
+  try {
+    await $api(`/api/1/datasets/${route.params.id}/doi`, { method: 'POST' })
+    close()
+    await refresh()
+    toast.success(t('DOI créé !'))
+  }
+  finally {
+    isLoading.value = false
+  }
+}
 
 async function save() {
   if (!datasetForm.value) throw new Error('No dataset form')

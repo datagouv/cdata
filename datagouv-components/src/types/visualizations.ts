@@ -12,10 +12,15 @@ export type Filter = {
 
 export type AndFilters = {
   _cls: 'AndFilters'
+  filters: Array<Filter | OrFilters>
+}
+
+export type OrFilters = {
+  _cls: 'OrFilters'
   filters: Array<Filter | AndFilters>
 }
 
-export type GenericFilter = Filter | AndFilters
+export type GenericFilter = Filter | AndFilters | OrFilters
 
 export type XAxisType = 'discrete' | 'continuous'
 
@@ -28,6 +33,7 @@ export type XAxis = {
   sort_x_by: XAxisSortBy | null
   sort_x_direction: SortDirection | null
   type: XAxisType
+  limit: number | null
 }
 
 export type CombinedSort = '' | 'axis_x-asc' | 'axis_x-desc' | 'axis_y-asc' | 'axis_y-desc'
@@ -67,6 +73,7 @@ export type Chart = Owned & {
   created_at: string
   last_modified: string
   deleted_at: string | null
+  image: string | null
   uri: string
   page: string
   x_axis: XAxis
@@ -89,5 +96,6 @@ export type ChartForm = Omit<ChartForApi, 'x_axis' | 'series' | 'owner' | 'organ
   filter: GenericFilter | null
 }
 
-export type ColumnDefinition = { name: string, type: ColumnType }
+/** `values`: distinct values in the profile, a missing value counting as one. */
+export type ColumnDefinition = { name: string, type: ColumnType, min?: number, max?: number, values?: number }
 export type ColumnsDefinition = Record<string, Array<ColumnDefinition>>

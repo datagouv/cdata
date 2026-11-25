@@ -156,9 +156,10 @@ import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import HarvesterBadge from '~/components/Harvesters/HarvesterBadge.vue'
 import TabLinks from '~/components/TabLinks.vue'
 import type { HarvesterJob, HarvesterSource } from '~/types/harvesters'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const config = useRuntimeConfig()
@@ -170,7 +171,7 @@ const { refreshNotifications } = useNotifications()
 
 const route = useRoute()
 const url = computed(() => `/api/1/harvest/source/${route.params.id}`)
-const { data: harvester, refresh } = await useAPI<HarvesterSource>(url, { redirectOn404: true })
+const { data: harvester, refresh } = await useAPI<HarvesterSource>(url, { showErrorPage: true })
 const job = ref<HarvesterJob | null>(null)
 watchEffect(async () => {
   if (!harvester.value) return

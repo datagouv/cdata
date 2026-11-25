@@ -10,6 +10,7 @@
     -->
     <ValueWatcher
       :value="open"
+      @changed="onOpenChanged"
     />
     <PopoverButton
       v-bind="buttonProps"
@@ -31,11 +32,8 @@
         <PopoverPanel
           v-show="open"
           ref="panel"
-          class="drop-shadow bg-white rounded-sm w-96 absolute z-[800]"
-          :class="{
-            'p-0': noMargin,
-            'p-3': !noMargin,
-          }"
+          class="absolute z-[800] w-[min(24rem,calc(100vw-2rem))] max-h-[70vh] overflow-auto rounded border border-gray-default bg-white shadow-overlay"
+          :class="noMargin ? 'p-0' : 'p-4'"
           :style="floatingStyles"
           static
         >
@@ -50,9 +48,9 @@
 </template>
 
 <script setup lang="ts">
-import { autoPlacement, autoUpdate, useFloating } from '@floating-ui/vue'
+import { autoPlacement, autoUpdate, offset, shift, useFloating } from '@floating-ui/vue'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
-import { useTemplateRef } from 'vue'
+import { nextTick, useTemplateRef } from 'vue'
 import { RiInformationLine } from '@remixicon/vue'
 import ClientOnly from './ClientOnly.vue'
 import ValueWatcher from './ValueWatcher.vue'
@@ -66,14 +64,28 @@ withDefaults(defineProps<{
   styledButton: true,
 })
 
+const emit = defineEmits<{
+  opened: []
+}>()
+
 const popoverRef = useTemplateRef<InstanceType<typeof Popover>>('popover')
 const panelRef = useTemplateRef<InstanceType<typeof PopoverPanel>>('panel')
 
-const { floatingStyles } = useFloating(popoverRef, panelRef, {
-  middleware: [autoPlacement({
-    alignment: 'end',
-    crossAxis: true,
-  })],
+const { floatingStyles, update } = useFloating(popoverRef, panelRef, {
+  middleware: [
+    offset(8),
+    autoPlacement({
+      alignment: 'end',
+      crossAxis: true,
+    }),
+    shift({ padding: 16 }),
+  ],
   whileElementsMounted: autoUpdate,
 })
+
+async function onOpenChanged(open: boolean) {
+  if (open) emit('opened')
+  await nextTick()
+  update()
+}
 </script>

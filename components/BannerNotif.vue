@@ -1,28 +1,21 @@
 <template>
   <div class="relative bg-white shadow rounded-sm p-5 mt-3">
-    <AdminBadge
+    <Badge
       class="absolute top-0 left-2.5 -translate-y-1/2"
       size="sm"
-      :type
+      :tone
       :icon
     >
       {{ badge }}
-    </AdminBadge>
+    </Badge>
 
     <div class="flex flex-wrap justify-between space-x-5">
       <div class="space-y-1">
         <div class="flex flex-wrap items-start space-x-1">
-          <Avatar
-            :user
-            rounded
-            :size="24"
-          />
+          <slot name="avatar" />
           <div>
-            <div class="flex flex-wrap items-baseline space-x-1 text-gray-title text-sm/6">
-              <div class="font-bold ">
-                {{ user.first_name }} {{ user.last_name }}
-              </div>
-              <div><slot name="title" /></div>
+            <div class="text-gray-title text-sm/6">
+              <slot name="title" />
             </div>
             <div class="!text-sm/6">
               <slot name="subtitle" />
@@ -38,7 +31,10 @@
           </div>
         </div>
         <div class="text-sm/6 text-gray-medium">
-          {{ formatDate(date, { dateStyle: 'long', timeStyle: 'short' }) }}
+          <FormattedDate
+            :date
+            :options="{ dateStyle: 'long', timeStyle: 'short' }"
+          />
         </div>
       </div>
       <div class="flex flex-col space-y-2.5 items-end">
@@ -49,18 +45,13 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, useFormatDate } from '@datagouv/components-next'
-import type { User } from '@datagouv/components-next'
+import { FormattedDate, Badge } from '@datagouv/components-next'
 import type { Component } from 'vue'
-import AdminBadge from './AdminBadge/AdminBadge.vue'
 
 defineProps<{
-  type: 'warning' | 'primary'
+  tone: 'warning' | 'primary'
   icon: Component
   badge: string
-  user: User
   date: Date
 }>()
-
-const { formatDate } = useFormatDate()
 </script>

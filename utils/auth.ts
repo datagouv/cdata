@@ -1,10 +1,21 @@
 import type { Organization, OrganizationReference, User } from '@datagouv/components-next'
 import { usePostApiWithCsrf } from './api'
+import type { MailCadence } from '~/types/notifications'
+
+const UNLOGGED_SECURITY_ROUTES = [
+  'login', 'register', 'reset', 'tf-validate',
+]
+
+export function isUnloggedSecurityRoute(path: string): boolean {
+  return UNLOGGED_SECURITY_ROUTES.some(route => path.startsWith(`/${route}`))
+}
 
 export type Me = User & {
   about: string | null
   active: boolean
   email: string
+  mail_cadence: MailCadence
+  notifications_paused: boolean
   metrics: {
     datasets: number
     followers: number
@@ -24,13 +35,6 @@ export const useMaybeMe = () => {
   return useState<Me | null | undefined>('me', () => undefined)
 }
 
-export const useToken = () => {
-  return useCookie('token', {
-    secure: true,
-    sameSite: true,
-  })
-}
-
 export function isAdmin(me: Me | null | undefined): boolean {
   if (!me) return false
 
@@ -48,6 +52,13 @@ export function isUserOrgAdmin(me: Me | null | undefined, organization: Organiza
   return organization.members.some(member => member.user.id === me.id && member.role === 'admin')
 }
 
+/** How a request to udata authenticates: with the dev API key when one is set, else with the session cookie. */
+export function apiAuthOptions(devApiKey: string | undefined): { headers: Record<string, string>, credentials: RequestCredentials | undefined } {
+  return devApiKey
+    ? { headers: { 'X-API-KEY': devApiKey }, credentials: undefined }
+    : { headers: {}, credentials: 'include' }
+}
+
 export const loadMe = async (meState: Ref<Me | null | undefined>) => {
   // Here we cannot use the `useAPI` composable because
   // we don't want the classic error management that redirect
@@ -56,28 +67,27 @@ export const loadMe = async (meState: Ref<Me | null | undefined>) => {
   const config = useRuntimeConfig()
   const cookie = useRequestHeader('cookie')
 
-  const token = useToken()
   const { setCurrentOrganization, setCurrentUser } = useCurrentOwnedSetters()
 
-  const headers: Record<string, string> = {}
+  // The vast majority of server-side renders are for anonymous visitors, for whom
+  // `/api/1/me` can only answer 401. Without any credential in the request we know
+  // the answer without asking. Server-side only: session cookies are HttpOnly, so
+  // the browser cannot tell whether they are set.
+  if (import.meta.server && !config.public.devApiKey) {
+    const session = useCookie(config.sessionCookieName).value || useCookie(config.rememberCookieName).value
+    if (!session) {
+      meState.value = null
+      return
+    }
+  }
 
-  if (cookie) {
-    // console.log('Cookie is set to ' + cookie)
-    headers['cookie'] = cookie
-  }
-  if (token.value) {
-    // console.log('Token is set to ' + token.value)
-    headers['Authentication-Token'] = token.value
-  }
-  if (config.public.devApiKey) {
-    headers['X-API-KEY'] = config.public.devApiKey
-  }
+  const auth = apiAuthOptions(config.public.devApiKey)
 
   try {
     meState.value = await $fetch<Me | null>('/api/1/me/', {
       baseURL: config.public.apiBase,
-      credentials: config.public.devApiKey ? undefined : 'include',
-      headers,
+      credentials: auth.credentials,
+      headers: cookie ? { ...auth.headers, cookie } : auth.headers,
     })
     if (meState.value) {
       setCurrentUser(meState.value)
@@ -93,13 +103,9 @@ export const loadMe = async (meState: Ref<Me | null | undefined>) => {
 
 export function useLogout() {
   const postApiWithCsrf = usePostApiWithCsrf()
-  const token = useToken()
   const me = useMe()
 
   return async () => {
-    token.value = null
-    refreshCookie('token')
-
     const response = await postApiWithCsrf<{ proconnect_logout_url: string | null }>('/logout/', {})
 
     await loadMe(me)

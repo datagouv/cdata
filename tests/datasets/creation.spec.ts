@@ -38,6 +38,33 @@ test('can create a minimal dataset', async ({ page }) => {
   await expect(page.locator('[id="__nuxt"]')).toContainText('Ce jeu de données a été publié à l\'initiative et sous la responsabilité de Admin User.')
 })
 
+test('the frequency select lists the common frequencies before the others', async ({ page }) => {
+  await page.goto('/')
+  await page.getByRole('button', { name: 'Publier sur data.gouv.fr' }).click()
+  await page.getByRole('link', { name: 'Un jeu de données' }).click()
+  await page.getByRole('button', { name: 'Commencer la publication' }).click()
+  await page.getByTestId('select-frequency').click()
+
+  const rows = page.getByRole('listbox').locator('li')
+  await expect(rows.first()).toBeVisible()
+  const labels = (await rows.allTextContents()).map(label => label.trim())
+
+  expect(labels.slice(0, 10)).toEqual([
+    'Fréquences courantes',
+    'Temps réel',
+    'Quotidienne',
+    'Hebdomadaire',
+    'Mensuelle',
+    'Trimestrielle',
+    'Annuelle',
+    'Ponctuelle',
+    'Sans régularité',
+    'Autres fréquences',
+  ])
+  // The whole vocabulary is still reachable, under the second group.
+  expect(labels).toContain('Inconnu')
+})
+
 async function createMinimalDataset(page: Page, title: string) {
   await page.getByRole('button', { name: 'Publier sur data.gouv.fr' }).click()
   await page.getByRole('link', { name: 'Un jeu de données' }).click()
@@ -102,6 +129,15 @@ The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for t
   await page.getByPlaceholder('Chercher un mot clé…').fill('toto')
   await page.getByRole('option', { name: 'toto' }).click()
   await clickOutside(page)
+  const selectedTags = page.getByTestId('selected-tags')
+  await expect(selectedTags.getByRole('button')).toHaveCount(2)
+  // Each tag button reads "Supprimer <keyword>": the verb is visually hidden text
+  await expect(selectedTags.getByRole('button')).toHaveText(['Supprimer test', 'Supprimer toto'])
+
+  // A selected keyword is also dismissible: removing it must keep the model in sync.
+  await page.getByRole('button', { name: 'Supprimer test' }).click()
+  await expect(selectedTags.getByRole('button')).toHaveCount(1)
+  await expect(selectedTags.getByRole('button')).toHaveText(['Supprimer toto'])
   await page.getByTestId('searchable-select-licence').click()
   await page.getByText('Other (Public Domain)').click()
   await clickOutside(page)
@@ -112,6 +148,7 @@ The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for t
   await page.getByTestId('searchable-select-couverture-spatiale').click()
   await page.getByPlaceholder('Rechercher une couverture').fill('france')
   await page.getByText('France Insee : fr').click()
+  await clickOutside(page)
   await page.getByTestId('searchable-select-granularit-spatiale').click()
   await page.getByRole('option', { name: 'Pays', exact: true }).click()
   await page.getByRole('button', { name: 'Suivant' }).click()
@@ -142,6 +179,6 @@ The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for t
   await expect(page.locator('h1')).toContainText('MSJD')
   await expect(page.locator('dl')).toContainText('Other (Public Domain)')
   await expect(page.locator('dl')).toContainText('Formats de fichiers non standards')
-  await page.getByTestId('expand-button').click()
-  await expect(page.getByLabel('Aperçu')).toContainText('La taille du fichier est inconnue, l\'aperçu n\'est pas disponible. Téléchargez-le depuis l\'onglet Téléchargements.')
+  // The new explorer opens on the first resource and shows its preview tab.
+  await expect(page.getByRole('tabpanel')).toContainText('La taille du fichier est inconnue. Il est possible que le fichier soit trop volumineux pour être prévisualisé.')
 })

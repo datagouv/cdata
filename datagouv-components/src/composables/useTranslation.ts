@@ -14,24 +14,39 @@ const translationModules = import.meta.glob<Record<string, string>>('../../../lo
   import: 'default',
 })
 
+const LANGUAGE_SUBTAG_REGEX = /^[a-z]{2,3}$/
+
+/**
+ * Extract the language subtag of an `accept-language` header or of
+ * `navigator.language`, and return it only if it is a well-formed one.
+ *
+ * Both are user-controlled, and the locale is handed over to `Intl` formatters,
+ * which throw a `RangeError` on anything that is not a valid language tag. The
+ * wildcard `*` is rejected here too: it means "any language", so it must fall
+ * back to the next detection step.
+ */
+function parseLanguage(value: string | undefined | null): string | null {
+  if (!value) {
+    return null
+  }
+  const language = value.split(';')[0]!.split(',')[0]!.split('-')[0]!.toLowerCase()
+  return LANGUAGE_SUBTAG_REGEX.test(language) ? language : null
+}
+
 function detectLanguage(): string {
   // Server-side (Nuxt)
   try {
-    const header = useRequestHeader?.('accept-language')
-    const acceptLanguage = header
-    if (acceptLanguage) {
-      const primaryLang = acceptLanguage.split(';')[0]!.split(',')[0]!.split('-')[0]!.toLowerCase()
-      // Ignore wildcard * language, that should fallback to client side detection or default language
-      if (primaryLang !== '*') return primaryLang
-    }
+    const language = parseLanguage(useRequestHeader?.('accept-language'))
+    if (language) return language
   }
   catch {
     // useRequestHeaders not available, continue to client-side detection
   }
 
   // Client-side
-  if (typeof window !== 'undefined' && navigator.language) {
-    return navigator.language.split('-')[0]!.toLowerCase()
+  if (typeof window !== 'undefined') {
+    const language = parseLanguage(navigator.language)
+    if (language) return language
   }
 
   return 'fr'

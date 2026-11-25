@@ -1,5 +1,6 @@
 <template>
   <ModalWithButton
+    v-model="isOpen"
     :title="$t(`Modifier l'adresse email`)"
     size="lg"
     form
@@ -11,6 +12,7 @@
         size="xs"
         :icon="RiEditLine"
         :disabled="loading"
+        :loading="pending"
         v-bind="attrs"
         v-on="listeners"
       >
@@ -54,7 +56,7 @@
             :disabled="loading"
             @click="_close"
           >
-            {{ $t("Cancel") }}
+            {{ $t("Annuler") }}
           </BrandedButton>
         </div>
         <div class="fr-col-auto">
@@ -78,6 +80,12 @@ import type { FieldsErrors } from '~/types/form'
 
 const { t } = useTranslation()
 const config = useRuntimeConfig()
+const { $api } = useNuxtApp()
+
+// The form itself answers with a 401 when the session must be reauthenticated.
+const { isOpen, pending } = useFreshSessionModal('change_email', 'open', async () => {
+  await $api('/change-email')
+})
 
 const loading = ref(false)
 const errors = ref<FieldsErrors>({})

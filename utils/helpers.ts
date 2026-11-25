@@ -28,9 +28,38 @@ function trimEndSlash(url: string): string {
 export function useIsCurrentUrl() {
   const absoluteUrlToRelative = useAbsoluteUrlToRelative()
   const route = useRoute()
+  const router = useRouter()
 
   return (url: string): boolean => {
-    return trimEndSlash(absoluteUrlToRelative(url)) === trimEndSlash(route.fullPath)
+    // Compare paths only: nav/tab links never carry a query string of their own,
+    // so a route with one (e.g. `?flash=connected`) shouldn't fail the match.
+    const urlPath = router.resolve(absoluteUrlToRelative(url)).path
+    return trimEndSlash(urlPath) === trimEndSlash(route.path)
+  }
+}
+
+/**
+ * Tells which link of a group of tabs is the current one.
+ *
+ * Unlike `useIsCurrentUrl`, only the query params that some tab actually sets are
+ * compared: any other param (a selected resource, a page number, a filter…) belongs
+ * to the page, not to the tab group, and must not deselect the current tab.
+ */
+export function useIsCurrentTab(links: MaybeRefOrGetter<Array<{ href: string }>>) {
+  const absoluteUrlToRelative = useAbsoluteUrlToRelative()
+  const router = useRouter()
+  const route = useRoute()
+
+  const resolve = (url: string) => router.resolve(absoluteUrlToRelative(url))
+
+  const tabParams = computed(() => new Set(toValue(links).flatMap(link => Object.keys(resolve(link.href).query))))
+
+  return (url: string): boolean => {
+    const link = resolve(url)
+
+    if (trimEndSlash(link.path) !== trimEndSlash(route.path)) return false
+
+    return [...tabParams.value].every(param => link.query[param] === route.query[param])
   }
 }
 
@@ -118,10 +147,23 @@ export function removeLangPrefix(url: string): string {
   return url.replace(/^\/(fr|en)(?=\/|$)/, '')
 }
 
-export function simpleSlug(str: string): string {
-  return str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
+/**
+ * Saves a file built in the browser and frees its object URL.
+ *
+ * A `blob:` URL can't be handed to a link component as `href`: `NuxtLink` drops
+ * `blob:` hrefs as a script-capable protocol and renders an anchor that can't be clicked.
+ */
+export function downloadObjectUrl(url: string, filename: string): void {
+  const link = document.createElement('a')
+  link.href = url
+  link.download = filename
+  link.style.visibility = 'hidden'
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
 }
 
-export function setsEqual<T>(a: Set<T>, b: Set<T>): boolean {
-  return a.size === b.size && [...a].every(v => b.has(v))
+export function simpleSlug(str: string): string {
+  return str.replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
 }

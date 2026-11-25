@@ -68,7 +68,7 @@
                 </p>
                 <AdminEmail :user />
               </td>
-              <td>{{ formatDate(user.since) }}</td>
+              <td><FormattedDate :date="user.since" /></td>
               <td>{{ user.metrics.datasets || 0 }}</td>
               <td>{{ user.metrics.reuses || 0 }}</td>
               <td>
@@ -134,7 +134,7 @@
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, Pagination, useFormatDate, type User } from '@datagouv/components-next'
+import { FormattedDate, LoadingBlock, Pagination, type User } from '@datagouv/components-next'
 import { refDebounced } from '@vueuse/core'
 import { computed, ref } from 'vue'
 import { RiEyeLine, RiPencilLine, RiSearchLine } from '@remixicon/vue'
@@ -149,7 +149,6 @@ import AdminInput from '~/components/AdminInput.vue'
 
 const { t } = useTranslation()
 const config = useRuntimeConfig()
-const { formatDate } = useFormatDate()
 
 const page = ref(1)
 const pageSize = ref(20)

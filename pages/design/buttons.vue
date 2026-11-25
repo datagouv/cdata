@@ -13,10 +13,12 @@
     </h1>
 
     <DSBrandedButton />
+    <DSSegmentedControl />
   </div>
 </template>
 
 <script setup lang="ts">
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import DSBrandedButton from '~/design-system/BrandedButton.vue'
+import DSSegmentedControl from '~/design-system/SegmentedControl.vue'
 </script>

@@ -96,13 +96,13 @@
                 >
                   <template #option="{ option: user }">
                     <div class="flex items-center space-x-2">
-                      <NuxtImg
+                      <img
                         class="rounded-full border border-gray-default size-5"
                         :src="getUserAvatar(user, 24)"
                         loading="lazy"
                         alt=""
                         data-testid="user-avatar"
-                      />
+                      >
                       <span>{{ user.first_name }} {{ user.last_name }}
                         <small
                           v-if="user.email"
@@ -128,11 +128,12 @@
                   @change="touch('email')"
                 />
 
-                <SelectGroup
+                <RadioButtons
                   v-if="roles && roles.length > 0"
                   v-model="inviteForm.role"
                   :label="t('Rôle')"
                   :options="rolesOptions"
+                  stacked
                 />
 
                 <InputGroup
@@ -237,16 +238,18 @@
               <AdminEmail :user="member.user" />
             </td>
             <td>
-              <AdminBadge
-                size="xs"
-                :type="getRoleBadgeType(member.role)"
-              >
-                {{ member.label }}
-              </AdminBadge>
+              <MemberRoleBadge
+                :role="member.role"
+                :label="member.label"
+              />
             </td>
-            <td>{{ formatDate(member.since) }}</td>
+            <td><FormattedDate :date="member.since" /></td>
             <td>
-              <span v-if="member.user.last_login_at">{{ formatFromNow(member.user.last_login_at) }}</span>
+              <FormattedDate
+                v-if="member.user.last_login_at"
+                :date="member.user.last_login_at"
+                format="from-now"
+              />
               <span v-else>{{ t("Aucune connexion") }}</span>
             </td>
             <td>
@@ -301,14 +304,15 @@
                       :id="editFormId"
                       @submit.prevent="updateRole(member, close)"
                     >
-                      <SelectGroup
+                      <RadioButtons
                         v-if="roles && roles.length > 0"
                         v-model="newRole"
                         :label="t('Rôle du membre')"
                         :options="rolesOptions"
+                        stacked
                       />
                       <DatasetAssignmentSelector
-                        v-if="newRole === 'partial_editor' && currentOrganization"
+                        v-if="newRole === 'partial_editor' && currentOrganization && editAssignmentsLoaded"
                         v-model="editSelectedDatasetIds"
                         :organization-id="currentOrganization.id"
                       />
@@ -333,7 +337,7 @@
                           :form="editFormId"
                           :disabled="loading"
                         >
-                          {{ t("Valider") }}
+                          {{ t("Valider | Valider le changement | Valider les {n} changements", { n: assignmentChangesCount }) }}
                         </BrandedButton>
                       </div>
                       <BannerAction
@@ -364,7 +368,7 @@
 </template>
 
 <script setup lang="ts">
-import { Avatar, BannerAction, BrandedButton, LoadingBlock, SearchableSelect, SelectGroup, useFormatDate, useGetUserAvatar, type Member, type MemberRole, type Organization } from '@datagouv/components-next'
+import { Avatar, BannerAction, BrandedButton, FormattedDate, LoadingBlock, SearchableSelect, useGetUserAvatar, type Member, type MemberRole, type Organization } from '@datagouv/components-next'
 import { computed, ref } from 'vue'
 import { RiEyeLine, RiLogoutBoxRLine, RiPencilLine, RiUserAddLine } from '@remixicon/vue'
 import type { Assignment, PendingMembershipRequest, UserSuggest } from '~/types/types'
@@ -375,12 +379,12 @@ import InputGroup from '~/components/InputGroup/InputGroup.vue'
 import AdminMembershipRequest from '~/components/AdminMembershipRequest/AdminMembershipRequest.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import MemberRoleBadge from '~/components/Organization/MemberRoleBadge.vue'
 import { useNotifications } from '~/composables/useNotifications.client'
 import { email, required } from '~/composables/useForm'
 
 const config = useRuntimeConfig()
 const { t } = useTranslation()
-const { formatDate, formatFromNow } = useFormatDate()
 const { $api } = useNuxtApp()
 const getUserAvatar = useGetUserAvatar()
 
@@ -395,19 +399,12 @@ const url = computed(() => {
 })
 
 const { refreshNotifications } = useNotifications()
-const { data: organization, status, refresh } = await useAPI<Organization>(url, { redirectOn404: true })
-const membershipRequests = ref<Array<PendingMembershipRequest> | null>(null)
-
-async function fetchPendingMembershipRequests() {
-  if (!organization.value?.permissions.members) return
-  membershipRequests.value = await $api<Array<PendingMembershipRequest>>(`/api/1/organizations/${currentOrganization.value?.id}/membership/`, {
-    query: { status: 'pending' },
-  })
-}
-
-watch(organization, () => {
-  fetchPendingMembershipRequests()
-}, { immediate: true })
+const { data: organization, status, refresh } = await useAPI<Organization>(url, { showErrorPage: true })
+const { data: membershipRequests, refresh: refreshMembershipRequests } = await useAPI<Array<PendingMembershipRequest>>(() => `${url.value}/membership/`, {
+  query: { status: 'pending' },
+  // The API answers a 403 to whoever cannot manage the members.
+  enabled: () => Boolean(organization.value?.permissions.members),
+})
 
 const pendingRequests = computed(() => {
   if (!membershipRequests.value) return []
@@ -420,16 +417,17 @@ const pendingInvitations = computed(() => {
 })
 
 const refreshAll = async () => {
-  await Promise.all([refresh(), refreshNotifications(), fetchPendingMembershipRequests()])
+  await Promise.all([refresh(), refreshNotifications(), refreshMembershipRequests()])
 }
 
 const newRole = ref<MemberRole | null>(null)
-const { data: roles } = await useAPI<Array<{ id: MemberRole, label: string }>>('/api/1/organizations/roles/', { lazy: true })
+const { data: roles } = await useOrganizationRoles()
 const rolesOptions = computed(() => {
   if (!roles.value) return []
 
   return roles.value.map(role => ({
     label: role.label,
+    description: role.description,
     value: role.id,
   }))
 })
@@ -437,11 +435,15 @@ const loading = ref(false)
 
 const editSelectedDatasetIds = ref<Set<string>>(new Set())
 const editInitialDatasetIds = ref<Set<string>>(new Set())
+// The selector picks its opening tab from the selection it starts with: it must not be
+// mounted before the member's current assignments are known.
+const editAssignmentsLoaded = ref(false)
 
 const openEditModal = async (member: Member) => {
   newRole.value = member.role
   editSelectedDatasetIds.value = new Set()
   editInitialDatasetIds.value = new Set()
+  editAssignmentsLoaded.value = false
 
   if (member.role === 'partial_editor' && currentOrganization.value) {
     const assignments = await $api<Array<Assignment>>(`/api/1/organizations/${currentOrganization.value.id}/assignments/`)
@@ -451,6 +453,7 @@ const openEditModal = async (member: Member) => {
     editSelectedDatasetIds.value = new Set(userDatasetIds)
     editInitialDatasetIds.value = new Set(userDatasetIds)
   }
+  editAssignmentsLoaded.value = true
 }
 
 const removeMemberFromOrganization = async (member: Member, close: () => void) => {
@@ -475,10 +478,18 @@ const syncAssignments = async (member: Member) => {
   })
 }
 
+// Assignments are only saved for a partial editor: switching to another role leaves them untouched.
+const assignmentChangesCount = computed(() => {
+  if (newRole.value !== 'partial_editor') return 0
+  const added = [...editSelectedDatasetIds.value].filter(id => !editInitialDatasetIds.value.has(id))
+  const removed = [...editInitialDatasetIds.value].filter(id => !editSelectedDatasetIds.value.has(id))
+  return added.length + removed.length
+})
+
 const updateRole = async (member: Member, close: () => void) => {
   const roleChanged = member.role !== newRole.value
   const isPartialEditor = newRole.value === 'partial_editor'
-  const assignmentsChanged = isPartialEditor && !setsEqual(editSelectedDatasetIds.value, editInitialDatasetIds.value)
+  const assignmentsChanged = assignmentChangesCount.value > 0
 
   if (!roleChanged && !assignmentsChanged) {
     close()
@@ -528,6 +539,11 @@ const isUserAlreadyInvitedOrMember = (user: UserSuggest | null): string | null =
   if (pendingInvitations.value.some(i => i.user?.id === user.id)) {
     return t('Cet utilisateur a déjà été invité')
   }
+  // Inviting someone who already applied would let them join through the invitation
+  // while their request stays pending, and accepting it afterwards answers a 409.
+  if (pendingRequests.value.some(r => r.user?.id === user.id)) {
+    return t('Cet utilisateur a déjà demandé à rejoindre l\'organisation')
+  }
   return null
 }
 
@@ -538,6 +554,9 @@ const isEmailAlreadyInvited = (emailValue: string): string | null => {
   }
   if (organization.value?.members.some(m => m.user.email?.toLowerCase() === emailValue.toLowerCase())) {
     return t('Un membre avec cette adresse email existe déjà')
+  }
+  if (pendingRequests.value.some(r => r.user?.email?.toLowerCase() === emailValue.toLowerCase())) {
+    return t('Cet utilisateur a déjà demandé à rejoindre l\'organisation')
   }
   return null
 }

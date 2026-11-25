@@ -56,9 +56,7 @@ const currentType = computed<SearchType>({
   },
 })
 
-const robots = computed(() => {
-  return Object.keys(route.query).length > 0 ? 'noindex, nofollow' : undefined
-})
+useNoindexWhenFiltered()
 
 const heading = computed(() => {
   switch (currentType.value) {
@@ -102,9 +100,6 @@ const description = computed(() => {
 useSeoMeta({
   title,
   description,
-  ogTitle: title,
-  ogDescription: description,
-  robots,
 })
 
 const ogTitles: Record<SearchType, string> = {

@@ -1,3 +1,45 @@
 packages:
   - "."
   - "datagouv-components"
+
+onlyBuiltDependencies:
+  - "@parcel/watcher"
+  - "@scarf/scarf"
+  - "@tailwindcss/oxide"
+  - cypress
+  - esbuild
+  - husky
+  - sharp
+
+ignoredBuiltDependencies:
+  - "@sentry/cli"
+  - core-js
+  - unrs-resolver
+
+overrides:
+  # Security fixes that the parent's own range excludes (pnpm audit, 2026-11):
+  # drop each one once the parent allows the patched version.
+  # @tailwindcss/typography 0.5.20 pins 6.0.10 (GHSA-rj75-hqrm-r3gf).
+  postcss-selector-parser@6: ^6.1.5
+  # @sentry/bundler-plugins 10.78 depends on glob 13, fixed in 14 only (GHSA-3g3m-2fjr-6pw4).
+  glob@13: ^14.0.2
+  # micromark-extension-math 3.1 (via @milkdown/crepe) depends on katex 0.16 (GHSA-238p-pmpm-9mq7).
+  katex@0.16: ^0.19.1
+  # @typescript-eslint/typescript-estree 8.72 and readdir-glob 3.0 (via nitropack's archiver)
+  # depend on minimatch ^10.2.2, fixed in 11 only (GHSA-g3hv-75wg-m249). Both only use
+  # `minimatch()` and `Minimatch`, which 11 still exports.
+  minimatch@10: ^11.0.8
+
+# The Panoramax control of geopf only renders <pnx-viewer> and leaves loading the viewer
+# to the app, which never uses that control: without this, pnpm installs the viewer and
+# its own maplibre, three and photo-sphere-viewer.
+packageExtensions:
+  geopf-extensions-openlayers@1.0.0-beta.15:
+    peerDependenciesMeta:
+      "@panoramax/web-viewer":
+        optional: true
+
+# GetCapabilities strings (layer title, abstract, attribution, metadata/legend URLs)
+# are rendered as HTML by the library: render them as text and only link http(s) URLs.
+patchedDependencies:
+  geopf-extensions-openlayers@1.0.0-beta.15: patches/geopf-extensions-openlayers@1.0.0-beta.15.patch

@@ -1,36 +1,76 @@
-import type { Chart, ChartForm, ChartForApi, Filter, ColumnDefinition } from '../types/visualizations'
-import type { TabularProfile } from '../components/TabularExplorer/types'
+import type { Chart, ChartForm, ChartForApi, DataSeries, GenericFilter, ColumnDefinition, YAxis } from '../types/visualizations'
+import type { ColumnType, TabularProfile } from '../components/TabularExplorer/types'
+import type { TranslationFunction } from '../composables/useTranslation'
+import { CHART_PAGE_SIZE } from './chartData'
 import { resolveColumnType } from './tabular'
 
-export function toChartForm(chart: Chart) {
-  const seriesFilter = chart.series[0]?.filters as Filter | null
+// Size of the saved chart image: twice the 224×160 media box of ChartCard (ObjectCard
+// media-size="xl"), which the API brings back within 250px. Fixed, so the preview size
+// on screen does not matter.
+export const CHART_IMAGE_WIDTH = 448
+export const CHART_IMAGE_HEIGHT = 320
+
+/** What a chart shows, without its owner, privacy or extras: what the assistant creates too. */
+export type ChartContent = Pick<Chart, 'title' | 'description' | 'x_axis' | 'y_axis' | 'series'>
+
+/**
+ * Whether the series differ in type or filters. The form edits one type and one filter,
+ * applied to every series on save: it would overwrite those of such a chart.
+ */
+export function hasMixedSeries(chart: { series: Array<Pick<DataSeries, 'type' | 'filters'>> }): boolean {
+  const [first, ...others] = chart.series
+  if (!first) return false
+  const filters = JSON.stringify(first.filters ?? null)
+  return others.some(serie => serie.type !== first.type || JSON.stringify(serie.filters ?? null) !== filters)
+}
+
+/**
+ * The form fields of a chart content. The form has one type and one filter shared by
+ * every series, read from the first one, and its own copy of the filter; the series
+ * keep theirs only to tell a chart with mixed series. A count series counts the X
+ * column by convention: its column_y is pointed at it.
+ */
+export function chartContentToForm(chart: ChartContent) {
+  const seriesFilter: GenericFilter | null = chart.series[0]?.filters ?? null
 
   return {
     title: chart.title,
     description: chart.description,
-    private: chart.private,
-    owned: chart.organization ? { organization: chart.organization.id, owner: null } : { owner: chart.owner.id, organization: null },
     x_axis: {
       column_x: chart.x_axis.column_x,
       type: chart.x_axis.type,
+      limit: chart.x_axis.limit ?? null,
       sort_combined: chart.x_axis.sort_x_by && chart.x_axis.sort_x_direction
         ? `${chart.x_axis.sort_x_by}-${chart.x_axis.sort_x_direction}`
         : '',
     },
     y_axis: {
       label: chart.y_axis.label || '',
-      min: chart.y_axis.min,
-      max: chart.y_axis.max,
+      min: chart.y_axis.min ?? null,
+      max: chart.y_axis.max ?? null,
       unit: chart.y_axis.unit || '',
       unit_position: chart.y_axis.unit_position || 'suffix',
     },
+    // Field by field: a series from the assistant may carry keys the form does not know.
     series: chart.series.map(serie => ({
-      ...serie,
+      type: serie.type,
+      column_y: serie.aggregate_y === 'count' ? chart.x_axis.column_x : serie.column_y,
       aggregate_y: serie.aggregate_y || '',
+      resource_id: serie.resource_id,
+      column_x_name_override: serie.column_x_name_override,
+      filters: serie.filters ?? null,
     })),
+    chart_type: chart.series[0]?.type ?? null,
+    filter: seriesFilter ? JSON.parse(JSON.stringify(seriesFilter)) as GenericFilter : null,
+  } satisfies Omit<ChartForm, 'private' | 'owned' | 'extras'>
+}
+
+export function toChartForm(chart: Chart) {
+  return {
+    ...chartContentToForm(chart),
+    private: chart.private,
+    owned: chart.organization ? { organization: chart.organization.id, owner: null } : { owner: chart.owner.id, organization: null },
     extras: chart.extras,
-    chart_type: chart.series[0] ? chart.series[0].type : null,
-    filter: seriesFilter ?? null,
   } satisfies ChartForm
 }
 
@@ -38,6 +78,7 @@ export function toChartApi(chartForm: ChartForm): ChartForApi {
   const xAxis = {
     column_x: chartForm.x_axis.column_x,
     type: chartForm.x_axis.type,
+    limit: chartForm.x_axis.limit ?? null,
     sort_x_by: chartForm.x_axis.sort_combined
       ? (chartForm.x_axis.sort_combined.split('-')[0] as 'axis_x' | 'axis_y')
       : null,
@@ -59,11 +100,11 @@ export function toChartApi(chartForm: ChartForm): ChartForApi {
       unit: chartForm.y_axis.unit ?? null,
       unit_position: chartForm.y_axis.unit_position ?? null,
     },
-    series: chartForm.series.map((serie, index) => ({
+    series: chartForm.series.map(serie => ({
       ...serie,
-      type: index === 0 && chartForm.chart_type ? chartForm.chart_type : serie.type,
+      type: chartForm.chart_type ?? serie.type,
       aggregate_y: serie.aggregate_y || null,
-      filters: serie.filters || (index === 0 && chartForm.filter ? chartForm.filter : null),
+      filters: chartForm.filter ?? null,
     })),
     extras: chartForm.extras,
   }
@@ -72,8 +113,68 @@ export function toChartApi(chartForm: ChartForm): ChartForApi {
 export function buildColumnsFromProfile(profile: { profile: TabularProfile }): Array<ColumnDefinition> {
   return profile.profile.header.map((name) => {
     const colInfo = profile.profile.columns[name]
-    const isCategorical = profile.profile.categorical.includes(name)
-    const colType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
-    return { name, type: colType }
+    const isCategorical = profile.profile.categorical?.includes(name) ?? false
+    // The chart stack only branches on 'number' and 'date' (continuous axis,
+    // aggregatable series, time formatting): it has no notion of a year column,
+    // and on an axis a year is a number.
+    const resolvedType = resolveColumnType(colInfo ?? { python_type: 'unknown', format: undefined }, isCategorical)
+    const colType = resolvedType === 'year' ? 'number' : resolvedType
+    const colProfile = profile.profile.profile?.[name]
+    return {
+      name,
+      type: colType,
+      min: normalizeProfileNumber(colProfile?.min, colType),
+      max: normalizeProfileNumber(colProfile?.max, colType),
+      // The profile gives 0 when it did not count them (long or unique texts)
+      values: colProfile?.nb_distinct ? colProfile.nb_distinct + (colProfile.nb_missing_values > 0 ? 1 : 0) : undefined,
+    }
   })
+}
+
+/** Whether all the values of `column` fit in the groups a chart fetches. */
+export function fitsInChart(column: ColumnDefinition): boolean {
+  return column.values !== undefined && column.values <= CHART_PAGE_SIZE
+}
+
+/**
+ * X column of a new chart: the first one that fits in a chart, so that the default count
+ * chart is not truncated; the first column when none does.
+ */
+export function defaultXColumn(columns: Array<ColumnDefinition>): ColumnDefinition | undefined {
+  const candidates = columns.filter(column => column.name !== '__id')
+  return candidates.find(fitsInChart) ?? candidates[0]
+}
+
+function normalizeProfileNumber(value: number | string | undefined, type: ColumnType): number | undefined {
+  if (value === undefined || value === null) return undefined
+  if (type === 'date' && typeof value === 'string') {
+    const timestamp = new Date(value).getTime()
+    return Number.isNaN(timestamp) ? undefined : timestamp
+  }
+  const parsed = Number(value)
+  return Number.isNaN(parsed) ? undefined : parsed
+}
+
+/** Y axis tick label in the locale, with the chart unit: abbreviated from a thousand on (1,2 k, 3,45 M). */
+export function formatYAxisValue(value: number, locale: string, yAxis: Pick<YAxis, 'unit' | 'unit_position'>): string {
+  // Two compact fraction digits keep close ticks (1,22 M / 1,24 M) apart.
+  const options: Intl.NumberFormatOptions = Math.abs(value) >= 1000
+    ? { notation: 'compact', maximumFractionDigits: 2 }
+    : { maximumFractionDigits: 10 }
+  const formatted = new Intl.NumberFormat(locale, options).format(value)
+  if (!yAxis.unit) return formatted
+  return yAxis.unit_position === 'prefix' ? `${yAxis.unit} ${formatted}` : `${formatted} ${yAxis.unit}`
+}
+
+/** Legend and tooltip name of a series: the calculation spelled out, not the `column__sum` key. */
+export function seriesLabel(serie: Pick<DataSeries, 'column_y' | 'aggregate_y'>, t: TranslationFunction): string {
+  switch (serie.aggregate_y) {
+    case 'sum': return t('Somme de {column}', { column: serie.column_y })
+    case 'avg': return t('Moyenne de {column}', { column: serie.column_y })
+    case 'min': return t('Minimum de {column}', { column: serie.column_y })
+    case 'max': return t('Maximum de {column}', { column: serie.column_y })
+    // A count series counts the rows of each X value: its column is the X column.
+    case 'count': return t('Nombre de lignes')
+    default: return serie.column_y
+  }
 }

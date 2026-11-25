@@ -38,13 +38,16 @@
         <div class="text-sm text-mentionGrey space-y-1.5">
           <p class="space-x-1">
             <span>{{ $t('Statut') }}:</span>
-            <DatasetBadge :dataset />
+            <DatasetBadge
+              size="xs"
+              :dataset
+            />
           </p>
           <div class="space-x-1 flex items-center">
             <RiPriceTag3Line class="inline size-3" />
             <span>{{ $t('Métadonnées:') }}</span>
             <Tooltip>
-              <DatasetQualityScore
+              <QualityScore
                 class="w-32"
                 :score="dataset.quality.score"
               />
@@ -102,15 +105,18 @@
             <RiCalendarLine class="inline size-3" />
             <span>{{ $t('Dernière activité :') }}</span>
             <span class="inline-flex items-center">
-              <AvatarWithName
+              <ActivityActor
                 class="fr-ml-1v"
-                :user="activities.data[0].actor"
+                :actor="activities.data[0].actor"
               />
             </span>
             &mdash;
             <span>{{ getActivityTranslation(activities.data[0]) }}</span>
             &mdash;
-            <span class="text-gray-medium">{{ formatDate(activities.data[0].created_at) }}</span>
+            <FormattedDate
+              class="text-gray-medium"
+              :date="activities.data[0].created_at"
+            />
           </p>
         </div>
       </div>
@@ -122,11 +128,12 @@
           { href: `${getDatasetAdminUrl(dataset)}/files`, label: t('Fichiers') },
           { href: `${getDatasetAdminUrl(dataset)}/discussions`, label: t('Discussions') },
           { href: `${getDatasetAdminUrl(dataset)}/activities`, label: t('Activités'), show: dataset.permissions.edit },
+          { href: `${getDatasetAdminUrl(dataset)}/geopf`, label: t('Synchronisation cartes.gouv.fr'), show: config.public.geopfEnabled && dataset.permissions.edit_resources && hasEligibleGeopfResource },
         ]"
       />
 
       <NuxtPage
-        :page-key="route => route.fullPath"
+        :page-key="pageKey"
         :dataset
       />
     </div>
@@ -134,27 +141,30 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, DatasetQualityTooltipContent, DatasetQualityScore, summarize, useFormatDate, AvatarWithName, Tooltip, getActivityTranslation } from '@datagouv/components-next'
+import { ActivityActor, BrandedButton, DatasetQualityTooltipContent, QualityScore, summarize, FormattedDate, Tooltip, getActivityTranslation, DatasetBadge } from '@datagouv/components-next'
 import type { Activity, DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiBarChartBoxLine, RiCalendarLine, RiDownloadLine, RiEyeLine, RiLineChartLine, RiPriceTag3Line, RiStarLine } from '@remixicon/vue'
-import DatasetBadge from '~/components/AdminBadge/DatasetBadge.vue'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import TabLinks from '~/components/TabLinks.vue'
+import { geopfEligibilityRefreshKey } from '~/components/Datasets/geopfEligibilityRefreshKey'
 import type { PaginatedArray } from '~/types/types'
+import { geopfDatasetStatusKey, geopfDatasetStatusUrl, type GeopfDatasetStatus } from '~/utils/geopf'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const { t } = useTranslation()
 const me = useMe()
+const config = useRuntimeConfig()
 
 const route = useRoute()
-const { formatDate } = useFormatDate()
 const url = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset } = await useAPI<DatasetV2WithFullObject>(url, {
-  redirectOn404: true,
+  showErrorPage: true,
   headers: {
     'X-Get-Datasets-Full-Objects': 'True',
   },
@@ -165,4 +175,24 @@ const { data: activities } = await useAPI<PaginatedArray<Activity>>('/api/1/acti
     sort: '-created_at',
   },
 })
+
+// Drives the geopf tab's visibility. Shares its useAsyncData key with GeopfSyncPage.
+const canFetchGeopfStatus = Boolean(config.public.geopfEnabled && dataset.value?.permissions.edit_resources)
+const { data: geopfDatasetStatus, refresh: refreshGeopfDatasetStatus } = canFetchGeopfStatus
+  ? await useAPI<GeopfDatasetStatus>(
+      computed(() => geopfDatasetStatusUrl(String(route.params.id))),
+      { key: geopfDatasetStatusKey(String(route.params.id)) },
+    )
+  : { data: ref(null), refresh: async () => {} }
+const hasEligibleGeopfResource = computed(() => Boolean(geopfDatasetStatus.value && (geopfDatasetStatus.value.pushable.length || geopfDatasetStatus.value.offerings.length)))
+
+// The Files tab calls this after any resource change, so a newly-uploaded eligibile
+// resource makes the tab appear without a full page reload.
+provide(geopfEligibilityRefreshKey, () => refreshGeopfDatasetStatus())
+
+// Stable reference: NuxtPage compares page-key by reference, so an inline function for pageKey
+// would re-trigger the loading indicator whenever `dataset` changes and this re-renders.
+function pageKey(route: RouteLocationNormalizedLoaded) {
+  return route.fullPath
+}
 </script>

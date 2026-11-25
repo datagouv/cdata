@@ -59,6 +59,7 @@ import Stepper from '~/components/Stepper/Stepper.vue'
 import type { DatasetForm, EnrichedLicense, ResourceForm, SpatialGranularity, SpatialZone, Tag } from '~/types/types'
 import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import { goToStep } from '~/utils/scroll'
 
 const { t } = useTranslation()
 const config = useRuntimeConfig()
@@ -97,6 +98,14 @@ const datasetForm = useState(DATASET_FORM_STATE, () => ({
 const resources = useState<Array<ResourceForm>>(DATASET_FILES_STATE, () => [])
 const newDataset = useState<Dataset | null>('new-dataset', () => null)
 const currentStep = computed(() => parseInt(route.query.step as string) || 1)
+
+// Every step of the wizard lives under the same path, so without this they would all
+// share one title in the tab bar and in the history
+useSeoMeta({
+  title: () => `${steps.value[currentStep.value - 1] ?? ''} - ${t('Formulaire de publication')}`,
+  robots: 'noindex',
+})
+
 const isCurrentStepValid = computed(() => {
   if (currentStep.value < 1) return false
   if (currentStep.value > steps.value.length) return false
@@ -106,7 +115,7 @@ const isCurrentStepValid = computed(() => {
 })
 
 const moveToStep = (step: number) => {
-  return navigateTo({ path: route.path, query: { ...route.query, step } })
+  return goToStep(route, { ...route.query, step })
 }
 
 const datasetNext = () => {
@@ -189,9 +198,5 @@ onMounted(() => {
   }
 })
 
-watchEffect(() => {
-  if (!isCurrentStepValid.value) {
-    moveToStep(1)
-  }
-})
+useStepGuard(currentStep, isCurrentStepValid, () => moveToStep(1))
 </script>

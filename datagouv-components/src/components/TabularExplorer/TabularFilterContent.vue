@@ -61,8 +61,18 @@
       </div>
     </div>
 
+    <!-- Date filter -->
+    <TabularDateFilter
+      v-if="columnType === 'date'"
+      v-model:filters="filters"
+      :column="column"
+    />
+
     <!-- Search (contains) -->
-    <div class="px-3 py-2 border-b border-black/10">
+    <div
+      v-if="columnType !== 'boolean' && columnType !== 'date'"
+      class="px-3 py-2 border-b border-black/10"
+    >
       <div class="relative">
         <RiSearchLine
           class="absolute left-2 top-1/2 -translate-y-1/2 size-3.5 text-gray-medium"
@@ -70,7 +80,7 @@
         />
         <input
           v-model="search"
-          type="text"
+          :type="isNumeric ? 'number' : 'text'"
           class="w-full h-8 text-sm border border-transparent rounded-lg py-1 pl-8 pr-3 bg-[#f3f3f5] focus:outline-none focus:border-new-primary"
           :placeholder="t('Rechercher...')"
         >
@@ -100,14 +110,7 @@
           />
         </span>
         <span class="flex-1 truncate text-left text-xs">
-          <span
-            v-if="categoryBadgeStyles?.[top.value]"
-            class="inline-block rounded font-medium px-2 py-0.5 text-xs"
-            :style="{ backgroundColor: categoryBadgeStyles![top.value]!.backgroundColor, color: categoryBadgeStyles![top.value]!.color }"
-          >{{ top.value }}</span>
-          <template v-else>
-            {{ top.value ?? 'null' }}
-          </template>
+          {{ top.value ?? 'null' }}
         </span>
         <span class="font-mono text-xs text-gray-low tabular-nums shrink-0">{{ top.count }}</span>
       </button>
@@ -154,14 +157,14 @@
 
     <!-- Number range -->
     <form
-      v-if="columnType === 'number' && columnProfile"
+      v-if="(columnType === 'number' || columnType === 'year') && columnProfile"
       class="px-3 py-2 border-b border-black/10 space-y-2"
       @submit.prevent="applyRange"
     >
       <div class="flex items-center gap-2 text-xs text-gray-plain">
-        <span class="tabular-nums">{{ formatNumber(profileMin) }}</span>
+        <span class="tabular-nums">{{ columnType === 'year' ? profileMin : formatNumber(profileMin) }}</span>
         <span class="text-gray-medium">—</span>
-        <span class="tabular-nums">{{ formatNumber(profileMax) }}</span>
+        <span class="tabular-nums">{{ columnType === 'year' ? profileMax : formatNumber(profileMax) }}</span>
       </div>
       <div class="flex items-center gap-2">
         <input
@@ -184,14 +187,7 @@
           :max="profileMax"
         >
       </div>
-      <div class="flex items-center gap-2">
-        <BrandedButton
-          color="primary"
-          size="2xs"
-          type="submit"
-        >
-          {{ t('Appliquer') }}
-        </BrandedButton>
+      <div class="flex items-center justify-end gap-2">
         <BrandedButton
           color="tertiary"
           size="2xs"
@@ -200,6 +196,13 @@
           @click="clearRange"
         >
           {{ t('Effacer') }}
+        </BrandedButton>
+        <BrandedButton
+          color="primary"
+          size="2xs"
+          type="submit"
+        >
+          {{ t('Appliquer') }}
         </BrandedButton>
       </div>
     </form>
@@ -219,7 +222,8 @@ import { useTranslation } from '../../composables/useTranslation'
 import { useFormatTabular } from '../../functions/tabular'
 import BrandedButton from '../BrandedButton.vue'
 import ProgressBar from '../ProgressBar.vue'
-import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig, SortDirection, BadgeStyle } from './types'
+import TabularDateFilter from './TabularDateFilter.vue'
+import type { TabularColumnProfile, ColumnType, ColumnFilters, SortConfig, SortDirection } from './types'
 
 const props = defineProps<{
   column: string
@@ -227,7 +231,6 @@ const props = defineProps<{
   columnProfile: TabularColumnProfile | null
   nullPercent: string
   totalLines: number
-  categoryBadgeStyles?: Record<string, BadgeStyle>
   booleanCounts?: { trueCount: number, falseCount: number }
 }>()
 
@@ -239,13 +242,19 @@ const { formatNumber } = useFormatTabular()
 
 const search = ref('')
 
+// Numbers and years are matched exactly (the API has no `contains` for them),
+// so the field offers a number input instead of a text search.
+const isNumeric = computed(() => props.columnType === 'number' || props.columnType === 'year')
+
 watchDebounced(search, (q) => {
   const existing = filters.value[props.column] ?? {}
+  const operator = isNumeric.value ? 'exact' : 'contains'
   if (q) {
-    filters.value = { ...filters.value, [props.column]: { ...existing, contains: q } }
+    // v-model on a `type="number"` input hands over a number, both criteria are strings
+    filters.value = { ...filters.value, [props.column]: { ...existing, [operator]: String(q) } }
   }
   else {
-    const { contains: _, ...rest } = existing
+    const { [operator]: _, ...rest } = existing
     filters.value = { ...filters.value, [props.column]: rest }
   }
 }, { debounce: 300 })

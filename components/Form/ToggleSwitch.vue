@@ -3,7 +3,7 @@
     <div class="flex items-center space-x-6">
       <Switch
         v-model="enabled"
-        :class="[enabled ? 'bg-datagouv-defaultLight hover:!bg-datagouv-defaultLight' : 'bg-gray-200 hover:!bg-gray-200', 'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full !border-2 !border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-datagouv-defaultbg-datagouv-defaultLight focus:ring-offset-2']"
+        :class="[enabled ? 'bg-new-primary hover:!bg-new-primary-hover' : 'bg-gray-200 hover:!bg-gray-200', 'relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full !border-2 !border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-new-primary focus:ring-offset-2']"
         style="border: inherit /** cancel DSFR default border: none **/"
       >
         <span class="sr-only">{{ label }}</span>
@@ -18,7 +18,7 @@
             :class="[enabled ? 'opacity-100 duration-200 ease-in' : 'opacity-0 duration-100 ease-out', 'absolute inset-0 flex size-full items-center justify-center transition-opacity']"
             aria-hidden="true"
           >
-            <RiCheckLine class="size-3 text-datagouv-defaultLight" />
+            <RiCheckLine class="size-3 text-new-primary" />
           </span>
         </span>
       </Switch>
@@ -27,7 +27,7 @@
     <div class="text-xs/5">
       <div
         v-if="enabled"
-        class="text-datagouv"
+        class="text-new-primary"
       >
         {{ labelTrue }}
       </div>

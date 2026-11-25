@@ -66,6 +66,7 @@ import type {
   DatasetSuggest,
   ReuseForm,
 } from '~/types/types'
+import { goToStep } from '~/utils/scroll'
 
 const { t } = useTranslation()
 const route = useRoute()
@@ -145,7 +146,7 @@ const isCurrentStepValid = computed(() => {
 })
 
 function moveToStep(step: number) {
-  return navigateTo({ path: route.path, query: { ...route.query, step } })
+  return goToStep(route, { ...route.query, step })
 }
 
 function reuseNext() {
@@ -210,9 +211,5 @@ async function updateReuse(asPrivate: boolean) {
   await navigateTo(`/reuses/${newReuse.value.slug}`)
 }
 
-watchEffect(() => {
-  if (!isCurrentStepValid.value) {
-    moveToStep(1)
-  }
-})
+useStepGuard(currentStep, isCurrentStepValid, () => moveToStep(1))
 </script>

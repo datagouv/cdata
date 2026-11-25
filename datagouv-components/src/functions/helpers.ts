@@ -38,6 +38,31 @@ export const summarize = (val: number, fractionDigits = 0) => {
   return `${toFixedIfNotZero(val)}Y`
 }
 
+// Guards any value that ends up in an `href`: only absolute http(s) URLs are allowed.
+// Some of these URLs come from resource extras, which are freely writable by the
+// resource owner, so an unguarded value could carry a `javascript:` or `data:` scheme
+// and execute in the platform origin when a visitor clicks the link.
+export const isSafeHttpUrl = (value: unknown): value is string => {
+  if (typeof value !== 'string') return false
+  try {
+    const { protocol } = new URL(value)
+    return protocol === 'http:' || protocol === 'https:'
+  }
+  catch {
+    return false
+  }
+}
+
+export const removeKeys = <T extends Record<string, unknown>>(object: T, keys: Array<string>): Partial<T> => {
+  return Object.fromEntries(
+    Object.entries(object).filter(([key]) => !keys.includes(key)),
+  ) as Partial<T>
+}
+
+export const isEqualExcept = <T extends Record<string, unknown>>(a: T, b: T, keys: Array<string>): boolean => {
+  return JSON.stringify(removeKeys(a, keys)) === JSON.stringify(removeKeys(b, keys))
+}
+
 export const escapeCsvValue = (value: string | number | null | undefined): string => {
   if (value === null || value === undefined || value === '') {
     return ''
@@ -47,4 +72,11 @@ export const escapeCsvValue = (value: string | number | null | undefined): strin
     return `"${stringValue.replace(/"/g, '""')}"`
   }
   return stringValue
+}
+
+/** « a, b et c », joined with the translated « et »: Intl.ListFormat would follow the browser language. */
+export const humanJoin = (items: Array<string>): string => {
+  if (items.length <= 1) return items.join('')
+  const { t } = useTranslation()
+  return `${items.slice(0, -1).join(', ')} ${t('et')} ${items.at(-1)}`
 }

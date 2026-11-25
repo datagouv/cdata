@@ -1,4 +1,4 @@
-export type ApiTokenScope = 'admin'
+export type ApiTokenScope = 'sysadmin'
 
 export type ApiToken = {
   id: string

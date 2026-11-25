@@ -1,10 +1,9 @@
 import type { APIRequestContext } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDatasetWithRemoteResources, deleteDatasets } from '../helpers'
+import { API_BASE, createDatasetWithRemoteResources, deleteDatasets, gotoLegacyExplorer } from '../helpers'
 
-// Pin the old resources layout: these tests target ResourceAccordion,
-// not the new explorer behind the ?new_explorer=1 feature flag.
-const LAYOUT_QUERY = 'new_explorer=0'
+// These tests target ResourceAccordion, which a visitor only gets after opting out of
+// the new explorer from the banner: gotoLegacyExplorer sets the cookie of that choice.
 
 const createdDatasets: Array<string> = []
 
@@ -34,7 +33,7 @@ test.describe('Public resources display', () => {
     expect(firstPage).toHaveLength(10)
     expect(secondPage).toHaveLength(2)
 
-    await page.goto(`/datasets/${dataset.id}/?${LAYOUT_QUERY}`)
+    await gotoLegacyExplorer(page, `/datasets/${dataset.id}/`)
     await page.waitForLoadState('networkidle')
 
     // First page: 10 resources out of 12
@@ -57,7 +56,7 @@ test.describe('Public resources display', () => {
 
     const firstPage = await getDisplayedTitles(request, dataset.id, 1)
 
-    await page.goto(`/datasets/${dataset.id}/?${LAYOUT_QUERY}`)
+    await gotoLegacyExplorer(page, `/datasets/${dataset.id}/`)
     await page.waitForLoadState('networkidle')
 
     await page.getByPlaceholder('Rechercher').fill('Fichier numero 07')
@@ -81,7 +80,7 @@ test.describe('Public resources display', () => {
     const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test public resources ${Date.now()}`, resourceTitles(1))
     createdDatasets.push(dataset.id)
 
-    await page.goto(`/datasets/${dataset.id}/?${LAYOUT_QUERY}`)
+    await gotoLegacyExplorer(page, `/datasets/${dataset.id}/`)
     await page.waitForLoadState('networkidle')
 
     // navigator.clipboard only exists in secure contexts: CI runs on localhost
@@ -105,7 +104,7 @@ test.describe('Public resources display', () => {
     const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test public resources ${Date.now()}`, resourceTitles(3))
     createdDatasets.push(dataset.id)
 
-    await page.goto(`/datasets/${dataset.id}/?resource_id=${resources[1].id}&${LAYOUT_QUERY}`)
+    await gotoLegacyExplorer(page, `/datasets/${dataset.id}/?resource_id=${resources[1].id}`)
     await page.waitForLoadState('networkidle')
 
     await expect(page.getByText('Vous consultez une resource spécifique.')).toBeVisible()
@@ -118,18 +117,35 @@ test.describe('Public resources display', () => {
     await expect(page.getByText(resources[0].title)).toBeVisible()
   })
 
+  test('deep-link to a deleted resource falls back to the full list', async ({ page, request }) => {
+    const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test public resources ${Date.now()}`, resourceTitles(2))
+    createdDatasets.push(dataset.id)
+
+    const pageErrors: Array<Error> = []
+    page.on('pageerror', error => pageErrors.push(error))
+
+    // The link was shared or bookmarked while the resource still existed
+    await gotoLegacyExplorer(page, `/datasets/${dataset.id}/?resource_id=00000000-0000-0000-0000-000000000000`)
+
+    await expect(page.getByText('Ce fichier est introuvable.')).toBeVisible()
+    await expect(page.getByText('Vous consultez une resource spécifique.')).not.toBeVisible()
+    await expect(page.getByText(resources[0].title)).toBeVisible()
+    await expect(page).not.toHaveURL(/resource_id=/)
+    expect(pageErrors).toEqual([])
+  })
+
   test('remote resource has a correct download link', async ({ page, request }) => {
     const { dataset, resources } = await createDatasetWithRemoteResources(request, `Test public resources ${Date.now()}`, resourceTitles(1))
     createdDatasets.push(dataset.id)
 
-    await page.goto(`/datasets/${dataset.id}/?${LAYOUT_QUERY}`)
+    await gotoLegacyExplorer(page, `/datasets/${dataset.id}/`)
     await page.waitForLoadState('networkidle')
 
     await page.getByTestId('expand-button').first().click()
 
     // csv is not a "URL" format: the action is a download link pointing to the
     // stable "latest" URL of the resource
-    const downloadLink = page.getByRole('link', { name: 'Télécharger', exact: true })
+    const downloadLink = page.getByTestId(`download-${resources[0].id}`)
     await expect(downloadLink).toBeVisible()
     await expect(downloadLink).toHaveAttribute('href', resources[0].latest)
   })

@@ -1,21 +1,34 @@
 <template>
   <div>
-    <EditoHeader
-      color="primary"
-      :title="$t('Rechercher un jeu de données')"
-      :subtitle="$t('parmi les {count} jeux de données sur {site}', {
-        count: site?.metrics.datasets ?? 0,
-        site: config.public.title,
-      })"
-      :placeholder="$t('ex. élections présidentielles')"
-      search-url="/datasets/search"
-      :link-label="$t(`Qu'est-ce qu'un jeu de données ?`)"
-      :link-url="config.public.guideDatasets"
-    />
+    <HeroBanner color="primary">
+      <template #breadcrumb>
+        <Breadcrumb>
+          <BreadcrumbItem to="/">
+            {{ $t('Accueil') }}
+          </BreadcrumbItem>
+          <BreadcrumbItem>
+            {{ $t('Données') }}
+          </BreadcrumbItem>
+        </Breadcrumb>
+      </template>
+      <EditoSearchForm
+        color="primary"
+        :title="$t('Rechercher un jeu de données')"
+        :subtitle="$t('parmi les {count} jeux de données sur {site}', {
+          count: site?.metrics.datasets ?? 0,
+          site: config.public.title,
+        })"
+        :placeholder="$t('ex. élections présidentielles')"
+        search-url="/datasets/search"
+        :link-label="$t(`Qu'est-ce qu'un jeu de données ?`)"
+        :link-url="config.public.guideDatasets"
+      />
+    </HeroBanner>
     <EditoBlocs
       v-if="siteBlocs.length > 0 || isEditing"
       :blocs="siteBlocs"
       editable
+      follow-links
       :on-save="saveBlocs"
     />
     <EditoFooter
@@ -28,7 +41,10 @@
 
 <script setup lang="ts">
 import EditoFooter from '~/components/Pages/EditoFooter.vue'
-import EditoHeader from '~/components/Pages/EditoHeader.vue'
+import HeroBanner from '~/components/HeroBanner.vue'
+import EditoSearchForm from '~/components/Pages/EditoSearchForm.vue'
+import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
+import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import EditoBlocs from '~/components/Pages/EditoBlocs.vue'
 
 defineOgImage('MainPage.takumi', {
@@ -45,21 +61,8 @@ const description = t('Vous recherchez des données publiques sur un sujet préc
 useSeoMeta({
   title,
   description,
-  ogTitle: title,
-  ogDescription: description,
 })
 const route = useRoute()
-
-onMounted(async () => {
-  const hasFacets = Object.keys(route.query).some(key =>
-    ['q', 'tag', 'format', 'license', 'organization', 'organization_badge',
-      'geozone', 'granularity', 'schema', 'sort', 'page'].includes(key),
-  )
-
-  if (hasFacets) {
-    await navigateTo({ path: '/datasets/search', query: route.query })
-  }
-})
 
 const { site, blocs: siteBlocs, saveBlocs } = await useSiteBlocs('datasets_blocs', ['metrics'])
 

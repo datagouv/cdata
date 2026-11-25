@@ -2,15 +2,35 @@ import { resolve } from 'node:path'
 import tailwindcss from '@tailwindcss/vite'
 import toml from './rollup-plugin-smol-toml'
 
-const nbSitemapsDatasets = 10
 const isFrenchGovernment = true
+
+// The `local` provider of @nuxt/fonts picks a file by its name among every public asset
+// directory, the build output included, where the DSFR ships Marianne and Spectral files of
+// its own (`Marianne-Light`…): which one it picks then depends on the order of the
+// directories. Listing the files of `public/fonts` leaves it no choice.
+function publicFontFaces(name: string, weights: Array<number>, italicWeights: Array<number>) {
+  return weights.flatMap(weight => [
+    { style: 'normal' as const, suffix: '' },
+    ...(italicWeights.includes(weight) ? [{ style: 'italic' as const, suffix: '-Italic' }] : []),
+  ].map(({ style, suffix }) => ({
+    name,
+    provider: 'none' as const,
+    weight,
+    style,
+    global: true,
+    src: [
+      { url: `/fonts/${name}-${weight}${suffix}.woff2`, format: 'woff2' },
+      { url: `/fonts/${name}-${weight}${suffix}.woff`, format: 'woff' },
+    ],
+  })))
+}
 // const swrDuration = process.env.NUXT_TEMPLATE_CACHE_DURATION ? parseInt(process.env.NUXT_TEMPLATE_CACHE_DURATION) : 60
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
 
   modules: [
     '@nuxt/eslint',
-    '@nuxt/image',
+    '@nuxt/scripts',
     '@sentry/nuxt/module',
     '@nuxtjs/sitemap',
     '@nuxt/fonts',
@@ -38,10 +58,6 @@ export default defineNuxtConfig({
   },
   css: ['~/assets/css/main.css'],
 
-  vue: {
-    runtimeCompiler: true,
-  },
-
   site: {
     url: 'https://www.data.gouv.fr',
     name: 'data.gouv.fr',
@@ -54,13 +70,22 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
+    // Names of the udata cookies that can carry an authenticated session. When the
+    // incoming request has none of them, the visitor is anonymous and `/api/1/me`
+    // can only answer 401, so we skip the call. Both names are configurable in
+    // udata (`SESSION_COOKIE_NAME`, `REMEMBER_COOKIE_NAME`) and must be kept in
+    // sync here.
+    sessionCookieName: 'session',
+    rememberCookieName: 'remember_token',
     crispIdentifier: '',
     crispKey: '',
     crispWebsiteId: '',
-    pagesGhRepoName: 'datagouv/datagouvfr-pages',
-    pagesGhRepoBranch: 'master',
     albertApiBaseUrl: 'https://albert.api.etalab.gouv.fr/',
     albertApiKey: '',
+    // Content Security Policy of the pages (plugins/content-security-policy.server.ts):
+    // `disabled`, `report-only` (the browser reports the violations without blocking
+    // anything) or `enforce`. Set through NUXT_CONTENT_SECURITY_POLICY, read at startup.
+    contentSecurityPolicy: 'disabled',
     public: {
       isProduction: true,
       trustedDomains: ['data.gouv.fr'], // Hostnames allowed in Access-Control-Allow-Origin for resource preview CORS checks (includes subdomains)
@@ -69,17 +94,31 @@ export default defineNuxtConfig({
       title: 'data.gouv.fr',
       description: 'Plateforme des données publiques françaises : télécharger, partager et réutiliser les données de l\'État et des collectivités',
       apiBase: 'http://dev.local:7000',
+      // Shows the chart assistant: enable it only where udata has AI_BASE_URL set.
+      assistantEnabled: false,
       chartsApiBase: 'http://dev.local:7000',
       metricsApi: 'https://metric-api.data.gouv.fr',
       metricsSince: '2022-07-01',
       devApiKey: undefined,
+      // After a successful write to the API, this cookie is set for this many seconds.
+      // The nginx in front of cdata bypasses its cache while it is present, so the
+      // author sees their change on reload instead of their cached page. The name must
+      // match the nginx `proxy_cache_bypass` cookie and the duration its
+      // `proxy_cache_valid`.
+      freshAfterWriteCookieName: 'cdata_fresh',
+      freshAfterWriteSeconds: 600,
       staticUrl: 'https://static.data.gouv.fr/static/',
       maxJsonPreviewCharSize: 1000000, // (~1MB)
       maxPdfPreviewByteSize: 10000000, // (10 MB)
+      maxImagePreviewByteSize: 10000000, // (10 MB)
       maxXmlPreviewCharSize: 100000, // (~100KB)
       schemaValidataUrl: 'https://validata.fr',
       tabularApiUrl: 'https://tabular-api.data.gouv.fr',
       tabularApiDataserviceId: undefined,
+      tabularApiPreviewResourcesId: undefined,
+      tabularApiPreviewStatsId: undefined,
+      cadaResourceId: undefined,
+      cadaDatasetUrl: 'https://www.data.gouv.fr/datasets/avis-et-conseils-de-la-cada',
 
       qualityDescriptionLength: 100,
       searchDebounce: 300,
@@ -105,8 +144,28 @@ export default defineNuxtConfig({
       guidesHarvestingUrl: 'https://guides.data.gouv.fr/moissonnage',
       guidesLabelsUrl: undefined, // TODO: add guide when created
       guidesCommunityResources: 'https://guides.data.gouv.fr/jeux-de-donnees/ressource-communautaire',
+      guidesAssistantMistakes: 'https://guides.data.gouv.fr/intelligence-artificielle/lassistant-dexploration-des-donnees-peut-faire-des-erreurs',
       supportUrl: 'https://support.data.gouv.fr/',
       catalogUrl: 'https://guides.data.gouv.fr/autres-ressources-utiles/catalogage-de-donnees-grist',
+
+      // Feedback form for the new resource explorer. Empty by default (set via
+      // NUXT_PUBLIC_EXPLORER_FEEDBACK_URL) — the banner's "Donner votre avis" link
+      // only shows when it is set. The link is pre-filled with query params
+      // (dataset_id, dataset_url, dataset_name, url_ressource, format_ressource,
+      // navigateur_appareil), see utils/explorer-feedback.ts.
+      explorerFeedbackUrl: '',
+
+      // Grist endpoint for the "Suivi des ouvertures" table on /suivi-de-publication/engagements-et-demandes.
+      // Provided through NUXT_PUBLIC_OUVERTURES_GRIST_BASE_URL / NUXT_PUBLIC_OUVERTURES_GRIST_TABLE
+      // (see .env) so the Grist document URL is not committed.
+      ouverturesGristBaseUrl: '',
+      ouverturesGristTable: '',
+      // Grist endpoint for the "Hvd" table on /suivi-de-publication/donnees-de-forte-valeur.
+      // Provided through NUXT_PUBLIC_HVD_GRIST_BASE_URL / NUXT_PUBLIC_HVD_GRIST_TABLE
+      // (see .env) so the Grist document URL is not committed.
+      hvdGristBaseUrl: '',
+      hvdGristTable: '',
+      ouverturesHvdUrl: '/suivi-de-publication/donnees-de-forte-valeur',
 
       guideDatasets: 'https://guides.data.gouv.fr/jeux-de-donnees',
       guideReuses: 'https://guides.data.gouv.fr/reutilisations',
@@ -143,7 +202,7 @@ export default defineNuxtConfig({
       datasetRestrictedGuideUrl: 'https://guides.data.gouv.fr/guides/guide-juridique/producteurs-de-donnees/quelles-sont-les-obligations',
       dataSearchFeedbackFormUrl: 'https://tally.so/r/mDKv1N',
       forumUrl: 'https://forum.data.gouv.fr/',
-      generateShortDescriptionFeedbackUrl: 'https://tally.so/r/wbbRxo',
+      generateDescriptionFeedbackUrl: 'https://tally.so/r/wbbRxo',
       generateTagsFeedbackUrl: 'https://tally.so/r/w80JNP',
       publishingDatasetFeedbackUrl: 'https://tally.so/r/nGo0yO',
       publishingDataserviceFeedbackUrl: 'https://tally.so/r/w2J7lL',
@@ -158,8 +217,10 @@ export default defineNuxtConfig({
       newsletterSubscriptionUrl: 'https://qvo970cr.sibpages.com/',
 
       maxNumberOfResourcesToUploadInParallel: 3,
-      resourceFileUploadChunk: 2 * 1000 * 1000,
+      resourceFileUploadChunk: 20 * 1000 * 1000,
       maxSortableFiles: 50,
+
+      geopfEnabled: false,
 
       maxNumberOfDatasetsForDataserviceUpdate: 200,
 
@@ -190,12 +251,23 @@ export default defineNuxtConfig({
         ],
       },
 
+      // Shown first in the update frequency selects, in this (temporal) order.
+      // Every other frequency of the API vocabulary follows, in its own group.
+      commonFrequencies: [
+        'continuous',
+        'daily',
+        'weekly',
+        'monthly',
+        'quarterly',
+        'annual',
+        'punctual',
+        'irregular',
+      ],
+
       // A corresponding SVG at `datagouv-components/assets/labels` will be shown before the badge label
       datasetBadges: ['spd', 'inspire', 'hvd', 'sl', 'sr'],
 
       requireEmailConfirmation: true,
-      changeEmailPage: 'change-email',
-      changePasswordPage: 'change',
 
       readOnlyMode: false,
 
@@ -216,6 +288,10 @@ export default defineNuxtConfig({
     },
   },
 
+  // Git worktrees live there (`.claude` for Claude Code), whole checkouts with their
+  // `node_modules`: watching them runs the dev server out of memory.
+  ignore: ['.claude', '.worktrees'],
+
   routeRules: {
     '/nuxt-api/oembed': { cors: true },
     '/*/organizations/': { ssr: true },
@@ -231,7 +307,12 @@ export default defineNuxtConfig({
 
   devServer: {
     port: 3000,
-    host: 'dev.local',
+    // Bind to the IPv6/IPv4 "any" wildcard rather than resolving the 'dev.local'
+    // hostname at listen-time: Node's dns.lookup() for a hostname follows live
+    // OS network-state ordering (RFC 6724) since Node 17, so binding to only
+    // whichever family the OS prefers *right now* silently flips between IPv4
+    // and IPv6 across sleep/wake or network changes, breaking dev.local access.
+    host: '::',
   },
 
   features: {
@@ -262,7 +343,7 @@ export default defineNuxtConfig({
         'unist-util-find-all-between', // CJS
         'vue',
         'vue-router',
-        'maplibre-gl', // CJS
+        'maplibre-gl',
         'geopf-extensions-openlayers',
         'vue3-xml-viewer', // CJS
         'uqr',
@@ -336,14 +417,13 @@ export default defineNuxtConfig({
   },
 
   fonts: {
+    // Since 1.0 a family without a `preload` option gets its first face preloaded: the
+    // light weights, which most pages never display, so the browser fetches them for nothing.
+    defaults: { preload: false },
     families: [
-      ...isFrenchGovernment
-        ? [
-            { name: 'Marianne', provider: 'local' as const, weights: [300, 400, 500, 700, 800], global: true },
-          ]
-        : [],
+      ...isFrenchGovernment ? publicFontFaces('Marianne', [300, 400, 500, 700, 800], [300, 400, 500, 700]) : [],
       { name: 'Inconsolata', provider: 'google' as const, weights: [300], global: true },
-      { name: 'Spectral', provider: 'local' as const, weights: [300, 400, 500, 700, 800], global: true },
+      ...publicFontFaces('Spectral', [300, 400, 500, 700, 800], [300, 400, 500, 700, 800]),
       {
         name: 'URW Gothic',
         provider: 'none',
@@ -357,65 +437,39 @@ export default defineNuxtConfig({
     ],
   },
 
-  image: {
-    screens: {
-      xs: 320,
-      sm: 576,
-      md: 768,
-      lg: 992,
-      xl: 1248,
-    },
-  },
+  // The bundler plugin stamps a debug id into every chunk and the same id into the copies it
+  // uploads, so Sentry pairs a frame with its map by identity instead of by release and URL.
+  // It does that during `renderChunk`, which is the only moment it can: Nitro records each
+  // asset's size and pre-compresses it at the end of the build, so anything rewriting
+  // `.output/public` afterwards serves a truncated script and a stale `.br`.
+  // The upload rides along and needs an auth token, which the CI only hands to `main` builds.
   sentry: {
-    sourceMapsUploadOptions: {
-      // disable sourcemaps upload from build, it's done later during the release with sentry-cli
-      enabled: false,
+    release: {
+      // Has to match what the SDK reports at runtime (`appConfig.commitId`), otherwise the
+      // plugin falls back to the full git sha and the two never line up.
+      name: process.env.NUXT_APP_COMMIT_ID,
+      deploy: process.env.GITHUB_REF_NAME ? { env: process.env.GITHUB_REF_NAME } : undefined,
     },
+    telemetry: false,
+    // Marks every chunk of our build so `thirdPartyErrorFilterIntegration` (sentry.client.config.ts)
+    // can tell our frames from scripts the browser or its extensions inject into the page.
+    applicationKey: 'cdata',
   },
 
   sitemap: {
     cacheMaxAgeSeconds: 3600, // 1 hour
     sitemaps: {
-      content: {
+      static: {
         includeAppSources: true,
         exclude: ['/admin/**'],
       },
-      dataservices: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=dataservice',
-        ],
-      },
-      organizations: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=organization',
-        ],
-      },
-      posts: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=post',
-        ],
-      },
-      reuses: {
-        sources: [
-          '/nuxt-api/sitemaps/urls?type=reuse',
-        ],
-      },
-      // split datasets between nbSitemapsDatasets sections
-      ...Array.from({ length: nbSitemapsDatasets }, (_, i) => i + 1).map(section => ({
-        [`datasets_${section}`]: {
-          sources: [
-            `/nuxt-api/sitemaps/urls?type=dataset&section=${section}&nbSitemapSections=${nbSitemapsDatasets}`,
-          ],
-        },
-      })).reduce((acc, obj) => ({ ...acc, ...obj }), {}),
       pages: {
         sources: [
           '/nuxt-api/sitemaps/pages',
         ],
       },
-      // TODO: add support
     },
+
+    // TODO: add /support pages
   },
-  // TODO: add sentry config for stack traces based on source maps
-  // https://docs.sentry.io/platforms/javascript/guides/nuxt/#add-readable-stack-traces-to-errors
 })

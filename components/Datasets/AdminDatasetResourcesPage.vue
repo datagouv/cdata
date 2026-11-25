@@ -73,12 +73,12 @@
       @cancel="removeFirstNewFile"
     />
 
-    <FileEditModalFromQueryStringClient
+    <FileEditModalFromQueryString
       v-if="canEdit && dataset"
       :schemas="schemas ?? []"
       :dataset
       @submit="updateResource"
-      @delete="refreshResources"
+      @delete="refreshAfterMutation"
     />
 
     <LoadingBlock
@@ -162,12 +162,7 @@
               />
             </td>
             <td>
-              <AdminBadge
-                size="xs"
-                :type="getStatus(resource).type"
-              >
-                {{ getStatus(resource).label }}
-              </AdminBadge>
+              <ResourceAvailabilityBadge :resource />
             </td>
             <td>
               {{ getResourceLabel(resource.type) }}
@@ -176,10 +171,10 @@
               {{ resource.format }}
             </td>
             <td>
-              {{ formatDate(resource.created_at) }}
+              <FormattedDate :date="resource.created_at" />
             </td>
             <td>
-              {{ formatDate(resource.last_modified) }}
+              <FormattedDate :date="resource.last_modified" />
             </td>
             <td v-if="canEdit">
               <FileEditModal
@@ -187,7 +182,7 @@
                 :loading
                 :resource="resourceToForm(resource, schemas ?? [])"
                 @submit="updateResource"
-                @delete="refreshResources"
+                @delete="refreshAfterMutation"
               />
             </td>
           </tr>
@@ -205,7 +200,7 @@
 </template>
 
 <script setup lang="ts">
-import { getResourceLabel, BrandedButton, LoadingBlock, Pagination, Tooltip, useFormatDate, type DatasetV2, type Resource, type SchemaResponseData, toast } from '@datagouv/components-next'
+import { getResourceLabel, BrandedButton, FormattedDate, LoadingBlock, Pagination, Tooltip, type DatasetV2, type Resource, type SchemaResponseData, toast } from '@datagouv/components-next'
 import { RiArrowDownLine, RiArrowUpLine, RiCheckLine, RiDraggable } from '@remixicon/vue'
 import { useSortable } from '@vueuse/integrations/useSortable'
 import { useTemplateRef } from 'vue'
@@ -213,19 +208,20 @@ import AdminTable from '../AdminTable/Table/AdminTable.vue'
 import AdminTableTh from '../AdminTable/Table/AdminTableTh.vue'
 import UploadResourceModal from './UploadResourceModal.vue'
 import FileEditModal from './FileEditModal.vue'
-import FileEditModalFromQueryStringClient from './FileEditModalFromQueryString.client.vue'
-import type { AdminBadgeType, CommunityResourceForm, PaginatedArray, ResourceForm } from '~/types/types'
+import FileEditModalFromQueryString from './FileEditModalFromQueryString.vue'
+import { geopfEligibilityRefreshKey } from './geopfEligibilityRefreshKey'
+import ResourceAvailabilityBadge from './ResourceAvailabilityBadge.vue'
+import type { CommunityResourceForm, PaginatedArray, ResourceForm } from '~/types/types'
 
 const route = useRoute()
 const { $api } = useNuxtApp()
-const { formatDate } = useFormatDate()
 
 const { data: schemas } = await useAPI<SchemaResponseData>('/api/1/datasets/schemas/')
 const { data: extensions } = await useAPI<Array<string>>('/api/1/datasets/extensions/')
 
 const datasetUrl = computed(() => `/api/2/datasets/${route.params.id}/`)
 const { data: dataset, status } = await useAPI<DatasetV2>(datasetUrl, {
-  redirectOn404: true,
+  showErrorPage: true,
   headers: {
     'X-Get-Datasets-Full-Objects': 'True',
   },
@@ -247,6 +243,14 @@ const refreshResources = async () => {
   resourcesPage.value = await $api<PaginatedArray<Resource>>(dataset.value.resources.href, { query: params.value })
 }
 watchEffect(async () => await refreshResources())
+
+// Kept off `refreshResources`, which the watchEffect above also runs on every
+// pagination change.
+const refreshGeopfEligibility = inject(geopfEligibilityRefreshKey, () => {})
+const refreshAfterMutation = async () => {
+  await refreshResources()
+  refreshGeopfEligibility()
+}
 
 const { t } = useTranslation()
 
@@ -272,7 +276,7 @@ const saveFirstNewFile = async (closeModal: () => void, form: ResourceForm | Com
   removeFirstNewFile()
 
   page.value = 1
-  refreshResources()
+  refreshAfterMutation()
 }
 const updateResource = async (closeModal: () => void, resourceForm: ResourceForm | CommunityResourceForm) => {
   if (!dataset.value) return
@@ -280,7 +284,7 @@ const updateResource = async (closeModal: () => void, resourceForm: ResourceForm
 
   try {
     await saveResourceForm(dataset.value, resourceForm)
-    await refreshResources()
+    await refreshAfterMutation()
     closeModal()
   }
   finally {
@@ -353,27 +357,6 @@ const saveReorder = async () => {
   }
   finally {
     loadingForOrdering.value = false
-  }
-}
-
-function getStatus(resource: Resource): { label: string, type: AdminBadgeType } {
-  if (resource.extras['check:available'] === true) {
-    return {
-      label: t('Disponible'),
-      type: 'primary',
-    }
-  }
-
-  if (resource.extras['check:available'] === false) {
-    return {
-      label: t('Indisponible'),
-      type: 'danger',
-    }
-  }
-
-  return {
-    label: t('Inconnu'),
-    type: 'warning',
   }
 }
 </script>

@@ -3,14 +3,14 @@ import { test, expect } from '../base'
 // Following an in-app link from the error page must clear the error state and
 // navigate normally, without crashing or leaving a blank/404 page.
 // Two distinct code paths reach error.vue and must both work:
-//   - /pages         -> empty slug, error thrown synchronously in setup
-//   - /pages/<slug>  -> missing slug, error thrown after `await useFetch`
+//   - /pages         -> empty slug, no API call
+//   - /pages/<slug>  -> missing slug, error raised after the API call
 // The second used to stay stuck on the 404 because clearing the error re-ran the
-// failing useFetch (see nuxt#27410). assertNoConsoleErrors also catches the
+// failing fetch (see nuxt#27410). assertNoConsoleErrors also catches the
 // "can't access property exposed" crash (see nuxt#22683).
 const startUrls = [
-  '/pages', // empty slug (sync throw)
-  '/pages/this-page-does-not-exist-1932', // missing slug (throw after useFetch)
+  '/pages', // empty slug
+  '/pages/this-page-does-not-exist-1932', // missing slug
 ]
 
 test.describe('Navigating away from the error page', () => {

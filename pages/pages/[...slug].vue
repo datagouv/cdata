@@ -1,87 +1,43 @@
-<!-- eslint-disable vue/no-v-html -->
 <template>
-  <div class="container mb-7">
-    <Breadcrumb>
-      <BreadcrumbItem
-        to="/"
-      >
-        Accueil
-      </BreadcrumbItem>
-      <BreadcrumbItem v-if="data?.data">
-        {{ data.data.title }}
-      </BreadcrumbItem>
-    </Breadcrumb>
-    <LoadingBlock
-      v-slot="{ data }"
-      :status
-      :data="data"
-    >
-      <div :class="markdownClasses">
-        <MarkdownViewer
-          v-if="data.extension === 'md'"
-          :content="data.content"
-          :min-heading="1"
-          size="md"
-        />
-        <ComponentDefinedInSetup
-          v-else
-        />
-      </div>
-    </LoadingBlock>
-  </div>
+  <PostView
+    v-if="post"
+    :post
+    :on-refresh="refreshPost"
+  />
+  <LoadingBlock
+    v-else-if="error"
+    status="error"
+    :data="null"
+  />
 </template>
 
 <script setup lang="ts">
-import { LoadingBlock, markdownClasses, MarkdownViewer } from '@datagouv/components-next'
-import Breadcrumb from '~/components/Breadcrumb/Breadcrumb.vue'
-import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import { LoadingBlock } from '@datagouv/components-next'
+import PostView from '~/components/Posts/PostView.vue'
+import type { Post } from '~/types/posts'
 
 const route = useRoute()
-const siteConfig = useSiteConfig()
 
-// An empty slug (/pages) is not a valid page. Skip the fetch entirely: its URL
-// `/nuxt-api/pages/` has a trailing slash that gets 308-redirected, which ofetch
-// follows without raising an error.
-const slug = route.params.slug ? (route.params.slug as string[]).join('/') : ''
+const segments = (route.params.slug as string[] | undefined) ?? []
+const lastSegment = segments.at(-1)
 
-const { data, status, error } = await useFetch<{
-  data: {
-    title: string
-    description?: string
-  }
-  extension: string
-  content: string
-}>(() => `/nuxt-api/pages/${slug}`, { immediate: Boolean(slug) })
+// An edito page is found by its own slug, the last segment of the path, whatever the
+// segments before it: a page moved under another parent keeps answering at its old path
+// and gets redirected to its canonical one.
+const { data: candidate, error, refresh: refreshPost } = await useAPI<Post>(
+  () => `/api/1/posts/${encodeURIComponent(lastSegment ?? '')}/`,
+  { immediate: Boolean(lastSegment) },
+)
+// A news lives under /posts: its slug under /pages is not a page.
+const post = computed(() => candidate.value?.kind === 'page' ? candidate.value : null)
 
-if (!slug || error.value || !data.value) {
-  // Use `showError`, not `throw createError`: throwing here rejects the async
-  // setup, and during an in-app (SPA) navigation Vue then renders this page once
-  // with an empty setup context, logging "Invalid vnode type: undefined" for each
-  // child component. `showError` sets the error state without rejecting setup.
+if (post.value) {
+  await redirectToCanonicalPost(post.value, route)
+}
+// Any other failure keeps its error message: answering 404 would say the page does not
+// exist when it may. `showError` rather than `throw createError`: throwing rejects the
+// async setup, and an in-app navigation then renders this page with an empty context.
+else if (!lastSegment || candidate.value || error.value?.statusCode === 404) {
   showError({ statusCode: 404, statusMessage: 'Page Not Found' })
 }
-
-const title = computed(() => data.value?.data.title)
-const description = computed(() => data.value?.data.description)
-
-useSeoMeta({
-  title,
-  description,
-})
-
-useHead({
-  script: [
-    {
-      'data-udata': siteConfig.url,
-      'src': '/oembed.js',
-      'tagPosition': 'bodyClose',
-    },
-  ],
-})
-
-const compTemplate = computed(() => data.value?.content)
-
-const ComponentDefinedInSetup = computed(() => h({
-  template: compTemplate.value,
-}) as Component)
 </script>

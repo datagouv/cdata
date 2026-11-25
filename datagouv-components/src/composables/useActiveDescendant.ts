@@ -60,23 +60,28 @@ export function useActiveDescendant<T extends Option>(options: MaybeRefOrGetter<
 
   function handleKeyPressForActiveDescendant(key: KeyboardEvent, alreadyMovedDown = false) {
     switch (key.key as CommonKeyboardKeys) {
+      // An arrow that moves the active option must not also scroll the page behind it
       case 'ArrowDown':
         if (direction === 'vertical' && !alreadyMovedDown && !key.altKey) {
+          key.preventDefault()
           activateNextOption()
         }
         break
       case 'ArrowUp':
         if (direction === 'vertical') {
+          key.preventDefault()
           activatePreviousOption()
         }
         break
       case 'ArrowLeft':
         if (direction === 'horizontal') {
+          key.preventDefault()
           activatePreviousOption()
         }
         break
       case 'ArrowRight':
         if (direction === 'horizontal' && !alreadyMovedDown && !key.altKey) {
+          key.preventDefault()
           activateNextOption()
         }
         break

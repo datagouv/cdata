@@ -4,7 +4,6 @@ export default defineNuxtRouteMiddleware(async (to, _from) => {
 
   if (to.path !== '/en/login' && !me.value) {
     // console.log('-> redirecting to login…')
-    const route = useRoute()
-    return navigateTo({ path: '/login', query: { next: route.fullPath } }, { external: true })
+    return navigateTo({ path: '/login', query: { next: to.fullPath } }, { external: true })
   }
 })

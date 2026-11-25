@@ -1,0 +1,188 @@
+diff --git a/src/packages/Controls/LayerImport/LayerImportDOM.js b/src/packages/Controls/LayerImport/LayerImportDOM.js
+index 578dd68cd314f99e703607d27d46ad6850ec32ac..b3fa6f31173a9c3b7d9bf18e65511b00b18311ec 100644
+--- a/src/packages/Controls/LayerImport/LayerImportDOM.js
++++ b/src/packages/Controls/LayerImport/LayerImportDOM.js
+@@ -725,7 +725,7 @@ var LayerImportDOM = {
+         var label = document.createElement("label");
+         label.className = "GPimportGetCapRubriqueTitle gpf-label fr-btn fr-btn--secondary";
+         label.htmlFor = input.id;
+-        label.innerHTML = title;
++        label.textContent = title;
+         label.title = title;
+         li.appendChild(label);
+ 
+@@ -744,7 +744,7 @@ var LayerImportDOM = {
+     _addImportGetCapResultLayer : function (description, id, container) {
+         var li = document.createElement("li");
+         li.className = "GPimportGetCapProposal gpf-panel__items_layerimport gpf-panel__items";
+-        li.innerHTML = description.content;
++        li.textContent = description.content;
+         li.title = description.title;
+         li.id = "GPimportGetCapProposal_" + id;
+ 
+diff --git a/src/packages/Controls/LayerSwitcher/LayerSwitcher.js b/src/packages/Controls/LayerSwitcher/LayerSwitcher.js
+index de9772c506924994c4ef60f381b3d28e1ce50bb6..956b8f3ec515ff72808889fb68d43c7f6d0c3b36 100644
+--- a/src/packages/Controls/LayerSwitcher/LayerSwitcher.js
++++ b/src/packages/Controls/LayerSwitcher/LayerSwitcher.js
+@@ -569,7 +569,7 @@ class LayerSwitcher extends Control {
+             if (config.title) {
+                 var nameDiv = document.getElementById(this._addUID("GPname_ID_" + id));
+                 if (nameDiv) {
+-                    nameDiv.innerHTML = config.title;
++                    nameDiv.textContent = config.title;
+                     nameDiv.title = config.description || config.title;
+                 }
+             }
+@@ -577,7 +577,7 @@ class LayerSwitcher extends Control {
+             if (config.producer) {
+                 let producerDiv = document.getElementById(this._addUID("GPlayerProducer_ID_" + id));
+                 if (producerDiv) {
+-                    producerDiv.innerHTML = config.producer;
++                    producerDiv.textContent = config.producer;
+                 } else {
+                     this.setLayerProducer(id, config.producer);
+                 }
+@@ -2298,7 +2298,7 @@ class LayerSwitcher extends Control {
+                 this._layers[id].title = value;
+                 var nameDiv = document.getElementById(this._addUID("GPname_ID_" + id));
+                 if (nameDiv) {
+-                    nameDiv.innerHTML = value;
++                    nameDiv.textContent = value;
+                     nameDiv.title = value;
+                 }
+                 break;
+@@ -2313,7 +2313,7 @@ class LayerSwitcher extends Control {
+                 this._layers[id].producer = value;
+                 var producerDiv = document.getElementById(this._addUID("GPlayerProducer_ID_" + id));
+                 if (producerDiv) {
+-                    producerDiv.innerHTML = value;
++                    producerDiv.textContent = value;
+                 }
+                 break;
+             case "display":
+diff --git a/src/packages/Controls/LayerSwitcher/LayerSwitcherDOM.js b/src/packages/Controls/LayerSwitcher/LayerSwitcherDOM.js
+index 10a9a64f2aaae5b35e11aad697bcbe69be7fc1e5..4ff54a9f527fd21e4f46a779b665a2355f5efec5 100644
+--- a/src/packages/Controls/LayerSwitcher/LayerSwitcherDOM.js
++++ b/src/packages/Controls/LayerSwitcher/LayerSwitcherDOM.js
+@@ -576,7 +576,7 @@ var LayerSwitcherDOM = {
+             // pas de title si tooltip
+             label.removeAttribute("title");
+         }
+-        label.innerHTML = obj.title;
++        label.textContent = obj.title;
+         // FIXME Hack temporaire pour TMS
+         // en attendant une meilleure gestion des titres de couches
+         if (obj.layer.config && obj.layer.config.serviceParams.id === "GPP:TMS") {
+@@ -597,7 +597,7 @@ var LayerSwitcherDOM = {
+         div.id = this._addUID("GPlayerProducer_ID_" + obj.id);
+         div.className = "GPlayerProducer";
+ 
+-        div.innerHTML = obj.producer;
++        div.textContent = obj.producer;
+         if (tooltips) {
+             div.dataset.tooltip = sanitizeHtml(obj.producer);
+             //ToolTips.active(div);
+@@ -1502,7 +1502,7 @@ var LayerSwitcherDOM = {
+         content.className = "gpf-panel__content fr-modal__content";
+         container.appendChild(content);
+ 
+-        if (obj.quicklookUrl) {
++        if (obj.quicklookUrl && Utils.isSafeUrl(obj.quicklookUrl)) {
+             var quick = document.createElement("div");
+             quick.id = this._addUID("GPlayerInfoQuicklook");
+             quick.title = "Afficher un aperçu de la couche";
+@@ -1514,7 +1514,7 @@ var LayerSwitcherDOM = {
+ 
+         var desc = document.createElement("div");
+         desc.id = this._addUID("GPlayerInfoDescription");
+-        desc.innerHTML = obj.description;
++        desc.textContent = obj.description;
+         content.appendChild(desc);
+ 
+         if (obj.metadata) {
+@@ -1526,20 +1526,25 @@ var LayerSwitcherDOM = {
+             mtdtitle.innerHTML = "Métadonnées";
+             mtd.appendChild(mtdtitle);
+ 
++            var hasMetadataLink = false;
+             for (var i = 0; i < obj.metadata.length; i++) {
+                 var urlmtd = obj.metadata[i].url;
++                if (!Utils.isSafeUrl(urlmtd)) {
++                    continue;
++                }
+ 
+                 var mtdlink = document.createElement("div");
+                 mtdlink.className = "GPlayerInfoLink";
+ 
+                 var refmtd = document.createElement("a");
+                 refmtd.href = urlmtd;
+-                refmtd.innerHTML = urlmtd;
++                refmtd.textContent = urlmtd;
+                 mtdlink.appendChild(refmtd);
+                 mtd.appendChild(mtdlink);
++                hasMetadataLink = true;
+             }
+ 
+-            if (obj.metadata.length !== 0) {
++            if (hasMetadataLink) {
+                 content.appendChild(mtd);
+             }
+         }
+@@ -1572,7 +1577,7 @@ var LayerSwitcherDOM = {
+                 if (legends.hasOwnProperty(scale)) {
+                     var urllgd = legends[scale].url;
+                     // on n'affiche pas les légendes pointant vers "nolegend.jpg"
+-                    if (typeof urllgd === "string" && urllgd.toLowerCase().indexOf("nolegend.jpg") === -1) {
++                    if (typeof urllgd === "string" && urllgd.toLowerCase().indexOf("nolegend.jpg") === -1 && Utils.isSafeUrl(urllgd)) {
+                         // TODO GPlayerInfoPopup
+                         var lgdlink = document.createElement("div");
+                         lgdlink.className = "GPlayerInfoLink";
+diff --git a/src/packages/Utils/Helper.js b/src/packages/Utils/Helper.js
+index 8c4504c818f4dc2937872f5731b6dae76be67038..0098327d30da61e92d4a6e96eb52cfe2ca0266b6 100644
+--- a/src/packages/Utils/Helper.js
++++ b/src/packages/Utils/Helper.js
+@@ -119,6 +119,22 @@ var Helper = {
+             }
+         }
+         return prefix + (++uidCounter_);
++    },
++
++    /**
++     * Whether an URL coming from a third-party document (e.g. a GetCapabilities
++     * response) can be used as a link target, i.e. it can't run script.
++     *
++     * @param {String} url - url to check
++     * @return {Boolean} true for http(s) URLs only
++     */
++    isSafeUrl : function (url) {
++        try {
++            var protocol = new URL(url, window.location.href).protocol;
++            return protocol === "http:" || protocol === "https:";
++        } catch (e) {
++            return false;
++        }
+     }
+ };
+ 
+diff --git a/src/packages/Utils/LayerUtils.js b/src/packages/Utils/LayerUtils.js
+index f547ddeeb62b1a89ad78731c544337031edb5380..5d2985548ca92989dcdbb6cfcba0f0e0bb1a2176 100644
+--- a/src/packages/Utils/LayerUtils.js
++++ b/src/packages/Utils/LayerUtils.js
+@@ -13,6 +13,8 @@
+ * LayerUtils.getAttributions();
+ * LayerUtils.intersects();
+ */
++import Helper from "./Helper";
++
+ var LayerUtils = {
+ 
+     /**
+@@ -260,7 +262,7 @@ var LayerUtils = {
+                     link.className = "gp-control-attribution-link";
+                     link.target = "_blank";
+                     container.appendChild(link);
+-                    if (url) {
++                    if (url && Helper.isSafeUrl(url)) {
+                         link.href = url;
+                     }
+ 

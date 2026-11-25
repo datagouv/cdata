@@ -34,11 +34,12 @@
 import type { TopicV2 } from '@datagouv/components-next'
 import AdminBreadcrumb from '~/components/Breadcrumbs/AdminBreadcrumb.vue'
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const route = useRoute()
-const { data: topic, refresh } = await useAPI<TopicV2>(`api/2/topics/${route.params.id}/`, { redirectOn404: true })
+const { data: topic, refresh } = await useAPI<TopicV2>(`api/2/topics/${route.params.id}/`, { showErrorPage: true })
 </script>

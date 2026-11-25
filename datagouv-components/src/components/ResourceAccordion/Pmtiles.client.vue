@@ -1,15 +1,17 @@
 <template>
-  <div>
-    <PreviewUnavailable v-if="hasError">
-      {{ t("L'aperçu cartographique de ce fichier n'a pas pu être chargé.") }}
-    </PreviewUnavailable>
+  <div class="flex h-full flex-col">
+    <PreviewError
+      v-if="hasError"
+      :resource="resource"
+      error-type="map_load"
+    />
     <div
       v-else
-      class="-mx-4"
+      class="flex min-h-0 flex-1 flex-col"
     >
       <div
         v-if="pmtilesViewerUrl"
-        class="bg-blue-100 text-datagouv fr-hidden fr-unhidden-md p-4"
+        class="bg-blue-100 text-datagouv fr-hidden fr-unhidden-md p-4 shrink-0"
       >
         <div class="fr-grid-row fr-grid-row--middle fr-grid-row--gutters">
           <div
@@ -35,12 +37,17 @@
           </p>
         </div>
       </div>
-      <div
-        ref="containerRef"
-        style="height: 600px;"
-      />
-      <div class="fr-px-5v fr-pt-5v">
-        {{ t("Aperçu de la carte mis à jour le {date}", { date: lastUpdate }) }}
+      <div class="relative min-h-0 flex-1">
+        <div
+          ref="containerRef"
+          class="size-full"
+        />
+        <!-- Freshness caption overlaid inside the map (bottom-left, the corner left
+             free by the navigation/geolocate controls top-right and the attribution
+             bottom-right) so the map itself can use the whole height. -->
+        <div class="pointer-events-none absolute bottom-2 left-2 z-10 rounded bg-white/90 px-2 py-1 text-[12px] leading-4 text-gray-medium shadow-sm">
+          {{ t("Aperçu de la carte mis à jour le {date}", { date: lastUpdate }) }}
+        </div>
       </div>
     </div>
   </div>
@@ -50,7 +57,8 @@
 import { computed, onMounted, ref, useTemplateRef } from 'vue'
 import { RiExternalLinkFill } from '@remixicon/vue'
 import { Protocol, PMTiles } from 'pmtiles'
-import maplibregl from 'maplibre-gl'
+import * as maplibregl from 'maplibre-gl'
+import maplibreWorkerUrl from 'maplibre-gl/dist/maplibre-gl-worker.mjs?worker&url'
 import DOMPurify from 'dompurify'
 import { useComponentsConfig } from '../../config'
 import { useFormatDate } from '../../functions/dates'
@@ -59,10 +67,11 @@ import type { Resource } from '../../types/resources'
 import type { Dataset, DatasetV2 } from '../../types/datasets'
 import BrandedButton from '../BrandedButton.vue'
 import styleVector from '../../../assets/json/vector.json'
-import PreviewUnavailable from './PreviewUnavailable.vue'
+import PreviewError from './PreviewError.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
-import { getOwnerName, getOwnerPage } from '../../functions/owned'
+import { getMapAttribution } from '../../functions/owned'
+import { getParsingFinishedAt } from '../../functions/resources'
 
 const props = defineProps<{ resource: Resource, dataset: Dataset | DatasetV2 }>()
 
@@ -83,17 +92,16 @@ const pmtilesViewerUrl = computed(() => {
 
 const lastUpdate = computed(() => {
   if (props.resource.extras['analysis:parsing:pmtiles_url'])
-    return formatDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined)
+    return formatDate(getParsingFinishedAt(props.resource))
   return formatDate(props.resource.last_modified)
 })
 
 const container = useTemplateRef('containerRef')
 
-const attributions = computed(() => {
-  if (!props.dataset.organization && !props.dataset.owner)
-    return ''
-  return `© <a href="${getOwnerPage(props.dataset)}" target="_blank">${getOwnerName(props.dataset)}</a>`
-})
+// v6 with a bundler cannot resolve the worker from import.meta.url; point it at the chunk Vite emits.
+maplibregl.setWorkerUrl(maplibreWorkerUrl)
+
+const attributions = computed(() => getMapAttribution(props.dataset))
 
 async function displayMap() {
   await import('maplibre-gl/dist/maplibre-gl.css')
@@ -104,14 +112,22 @@ async function displayMap() {
   const p = new PMTiles(pmtilesUrl.value)
   protocol.add(p)
 
-  p.getHeader().then((h: { maxZoom: number, centerLon: number, centerLat: number }) => {
+  p.getHeader().then((h: { minLon: number, minLat: number, maxLon: number, maxLat: number, centerZoom: number, centerLon: number, centerLat: number }) => {
+    // Frame the data's bounding box (carried by the archive header) so we land on
+    // the data. Fall back to the header center when the bbox is degenerate — an
+    // archive with a single feature, or bounds left unset (all zeroes).
+    const hasBounds = h.minLon < h.maxLon && h.minLat < h.maxLat
     const map = new maplibregl.Map({
       container: container.value!,
       // JSON import is inferred too loosely (e.g. center as number[]) to match
       // maplibre's strict StyleSpecification, so cast through unknown.
       style: styleVector as unknown as maplibregl.StyleSpecification,
-      zoom: h.maxZoom - 2,
-      center: [h.centerLon, h.centerLat],
+      ...(hasBounds
+        ? {
+            bounds: [[h.minLon, h.minLat], [h.maxLon, h.maxLat]] as [[number, number], [number, number]],
+            fitBoundsOptions: { padding: 24 },
+          }
+        : { center: [h.centerLon, h.centerLat] as [number, number], zoom: h.centerZoom }),
     })
     map.addControl(new maplibregl.NavigationControl())
     map.addControl(
@@ -174,7 +190,7 @@ async function displayMap() {
             'type': typeLayer.value as 'fill' | 'circle' | 'line',
             'paint': {
               [`${typeLayer.value}-color`]: 'steelblue',
-              [`${typeLayer.value}-opacity`]: { base: 1, stops: [[0, 0.9], [10, 0.6]] },
+              [`${typeLayer.value}-opacity`]: ['interpolate', ['linear'], ['zoom'], 0, 0.9, 10, 0.6],
             },
           } as maplibregl.AddLayerObject)
           map.on('click', layer.layer, showMapPopup)

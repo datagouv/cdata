@@ -5,6 +5,7 @@
     :resource="resource"
     :max-size="config.maxXmlPreviewCharSize"
     :load="load"
+    :can-edit="canEdit"
   >
     <XmlViewer :xml="(data as string)" />
   </PreviewWrapper>
@@ -23,6 +24,7 @@ const XmlViewer = defineAsyncComponent(() =>
 
 const props = defineProps<{
   resource: Resource
+  canEdit?: boolean
 }>()
 
 const config = useComponentsConfig()

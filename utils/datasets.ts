@@ -39,6 +39,37 @@ export function getDatasetAdminUrl(dataset: Dataset | DatasetV2 | DatasetV2WithF
   return `/admin/datasets/${dataset.id}`
 }
 
+/**
+ * The DOI minted by udata, or else the one declared by the harvest source.
+ */
+export function getDatasetDoi(dataset: DatasetV2WithFullObject): string | null {
+  return dataset.doi ?? dataset.harvest?.doi ?? null
+}
+
+/**
+ * A DOI has to keep resolving to a public page: udata refuses to delete such a dataset or to make
+ * it private (`Dataset.clean`). Its `permissions` only say who may act, not what the state allows.
+ * A DOI declared by the harvest source does not lock the dataset: only the one udata minted does.
+ */
+export function isDatasetLockedByDoi(dataset: DatasetV2 | DatasetV2WithFullObject): boolean {
+  return !!dataset.doi
+}
+
+/**
+ * Why this dataset cannot receive a DOI, or `null` when it can.
+ *
+ * Mirrors the conditions `create_doi` enforces in udata.
+ */
+export function useDoiBlockedReason() {
+  const { t } = useTranslation()
+
+  return (dataset: DatasetV2WithFullObject): string | null => {
+    if (!dataset.organization) return t('Seul un jeu de données publié par une organisation peut recevoir un DOI.')
+    if (dataset.private || dataset.deleted || dataset.archived) return t('Seul un jeu de données public peut recevoir un DOI.')
+    return null
+  }
+}
+
 export function datasetToForm(dataset: DatasetV2WithFullObject): DatasetForm {
   return {
     owned: dataset.organization ? { organization: dataset.organization, owner: null } : { owner: dataset.owner, organization: null },
@@ -297,7 +328,7 @@ export async function sendFile(url: string, resourceForm: ResourceForm | Communi
       formError = fetchError.data.message
     }
     fileInfo.state = { status: 'failed', message: formError }
-    throw new Error(notificationMessage)
+    throw new Error(notificationMessage, { cause: e })
   }
 }
 

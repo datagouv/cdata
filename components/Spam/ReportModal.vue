@@ -2,6 +2,8 @@
   <ModalWithButton
     :title="reported ? $t(`Merci d'avoir signalé ce contenu`) : $t('Signaler ce contenu')"
     size="lg"
+    form
+    @submit.prevent="send"
   >
     <template #button="{ attrs, listeners }">
       <BrandedButton
@@ -47,9 +49,8 @@
       <SelectGroup
         v-model="form.reason"
         :label="$t('Raison du signalement')"
-        :required="true"
+        required
         :has-error="!!getFirstError('reason')"
-        :has-warning="!!getFirstWarning('reason')"
         :error-text="getFirstError('reason')"
         :options="reasons"
       />
@@ -60,7 +61,6 @@
         :label="$t('Votre message')"
         :placeholder="$t('Évitez de partager des informations personnelles.')"
         :has-error="!!getFirstError('message')"
-        :has-warning="!!getFirstWarning('message')"
         :error-text="getFirstError('message')"
       />
     </div>
@@ -86,10 +86,10 @@
         </BrandedButton>
         <BrandedButton
           v-if="! reported"
+          type="submit"
           color="primary"
           :loading
           :icon="RiFlagLine"
-          @click="send"
         >
           {{ $t('Signalement') }}
         </BrandedButton>
@@ -100,7 +100,7 @@
 
 <script setup lang="ts">
 import { RiFlagLine } from '@remixicon/vue'
-import { BrandedButton, SelectGroup, SimpleBanner, TranslationT } from '@datagouv/components-next'
+import { BrandedButton, SelectGroup, SimpleBanner, toast, TranslationT } from '@datagouv/components-next'
 import type { ReportReason, ReportSubject } from '@datagouv/components-next'
 import CdataLink from '../CdataLink.vue'
 
@@ -112,12 +112,13 @@ const emit = defineEmits<{
 }>()
 
 const config = useRuntimeConfig()
+const { t } = useTranslation()
 const { $api } = useNuxtApp()
 const loading = ref(false)
 const reported = ref(false)
 
-const { form, getFirstError, getFirstWarning } = useForm({
-  reason: null,
+const { form, getFirstError, validate } = useForm({
+  reason: null as ReportReason['value'] | null,
   message: '',
 }, {
   reason: [required()],
@@ -126,10 +127,14 @@ const { form, getFirstError, getFirstWarning } = useForm({
 
 const reasons = ref([] as Array<ReportReason>)
 onMounted(async () => {
-  reasons.value = await $api<Array<ReportReason>>('/api/1/reports/reasons/')
+  const allReasons = await $api<Array<ReportReason>>('/api/1/reports/reasons/')
+  // `auto_spam` is set by the spam detection, users must not pick it
+  reasons.value = allReasons.filter(reason => reason.value !== 'auto_spam')
 })
 
 const send = async () => {
+  if (!await validate()) return
+
   try {
     loading.value = true
 
@@ -143,6 +148,9 @@ const send = async () => {
     })
     emit('reported')
     reported.value = true
+  }
+  catch {
+    toast.error(t('Impossible d\'envoyer le signalement.'))
   }
   finally {
     loading.value = false

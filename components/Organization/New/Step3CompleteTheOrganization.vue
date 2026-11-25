@@ -53,7 +53,7 @@
     <div class="fr-grid-row fr-grid-row--right gap-3">
       <BrandedButton
         color="secondary"
-        :href="`/admin/organizations/${organization.id}/profile`"
+        :href="`${organization.page}/presentation`"
       >
         {{ $t("Gérer l’organisation") }}
       </BrandedButton>

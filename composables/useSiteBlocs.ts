@@ -9,7 +9,9 @@ export async function useSiteBlocs(siteKey: SiteBlocsKey, extraFields: string[] 
 
   const fields = [siteKey, ...extraFields].join(',')
   const { data: site, refresh } = await useAPI<Site>('/api/1/site/', {
-    key: `site-${siteKey}`,
+    // Keyed by the fields asked for: two pages asking for different ones must not share the
+    // cached response, which would lack what one of them reads.
+    key: `site-${fields}`,
     headers: { 'X-Fields': `{${fields}}` },
   })
 
@@ -24,8 +26,10 @@ export async function useSiteBlocs(siteKey: SiteBlocsKey, extraFields: string[] 
       await refresh()
       toast.success(t('Page sauvegardée'))
     }
-    catch {
+    catch (error) {
       toast.error(t('Erreur lors de la sauvegarde'))
+      // The editor keeps the changes that could not be saved
+      throw error
     }
   }
 

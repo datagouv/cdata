@@ -28,4 +28,24 @@ test.describe('Search redirections', () => {
       await expect(page).toHaveURL(url)
     })
   })
+
+  // Those old search URLs are still indexed and linked from outside, so the redirect
+  // has to happen over HTTP: a client that runs no JS never gets past the landing page.
+  redirectionCases.forEach(({ from, to }) => {
+    test(`${from} → ${to} without running any JS`, async ({ request }) => {
+      const response = await request.get(from, { maxRedirects: 0 })
+
+      expect(response.status()).toBe(308)
+      const location = new URL(response.headers()['location'], 'http://localhost')
+      expect(location.pathname + location.search).toBe(to)
+    })
+  })
+
+  noRedirectionCases.forEach((url) => {
+    test(`${url} is served as-is without running any JS`, async ({ request }) => {
+      const response = await request.get(url, { maxRedirects: 0 })
+
+      expect(response.status()).toBe(200)
+    })
+  })
 })

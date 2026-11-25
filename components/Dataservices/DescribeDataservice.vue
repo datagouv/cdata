@@ -5,6 +5,7 @@
       :button-text="$t('Aide')"
       :on-right="true"
       :fixed="true"
+      :show-border="false"
     >
       <template #title>
         <span
@@ -40,6 +41,12 @@
           <p class="fr-m-0">
             {{ t("Rédigez une description claire et précise de l'API. Les usagers ont besoin de comprendre l'objectif de l'API, les données délivrées, le périmètre couvert (la donnée est-elle exhaustive, y-a t'il des manques ?), la fréquence d'actualisation de la donnée, ainsi que les paramètres avec lesquels ils peuvent effectuer un appel.") }}
           </p>
+          <p class="fr-mt-3v font-bold">
+            {{ $t("Suggestions automatiques") }}
+          </p>
+          <p class="fr-m-0">
+            {{ $t(`Une première version peut être générée automatiquement si vous avez rempli le nom de l'API et au moins un lien fonctionnel vers la documentation (technique ou machine), puis adaptée selon vos besoins.`) }}
+          </p>
         </Accordion>
         <Accordion
           :id="addBaseUrlAccordionId"
@@ -55,9 +62,27 @@
           :title="t('Ajouter un lien vers la documentation machine')"
           :state="accordionState('machine_documentation_url')"
         >
-          <p class="fr-m-0">
+          <p class="mb-3">
             {{ t("Idéalement, proposez un lien OpenAPI (Swagger) qui permet aux développeurs d'explorer les endpoints, voir les méthodes disponibles, et tester des requêtes directement depuis la documentation. Dans le cas de services géographiques, vous pouvez renseigner un lien vers le service avec une requête GetCapabilities pour obtenir les métadonnées du service.") }}
           </p>
+          <SimpleBanner type="primary">
+            <span
+              class="fr-icon-info-line mr-2"
+              aria-hidden="true"
+            />
+            <TranslationT
+              keypath="Vous êtes une administration et vous n'avez pas de solution pour héberger ce fichier ? Déposez-le sur {files}, le service de partage de fichiers de La Suite numérique, puis renseignez ici son lien de partage."
+            >
+              <template #files>
+                <a
+                  class="link"
+                  href="https://fichiers.numerique.gouv.fr"
+                  target="_blank"
+                  rel="noopener"
+                >fichiers.numerique.gouv.fr</a>
+              </template>
+            </TranslationT>
+          </SimpleBanner>
         </Accordion>
         <Accordion
           :id="technicalDocumentationUrlAccordionId"
@@ -124,6 +149,12 @@
           </p>
         </Accordion>
       </AccordionGroup>
+      <div
+        v-if="$slots.aside"
+        class="mt-8"
+      >
+        <slot name="aside" />
+      </div>
     </Sidemenu>
     <form
       :id="formId"
@@ -158,6 +189,7 @@
         <fieldset
           v-if="isMeAdmin() && type === 'update'"
           class="fr-fieldset"
+          :disabled="!canEdit"
         >
           <legend
             id="featured-legend"
@@ -177,6 +209,7 @@
           v-if="type === 'create'"
           class="fr-fieldset"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -199,6 +232,7 @@
         <fieldset
           class="fr-fieldset min-w-0"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -250,12 +284,15 @@
             class="fr-fieldset__element min-w-0"
             :accordion="addDescriptionAccordionId"
           >
+            <!-- The markdown editor is a contenteditable, not a form control: the enclosing disabled fieldset does not reach it. -->
             <InputGroup
+              :key="descriptionEditorRefreshKey"
               v-model="form.description"
               class="mb-3"
               :label="$t('Description')"
               :required="true"
               type="markdown"
+              :disabled="!canEdit"
               :has-error="!!getFirstError('description')"
               :has-warning="!!getFirstWarning('description')"
               :error-text="getFirstError('description')"
@@ -267,6 +304,56 @@
               type="warning"
             >
               {{ getFirstWarning("description") }}
+            </SimpleBanner>
+            <div class="flex items-center gap-4 mt-2 mb-3">
+              <Tooltip v-if="!canGenerateDescription">
+                <BrandedButton
+                  type="button"
+                  color="primary"
+                  :disabled="true"
+                >
+                  <div class="flex items-center space-x-2">
+                    <RiSparklingLine
+                      class="size-4"
+                      aria-hidden="true"
+                    />
+                    <span>{{ $t('Suggérer une description') }}</span>
+                  </div>
+                </BrandedButton>
+                <template #tooltip>
+                  {{ $t('Remplissez le nom de l\'API et au moins l\'un des liens (documentation technique ou documentation machine) pour utiliser cette fonctionnalité.') }}
+                </template>
+              </Tooltip>
+              <BrandedButton
+                v-else
+                type="button"
+                color="primary"
+                :icon="RiSparklingLine"
+                :loading="isGeneratingDescription"
+                @click="handleAutoCompleteDescription"
+              >
+                <template v-if="isGeneratingDescription">
+                  {{ $t('Suggestion en cours...') }}
+                </template>
+                <template v-else>
+                  {{ $t('Suggérer une description') }}
+                </template>
+              </BrandedButton>
+              <CdataLink
+                v-if="config.public.generateDescriptionFeedbackUrl && hasReceivedAiDescriptionSuggestion"
+                :to="config.public.generateDescriptionFeedbackUrl"
+                target="_blank"
+                class="text-sm text-gray-medium"
+              >
+                {{ $t('Comment avez-vous trouvé cette suggestion ?') }}
+              </CdataLink>
+            </div>
+            <SimpleBanner
+              v-if="descriptionGenerationErrorMessage"
+              type="danger"
+              class="mb-3"
+            >
+              {{ descriptionGenerationErrorMessage }}
             </SimpleBanner>
           </LinkedToAccordion>
           <LinkedToAccordion
@@ -343,13 +430,14 @@
           v-if="form.owned?.organization"
           class="fr-fieldset"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-0">
-              {{ harvested ? t("Attributions et points de contacts") : t("Points de contact") }}
+              {{ t("Points de contact et attributions") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -363,14 +451,12 @@
               v-model="form.contact_points[index]"
               class="pt-3"
               :organization="form.owned?.organization"
-              :show-attributions="harvested"
             />
             <ContactPointSelect
               v-if="form.contact_points.length === 0"
               v-model="form.contact_points[0]"
               class="pt-3"
               :organization="form.owned?.organization"
-              :show-attributions="harvested"
             />
             <BrandedButton
               class="mt-3"
@@ -380,13 +466,14 @@
               :icon="RiAddLine"
               @click="form.contact_points.push({ ...defaultContactForm })"
             >
-              {{ harvested ? t('Nouvelle attribution') : t('Nouveau contact') }}
+              {{ t('Nouvelle attribution') }}
             </BrandedButton>
           </LinkedToAccordion>
         </fieldset>
         <fieldset
           class="fr-fieldset min-w-0"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -445,6 +532,7 @@
         <fieldset
           class="fr-fieldset"
           aria-labelledby="rate-limiting-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="rate-limiting-legend"
@@ -504,7 +592,7 @@
           </div>
         </fieldset>
         <div class="fr-grid-row fr-grid-row--right">
-          <ModalClient
+          <Modal
             :title="$t(`Êtes vous-sûr de vouloir publier cette API sans documentation OpenAPI/Swagger ?`)"
             size="lg"
             :opened="openConfirmModal"
@@ -537,7 +625,7 @@
                 />
               </div>
             </template>
-          </ModalClient>
+          </Modal>
           <slot
             name="button"
             :form="formId"
@@ -550,20 +638,24 @@
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, SimpleBanner, TranslationT } from '@datagouv/components-next'
-import { RiAddLine } from '@remixicon/vue'
-import ModalClient from '../Modal/Modal.client.vue'
+import { BrandedButton, SimpleBanner, Tooltip, TranslationT } from '@datagouv/components-next'
+import { RiAddLine, RiSparklingLine } from '@remixicon/vue'
+import { computed, nextTick } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
 import AccordionGroup from '~/components/Accordion/AccordionGroup.global.vue'
-import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
+import CdataLink from '~/components/CdataLink.vue'
 import ContactPointSelect from '~/components/ContactPointSelect.vue'
 import ProducerSelect from '~/components/ProducerSelect.vue'
+import ToggleSwitch from '~/components/Form/ToggleSwitch.vue'
+import Modal from '../Modal/Modal.vue'
 import type { DataserviceForm } from '~/types/types'
 
-const props = defineProps<{
-  harvested?: boolean
+const props = withDefaults(defineProps<{
   type: 'create' | 'update'
-}>()
+  canEdit?: boolean
+}>(), {
+  canEdit: true,
+})
 const dataserviceForm = defineModel<DataserviceForm>({ required: true })
 
 const emit = defineEmits<{
@@ -571,6 +663,31 @@ const emit = defineEmits<{
 }>()
 
 const { t } = useTranslation()
+
+const DATASERVICE_DESCRIPTION_ERROR_GENERIC
+  = 'Une erreur s’est produite lors de la suggestion de description. Vérifiez que les liens de documentation sont valides, accessibles et adaptés, puis réessayez.'
+
+function formatIntFrLocale(n: string): string {
+  return Number.parseInt(n, 10).toLocaleString('fr-FR')
+}
+
+function userFacingDataserviceDescriptionError(raw: string): string {
+  const bytesInParens = /\((\d+) bytes\)/
+  const charsInPrompt = /process \((\d+) characters, maximum (\d+)\)/
+  if (raw.includes('Documentation response exceeds maximum size')) {
+    const m = raw.match(bytesInParens)
+    if (m) {
+      return `La suggestion de description a échoué : la documentation téléchargée dépasse la taille maximale autorisée (${formatIntFrLocale(m[1])} octets). Réduisez le fichier ou utilisez une autre URL.`
+    }
+  }
+  if (raw.includes('The documentation is too long to process')) {
+    const m = raw.match(charsInPrompt)
+    if (m) {
+      return `La suggestion de description a échoué : la documentation est trop longue pour être traitée (${formatIntFrLocale(m[1])} caractères, maximum ${formatIntFrLocale(m[2])}). Utilisez une documentation plus courte ou une seule URL.`
+    }
+  }
+  return DATASERVICE_DESCRIPTION_ERROR_GENERIC
+}
 
 const formId = useId()
 
@@ -592,6 +709,18 @@ const contactPointAccordionId = useId()
 const machineDocumentationUrlWarningMessage = t(`Il est fortement recommandé d'ajouter une documentation OpenAPI ou Swagger à votre API.`)
 const openConfirmModal = ref(false)
 const showRateLimitingUrl = ref(false)
+const descriptionEditorRefreshKey = ref(0)
+const isGeneratingDescription = ref(false)
+const hasReceivedAiDescriptionSuggestion = ref(false)
+const descriptionGenerationErrorMessage = ref<string | null>(null)
+
+const hasTechnicalDocumentationUrl = computed(() => form.value.technical_documentation_url && form.value.technical_documentation_url.trim().length > 0)
+const hasMachineDocumentationUrl = computed(() => form.value.machine_documentation_url && form.value.machine_documentation_url.trim().length > 0)
+const hasTitle = computed(() => form.value.title && form.value.title.trim().length > 0)
+
+const canGenerateDescription = computed(() => {
+  return hasTitle.value && (hasTechnicalDocumentationUrl.value || hasMachineDocumentationUrl.value)
+})
 
 const { form, touch, getFirstError, getFirstWarning, validate } = useForm(dataserviceForm, {
   featured: [],
@@ -621,6 +750,62 @@ const accordionState = (key: keyof typeof form.value) => {
   if (getFirstWarning(key)) return 'warning'
 
   return 'default'
+}
+
+async function handleAutoCompleteDescription() {
+  const title = form.value.title?.trim()
+  const technicalUrl = form.value.technical_documentation_url?.trim()
+  const machineUrl = form.value.machine_documentation_url?.trim()
+
+  if (!title || (!technicalUrl && !machineUrl)) {
+    return
+  }
+
+  try {
+    isGeneratingDescription.value = true
+    descriptionGenerationErrorMessage.value = null
+
+    const requestBody: {
+      title: string
+      technicalDocumentationUrl?: string
+      machineDocumentationUrl?: string
+    } = {
+      title,
+      ...(technicalUrl && { technicalDocumentationUrl: technicalUrl }),
+      ...(machineUrl && { machineDocumentationUrl: machineUrl }),
+    }
+
+    // We call our server-side API route instead of Albert API directly to avoid CORS issues.
+    // The Albert API doesn't allow direct requests from browser-side JavaScript.
+    // Our server acts as a proxy, keeping the API key secure on the server side.
+    const response = await $fetch<{ description?: string }>('/nuxt-api/albert/generate-dataservice-description', {
+      method: 'POST',
+      body: requestBody,
+    })
+
+    if (response.description) {
+      form.value.description = response.description
+      if (form.value.description.trim().length > 0) {
+        hasReceivedAiDescriptionSuggestion.value = true
+      }
+      descriptionEditorRefreshKey.value += 1
+      await nextTick()
+    }
+  }
+  catch (error) {
+    console.error('Failed to generate description:', error)
+    const raw = error && typeof error === 'object' && 'data' in error && error.data && typeof error.data === 'object' && 'statusMessage' in error.data
+      ? String((error.data as { statusMessage: string }).statusMessage)
+      : error instanceof Error
+        ? error.message
+        : ''
+    descriptionGenerationErrorMessage.value = raw
+      ? userFacingDataserviceDescriptionError(raw)
+      : DATASERVICE_DESCRIPTION_ERROR_GENERIC
+  }
+  finally {
+    isGeneratingDescription.value = false
+  }
 }
 
 async function submit() {

@@ -1,7 +1,7 @@
 import type { Owned, OwnedWithId } from './owned'
-import type { Dataset } from './datasets'
+import type { Dataset, Rel } from './datasets'
 import type { Badges } from './badges'
-import type { Dataservice } from './dataservices'
+import type { DataserviceReference } from './dataservices'
 
 export type ReuseReference = {
   class: 'Reuse'
@@ -29,7 +29,7 @@ export type Reuse = BaseReuse & {
   badges: Badges
   created_at: string
   datasets: Array<Dataset>
-  dataservices: Array<Dataservice>
+  dataservices: Array<DataserviceReference>
   archived: string | null
   deleted: string | null
   extras: Record<string, unknown>
@@ -49,6 +49,17 @@ export type Reuse = BaseReuse & {
   page: ReuseReference['page']
   uri: ReuseReference['uri']
   permissions: { edit: boolean, delete: boolean }
+}
+
+/**
+ * Lightweight reuse returned by the listing endpoints (`/api/2/reuses/` and
+ * `/api/2/reuses/search/`): the `datasets` and `dataservices` reference lists
+ * are replaced by links to their respective listing endpoints filtered on this
+ * reuse, so that listing reuses does not dereference every linked dataset.
+ */
+export type ReuseV2 = Owned & Omit<Reuse, 'datasets' | 'dataservices'> & {
+  datasets: Rel
+  dataservices: Rel
 }
 
 export type ReuseType = {

@@ -40,9 +40,10 @@
 import AdminUserProfileHeader from '~/components/User/AdminUserProfileHeader.vue'
 import AdminOrgInvitation from '~/components/AdminOrgInvitation/AdminOrgInvitation.vue'
 import type { OrgInvitation } from '~/types/types'
+import { keepScrollWithinPage } from '~/utils/scroll'
 
 definePageMeta({
-  keepScroll: true,
+  scrollToTop: keepScrollWithinPage,
 })
 
 const { t } = useTranslation()

@@ -1,8 +1,11 @@
 <template>
   <div>
-    <PreviewUnavailable v-if="hasError">
-      {{ t("L'aperçu de ce fichier n'a pas pu être chargé. Téléchargez-le depuis l'onglet Téléchargements.") }}
-    </PreviewUnavailable>
+    <PreviewError
+      v-if="hasError"
+      :resource="resource"
+      :error-type="errorType"
+      :show-producer-cta="showProducerCta"
+    />
     <PreviewLoader v-else-if="loading" />
     <div
       v-else
@@ -34,6 +37,7 @@
           </p>
         </div>
       </div>
+      <TabularPreviewDateBanner :resource />
       <div class="fr-table fr-table--no-background fr-p-0 fr-m-0">
         <table class="fr-mb-3w">
           <caption class="sr-only">
@@ -90,7 +94,6 @@
         @change="changePage"
       />
       <div class="fr-px-5v">
-        {{ t("Dernière mise à jour de la prévisualisation : {date}", { date: lastUpdate }) }} —
         {{ t('{count} colonnes', columns.length) }} —
         {{ t('Lignes {count}', rowCount) }}
       </div>
@@ -103,20 +106,20 @@ import { computed, onMounted, ref } from 'vue'
 import { RiArrowDownLine, RiArrowUpLine, RiExternalLinkFill } from '@remixicon/vue'
 import Pagination from '../Pagination.vue'
 import { getData, type SortConfig } from '../../functions/tabularApi'
-import { useFormatDate } from '../../functions/dates'
+import TabularPreviewDateBanner from '../TabularExplorer/TabularPreviewDateBanner.vue'
 import { trackEvent } from '../../functions/matomo'
 import type { Resource } from '../../types/resources'
 import { useComponentsConfig } from '../../config'
 import BrandedButton from '../BrandedButton.vue'
-import PreviewUnavailable from './PreviewUnavailable.vue'
+import PreviewError from './PreviewError.vue'
 import { useTranslation } from '../../composables/useTranslation'
 import franceSvg from './france.svg?raw'
 import PreviewLoader from './PreviewLoader.vue'
+import { getTransientErrorType } from '../../functions/previewErrors'
 
-const props = defineProps<{ resource: Resource }>()
+const props = defineProps<{ resource: Resource, showProducerCta?: boolean }>()
 
 const { t } = useTranslation()
-const { formatDate } = useFormatDate()
 
 const rows = ref<Array<Record<string, unknown>>>([])
 const columns = ref<Array<string>>([])
@@ -146,7 +149,7 @@ async function getTableInfos(page: number, sortConfig?: SortConfig | null) {
       // Update existing rows
       rows.value = response.data
       columns.value = Object.keys(response.data[0]).filter(item => item !== '__id')
-      rowCount.value = response.meta.total
+      rowCount.value = response.meta.total ?? 0
       currentPage.value = page
       loading.value = false
     }
@@ -196,7 +199,9 @@ function sortByField(col: string) {
   getTableInfos(currentPage.value, sortConfig.value)
 };
 
-const lastUpdate = computed(() => formatDate(props.resource.extras['analysis:parsing:finished_at'] as string | undefined))
+// A tabular API failure is (most often) transient: when metadata gives no
+// diagnosis, describe a failure rather than claiming the file can't be previewed.
+const errorType = computed(() => getTransientErrorType(props.resource))
 
 onMounted(() => {
   getTableInfos(currentPage.value)

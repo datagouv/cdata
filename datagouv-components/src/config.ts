@@ -1,6 +1,7 @@
 import { inject, type Component, type InjectionKey } from 'vue'
 import type { UseFetchFunction } from './functions/api.types'
 import type { $Fetch, FetchOptions } from 'ofetch'
+import type { RouteLocationNormalizedLoaded } from 'vue-router'
 
 export type PluginConfig = {
   name: string // Name of the application (ex: data.gouv.fr)
@@ -12,6 +13,7 @@ export type PluginConfig = {
   datasetQualityGuideUrl?: string
   maxJsonPreviewCharSize?: number // Maximum size of JSON to preview in characters. JSON preview module is partly collapsed by default so we can have a preview for large files.
   maxPdfPreviewByteSize?: number // Maximum size of PDF to preview in bytes
+  maxImagePreviewByteSize?: number // Maximum size of image to preview in bytes
   maxXmlPreviewCharSize?: number // Maximum size of XML to preview in characters. XML preview module can NOT be collapsed by default so we should not have a preview for large files.
   pmtilesViewerBaseUrl?: string | null // Base URL of a pmtiles viewer (ex: https://pmtiles.io/#url=)
   metricsApiUrl?: string
@@ -42,8 +44,15 @@ export type PluginConfig = {
   textClamp?: string | Component | null
   appLink?: Component | null
   clientOnly?: Component | null
+  /**
+   * The route of the page a component is rendered in. vue-router's `useRoute` is the
+   * global one: while the next page loads, the page being left is still mounted and
+   * already sees the next URL. Nuxt's `useRoute` keeps each page on its own route.
+   */
+  useRoute?: () => RouteLocationNormalizedLoaded
   searchDebounce?: number
   forumUrl?: string
+  supportUrl?: string
 }
 
 export const configKey = Symbol() as InjectionKey<PluginConfig>

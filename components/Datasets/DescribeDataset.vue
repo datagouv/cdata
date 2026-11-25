@@ -5,6 +5,7 @@
       :button-text="$t('Aide')"
       :on-right="true"
       :fixed="true"
+      :show-border="false"
     >
       <template #title>
         <span
@@ -159,6 +160,12 @@
           </p>
         </Accordion>
       </AccordionGroup>
+      <div
+        v-if="$slots.aside"
+        class="mt-8"
+      >
+        <slot name="aside" />
+      </div>
     </Sidemenu>
     <div class="w-full lg:w-7/12">
       <div class="fr-p-3w bg-white">
@@ -189,6 +196,7 @@
         <fieldset
           v-if="isGlobalAdmin && type === 'update'"
           class="fr-fieldset"
+          :disabled="!canEdit"
         >
           <legend
             id="featured-legend"
@@ -208,6 +216,7 @@
           v-if="type === 'create'"
           class="fr-fieldset"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -231,6 +240,7 @@
         <fieldset
           class="fr-fieldset min-w-0"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -276,12 +286,14 @@
             class="fr-fieldset__element min-w-0"
             :accordion="writeAGoodDescriptionAccordionId"
           >
+            <!-- The markdown editor is a contenteditable, not a form control: the enclosing disabled fieldset does not reach it. -->
             <InputGroup
               v-model="form.description"
               class="mb-3"
               :label="$t('Description')"
               :required="true"
               type="markdown"
+              :disabled="!canEdit"
               :has-error="!!getFirstError('description')"
               :has-warning="!!getFirstWarning('description')"
               :error-text="getFirstError('description')"
@@ -436,6 +448,7 @@
         <fieldset
           class="fr-fieldset"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
@@ -525,13 +538,14 @@
           v-if="form.owned?.organization"
           class="fr-fieldset"
           aria-labelledby="description-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="description-legend"
             class="fr-fieldset__legend"
           >
             <h2 class="text-sm font-bold uppercase mb-0">
-              {{ harvested ? t("Attributions et points de contact") : t("Points de contact") }}
+              {{ t("Points de contact et attributions") }}
             </h2>
           </legend>
           <LinkedToAccordion
@@ -544,14 +558,12 @@
               v-model="form.contact_points[index]"
               class="pt-3"
               :organization="form.owned?.organization"
-              :show-attributions="harvested"
             />
             <ContactPointSelect
               v-if="form.contact_points.length === 0"
               v-model="form.contact_points[0]"
               class="pt-3"
               :organization="form.owned?.organization"
-              :show-attributions="harvested"
             />
             <BrandedButton
               class="mt-4"
@@ -561,13 +573,14 @@
               :icon="RiAddLine"
               @click="form.contact_points.push({ ...defaultContactForm })"
             >
-              {{ harvested ? t('Nouvelle attribution') : t('Nouveau contact') }}
+              {{ t('Nouvelle attribution') }}
             </BrandedButton>
           </LinkedToAccordion>
         </fieldset>
         <fieldset
           class="fr-fieldset"
           aria-labelledby="time-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="time-legend"
@@ -589,7 +602,8 @@
               :placeholder="$t('Recherchez une fréquence…')"
               :get-option-id="(frequency) => frequency.label"
               :display-value="(frequency) => frequency.label"
-              :options="frequencies ?? []"
+              :options="frequencies"
+              :group-by="groupFrequency"
               :multiple="false"
               :required="true"
               :error-text="getFirstError('frequency')"
@@ -639,6 +653,7 @@
         <fieldset
           class="fr-fieldset"
           aria-labelledby="space-legend"
+          :disabled="!canEdit"
         >
           <legend
             id="space-legend"
@@ -692,17 +707,16 @@
                   </SearchableSelect>
                   <div
                     v-if="form.spatial_zones.length"
-                    class="mt-2 flex flex-wrap"
+                    class="mt-2 flex flex-wrap gap-2"
                   >
-                    <button
+                    <TagComponent
                       v-for="zone in form.spatial_zones"
                       :key="zone.id"
-                      class="fr-tag fr-tag--sm fr-tag--dismiss  mr-2 mb-2"
-                      type="button"
+                      dismissible
                       @click="removeZone(zone)"
                     >
                       {{ zone.name }}
-                    </button>
+                    </TagComponent>
                   </div>
                 </div>
               </div>
@@ -774,7 +788,7 @@
 
 <script setup lang="ts">
 import { BrandedButton, Tooltip, AI_SUGGESTION_MIN_DESCRIPTION_LENGTH, DESCRIPTION_SHORT_MAX_LENGTH, DESCRIPTION_MIN_LENGTH, SearchableSelect } from '@datagouv/components-next'
-import { SimpleBanner, type Badge, type Frequency, type License } from '@datagouv/components-next'
+import { SimpleBanner, Tag as TagComponent, type Badge, type License } from '@datagouv/components-next'
 import { RiAddLine, RiStarFill, RiSparklingLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import Accordion from '~/components/Accordion/Accordion.global.vue'
@@ -789,7 +803,6 @@ const datasetForm = defineModel<DatasetForm>({ required: true })
 const props = withDefaults(defineProps<{
   submitLabel: string
   type: 'create' | 'update'
-  harvested?: boolean
   badges?: Array<Badge>
   canEdit?: boolean
   readOnlyMessage?: string
@@ -833,7 +846,7 @@ watch(() => props.badges, (badges) => {
 })
 watch(newBadges, badges => emit('badges-change', badges))
 
-const { data: frequencies } = await useAPI<Array<Frequency>>('/api/1/datasets/frequencies/', { lazy: true })
+const { frequencies, groupFrequency } = await useFrequencies()
 
 const { data: allLicenses } = await useAPI<Array<License>>('/api/1/datasets/licenses/', { lazy: true })
 

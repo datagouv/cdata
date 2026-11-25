@@ -1,5 +1,6 @@
 <template>
   <div
+    ref="element"
     class="fr-fieldset__element"
     @focusin="focusIn"
     @focusout="focusOut"
@@ -35,6 +36,8 @@ const props = defineProps<{
   formKey: KeysOfUnion<T>
 }>()
 
+const element = useTemplateRef<HTMLDivElement>('element')
+
 const accordionsId = inject<string>('accordionsId')
 const { getFirstWarning, touch } = inject<FormInfo<T>>('formInfo', undefined as never)
 provide('formKey', props.formKey as string)
@@ -57,7 +60,13 @@ const focusIn = () => {
   open(innerAccordionId)
 }
 
-const focusOut = () => {
+// A field can hold several focusable elements (an input and the options it filters, a
+// value and its action button). Moving between them is not leaving the field, so
+// validating there would flag a value the user is still in the middle of choosing.
+const focusOut = (event: FocusEvent) => {
+  const nextFocused = event.relatedTarget
+  if (nextFocused instanceof Node && element.value?.contains(nextFocused)) return
+
   touch(props.formKey)
 }
 </script>

@@ -80,7 +80,7 @@
 </template>
 
 <script setup lang="ts">
-import type { Reuse, TopicV2, TopicElement } from '@datagouv/components-next'
+import type { Reuse, ReuseV2, TopicV2, TopicElement } from '@datagouv/components-next'
 import { BrandedButton, LoadingBlock, Pagination } from '@datagouv/components-next'
 import { RiAddLine, RiDeleteBinLine } from '@remixicon/vue'
 import AdminReusesTable from '~/components/AdminTable/AdminReusesTable/AdminReusesTable.vue'
@@ -119,7 +119,7 @@ const addReuses = async (close: () => void) => {
   close()
 }
 
-const removeReuse = async (reuse: Reuse) => {
+const removeReuse = async (reuse: Reuse | ReuseV2) => {
   const element = pageData.value?.data.find(e => e.element.id === reuse.id)
   if (!element) return
   await $api(`/api/2/topics/${props.topic.id}/elements/${element.id}/`, { method: 'DELETE' })

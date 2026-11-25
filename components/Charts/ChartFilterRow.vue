@@ -1,7 +1,17 @@
 <template>
   <div class="flex items-center gap-2 flex-wrap md:flex-nowrap">
-    <div class="text-xs text-gray-600">
-      {{ index === 0 ? $t('Quand') : $t('Et que') }}
+    <div class="min-w-20 shrink-0">
+      <Listbox
+        v-if="index > 0"
+        :model-value="combinator"
+        :options="['and', 'or']"
+        :display-value="(opt) => opt === 'and' ? t('Et') : t('Ou')"
+        @update:model-value="(value) => value && $emit('update:combinator', value)"
+      />
+      <span
+        v-else
+        class="text-xs text-gray-600"
+      >{{ t('Quand') }}</span>
     </div>
     <Listbox
       v-model="filter.column"
@@ -23,15 +33,15 @@
       v-if="showValueInput"
       v-model="filter.value"
       type="text"
-      class="fr-input text-sm w-32 min-w-0 max-w-1/3"
+      class="fr-input text-sm h-10 w-32 min-w-0 max-w-1/3"
       :placeholder="$t('Valeur')"
     >
 
     <BrandedButton
       size="xs"
-      :disabled="!filter.column"
       :icon="RiDeleteBinLine"
       icon-only
+      :aria-label="t('Supprimer la règle')"
       @click="$emit('remove')"
     />
   </div>
@@ -42,17 +52,20 @@ import type { Filter, FilterCondition } from '@datagouv/components-next'
 import { Listbox, BrandedButton } from '@datagouv/components-next'
 import { RiDeleteBinLine } from '@remixicon/vue'
 import { computed } from 'vue'
+import type { FilterColumnOption, FilterGroupCombinator } from '~/utils/chartFilters'
 
 const filter = defineModel<Filter>({ required: true })
 
 const props = defineProps<{
   index: number
-  columnOptions: Array<{ key: string, value: string, disabled: boolean }>
+  combinator: FilterGroupCombinator
+  columnOptions: Array<FilterColumnOption>
   conditionOptions: Array<FilterCondition>
 }>()
 
 defineEmits<{
-  remove: []
+  'remove': []
+  'update:combinator': [combinator: FilterGroupCombinator]
 }>()
 
 const { t } = useTranslation()

@@ -39,6 +39,12 @@ test('can add a dataset to an existing dataservice', async ({ page }) => {
   await page.getByRole('option', { name: `Test dataset ${uniqueId}` }).click()
   await clickOutside(page)
 
+  // Reopen right away, while the options are still mounted by the leave transition:
+  // the multiple select must not throw when Headless UI compares them with the selection
+  await page.getByTestId('searchable-select-rechercher-un-jeu-de-donn-es').click()
+  await expect(page.getByRole('listbox')).toBeVisible()
+  await clickOutside(page)
+
   // Verify the dataset card is displayed (check for the description which is unique to the card)
   await expect(page.locator('text=Un dataset de test à associer à l\'API')).toBeVisible()
 

@@ -25,6 +25,7 @@ export default defineNuxtPlugin((nuxtApp) => {
     datasetQualityGuideUrl: runtimeConfig.public.datasetQualityGuideUrl,
     maxJsonPreviewCharSize: runtimeConfig.public.maxJsonPreviewCharSize,
     maxPdfPreviewByteSize: runtimeConfig.public.maxPdfPreviewByteSize,
+    maxImagePreviewByteSize: runtimeConfig.public.maxImagePreviewByteSize,
     maxXmlPreviewCharSize: runtimeConfig.public.maxXmlPreviewCharSize,
     metricsApiUrl: runtimeConfig.public.metricsApi,
     pmtilesViewerBaseUrl: null,
@@ -40,7 +41,9 @@ export default defineNuxtPlugin((nuxtApp) => {
     textClamp: TextClamp,
     appLink: CdataLink,
     clientOnly: ClientOnly,
+    useRoute,
     forumUrl: runtimeConfig.public.forumUrl,
     searchDebounce: runtimeConfig.public.searchDebounce,
+    supportUrl: runtimeConfig.public.supportUrl,
   })
 })

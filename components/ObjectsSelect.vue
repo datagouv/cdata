@@ -78,23 +78,22 @@
             :option
           >
             <div class="flex items-center space-x-2">
-              <NuxtImg
+              <img
                 v-if="objectImageUrl && objectImageUrl(option)"
                 :src="objectImageUrl(option)"
                 alt=""
                 loading="lazy"
                 class="size-5 rounded-full"
-              />
+              >
               <span>{{ option.title }}</span>
             </div>
           </slot>
         </template>
       </SearchableSelect>
       <Divider>{{ $t('ou') }}</Divider>
-      <form
-        class="flex items-end space-x-4"
-        @submit.prevent="loadByLink"
-      >
+      <!-- Not a <form>: this select often sits inside one, and a nested form is dropped
+           from the server HTML, breaking hydration -->
+      <div class="flex items-end space-x-4">
         <InputGroup
           v-model="datasetUrl"
           :label="t('Lien vers {objectType}', { objectType: theLabel })"
@@ -102,14 +101,16 @@
           :has-error="!!urlError"
           :error-text="urlError"
           class="w-full !mb-0"
+          @keydown.enter="loadByLinkOnEnter"
         />
         <BrandedButton
-          type="submit"
+          type="button"
           :icon="RiAddLine"
           size="sm"
           :title="t('Ajouter {objectType}', { objectType: theLabel })"
+          @click="loadByLink"
         />
-      </form>
+      </div>
     </div>
   </fieldset>
 </template>
@@ -177,6 +178,16 @@ const selected = computed<Array<T | TSuggest>>(() => {
     return objectsByIds.value[datasetSuggest.id] || null
   }).filter(object => object)
 })
+
+// Enter adds the link without submitting the form around the field, if any. The value is read
+// from the input because the model only updates on change, which Enter fires only inside a form.
+// Enter that ends an input method composition only confirms the typed text.
+const loadByLinkOnEnter = (event: KeyboardEvent) => {
+  if (event.isComposing || !(event.target instanceof HTMLInputElement)) return
+  event.preventDefault()
+  datasetUrl.value = event.target.value
+  loadByLink()
+}
 
 const loadByLink = async () => {
   try {

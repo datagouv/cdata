@@ -37,7 +37,9 @@
       <DescriptionList class="mb-2">
         <div>
           <DescriptionListTerm>{{ $t('Dernière mise à jour') }}</DescriptionListTerm>
-          <DescriptionListDetails>{{ formatDate(dataservice.metadata_modified_at) }}</DescriptionListDetails>
+          <DescriptionListDetails>
+            <FormattedDate :date="dataservice.metadata_modified_at" />
+          </DescriptionListDetails>
         </div>
         <div>
           <DescriptionListTerm>{{ $t('Identifiant') }}</DescriptionListTerm>
@@ -56,7 +58,9 @@
       <DescriptionList>
         <div>
           <DescriptionListTerm>{{ $t('Date de création') }}</DescriptionListTerm>
-          <DescriptionListDetails>{{ formatDate(dataservice.created_at) }}</DescriptionListDetails>
+          <DescriptionListDetails>
+            <FormattedDate :date="dataservice.created_at" />
+          </DescriptionListDetails>
         </div>
       </DescriptionList>
     </SectionCollapse>
@@ -64,12 +68,10 @@
 </template>
 
 <script setup lang="ts">
-import { CopyButton, Pagination, useFormatDate, type Dataservice, type DatasetV2 } from '@datagouv/components-next'
+import { CopyButton, FormattedDate, Pagination, type Dataservice, type DatasetV2 } from '@datagouv/components-next'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{ dataservice: Dataservice }>()
-
-const { formatDate } = useFormatDate()
 
 const pageSize = 6
 const page = ref(1)

@@ -47,12 +47,12 @@
         v-if="imagePreview"
         class="text-center"
       >
-        <NuxtImg
+        <img
           :src="imagePreview"
           class="border mx-auto max-h-40"
           loading="lazy"
           alt=""
-        />
+        >
       </div>
       <SearchableSelect
         v-if="isMeAdmin()"
@@ -98,23 +98,18 @@
             </div>
           </div>
           <div class="fr-col-auto">
-            <BrandedButton
-              v-if="config.public.changeEmailPage"
-              color="secondary"
-              size="xs"
-              as="a"
-              :href="`${config.public.apiBase}/${config.public.changeEmailPage}`"
-              :icon="RiEditLine"
-              external
-            >
-              {{ $t(`Changer d'adresse email`) }}
-            </BrandedButton>
-            <ChangeEmailModal v-else />
+            <ChangeEmailModal />
           </div>
         </div>
       </div>
+      <p
+        v-if="user.id === me.id && me.has_password === false"
+        class="fr-text--sm text-gray-medium"
+      >
+        {{ $t('Votre compte se connecte uniquement avec ProConnect.') }}
+      </p>
       <div
-        v-if="user.id === me.id"
+        v-else-if="user.id === me.id"
         class="fr-input-group"
       >
         <label
@@ -136,18 +131,7 @@
             </div>
           </div>
           <div class="fr-col-auto">
-            <BrandedButton
-              v-if="config.public.changePasswordPage"
-              color="secondary"
-              size="xs"
-              as="a"
-              :href="`${config.public.apiBase}/${config.public.changePasswordPage}`"
-              :icon="RiEditLine"
-              external
-            >
-              {{ $t('Changer de mot de passe') }}
-            </BrandedButton>
-            <ChangePasswordModal v-else />
+            <ChangePasswordModal />
           </div>
         </div>
       </div>
@@ -167,13 +151,40 @@
         </BannerAction>
       </div>
       <BannerAction
+        v-if="user.id === me.id && me.has_password && me.proconnect?.verified_at"
+        type="warning"
+        :title="$t('Se connecter uniquement avec ProConnect')"
+        class="mt-4"
+      >
+        {{ $t('Votre mot de passe permet d\'entrer dans votre compte sans la double authentification de ProConnect.') }}
+        <template v-if="!me.can_switch_to_proconnect_only">
+          {{ $t('Connectez-vous avec ProConnect et sa double authentification pour activer cette option.') }}
+        </template>
+        <template #button>
+          <ProConnectOnlyModal :disabled="!me.can_switch_to_proconnect_only" />
+        </template>
+      </BannerAction>
+      <p
+        v-if="isMeAdmin() && user.id !== me.id"
+        class="fr-text--sm mt-4"
+      >
+        {{ accountSecurity }}
+      </p>
+      <BannerAction
         v-if="isMeAdmin() && user.id !== me.id"
         type="warning"
         :title="$t('Forcer la rotation du mot de passe')"
         class="mt-4"
       >
         <template v-if="rotationPending">
-          {{ $t("Rotation demandée {date}, en attente du changement de mot de passe par l'utilisateur.", { date: formatFromNow(user.password_rotation_demanded) }) }}
+          <TranslationT keypath="Rotation demandée {date}, en attente du changement de mot de passe par l'utilisateur.">
+            <template #date>
+              <FormattedDate
+                :date="user.password_rotation_demanded"
+                format="from-now"
+              />
+            </template>
+          </TranslationT>
         </template>
         <template v-else>
           {{ $t("L'utilisateur sera déconnecté et devra définir un nouveau mot de passe à sa prochaine connexion.") }}
@@ -213,14 +224,15 @@
 </template>
 
 <script setup lang="ts">
-import { BannerAction, BrandedButton, PaddedContainer, toast, SearchableSelect, useFormatDate } from '@datagouv/components-next'
+import { BannerAction, BrandedButton, FormattedDate, PaddedContainer, toast, SearchableSelect, TranslationT } from '@datagouv/components-next'
 import type { User } from '@datagouv/components-next'
-import { RiEditLine, RiSaveLine } from '@remixicon/vue'
+import { RiSaveLine } from '@remixicon/vue'
 import DeleteUserModal from './DeleteUserModal.vue'
 import ChangePasswordModal from './ChangePasswordModal.vue'
 import ChangeEmailModal from './ChangeEmailModal.vue'
 import RotatePasswordModal from './RotatePasswordModal.vue'
 import TwoFactorSetupModal from './TwoFactorSetupModal.vue'
+import ProConnectOnlyModal from './ProConnectOnlyModal.vue'
 import ApiTokensSection from './ApiTokensSection.vue'
 import { uploadProfilePicture } from '~/api/users'
 
@@ -233,10 +245,8 @@ const emits = defineEmits<{
 }>()
 
 const me = useMe()
-const config = useNuxtApp().$config
 const { t } = useTranslation()
 const { $api } = useNuxtApp()
-const { formatFromNow } = useFormatDate()
 
 const emailId = useId()
 const passwordId = useId()
@@ -247,6 +257,26 @@ const rotationPending = computed(() => {
   if (!props.user.password_rotation_demanded) return false
   if (!props.user.password_rotation_performed) return true
   return new Date(props.user.password_rotation_performed) < new Date(props.user.password_rotation_demanded)
+})
+
+// How the account signs in, for a sysadmin to see whether it is protected by a second factor.
+const accountSecurity = computed(() => {
+  const proconnect = props.user.proconnect
+  const parts = [
+    props.user.has_password ? t('Mot de passe') : t('Sans mot de passe'),
+    props.user.has_two_factor ? t('double authentification data.gouv.fr') : t('sans double authentification data.gouv.fr'),
+    !proconnect
+      ? t('ProConnect jamais utilisé')
+      : proconnect.verified_at
+        ? t('double authentification ProConnect vérifiée')
+        : t('ProConnect utilisé sans double authentification vérifiée'),
+  ]
+  if (proconnect) {
+    parts.push(proconnect.second_factor
+      ? t('dernière connexion ProConnect avec double authentification')
+      : t('dernière connexion ProConnect sans double authentification'))
+  }
+  return parts.join(' · ')
 })
 
 const profilePicture = ref<File | null>(null)

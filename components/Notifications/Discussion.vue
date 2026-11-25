@@ -7,7 +7,7 @@
     :title-link-title="notification.handled_at ? $t('Voir la discussion') : $t('Voir la discussion et la marquer comme lue')"
   >
     <p
-      v-if="notification.details.status === 'new_comment' && message"
+      v-if="notification.type === 'discussion.comment' && message"
       class="flex items-center gap-1 m-0 text-xs"
     >
       <span class="text-gray-medium">{{ $t('de') }}</span>
@@ -28,9 +28,9 @@
     </p>
     <p
       class="m-0 text-xs truncate"
-      :class="{ 'text-gray-medium': notification.details.status === 'new_comment' }"
+      :class="{ 'text-gray-medium': notification.type === 'discussion.comment' }"
     >
-      <template v-if="notification.details.status === 'new_discussion'">
+      <template v-if="notification.type === 'discussion.new'">
         {{ notification.details.discussion.title }}
       </template>
       <template v-else-if="message">
@@ -38,7 +38,7 @@
       </template>
     </p>
     <p
-      v-if="subject && notification.details.status !== 'closed'"
+      v-if="subject && notification.type !== 'discussion.closed'"
       class="m-0 text-xs italic truncate"
     >
       {{ $t('sur') }} {{ getSubjectTitle(subject) }}
@@ -64,17 +64,17 @@ const message = computed(() => props.notification.details.message_id ? props.not
 
 const icon = computed(() => {
   return {
-    closed: RiChatCheckLine,
-    new_comment: RiQuestionAnswerLine,
-    new_discussion: RiChat4Line,
-  }[props.notification.details.status]
+    'discussion.closed': RiChatCheckLine,
+    'discussion.comment': RiQuestionAnswerLine,
+    'discussion.new': RiChat4Line,
+  }[props.notification.type]
 })
 
 const title = computed(() => {
   return {
-    closed: t('Une discussion a été cloturée'),
-    new_comment: t('Nouveau commentaire'),
-    new_discussion: t('Nouvelle discussion'),
-  }[props.notification.details.status]
+    'discussion.closed': t('Une discussion a été cloturée'),
+    'discussion.comment': t('Nouveau commentaire'),
+    'discussion.new': t('Nouvelle discussion'),
+  }[props.notification.type]
 })
 </script>
