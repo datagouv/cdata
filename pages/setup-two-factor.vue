@@ -120,13 +120,7 @@ const submit = async () => {
     toast.success(t('Vous êtes maintenant connecté.'))
     await loadMe(me)
 
-    const next = sessionStorage.getItem('next')
-    if (next) {
-      navigateTo(next)
-    }
-    else {
-      await navigateTo('/')
-    }
+    await navigateTo(next.value || '/')
   })
 }
 </script>
