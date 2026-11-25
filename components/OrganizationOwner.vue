@@ -4,6 +4,7 @@
     class="organization-owner"
     :data-size="nameSize"
     :data-long-name="organization.name.length > 64"
+    :data-has-badges="hasBadges"
   >
     <!-- The logo repeats the link of the name for the pointer only: one stop for the keyboard. -->
     <component
@@ -29,7 +30,7 @@
       <!-- Outside the link: the underline of the name does not reach them, and their tooltip
            is not an interactive element inside another one. -->
       <span
-        v-if="showBadges && (organizationType !== 'other' || certified)"
+        v-if="hasBadges"
         class="organization-owner__badges"
       >
         <Tooltip
@@ -97,11 +98,12 @@ const typeDescription = computed(() => ({
   'company': t('Organisation à but lucratif.'),
   'other': '',
 }[organizationType.value]))
-const resolvedLogoSizeClass = computed(() => props.logoSizeClass || ({
-  base: 'size-14',
-  sm: 'size-12',
-  xs: 'size-10',
-}[props.nameSize]))
+const hasBadges = computed(() => props.showBadges && (organizationType.value !== 'other' || certified.value))
+// With badges, the framed logo (3 px padding and 1 px border on each side) is exactly as tall as
+// the name line, the gap and the badges: name line height + 6 px + 24 px badge - 8 px of frame.
+const resolvedLogoSizeClass = computed(() => props.logoSizeClass || (hasBadges.value
+  ? { base: 'size-[46px]', sm: 'size-11', xs: 'size-10' }
+  : { base: 'size-14', sm: 'size-12', xs: 'size-10' })[props.nameSize])
 </script>
 
 <style scoped>
@@ -114,7 +116,9 @@ const resolvedLogoSizeClass = computed(() => props.logoSizeClass || ({
   color: var(--color-gray-title);
   font-family: var(--font-marianne);
 }
-.organization-owner[data-long-name="true"] {
+/* With badges, the logo spans the name and the badges: aligned on their top. */
+.organization-owner[data-long-name="true"],
+.organization-owner[data-has-badges="true"] {
   align-items: flex-start;
 }
 
@@ -180,5 +184,10 @@ const resolvedLogoSizeClass = computed(() => props.logoSizeClass || ({
   flex-wrap: wrap;
   gap: var(--spacing);
   min-width: 0;
+}
+/* The tooltip wrappers are inline boxes: without this they add a line gap under each badge. */
+.organization-owner__badges > *,
+.organization-owner__badges > * > :deep(span) {
+  display: inline-flex;
 }
 </style>

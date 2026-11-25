@@ -3,19 +3,13 @@
     <div>
       <DescriptionListTerm>{{ $t('Thématique') }}</DescriptionListTerm>
       <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
-        <template v-if="topic">
-          {{ topic }}
-        </template>
-        <MetadataEmptyValue v-else />
+        {{ topic }}
       </dd>
     </div>
     <div>
       <DescriptionListTerm>{{ $t('Type') }}</DescriptionListTerm>
       <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
-        <template v-if="label">
-          {{ label }}
-        </template>
-        <MetadataEmptyValue v-else />
+        {{ label }}
       </dd>
     </div>
     <div>
@@ -24,10 +18,11 @@
         <Tag
           v-for="tag in reuse.tags"
           :key="tag"
+          :to="{ path: '/reuses/search', query: { tag } }"
         >
           {{ tag }}
         </Tag>
-        <MetadataEmptyValue v-if="!reuse.tags?.length" />
+        <span v-if="!reuse.tags?.length">{{ $t('Aucun mot clé') }}</span>
       </dd>
     </div>
     <div>
@@ -62,7 +57,7 @@
 </template>
 
 <script setup lang="ts">
-import { FormattedDate, getTopic, MetadataEmptyValue, StatBox, Tag, useMetrics, useReuseType, type Reuse, type ReuseTopic } from '@datagouv/components-next'
+import { FormattedDate, getTopic, StatBox, Tag, useMetrics, useReuseType, type Reuse, type ReuseTopic } from '@datagouv/components-next'
 import DescriptionListTerm from '~/components/DescriptionList/DescriptionListTerm.vue'
 
 // Side metadata of a reuse page. Also shown on /design/metadata: the design page and

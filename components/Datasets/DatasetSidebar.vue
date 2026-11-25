@@ -42,7 +42,7 @@
       </dd>
     </div>
 
-    <div>
+    <div v-if="dataset.contact_points.length">
       <DescriptionListTerm>
         <template v-if="hasContactPointsWithSpecificRole">
           {{ $t("Attributions") }}
@@ -57,26 +57,23 @@
           :key="contact.id"
           :contact
         />
-        <MetadataEmptyValue v-if="!dataset.contact_points.length" />
       </dd>
     </div>
 
     <div
-      v-if="dataset.access_type === 'open'"
+      v-if="dataset.license && dataset.access_type === 'open'"
     >
       <DescriptionListTerm>
         {{ $t("Licence") }}
       </DescriptionListTerm>
       <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
         <TechnicalValue
-          v-if="dataset.license"
           :value="dataset.license.title"
           :href="dataset.license.url"
           :copy-text="dataset.license.url || dataset.license.title"
           :label="$t('Copier la licence')"
           :copied-label="$t('Licence copiée !')"
         />
-        <MetadataEmptyValue v-else />
       </dd>
     </div>
 
@@ -126,7 +123,7 @@
     <div v-if="dataset.access_type === 'open'">
       <DatasetQuality
         :quality="dataset.quality"
-        :hide-warnings
+        hide-warnings
       />
     </div>
 
@@ -275,7 +272,7 @@
 </template>
 
 <script setup lang="ts">
-import { AvatarWithName, DatasetQuality, FormattedDate, LabelTag, MetadataEmptyValue, SimpleBanner, StatBox, TechnicalValue, Toggletip, TranslationT, useMetrics, type DatasetV2WithFullObject, type TranslatedBadge } from '@datagouv/components-next'
+import { AvatarWithName, DatasetQuality, FormattedDate, LabelTag, SimpleBanner, StatBox, TechnicalValue, Toggletip, TranslationT, useMetrics, type DatasetV2WithFullObject, type TranslatedBadge } from '@datagouv/components-next'
 import { RiExternalLinkLine } from '@remixicon/vue'
 import AccessTypePanel from '~/components/AccessTypes/AccessTypePanel.vue'
 import ContactPoint from '~/components/ContactPoint.vue'

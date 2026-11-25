@@ -1,18 +1,19 @@
 <template>
-  <!-- Same display for datasets and dataservices, as on their pages in production: the label
-       and the information icon, the full-width score, then the missing items. -->
+  <!-- Same display and behaviour for datasets and dataservices: the information icon and the
+       label, then the full-width score. The missing items are listed only on request
+       (`hide-warnings` false), the details being in the toggletip. -->
   <div class="grid gap-2">
     <Toggletip
       :styled-button="false"
       button-class="grid w-full gap-1.5 rounded-sm p-1.5 -m-1.5 border-transparent -outline-offset-2 text-left transition-colors hover:bg-gray-some"
       :button-props="{ title: t('Qualité des métadonnées') }"
     >
-      <span class="flex items-center justify-between gap-2">
-        <span class="text-sm/5 font-normal text-gray-secondary">{{ t('Qualité des métadonnées') }}</span>
+      <span class="flex items-center gap-1">
         <RiInformationLine
           class="size-4 shrink-0 text-gray-secondary"
           aria-hidden="true"
         />
+        <span class="text-sm/5 font-normal text-gray-secondary">{{ t('Qualité des métadonnées') }}</span>
       </span>
       <QualityScore
         :score="quality.score"
