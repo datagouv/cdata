@@ -89,7 +89,7 @@ import { useTranslation } from '../composables/useTranslation'
  * - `white-flat`: a button on a dark or illustrated background.
  *
  * Kept for backward compatibility, not to be used in new code:
- * - `tertiary-blue`: renders like `tertiary`;
+ * - `tertiary-blue`: a blue `tertiary`, use `tertiary`;
  * - `brown-illustration` and `green-illustration`: use `primary`.
  */
 export type ColorType = 'primary' | 'secondary' | 'tertiary' | 'tertiary-blue' | 'warning' | 'danger' | 'brown-illustration' | 'green-illustration' | 'white-flat'
@@ -259,7 +259,12 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
   color: var(--color-new-gray-dark);
 }
 
-.branded-button:is([data-color="tertiary"], [data-color="tertiary-blue"]) {
+.branded-button[data-color="tertiary"] {
+  background-color: transparent;
+  color: var(--color-new-gray-dark);
+}
+
+.branded-button[data-color="tertiary-blue"] {
   background-color: transparent;
   color: var(--color-new-primary);
 }
