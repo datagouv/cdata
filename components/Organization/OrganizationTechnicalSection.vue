@@ -5,12 +5,6 @@
   >
     <DescriptionList>
       <div>
-        <DescriptionListTerm>{{ $t('Dernière mise à jour') }}</DescriptionListTerm>
-        <DescriptionListDetails>
-          <FormattedDate :date="organization.last_modified" />
-        </DescriptionListDetails>
-      </div>
-      <div>
         <DescriptionListTerm>{{ $t('Identifiant') }}</DescriptionListTerm>
         <DescriptionListDetails>
           <TechnicalValue
@@ -18,6 +12,12 @@
             :label="$t(`Copier l'identifiant de l'organisation`)"
             :copied-label="$t(`Identifiant de l'organisation copié !`)"
           />
+        </DescriptionListDetails>
+      </div>
+      <div>
+        <DescriptionListTerm>{{ $t('Dernière mise à jour') }}</DescriptionListTerm>
+        <DescriptionListDetails>
+          <FormattedDate :date="organization.last_modified" />
         </DescriptionListDetails>
       </div>
       <div>
