@@ -22,7 +22,7 @@
     <div class="flex justify-between">
       <BrandedButton
         v-if="config.public.publishingHarvesterFeedbackUrl"
-        class="-ms-4"
+        class="-ms-3"
         :href="config.public.publishingHarvesterFeedbackUrl"
         color="tertiary"
         :icon="RiLightbulbLine"

@@ -136,7 +136,7 @@
         v-if="! showChecksum"
         color="tertiary"
         :icon="RiAddLine"
-        class="-mt-6 mb-6 -ms-4"
+        class="-mt-6 mb-6 -ms-3"
         @click="addChecksum = true"
       >
         {{ $t('Ajouter une somme de contrôle') }}

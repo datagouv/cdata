@@ -23,7 +23,7 @@
     <div class="fr-grid-row justify-between">
       <BrandedButton
         v-if="config.public.publishingDatasetFeedbackUrl"
-        class="-ms-4"
+        class="-ms-3"
         :href="config.public.publishingDatasetFeedbackUrl"
         :icon="RiLightbulbLine"
         color="tertiary"

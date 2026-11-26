@@ -10,7 +10,7 @@
         color="tertiary"
         size="xs"
         :icon="RiChatNewLine"
-        class="-ms-3"
+        class="-ms-2"
         v-bind="attrs"
         v-on="listeners"
       >

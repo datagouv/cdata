@@ -8,6 +8,8 @@
     :data-loading="loading ? 'true' : undefined"
     :data-icon-only="isIconOnly ? 'true' : undefined"
     :data-icon-right="iconRight ? 'true' : undefined"
+    :data-icon-start="hasStartIcon ? 'true' : undefined"
+    :data-icon-end="hasEndIcon ? 'true' : undefined"
     :to="href && !isDisabled ? href : undefined"
     :type="href ? undefined : (type || 'button')"
     :role="href && isDisabled ? 'link' : undefined"
@@ -153,6 +155,11 @@ const hasLabel = computed(() => hasSlotContent(slots.default))
 // A button without a visible label is at least square, like an icon-only button.
 const isIconOnly = computed(() => props.iconOnly || !hasLabel.value)
 
+// Sides that have an icon next to the label, for the optical padding.
+const hasSymbol = computed(() => !!props.icon || props.loading)
+const hasStartIcon = computed(() => hasSymbol.value && !props.iconRight)
+const hasEndIcon = computed(() => (hasSymbol.value && props.iconRight) || (!!props.href && props.newTab && !isIconOnly.value))
+
 // The slot (visible or sr-only) is the accessible name. The `title` is only a fallback
 // when there is no slot at all, so that it does not replace a more precise label. An
 // explicit `aria-label` replaces the content, so it gets the new-tab mention too.
@@ -203,6 +210,8 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
 .branded-button[data-size] {
   --branded-button-height: calc(var(--spacing) * 10);
   --branded-button-padding-x: calc(var(--spacing) * 4);
+  /* Smaller on the icon side: the icon's own inner space makes that side look wider */
+  --branded-button-padding-x-icon: calc(var(--spacing) * 3);
   --branded-button-padding-y: calc(var(--spacing) * 1.5);
   --branded-button-font-size: var(--text-sm);
   --branded-button-line-height: calc(var(--spacing) * 5);
@@ -242,12 +251,14 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
 .branded-button[data-size="xs"] {
   --branded-button-height: calc(var(--spacing) * 8);
   --branded-button-padding-x: calc(var(--spacing) * 3);
+  --branded-button-padding-x-icon: calc(var(--spacing) * 2);
   --branded-button-padding-y: calc(var(--spacing) * 1);
 }
 
 .branded-button[data-size="2xs"] {
   --branded-button-height: calc(var(--spacing) * 7);
   --branded-button-padding-x: calc(var(--spacing) * 2);
+  --branded-button-padding-x-icon: calc(var(--spacing) * 1);
   --branded-button-padding-y: calc(var(--spacing) * 0.5);
   --branded-button-font-size: var(--text-xs);
   --branded-button-line-height: calc(var(--spacing) * 4.5);
@@ -354,6 +365,15 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
 }
 
 /* Icon-only: at least square */
+/* Optical alignment: less padding on the side of an icon */
+.branded-button[data-size][data-icon-start="true"]:not([data-icon-only="true"]) {
+  padding-inline-start: var(--branded-button-padding-x-icon);
+}
+
+.branded-button[data-size][data-icon-end="true"]:not([data-icon-only="true"]) {
+  padding-inline-end: var(--branded-button-padding-x-icon);
+}
+
 .branded-button[data-size][data-icon-only="true"] {
   min-width: max(calc(var(--spacing) * 8), var(--branded-button-height));
   min-height: max(calc(var(--spacing) * 8), var(--branded-button-height));
@@ -368,6 +388,16 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
  */
 .branded-button__label {
   overflow-wrap: break-word;
+}
+
+/*
+ * Optical alignment: Marianne sits low in its line box (the cap-height center is
+ * 1.1 to 1.4px below the line center at every size), so the label is raised by 1px
+ * to be centered in the button and level with the icon.
+ */
+.branded-button__label:not(.sr-only) {
+  position: relative;
+  top: calc(var(--spacing) * -0.25);
 }
 
 .branded-button__symbol {
@@ -406,8 +436,9 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
     padding: calc(var(--spacing) * 1.5);
   }
 
-  .branded-button__label--mobile-hidden {
+  .branded-button .branded-button__label--mobile-hidden {
     position: absolute;
+    top: auto;
     width: 1px;
     height: 1px;
     padding: 0;
