@@ -333,17 +333,22 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
   background-color: var(--color-new-green-illustration);
 }
 
-/* Hover and press, without moving the control */
-.branded-button[data-color="primary"]:not([aria-disabled="true"]):hover {
-  background-color: var(--color-new-primary-hover);
-}
+/*
+ * Hover and press, without moving the control. Hover only on devices that can hover: a touch
+ * screen keeps `:hover` on the last tapped element, which would leave the button highlighted.
+ */
+@media (hover: hover) {
+  .branded-button[data-color="primary"]:not([aria-disabled="true"]):hover {
+    background-color: var(--color-new-primary-hover);
+  }
 
-.branded-button:is([data-color="secondary"], [data-color="tertiary"], [data-color="tertiary-blue"], [data-color="warning"], [data-color="danger"], [data-color="white-flat"]):not([aria-disabled="true"]):hover {
-  background-color: var(--color-gray-some);
-}
+  .branded-button:is([data-color="secondary"], [data-color="tertiary"], [data-color="tertiary-blue"], [data-color="warning"], [data-color="danger"], [data-color="white-flat"]):not([aria-disabled="true"]):hover {
+    background-color: var(--color-gray-some);
+  }
 
-.branded-button:is([data-color="brown-illustration"], [data-color="green-illustration"]):not([aria-disabled="true"]):hover {
-  filter: brightness(0.95);
+  .branded-button:is([data-color="brown-illustration"], [data-color="green-illustration"]):not([aria-disabled="true"]):hover {
+    filter: brightness(0.95);
+  }
 }
 
 .branded-button[data-color="primary"]:not([aria-disabled="true"]):active {
