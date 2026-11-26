@@ -12,7 +12,7 @@
           size="xs"
           @click="downloadStats"
         >
-          {{ $t('Télécharger les statistiques au format CSV') }}
+          {{ $t('Télécharger en CSV') }}
         </BrandedButton>
       </template>
       <section

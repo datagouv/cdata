@@ -23,7 +23,7 @@ test('can create a minimal dataset', async ({ page }) => {
   await page.getByRole('option', { name: 'Inconnu' }).click()
   await clickOutside(page)
   await page.getByRole('button', { name: 'Suivant' }).click()
-  await page.getByRole('button', { name: 'Ajoutez des fichiers' }).click()
+  await page.getByRole('button', { name: 'Ajouter des fichiers' }).click()
   // Start waiting for file chooser before clicking. Note no await.
   const fileChooserPromise = page.waitForEvent('filechooser')
   await page.getByRole('button', { name: 'Parcourir' }).click()
@@ -82,7 +82,7 @@ async function createMinimalDataset(page: Page, title: string) {
   await page.getByRole('option', { name: 'Inconnu' }).click()
   await clickOutside(page)
   await page.getByRole('button', { name: 'Suivant' }).click()
-  await page.getByRole('button', { name: 'Ajoutez des fichiers' }).click()
+  await page.getByRole('button', { name: 'Ajouter des fichiers' }).click()
   // Start waiting for file chooser before clicking. Note no await.
   const fileChooserPromise = page.waitForEvent('filechooser')
   await page.getByRole('button', { name: 'Parcourir' }).click()
@@ -152,7 +152,7 @@ The standard chunk of Lorem Ipsum used since the 1500s is reproduced below for t
   await page.getByTestId('searchable-select-granularit-spatiale').click()
   await page.getByRole('option', { name: 'Pays', exact: true }).click()
   await page.getByRole('button', { name: 'Suivant' }).click()
-  await page.getByRole('button', { name: 'Ajoutez des fichiers' }).click()
+  await page.getByRole('button', { name: 'Ajouter des fichiers' }).click()
   await page.getByRole('textbox', { name: 'Lien exact vers le fichier' }).click()
   await page.getByRole('textbox', { name: 'Lien exact vers le fichier' }).fill('https://www.google.fr')
   await page.getByRole('button', { name: 'Envoyer' }).click()

@@ -587,7 +587,7 @@
               :icon="RiAddLine"
               @click="showRateLimitingUrl = true"
             >
-              {{ t(`Ajouter un lien vers la documentation des limites d'appels`) }}
+              {{ t(`Ajouter un lien de documentation`) }}
             </BrandedButton>
           </div>
         </fieldset>

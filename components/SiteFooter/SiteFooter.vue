@@ -33,7 +33,7 @@
                   :href="config.public.newsletterSubscriptionUrl"
                   :external="true"
                 >
-                  {{ $t("Abonnez-vous") }}
+                  {{ $t("S'abonner") }}
                 </BrandedButton>
                 <BrandedButton
                   color="secondary"

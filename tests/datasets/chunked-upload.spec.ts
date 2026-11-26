@@ -39,7 +39,7 @@ test('can upload a large file with CRLF at chunk boundary (chunked upload)', asy
   await page.getByRole('button', { name: 'Suivant' }).click()
 
   // Upload the large file
-  await page.getByRole('button', { name: 'Ajoutez des fichiers' }).click()
+  await page.getByRole('button', { name: 'Ajouter des fichiers' }).click()
   const fileChooserPromise = page.waitForEvent('filechooser')
   await page.getByRole('button', { name: 'Parcourir' }).click()
   const fileChooser = await fileChooserPromise

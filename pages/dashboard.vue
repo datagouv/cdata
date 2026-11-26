@@ -11,7 +11,7 @@
           {{ $t('Tableau de bord du site') }}
         </BreadcrumbItem>
       </Breadcrumb>
-      <div class="flex justify-between items-center mb-6">
+      <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
         <h1 class="text-2xl text-gray-title mb-0 font-extrabold">
           {{ $t('Statistiques des 12 derniers mois') }}
         </h1>
@@ -22,7 +22,7 @@
           :href="downloadUrl"
           external
         >
-          {{ $t('Télécharger les statistiques de trafic au format CSV') }}
+          {{ $t('Télécharger en CSV') }}
         </BrandedButton>
       </div>
 

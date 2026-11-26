@@ -29,7 +29,7 @@
         color="tertiary"
         new-tab
       >
-        {{ $t('Donnez-nous votre avis sur le parcours de publication') }}
+        {{ $t('Donner votre avis') }}
       </BrandedButton>
       <div class="fr-grid-row fr-grid-row--right">
         <BrandedButton

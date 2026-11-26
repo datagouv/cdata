@@ -447,13 +447,13 @@
         </div>
         <div class="flex flex-col gap-3 sm:flex-row">
           <BrandedButton class="w-full sm:w-auto">
-            Découvrez les jeux de données
+            Découvrir les jeux de données
           </BrandedButton>
           <BrandedButton
             color="secondary"
             class="w-full sm:w-auto"
           >
-            Explorez les réutilisations
+            Explorer les réutilisations
           </BrandedButton>
         </div>
       </div>
@@ -591,6 +591,7 @@ const practices = [
   'Passer loading plutôt qu\'ajouter un indicateur maison ou changer le libellé (« Envoi en cours… ») : le bouton garde sa taille, donc la mise en page ne bouge pas, le libellé et le focus restent, aria-busy est posé et la double soumission est bloquée. Ne pas annoncer la réussite avant la réponse du serveur.',
   'Désactiver seulement quand l\'action est impossible maintenant (champ obligatoire vide, droits insuffisants), et dire pourquoi dans le contenu voisin : une infobulle au survol n\'est lue ni au clavier ni sur mobile.',
   'Rédiger le libellé avec un verbe à l\'infinitif et son objet, une seule majuscule en début : « Publier le jeu de données », « Ajouter une ressource », « Inviter un membre ». Éviter les verbes seuls et les confirmations vagues (« Valider », « OK », « Cliquez ici »).',
+  'Garder le libellé court : 30 caractères environ, 4 ou 5 mots. Le titre ou la section donnent le contexte, le bouton ne le répète pas : « Télécharger en CSV » sous « Statistiques des 12 derniers mois », « Voir la page publique » sous le titre d\'un jeu de données. Une précision va dans le texte voisin, pas entre parenthèses dans le bouton.',
   'Pour une action destructive, nommer l\'objet (« Supprimer la ressource ») et confirmer avec un message qui reprend les mêmes mots (« Ressource supprimée »). La couleur ne suffit pas à signaler le danger.',
   'Un bouton iconique garde un libellé dans son slot, qui nomme l\'action et sa cible (« Modifier la ressource »), pas l\'icône (« Crayon »). Ajouter le même texte en title pour l\'infobulle.',
   'Ne pas poser d\'aria-label sur un bouton qui a déjà un texte visible : il remplace ce texte pour les lecteurs d\'écran, qui n\'entendent plus ce qui est affiché.',
