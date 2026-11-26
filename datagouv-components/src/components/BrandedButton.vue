@@ -91,9 +91,12 @@ import { useTranslation } from '../composables/useTranslation'
  * - `warning`: an admin action, for now;
  * - `white-flat`: a button on a dark or illustrated background.
  *
+ * Editorial page colors, in place of `primary` on these pages only:
+ * - `brown-illustration`: the dataservices (API) pages;
+ * - `green-illustration`: the reuses pages.
+ *
  * Kept for backward compatibility, not to be used in new code:
- * - `tertiary-blue`: a blue `tertiary`, use `tertiary`;
- * - `brown-illustration` and `green-illustration`: use `primary`.
+ * - `tertiary-blue`: a blue `tertiary`, use `tertiary`.
  */
 export type ColorType = 'primary' | 'secondary' | 'tertiary' | 'tertiary-blue' | 'warning' | 'danger' | 'brown-illustration' | 'green-illustration' | 'white-flat'
 

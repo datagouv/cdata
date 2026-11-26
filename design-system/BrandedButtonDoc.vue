@@ -75,7 +75,7 @@
     <DocSection
       id="couleurs"
       title="Couleurs"
-      description="Une seule action primary par groupe. secondary pour l'alternative, tertiary pour une action discrète, danger pour une action destructive, warning pour une action d'administration, white-flat sur un fond foncé ou illustré."
+      description="Une seule action primary par groupe. secondary pour l'alternative, tertiary pour une action discrète, danger pour une action destructive, warning pour une action d'administration, white-flat sur un fond foncé ou illustré. Les couleurs des pages éditoriales sont présentées à part, plus bas."
       :code="codes.colors"
     >
       <div class="flex flex-wrap items-center gap-4">
@@ -460,9 +460,63 @@
     </DocSection>
 
     <DocSection
+      id="pages-editoriales"
+      title="Couleurs des pages éditoriales"
+      description="Sur les pages éditoriales d'une rubrique, l'action principale reprend la couleur de la rubrique : brown-illustration pour les API, green-illustration pour les réutilisations. Elles remplacent primary sur ces pages seulement, avec les mêmes règles : une seule par groupe, secondary et tertiary pour les autres actions. Les blocs éditoriaux de la page la reçoivent par la prop main-color d'EditoBlocs."
+      :code="codes.editorial"
+    >
+      <div
+        data-capture="editorial"
+        class="grid gap-6 sm:grid-cols-2"
+      >
+        <div
+          v-for="page in editorialPages"
+          :key="page.color"
+          class="space-y-3"
+        >
+          <p class="text-sm font-bold m-0">
+            {{ page.title }}
+          </p>
+          <div class="flex flex-wrap items-center gap-3">
+            <BrandedButton
+              :color="page.color"
+              :icon="RiArrowRightLine"
+              icon-right
+            >
+              {{ page.primary }}
+            </BrandedButton>
+            <BrandedButton color="secondary">
+              En savoir plus
+            </BrandedButton>
+          </div>
+          <div class="flex flex-wrap items-center gap-3">
+            <BrandedButton
+              :color="page.color"
+              size="xs"
+            >
+              Taille xs
+            </BrandedButton>
+            <BrandedButton
+              :color="page.color"
+              disabled
+            >
+              Désactivé
+            </BrandedButton>
+            <BrandedButton
+              :color="page.color"
+              loading
+            >
+              Chargement
+            </BrandedButton>
+          </div>
+        </div>
+      </div>
+    </DocSection>
+
+    <DocSection
       id="compatibilite"
       title="Conservés pour compatibilité"
-      description="Encore acceptés pour ne pas casser les projets qui utilisent le paquet, mais à ne plus utiliser : tertiary-blue (utiliser tertiary), brown-illustration et green-illustration (utiliser primary), la taille xl (utiliser lg), keep-margins-even-without-borders (sans effet)."
+      description="Encore acceptés pour ne pas casser les projets qui utilisent le paquet, mais à ne plus utiliser : tertiary-blue (utiliser tertiary), la taille xl (utiliser lg), keep-margins-even-without-borders (sans effet)."
     >
       <div
         data-capture="legacy"
@@ -515,7 +569,12 @@ const submitCount = ref(0)
 const colors = ['primary', 'secondary', 'tertiary', 'danger', 'warning', 'white-flat'] as const
 const sizes = ['2xs', 'xs', 'sm', 'lg'] as const
 // Kept for backward compatibility only
-const legacyColors = ['tertiary-blue', 'brown-illustration', 'green-illustration'] as const
+const legacyColors = ['tertiary-blue'] as const
+
+const editorialPages = [
+  { title: 'Pages des API', color: 'brown-illustration', primary: 'Publier une API' },
+  { title: 'Pages des réutilisations', color: 'green-illustration', primary: 'Voir les cas d\'usage' },
+] as const
 
 const colorLabels: Record<typeof colors[number], string> = {
   'primary': 'Publier le jeu de données',
@@ -550,6 +609,9 @@ const codes = {
 <BrandedButton size="xs">Publier</BrandedButton>
 <BrandedButton>Publier</BrandedButton> <!-- sm par défaut -->
 <BrandedButton size="lg">Publier</BrandedButton>`,
+  editorial: `<!-- Page des API -->
+<BrandedButton color="brown-illustration" href="/admin/dataservices/new">Publier une API</BrandedButton>
+<EditoBlocs :blocs main-color="brown-illustration" />`,
   colors: `<BrandedButton>Publier le jeu de données</BrandedButton> <!-- primary par défaut -->
 <BrandedButton color="secondary">Sauvegarder le brouillon</BrandedButton>
 <BrandedButton color="tertiary">Annuler</BrandedButton>
