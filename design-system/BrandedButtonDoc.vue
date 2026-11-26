@@ -383,7 +383,7 @@
     <DocSection
       id="libelles-longs"
       title="Libellés longs et mobile"
-      description="Un libellé long revient à la ligne entre les mots. icon-only-on-mobile masque le texte sous 576 px, seulement si le bouton a une icône. Sur écran tactile, une zone invisible de 44 px entoure le bouton sans changer sa taille."
+      description="Un libellé long revient à la ligne entre les mots. icon-only-on-mobile masque le texte sous 576 px, seulement si le bouton a une icône. Sur écran tactile, une zone invisible de 44 px entoure le bouton sans changer sa taille, et le survol n'est pas appliqué : sinon le bouton resterait coloré après le tap."
       :code="codes.long"
     >
       <div class="flex flex-wrap items-start gap-6">
@@ -659,6 +659,7 @@ const practices = [
   'Ne pas poser d\'aria-label sur un bouton qui a déjà un texte visible : il remplace ce texte pour les lecteurs d\'écran, qui n\'entendent plus ce qui est affiché.',
   'Pour un lien externe, utiliser new-tab plutôt que target="_blank" : l\'icône et la mention « nouvel onglet » sont ajoutées automatiquement.',
   'Icône à gauche pour une action, à droite pour une destination. Ne pas ajouter d\'icône décorative qui n\'apporte pas de sens.',
+  'Laisser au moins 12 px (gap-3) entre des boutons xs ou 2xs empilés ou alignés, et entre des liens tertiaires empilés : sur écran tactile, leurs zones de 44 px se chevauchent sinon, et un tap peut ouvrir le bouton voisin.',
   'Garder la même taille dans un même groupe de boutons. sm par défaut, xs dans l\'admin et pour les actions secondaires, 2xs seulement dans les barres d\'outils denses.',
   'Les classes du parent servent à placer le bouton (marges, largeur, affichage). Passer par les props pour la couleur, la taille ou l\'état, plutôt que par des classes qui les écraseraient.',
 ]
