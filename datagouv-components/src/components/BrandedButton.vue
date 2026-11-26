@@ -152,7 +152,7 @@ const isDisabled = computed(() => props.disabled || props.loading)
 
 const hasLabel = computed(() => hasSlotContent(slots.default))
 
-// A button without a visible label is at least square, like an icon-only button.
+// A button without a visible label is square, like an icon-only button.
 const isIconOnly = computed(() => props.iconOnly || !hasLabel.value)
 
 // Sides that have an icon next to the label, for the optical padding.
@@ -266,6 +266,8 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
 
 .branded-button[data-size="lg"] {
   --branded-button-height: calc(var(--spacing) * 12);
+  --branded-button-padding-x: calc(var(--spacing) * 5);
+  --branded-button-padding-x-icon: calc(var(--spacing) * 4);
   --branded-button-font-size: var(--text-base);
   --branded-button-line-height: calc(var(--spacing) * 6);
   --branded-button-icon: calc(var(--spacing) * 5);
@@ -273,6 +275,8 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
 
 .branded-button[data-size="xl"] {
   --branded-button-height: calc(var(--spacing) * 16);
+  --branded-button-padding-x: calc(var(--spacing) * 6);
+  --branded-button-padding-x-icon: calc(var(--spacing) * 5);
   --branded-button-font-size: var(--text-lg);
   --branded-button-line-height: calc(var(--spacing) * 6);
   --branded-button-icon: calc(var(--spacing) * 5);
@@ -364,7 +368,7 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
   cursor: wait;
 }
 
-/* Icon-only: at least square */
+/* Icon-only: square, as high as the size */
 /* Optical alignment: less padding on the side of an icon */
 .branded-button[data-size][data-icon-start="true"]:not([data-icon-only="true"]) {
   padding-inline-start: var(--branded-button-padding-x-icon);
@@ -375,9 +379,9 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
 }
 
 .branded-button[data-size][data-icon-only="true"] {
-  min-width: max(calc(var(--spacing) * 8), var(--branded-button-height));
-  min-height: max(calc(var(--spacing) * 8), var(--branded-button-height));
-  padding: calc(var(--spacing) * 1.5);
+  min-width: var(--branded-button-height);
+  min-height: var(--branded-button-height);
+  padding: 0;
 }
 
 /*
@@ -433,7 +437,7 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
 @media (max-width: 575.98px) {
   .branded-button[data-size]:has(.branded-button__label--mobile-hidden) {
     min-width: var(--branded-button-height);
-    padding: calc(var(--spacing) * 1.5);
+    padding: 0;
   }
 
   .branded-button .branded-button__label--mobile-hidden {
