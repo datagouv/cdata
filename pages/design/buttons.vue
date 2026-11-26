@@ -15,13 +15,11 @@
       Déclencher une action : soumettre un formulaire, ouvrir une modale, publier, supprimer.
     </p>
 
-    <DSBrandedButtonDoc class="mb-14" />
-    <DSSegmentedControl />
+    <DSBrandedButtonDoc />
   </div>
 </template>
 
 <script setup lang="ts">
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
 import DSBrandedButtonDoc from '~/design-system/BrandedButtonDoc.vue'
-import DSSegmentedControl from '~/design-system/SegmentedControl.vue'
 </script>
