@@ -8,17 +8,20 @@
         {{ $t('Buttons') }}
       </BreadcrumbItem>
     </Breadcrumb>
-    <h1 class="mb-3">
-      Buttons
+    <h1 class="mb-1">
+      Boutons
     </h1>
+    <p class="text-gray-medium mb-10">
+      Déclencher une action : soumettre un formulaire, ouvrir une modale, publier, supprimer.
+    </p>
 
-    <DSBrandedButtonStates class="mb-12" />
+    <DSBrandedButtonDoc class="mb-14" />
     <DSSegmentedControl />
   </div>
 </template>
 
 <script setup lang="ts">
 import BreadcrumbItem from '~/components/Breadcrumbs/BreadcrumbItem.vue'
-import DSBrandedButtonStates from '~/design-system/BrandedButtonStates.vue'
+import DSBrandedButtonDoc from '~/design-system/BrandedButtonDoc.vue'
 import DSSegmentedControl from '~/design-system/SegmentedControl.vue'
 </script>
