@@ -7,7 +7,6 @@
         :color="sort?.column === column && sort?.direction === 'asc' ? 'primary' : 'tertiary'"
         size="2xs"
         :icon="RiArrowUpLine"
-        keep-margins-even-without-borders
         @click="toggleSort('asc')"
       >
         {{ t('Croissant') }}
@@ -16,7 +15,6 @@
         :color="sort?.column === column && sort?.direction === 'desc' ? 'primary' : 'tertiary'"
         size="2xs"
         :icon="RiArrowDownLine"
-        keep-margins-even-without-borders
         @click="toggleSort('desc')"
       >
         {{ t('Décroissant') }}
@@ -45,7 +43,6 @@
         <BrandedButton
           :color="nullFilter === 'only' ? 'primary' : 'tertiary'"
           size="2xs"
-          keep-margins-even-without-borders
           @click="toggleNullFilter('only')"
         >
           {{ t('seul.') }}
@@ -53,7 +50,6 @@
         <BrandedButton
           :color="nullFilter === 'exclude' ? 'primary' : 'tertiary'"
           size="2xs"
-          keep-margins-even-without-borders
           @click="toggleNullFilter('exclude')"
         >
           {{ t('exclure') }}
@@ -192,7 +188,6 @@
           color="tertiary"
           size="2xs"
           type="button"
-          keep-margins-even-without-borders
           @click="clearRange"
         >
           {{ t('Effacer') }}

@@ -3,7 +3,6 @@
     color="tertiary"
     size="2xs"
     :icon="RiFilterLine"
-    keep-margins-even-without-borders
     class="shrink-0 whitespace-nowrap"
     @click="mobileFilterOpen = true"
   >

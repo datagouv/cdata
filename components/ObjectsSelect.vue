@@ -31,7 +31,6 @@
             :title="t('Faites glisser pour déplacer ce contenu')"
             :icon="RiDraggable"
             size="lg"
-            keep-margins-even-without-borders
           />
         </div>
         <slot
@@ -47,7 +46,6 @@
             :title="t('Supprimer {objectType}', { objectType: theLabel })"
             :icon="RiDeleteBinLine"
             size="lg"
-            keep-margins-even-without-borders
             @click="remove(index)"
           />
         </div>

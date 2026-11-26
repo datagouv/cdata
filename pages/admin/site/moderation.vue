@@ -268,7 +268,6 @@
                       type="button"
                       :icon="RiCheckLine"
                       icon-only
-                      keep-margins-even-without-borders
                       :disabled="!!report.dismissed_at"
                       :title="report.callbacks_count > 0 ? t('Rejeter le signalement (déclenchera {n} actions en attente | déclenchera {n} action en attente | déclenchera {n} actions en attente)', report.callbacks_count) : $t('Rejeter le signalement')"
                       @click="dismiss(report)"
@@ -286,7 +285,6 @@
                     type="button"
                     :icon="RiEyeOffLine"
                     icon-only
-                    keep-margins-even-without-borders
                     :disabled="isHideBlocked(subjects[report.id].value)"
                     :title="isLockedByDoi(subjects[report.id].value) ? $t('Un jeu de données porteur d\'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.') : $t('Cacher l\'objet')"
                     @click="switchPrivate(report, report.subject)"
@@ -313,7 +311,6 @@
                         color="tertiary"
                         :icon="RiDeleteBinLine"
                         icon-only
-                        keep-margins-even-without-borders
                         :disabled="isSubjectDeleted(subjects[report.id].value) || isLockedByDoi(subjects[report.id].value)"
                         :title="isLockedByDoi(subjects[report.id].value) ? $t('Un jeu de données porteur d\'un DOI ne peut plus être supprimé ni repassé en brouillon, seulement archivé.') : $t('Supprimer l\'objet')"
                         v-bind="attrs"

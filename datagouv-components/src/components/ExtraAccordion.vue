@@ -19,7 +19,6 @@
         <DisclosureButton
           :as="BrandedButton"
           color="tertiary"
-          keep-margins-even-without-borders
           :icon="open ? RiArrowUpSLine : RiArrowDownSLine"
         >
           {{ buttonText }}

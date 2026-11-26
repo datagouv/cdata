@@ -16,7 +16,6 @@
           icon-only
           size="lg"
           color="tertiary"
-          keep-margins-even-without-borders
           @click="playSound"
         />
         <BrandedButton
@@ -25,7 +24,6 @@
           color="tertiary"
           size="lg"
           icon-only
-          keep-margins-even-without-borders
           @click="() => refresh()"
         />
       </div>

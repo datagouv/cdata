@@ -60,7 +60,6 @@
             <BrandedButton
               icon-only
               color="tertiary"
-              keep-margins-even-without-borders
               :icon="RiDeleteBinLine"
               size="xs"
               @click="removeDataset(dataset)"

@@ -18,7 +18,6 @@
         :size="buttonSize"
         :disabled="isSyncedWithGeopf"
         :title="isSyncedWithGeopf ? $t('Vous ne pouvez pas modifier cette ressource car elle est synchronisée avec cartes.gouv.fr') : $t('Éditer le fichier')"
-        keep-margins-even-without-borders
         v-on="listeners"
       />
     </template>

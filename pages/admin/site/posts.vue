@@ -112,7 +112,6 @@
                   :href="post.page"
                   :icon="RiEyeLine"
                   icon-only
-                  keep-margins-even-without-borders
                   :title="$t('Voir la page publique')"
                 />
                 <BrandedButton
@@ -121,7 +120,6 @@
                   :icon="RiPencilLine"
                   icon-only
                   size="xs"
-                  keep-margins-even-without-borders
                   :title="t('Modifier')"
                 />
               </td>

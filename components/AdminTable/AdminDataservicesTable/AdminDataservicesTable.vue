@@ -93,7 +93,6 @@
             :icon="RiEyeLine"
             :title="$t('Voir la page publique')"
             icon-only
-            keep-margins-even-without-borders
           />
           <BrandedButton
             v-if="dataservice.permissions.edit"
@@ -103,7 +102,6 @@
             :icon="RiPencilLine"
             :title="$t('Modifier')"
             icon-only
-            keep-margins-even-without-borders
           />
         </td>
       </tr>

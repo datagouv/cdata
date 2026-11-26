@@ -78,7 +78,6 @@
                   :href="user.page"
                   :icon="RiEyeLine"
                   icon-only
-                  keep-margins-even-without-borders
                   :title="$t('Voir la page publique')"
                 />
                 <BrandedButton
@@ -87,7 +86,6 @@
                   :href="`/admin/users/${user.id}/profile`"
                   :icon="RiPencilLine"
                   icon-only
-                  keep-margins-even-without-borders
                   :title="$t('Modifier')"
                 />
               </td>
