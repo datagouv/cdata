@@ -1,7 +1,7 @@
 import { humanJoin, isRecord, useTranslation } from '@datagouv/components-next'
 import type { TranslationFunction } from '@datagouv/components-next'
 import { capitalizeFirstLetter } from '~/utils/helpers'
-import { displayedToolCalls, toolCalls, type ToolCall } from './toolCalls'
+import { displayedToolCalls, messageTexts, queryRowCount, toolCalls, type ToolCall } from './toolCalls'
 import { useTurnReasoning } from './useTurnReasoning'
 
 export type ToolTrace = {
@@ -13,8 +13,10 @@ export type ToolTrace = {
 }
 
 export type ChatMessageDisplay = {
-  texts: string[]
+  textsAbove: string[]
+  textsBelow: string[]
   traces: ToolTrace[]
+  toolsRunning: boolean
   reasoning: string[]
 }
 
@@ -47,14 +49,7 @@ const PATCH_FIELDS: PatchField[] = [
   { label: t => t('bornes'), feminine: true, plural: true, changed: patch => isRecord(patch.y_axis) && ('min' in patch.y_axis || 'max' in patch.y_axis) },
 ]
 
-/**
- * Turns a message's parts into what the panel shows: the non-empty text parts,
- * one trace per displayed tool call (the AI SDK emits one part per call and
- * mutates its state in place, so no merging is needed; a failure the same tool
- * then recovered from is left out) and the reasoning sentences of the turn.
- * The model's own reasoning parts (AI SDK type 'reasoning') are never read.
- */
-export function useChatDisplayItems() {
+export function useMessageDisplay() {
   const { t, locale } = useTranslation()
   const buildReasoning = useTurnReasoning()
 
@@ -69,15 +64,13 @@ export function useChatDisplayItems() {
     return errors.length ? errors.join(' ; ') : t('Échec de l’opération')
   }
 
-  // `total` is the exact row count, known only without an aggregate; `rows` is
-  // what the table shows.
   function buildQuerySummary(part: Record<string, unknown>): string | null {
     if (part.state !== 'output-available') return t('Exécution en cours')
     const output = part.output
     if (!isRecord(output)) return null
     if (output.status === 'error') return t('Requête non exécutée')
-    const count = typeof output.total === 'number' ? output.total : output.rows
-    if (output.status !== 'ok' || typeof count !== 'number') return null
+    const count = queryRowCount(output)
+    if (output.status !== 'ok' || count === null) return null
     const rows = formatRowCount(count)
     return output.more_groups === true ? t('{rows}, plus de 50 valeurs', { rows }) : rows
   }
@@ -152,15 +145,17 @@ export function useChatDisplayItems() {
     }
   }
 
-  return function buildChatDisplayItems(parts: unknown[]): ChatMessageDisplay {
-    const texts: string[] = []
-    for (const part of parts) {
-      if (isRecord(part) && part.type === 'text' && typeof part.text === 'string' && part.text) texts.push(part.text)
-    }
-
+  // The AI SDK 'reasoning' parts, the model's own reasoning, are never read: the reasoning block is built from the tool calls.
+  return function buildMessageDisplay(parts: unknown[]): ChatMessageDisplay {
+    const calls = displayedToolCalls(toolCalls(parts))
+    const { planTexts, answerTexts } = messageTexts(parts)
     return {
-      texts,
-      traces: displayedToolCalls(toolCalls(parts)).map(buildToolTrace),
+      // Until a tool call arrives, a text may yet turn out to be the plan: kept above so it does not jump.
+      textsAbove: calls.length ? planTexts : answerTexts,
+      textsBelow: calls.length ? answerTexts : [],
+      // The AI SDK emits one part per tool call and updates it in place: no merging is needed.
+      traces: calls.map(buildToolTrace),
+      toolsRunning: calls.some(call => call.status === 'running'),
       reasoning: buildReasoning(parts),
     }
   }

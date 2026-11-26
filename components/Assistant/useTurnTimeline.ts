@@ -1,9 +1,9 @@
 import { useTranslation } from '@datagouv/components-next'
 import type { TranslationFunction } from '@datagouv/components-next'
-import { displayedToolCalls, hasAnswerText, toolCalls } from '~/components/Assistant/toolCalls'
-import type { ToolCall } from '~/components/Assistant/toolCalls'
+import { displayedToolCalls, messageTexts, toolCalls } from './toolCalls'
+import type { ToolCall } from './toolCalls'
 
-export type TimelineStep = { label: string, status: 'active' | 'complete' }
+type TimelineStep = { label: string, status: 'active' | 'complete' | 'failed' }
 export type TurnTimeline = { title: string, steps: TimelineStep[] }
 
 // Translated when built: the catalog may still be loading when the composable starts.
@@ -15,7 +15,7 @@ const STEP_LABELS: Record<string, StepLabels> = {
   'tool-query_data': {
     running: t => t('Je calcule la réponse à partir des données'),
     done: t => t('Calcul effectué sur les données'),
-    failed: t => t('Le premier calcul doit être corrigé avant de poursuivre'),
+    failed: t => t('Un calcul doit être corrigé avant de poursuivre'),
   },
   'tool-create_chart': {
     running: t => t('Je prépare le graphique à partir des résultats'),
@@ -37,16 +37,17 @@ const OTHER_LABELS: StepLabels = {
 export function useTurnTimeline() {
   const { t } = useTranslation()
 
-  // A failure is shown as a step to correct, never as an error: the model is still working on it.
+  // A failure is worded as a step to correct, never as an error: the model is still working on it.
   function toStep(call: ToolCall): TimelineStep {
     const labels = STEP_LABELS[call.type] ?? OTHER_LABELS
     if (call.status === 'running') return { label: labels.running(t), status: 'active' }
-    return { label: call.status === 'failed' ? labels.failed(t) : labels.done(t), status: 'complete' }
+    if (call.status === 'failed') return { label: labels.failed(t), status: 'failed' }
+    return { label: labels.done(t), status: 'complete' }
   }
 
   return function buildTurnTimeline(parts: unknown[]): TurnTimeline {
     const calls = displayedToolCalls(toolCalls(parts))
-    const answering = hasAnswerText(parts)
+    const answering = messageTexts(parts).answerTexts.length > 0
 
     if (!calls.length && !answering) {
       return { title: t('Analyse en cours'), steps: [{ label: t('Planification de la réponse…'), status: 'active' }] }

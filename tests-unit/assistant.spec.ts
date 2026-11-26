@@ -3,6 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useTranslation } from '@datagouv/components-next'
+import { RiCheckLine, RiErrorWarningLine } from '@remixicon/vue'
 import type { ChartForApi, ColumnDefinition } from '@datagouv/components-next'
 import ChatPanel from '~/components/Assistant/ChatPanel.vue'
 import AssistantSpinner from '~/components/Assistant/AssistantSpinner.vue'
@@ -12,7 +13,7 @@ import ReasoningBlock from '~/components/Assistant/ReasoningBlock.vue'
 import ToolsBlock from '~/components/Assistant/ToolsBlock.vue'
 import { chartToolResults, isNearChatBottom, toAssistantVisualization } from '~/utils/assistant'
 import { useAssistantErrorMessage } from '~/components/Assistant/useAssistantErrorMessage'
-import { useChatDisplayItems, type ToolTrace as ToolTraceModel } from '~/components/Assistant/useChatDisplayItems'
+import { useMessageDisplay, type ToolTrace as ToolTraceModel } from '~/components/Assistant/useMessageDisplay'
 import { useStarterQuestions } from '~/components/Assistant/useStarterQuestions'
 import type { AssistantVisualization } from '~/utils/assistant'
 
@@ -24,18 +25,18 @@ const newConversationMock = vi.hoisted(() => vi.fn())
 
 // The real builder, spied on to check which messages are rebuilt on each chunk.
 const buildSpy = vi.hoisted(() => vi.fn())
-vi.mock('~/components/Assistant/useChatDisplayItems', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('~/components/Assistant/useChatDisplayItems')>()
+vi.mock('~/components/Assistant/useMessageDisplay', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('~/components/Assistant/useMessageDisplay')>()
   return {
     ...actual,
-    useChatDisplayItems: () => {
-      buildSpy.mockImplementation(actual.useChatDisplayItems())
+    useMessageDisplay: () => {
+      buildSpy.mockImplementation(actual.useMessageDisplay())
       return buildSpy
     },
   }
 })
 
-const buildChatDisplayItems = useChatDisplayItems()
+const buildMessageDisplay = useMessageDisplay()
 const starterQuestions = (columns: Array<ColumnDefinition>) => useStarterQuestions(columns).value
 
 // State shared with the mocked useAssistantChat. The mock factory (which runs
@@ -93,7 +94,7 @@ const CHART = {
 }
 
 function traceOf(part: Record<string, unknown>) {
-  return buildChatDisplayItems([part]).traces[0] ?? null
+  return buildMessageDisplay([part]).traces[0] ?? null
 }
 
 describe('toAssistantVisualization', () => {
@@ -190,16 +191,37 @@ describe('chartToolResults', () => {
   })
 })
 
-describe('useChatDisplayItems', () => {
-  it('keeps the text parts and drops the raw reasoning', () => {
-    const display = buildChatDisplayItems([
+describe('useMessageDisplay', () => {
+  it('puts the plan above the blocks and the answer below them, and drops the raw reasoning', () => {
+    const display = buildMessageDisplay([
       { type: 'reasoning', text: 'The user wants a chart' },
       { type: 'text', text: 'Bonjour' },
       { type: 'tool-query_data', state: 'output-available', input: {}, output: { status: 'ok', table: 'n\n1', rows: 1, total: 1, more_groups: false } },
       { type: 'text', text: 'Voici' },
     ])
-    expect(display.texts).toEqual(['Bonjour', 'Voici'])
+    expect(display.textsAbove).toEqual(['Bonjour'])
+    expect(display.textsBelow).toEqual(['Voici'])
     expect(JSON.stringify(display)).not.toContain('The user wants')
+  })
+
+  it('puts every text above the blocks while the message has no tool call', () => {
+    const display = buildMessageDisplay([{ type: 'step-start' }, { type: 'text', text: 'Je vais vérifier les données.' }])
+    expect(display.textsAbove).toEqual(['Je vais vérifier les données.'])
+    expect(display.textsBelow).toEqual([])
+  })
+
+  it('gives the trace and the reasoning the same row count: the rows the query matches', () => {
+    const display = buildMessageDisplay([{ type: 'tool-query_data', state: 'output-available', input: {}, output: { status: 'ok', table: 'n\n1', rows: 50, total: 1234, more_groups: false } }])
+    const count = (1234).toLocaleString(locale)
+    expect(display.traces[0]!.summary).toBe(`${count} lignes`)
+    expect(display.reasoning).toEqual([`J’ai interrogé les données nécessaires à la réponse. Le résultat retenu contient ${count} lignes.`])
+  })
+
+  it('tells whether a tool call is still running', () => {
+    expect(buildMessageDisplay([{ type: 'tool-query_data', state: 'input-streaming' }]).toolsRunning).toBe(true)
+    expect(buildMessageDisplay([{ type: 'tool-query_data', state: 'input-available', input: {} }]).toolsRunning).toBe(true)
+    expect(buildMessageDisplay([{ type: 'tool-query_data', state: 'output-error', input: {}, errorText: 'boom' }]).toolsRunning).toBe(false)
+    expect(buildMessageDisplay([{ type: 'tool-query_data', state: 'output-available', input: {}, output: { status: 'ok', table: 'n\n1', rows: 1, total: 1, more_groups: false } }]).toolsRunning).toBe(false)
   })
 
   it('flags a tool refusal as an error, without an error text', () => {
@@ -210,13 +232,13 @@ describe('useChatDisplayItems', () => {
   it('hides a failed call once the same tool succeeds, but not while its retry runs', () => {
     const refused = { type: 'tool-query_data', state: 'output-available', input: {}, output: { status: 'error', errors: ['Unknown column: x.'] } }
     const ok = { type: 'tool-query_data', state: 'output-available', input: {}, output: { status: 'ok', table: 'n\n1', rows: 1, total: 1, more_groups: false } }
-    expect(buildChatDisplayItems([refused, ok]).traces).toHaveLength(1)
+    expect(buildMessageDisplay([refused, ok]).traces).toHaveLength(1)
 
-    const retrying = buildChatDisplayItems([{ type: 'tool-query_data', state: 'output-error', input: {}, errorText: 'boom' }, { type: 'tool-query_data', state: 'input-streaming' }]).traces
+    const retrying = buildMessageDisplay([{ type: 'tool-query_data', state: 'output-error', input: {}, errorText: 'boom' }, { type: 'tool-query_data', state: 'input-streaming' }]).traces
     expect(retrying).toHaveLength(2)
     expect(retrying[0]!.error).toBe(true)
 
-    const otherTool = buildChatDisplayItems([{ type: 'tool-query_data', state: 'output-error', input: {}, errorText: 'boom' }, { type: 'tool-create_chart', state: 'output-available', input: {}, output: { status: 'ok', chart: CHART } }]).traces
+    const otherTool = buildMessageDisplay([{ type: 'tool-query_data', state: 'output-error', input: {}, errorText: 'boom' }, { type: 'tool-create_chart', state: 'output-available', input: {}, output: { status: 'ok', chart: CHART } }]).traces
     expect(otherTool).toHaveLength(2)
   })
 
@@ -574,6 +596,25 @@ describe('AssistantTimeline', () => {
     expect(wrapper.findAll('.assistant-shimmer')).toHaveLength(2)
   })
 
+  it('marks a failed step with the warning icon, not the check, and announces the active step only', () => {
+    const timeline = {
+      title: 'Analyse en cours',
+      steps: [
+        { label: 'Calcul effectué sur les données', status: 'complete' as const },
+        { label: 'Un calcul doit être corrigé avant de poursuivre', status: 'failed' as const },
+        { label: 'Je calcule la réponse à partir des données', status: 'active' as const },
+      ],
+    }
+    const wrapper = mount(AssistantTimeline, { props: { timeline } })
+    const items = wrapper.findAll('li')
+    expect(items[0]!.findComponent(RiCheckLine).exists()).toBe(true)
+    expect(items[1]!.findComponent(RiCheckLine).exists()).toBe(false)
+    expect(items[1]!.findComponent(RiErrorWarningLine).exists()).toBe(true)
+    expect(items[1]!.text()).toBe('Un calcul doit être corrigé avant de poursuivre')
+    expect(items[1]!.find('.assistant-shimmer').exists()).toBe(false)
+    expect(wrapper.find('.sr-only').text()).toBe('Je calcule la réponse à partir des données')
+  })
+
   it('announces nothing when no step is active', () => {
     const timeline = { title: 'Analyse des résultats', steps: [{ label: 'Calcul effectué sur les données', status: 'complete' as const }] }
     expect(mount(AssistantTimeline, { props: { timeline } }).find('.sr-only').text()).toBe('')
@@ -610,7 +651,7 @@ describe('ToolsBlock', () => {
   const trace: ToolTraceModel = { label: 'Interrogation des données', summary: '1 ligne', error: false, errorText: null, output: null }
 
   it('groups the traces, collapsed, under their count', async () => {
-    const wrapper = mount(ToolsBlock, { props: { traces: [trace, trace], live: false } })
+    const wrapper = mount(ToolsBlock, { props: { traces: [trace, trace], running: false } })
     await nextTick()
     expect(wrapper.find('button').text()).toBe('Outils utilisés · 2')
     expect(wrapper.find('button').attributes('aria-expanded')).toBe('false')
@@ -618,12 +659,12 @@ describe('ToolsBlock', () => {
   })
 
   it('removes the DSFR counter marker of each trace', () => {
-    const items = mount(ToolsBlock, { props: { traces: [trace, trace], live: false } }).findAll('li')
+    const items = mount(ToolsBlock, { props: { traces: [trace, trace], running: false } }).findAll('li')
     expect(items.map(li => li.classes())).toEqual([['marker:content-none'], ['marker:content-none']])
   })
 
-  it('titles the running tools while the turn goes on', () => {
-    expect(mount(ToolsBlock, { props: { traces: [trace], live: true } }).find('button').text()).toBe('Outils en cours · 1')
+  it('titles the tools as running while one of them runs', () => {
+    expect(mount(ToolsBlock, { props: { traces: [trace], running: true } }).find('button').text()).toBe('Outils en cours · 1')
   })
 })
 
@@ -867,6 +908,14 @@ describe('ChatPanel', () => {
       expect(wrapper.find('.reasoning-block').exists()).toBe(false)
     })
 
+    it('titles the tools as used once they are done, while the turn goes on', () => {
+      chatState.status.value = 'streaming'
+      chatState.messages.value = [question, { id: 'a1', role: 'assistant', parts: [okQuery()] }]
+      const wrapper = mountPanel('resource-1')
+      expect(timelines(wrapper)).toHaveLength(1)
+      expect(wrapper.find('.tools-block button').text()).toBe('Outils utilisés · 1')
+    })
+
     it('interprets the results, then writes the answer', async () => {
       chatState.status.value = 'streaming'
       chatState.messages.value = [question, { id: 'a1', role: 'assistant', parts: [okQuery()] }]
@@ -885,6 +934,51 @@ describe('ChatPanel', () => {
       expect(timelines(wrapper)).toHaveLength(0)
       expect(wrapper.find('.reasoning-block').text()).toContain('J’ai compris votre demande ainsi : Compter les logements par région.')
       expect(wrapper.find('.tools-block button').text()).toBe('Outils utilisés · 1')
+    })
+
+    it('shows the plan text above the reasoning and tools blocks, the answer below them', () => {
+      chatState.messages.value = [question, { id: 'a1', role: 'assistant', parts: [
+        { type: 'text', text: 'Je vais vérifier les données.' },
+        okQuery({ purpose: 'Compter les logements' }),
+        { type: 'text', text: 'Il y a 1 logement.' },
+      ] }]
+      const wrapper = mountPanel('resource-1')
+      const blocks = wrapper.find('article[data-message-role="assistant"]').findAll('.prose, .reasoning-block, .tools-block')
+      expect(blocks.map(block => block.classes().find(name => name.endsWith('-block')) ?? block.text())).toEqual([
+        'Je vais vérifier les données.',
+        'reasoning-block',
+        'tools-block',
+        'Il y a 1 logement.',
+      ])
+    })
+
+    it('keeps the plan text above the live timeline', () => {
+      chatState.status.value = 'streaming'
+      chatState.messages.value = [question, { id: 'a1', role: 'assistant', parts: [{ type: 'text', text: 'Je vais vérifier les données.' }, okQuery()] }]
+      const wrapper = mountPanel('resource-1')
+      const blocks = wrapper.find('article[data-message-role="assistant"]').findAll('.prose, [data-testid="assistant-timeline"], .tools-block')
+      expect(blocks.map(block => block.attributes('data-testid') ?? block.classes().find(name => name.endsWith('-block')) ?? block.text())).toEqual([
+        'Je vais vérifier les données.',
+        'assistant-timeline',
+        'tools-block',
+      ])
+    })
+
+    it('keeps a text written before any tool in its place, and its element, when a tool call arrives', async () => {
+      chatState.status.value = 'streaming'
+      const plan = { type: 'text', text: 'Je vais vérifier les données.' }
+      chatState.messages.value = [question, { id: 'a1', role: 'assistant', parts: [plan] }]
+      const wrapper = mountPanel('resource-1')
+      const reply = () => wrapper.find('article[data-message-role="assistant"]')
+      const order = () => reply().findAll('.prose, [data-testid="assistant-timeline"], .tools-block')
+        .map(block => block.attributes('data-testid') ?? block.classes().find(name => name.endsWith('-block')) ?? block.text())
+      expect(order()).toEqual(['Je vais vérifier les données.', 'assistant-timeline'])
+      const textElement = reply().find('.prose').element
+
+      chatState.messages.value = [question, { id: 'a1', role: 'assistant', parts: [plan, { type: 'tool-query_data', toolCallId: 'q1', state: 'input-available', input: {} }] }]
+      await nextTick()
+      expect(order()).toEqual(['Je vais vérifier les données.', 'assistant-timeline', 'tools-block'])
+      expect(reply().find('.prose').element).toBe(textElement)
     })
 
     it('shows no reasoning nor tools block for a reply without tools', () => {

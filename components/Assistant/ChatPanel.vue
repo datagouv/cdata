@@ -92,6 +92,13 @@
           {{ userMessageText(message.parts) }}
         </div>
         <template v-else>
+          <MarkdownViewer
+            v-for="(text, index) in messageDisplay(message).textsAbove"
+            :key="`above-${index}`"
+            :content="text"
+            generated
+            class="mb-2"
+          />
           <AssistantTimeline
             v-if="message === liveMessage && liveTimeline"
             :timeline="liveTimeline"
@@ -105,12 +112,12 @@
           <ToolsBlock
             v-if="messageDisplay(message).traces.length"
             :traces="messageDisplay(message).traces"
-            :live="message === liveMessage"
+            :running="message === liveMessage && messageDisplay(message).toolsRunning"
             class="mb-2"
           />
           <MarkdownViewer
-            v-for="(text, index) in messageDisplay(message).texts"
-            :key="index"
+            v-for="(text, index) in messageDisplay(message).textsBelow"
+            :key="`below-${index}`"
             :content="text"
             generated
           />
@@ -261,7 +268,7 @@ import ToolsBlock from './ToolsBlock.vue'
 import { useAssistantChat } from './useAssistantChat'
 import { chartToolResults, isNearChatBottom } from '~/utils/assistant'
 import { useAssistantErrorMessage } from './useAssistantErrorMessage'
-import { useChatDisplayItems, type ChatMessageDisplay } from './useChatDisplayItems'
+import { useMessageDisplay, type ChatMessageDisplay } from './useMessageDisplay'
 import { useStarterQuestions } from './useStarterQuestions'
 import { useTurnTimeline } from './useTurnTimeline'
 import type { AssistantVisualization, ChartToolResult } from '~/utils/assistant'
@@ -333,13 +340,13 @@ watch(messages, () => {
 
 type ChatMessage = (typeof messages.value)[number]
 
-const buildChatDisplayItems = useChatDisplayItems()
+const buildMessageDisplay = useMessageDisplay()
 const messageDisplayCache = new WeakMap<ChatMessage, ChatMessageDisplay>()
 
 function messageDisplay(message: ChatMessage): ChatMessageDisplay {
   let display = messageDisplayCache.get(message)
   if (!display) {
-    display = buildChatDisplayItems(message.parts)
+    display = buildMessageDisplay(message.parts)
     messageDisplayCache.set(message, display)
   }
   return display

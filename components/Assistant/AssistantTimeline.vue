@@ -4,8 +4,7 @@
     class="py-1"
     data-testid="assistant-timeline"
   >
-    <!-- The shimmer repeats the label in a pseudo-element, which screen readers
-    may read twice: the sr-only text is the spoken one. -->
+    <!-- The shimmer's pseudo-element may be read twice: only this text is spoken. -->
     <p class="sr-only">
       {{ announced }}
     </p>
@@ -24,6 +23,10 @@
             <RiCheckLine
               v-if="step.status === 'complete'"
               class="mt-[3px] size-3.5 text-new-gray-medium"
+            />
+            <RiErrorWarningLine
+              v-else-if="step.status === 'failed'"
+              class="mt-[3px] size-3.5 text-new-warning"
             />
             <span
               v-else
@@ -56,7 +59,7 @@
 </template>
 
 <script setup lang="ts">
-import { RiCheckLine } from '@remixicon/vue'
+import { RiCheckLine, RiErrorWarningLine } from '@remixicon/vue'
 import { computed } from 'vue'
 import AssistantSpinner from './AssistantSpinner.vue'
 import type { TurnTimeline } from './useTurnTimeline'

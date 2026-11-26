@@ -1,6 +1,6 @@
 import { isRecord } from '@datagouv/components-next'
 
-export type ToolCallStatus = 'running' | 'succeeded' | 'failed'
+type ToolCallStatus = 'running' | 'succeeded' | 'failed'
 
 export type ToolCall = {
   type: string
@@ -40,10 +40,23 @@ export function displayedToolCalls(calls: ToolCall[]): ToolCall[] {
   )
 }
 
-// Text written before the last tool call is the model announcing its plan, not the answer.
-export function hasAnswerText(parts: unknown[]): boolean {
-  const lastToolIndex = parts.findLastIndex(isToolPart)
-  return parts.slice(lastToolIndex + 1).some(part =>
-    isRecord(part) && part.type === 'text' && typeof part.text === 'string' && part.text.trim() !== '',
+// `rows` is what the model was shown (50 at most); `total`, known only without an aggregate, is what the query matches.
+export function queryRowCount(output: Record<string, unknown>): number | null {
+  if (typeof output.total === 'number') return output.total
+  return typeof output.rows === 'number' ? output.rows : null
+}
+
+function nonBlankTexts(parts: unknown[]): string[] {
+  return parts.flatMap(part =>
+    isRecord(part) && part.type === 'text' && typeof part.text === 'string' && part.text.trim() !== '' ? [part.text] : [],
   )
+}
+
+// Text written before the last tool call is the model announcing its plan, not the answer.
+export function messageTexts(parts: unknown[]): { planTexts: string[], answerTexts: string[] } {
+  const lastToolIndex = parts.findLastIndex(isToolPart)
+  return {
+    planTexts: nonBlankTexts(parts.slice(0, lastToolIndex + 1)),
+    answerTexts: nonBlankTexts(parts.slice(lastToolIndex + 1)),
+  }
 }

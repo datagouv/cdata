@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { displayedToolCalls, hasAnswerText, toolCalls } from '~/components/Assistant/toolCalls'
+import { displayedToolCalls, messageTexts, toolCalls } from '~/components/Assistant/toolCalls'
 import { useTurnReasoning } from '~/components/Assistant/useTurnReasoning'
 import { useTurnTimeline } from '~/components/Assistant/useTurnTimeline'
 
@@ -67,9 +67,9 @@ describe('useTurnTimeline', () => {
   it.each([
     ['a refused query', tool('query_data', 'output-available', REFUSED)],
     ['a failed query', tool('query_data', 'output-error')],
-  ])('shows %s awaiting its correction as a step to correct, never as an error', (_case, failed) => {
+  ])('shows %s awaiting its correction as a failed step to correct', (_case, failed) => {
     expect(buildTimeline([failed, tool('query_data', 'input-streaming')]).steps).toEqual([
-      { label: 'Le premier calcul doit être corrigé avant de poursuivre', status: 'complete' },
+      { label: 'Un calcul doit être corrigé avant de poursuivre', status: 'failed' },
       { label: 'Je calcule la réponse à partir des données', status: 'active' },
     ])
   })
@@ -83,7 +83,7 @@ describe('useTurnTimeline', () => {
 
   it('counts a refused step budget as a failure', () => {
     expect(buildTimeline([tool('create_chart', 'output-available', BUDGET_REFUSED)]).steps[0]).toEqual(
-      { label: 'Une étape doit être ajustée avant de poursuivre', status: 'complete' },
+      { label: 'Une étape doit être ajustée avant de poursuivre', status: 'failed' },
     )
   })
 
@@ -127,11 +127,16 @@ describe('toolCalls', () => {
     expect(displayedToolCalls(calls)).toEqual(calls)
   })
 
-  it('takes only a non-blank text after the last tool for the answer', () => {
-    expect(hasAnswerText([tool('query_data', 'output-available', OK_QUERY), text('  \n')])).toBe(false)
-    expect(hasAnswerText([text('Avant'), tool('query_data', 'output-available', OK_QUERY)])).toBe(false)
-    expect(hasAnswerText([text('Avant'), tool('query_data', 'output-available', OK_QUERY), text('Après')])).toBe(true)
-    expect(hasAnswerText([{ type: 'step-start' }])).toBe(false)
+  it('splits the non-blank texts at the last tool call into plan and answer', () => {
+    const done = tool('query_data', 'output-available', OK_QUERY)
+    expect(messageTexts([text('Je vais vérifier.'), done, text('Puis.'), done, text('  \n'), text('Voici'), text('la réponse.')]))
+      .toEqual({ planTexts: ['Je vais vérifier.', 'Puis.'], answerTexts: ['Voici', 'la réponse.'] })
+    expect(messageTexts([text('Avant'), done])).toEqual({ planTexts: ['Avant'], answerTexts: [] })
+  })
+
+  it('takes every text of a message without tools for the answer', () => {
+    expect(messageTexts([{ type: 'step-start' }, text('Bonjour')])).toEqual({ planTexts: [], answerTexts: ['Bonjour'] })
+    expect(messageTexts([{ type: 'step-start' }, { type: 'text', text: 42 }])).toEqual({ planTexts: [], answerTexts: [] })
   })
 })
 
@@ -184,7 +189,7 @@ describe('useTurnReasoning', () => {
     ['no row', rows(0), 'Le résultat retenu ne contient aucune ligne.'],
     ['one row', rows(1), 'Le résultat retenu contient 1 ligne.'],
     ['the rows shown of an aggregate', { ...OK_QUERY, rows: 7, total: null }, 'Le résultat retenu contient 7 lignes.'],
-    ['the rows returned, not the rows of the filtered resource', { ...OK_QUERY, rows: 5, total: 18 }, 'Le résultat retenu contient 5 lignes.'],
+    ['the rows the query matches, not only the rows shown', { ...OK_QUERY, rows: 5, total: 18 }, 'Le résultat retenu contient 18 lignes.'],
     ['more than 50 groups', { ...OK_QUERY, rows: 50, total: null, more_groups: true }, 'Le résultat retenu compte plus de 50 valeurs ; seules les 50 premières ont été lues.'],
   ])('gives the row count of %s', (_case, output, sentence) => {
     expect(buildReasoning([query(output)])).toEqual([`J’ai interrogé les données nécessaires à la réponse. ${sentence}`])

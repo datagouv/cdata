@@ -1,6 +1,6 @@
 import { isRecord, useTranslation } from '@datagouv/components-next'
-import { displayedToolCalls, toolCalls } from '~/components/Assistant/toolCalls'
-import type { ToolCall } from '~/components/Assistant/toolCalls'
+import { displayedToolCalls, queryRowCount, toolCalls } from './toolCalls'
+import type { ToolCall } from './toolCalls'
 
 // A blank or non-string value is no intent: the sentence is left out rather than guessed.
 function cleanIntent(value: unknown): string | null {
@@ -10,18 +10,13 @@ function cleanIntent(value: unknown): string | null {
   return intent === '' ? null : intent
 }
 
-// The rows the query returned, as in the prototype; `total` counts the filtered resource, not the result.
-function rowCount(output: Record<string, unknown>): number | null {
-  return typeof output.rows === 'number' ? output.rows : null
-}
-
 export function useTurnReasoning() {
   const { t, locale } = useTranslation()
 
   function rowsSentence(call: ToolCall): string {
     if (!isRecord(call.output) || call.output.status !== 'ok') return ''
     if (call.output.more_groups === true) return t('Le résultat retenu compte plus de 50 valeurs ; seules les 50 premières ont été lues.')
-    const count = rowCount(call.output)
+    const count = queryRowCount(call.output)
     if (count === null) return ''
     return t('Le résultat retenu ne contient aucune ligne. | Le résultat retenu contient 1 ligne. | Le résultat retenu contient {rows} lignes.', { n: count, rows: count.toLocaleString(locale) })
   }
