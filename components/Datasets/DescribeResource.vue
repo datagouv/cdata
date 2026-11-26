@@ -149,7 +149,7 @@
         <template #legendAside>
           <BrandedButton
             color="secondary"
-            size="2xs"
+            size="xs"
             @click="form.checksum_value = null; addChecksum = false"
           >
             {{ $t('Supprimer') }}

@@ -8,8 +8,9 @@
     <template #button="{ attrs, listeners }">
       <BrandedButton
         color="tertiary"
-        size="2xs"
+        size="xs"
         :icon="RiChatNewLine"
+        class="-ms-3"
         v-bind="attrs"
         v-on="listeners"
       >
