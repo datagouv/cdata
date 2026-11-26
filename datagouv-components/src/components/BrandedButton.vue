@@ -6,6 +6,7 @@
     :data-size="size"
     :data-color="color"
     :data-loading="loading ? 'true' : undefined"
+    :data-loading-overlay="isLoadingOverlay ? 'true' : undefined"
     :data-icon-only="isIconOnly ? 'true' : undefined"
     :data-icon-right="iconRight ? 'true' : undefined"
     :data-icon-start="hasStartIcon ? 'true' : undefined"
@@ -155,8 +156,12 @@ const hasLabel = computed(() => hasSlotContent(slots.default))
 // A button without a visible label is square, like an icon-only button.
 const isIconOnly = computed(() => props.iconOnly || !hasLabel.value)
 
+// Without an icon to replace, the spinner is centered over the hidden label, so that
+// the button keeps its size while loading.
+const isLoadingOverlay = computed(() => props.loading && !props.icon && !isIconOnly.value)
+
 // Sides that have an icon next to the label, for the optical padding.
-const hasSymbol = computed(() => !!props.icon || props.loading)
+const hasSymbol = computed(() => !!props.icon || (props.loading && isIconOnly.value))
 const hasStartIcon = computed(() => hasSymbol.value && !props.iconRight)
 const hasEndIcon = computed(() => (hasSymbol.value && props.iconRight) || (!!props.href && props.newTab && !isIconOnly.value))
 
@@ -421,6 +426,25 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
   flex: none;
   width: var(--branded-button-icon);
   height: var(--branded-button-icon);
+}
+
+/*
+ * Loading without an icon: the label stays in the flow to keep the button's size, but
+ * is transparent (still the accessible name), and the spinner is centered over it.
+ */
+.branded-button[data-loading-overlay="true"] .branded-button__symbol {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.branded-button[data-loading-overlay="true"] .branded-button__label {
+  color: transparent;
+}
+
+.branded-button[data-loading-overlay="true"] .branded-button__icon:not(.branded-button__spinner) {
+  visibility: hidden;
 }
 
 .branded-button__spinner {

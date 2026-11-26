@@ -224,7 +224,7 @@
     <DocSection
       id="chargement"
       title="Chargement"
-      description="loading garde le libellé, pose aria-busy et bloque les clics comme la soumission du formulaire. Le bouton reste focalisable. Le témoin devient statique quand le mouvement est réduit."
+      description="loading ne change pas la taille du bouton : le témoin remplace l'icône, ou se centre sur le libellé masqué quand il n'y a pas d'icône. Le libellé reste le nom accessible, aria-busy est posé et les clics comme la soumission du formulaire sont bloqués. Le bouton reste focalisable. Le témoin devient statique quand le mouvement est réduit."
       :code="codes.loading"
     >
       <form
@@ -588,7 +588,7 @@ const practices = [
   'Un bouton déclenche une action (enregistrer, publier, supprimer) ; un lien navigue. Pour naviguer, passer href : le bouton est alors rendu comme un lien. Quand plusieurs actions liées partagent une ligne, les regrouper dans un menu, comme le menu « Télécharger » des ressources.',
   'Une seule action primary par groupe. secondary pour l\'alternative, tertiary pour une action discrète, danger pour une confirmation destructive. warning est réservé aux actions d\'administration visibles sur les pages publiques.',
   'Dans un formulaire, utiliser type="submit" et écouter l\'événement submit du formulaire, plutôt qu\'un clic : la touche Entrée dans un champ fonctionne alors aussi.',
-  'Passer loading plutôt qu\'ajouter un indicateur maison : le libellé et le focus restent, aria-busy est posé et la double soumission est bloquée. Ne pas annoncer la réussite avant la réponse du serveur.',
+  'Passer loading plutôt qu\'ajouter un indicateur maison ou changer le libellé (« Envoi en cours… ») : le bouton garde sa taille, donc la mise en page ne bouge pas, le libellé et le focus restent, aria-busy est posé et la double soumission est bloquée. Ne pas annoncer la réussite avant la réponse du serveur.',
   'Désactiver seulement quand l\'action est impossible maintenant (champ obligatoire vide, droits insuffisants), et dire pourquoi dans le contenu voisin : une infobulle au survol n\'est lue ni au clavier ni sur mobile.',
   'Rédiger le libellé avec un verbe à l\'infinitif et son objet, une seule majuscule en début : « Publier le jeu de données », « Ajouter une ressource », « Inviter un membre ». Éviter les verbes seuls et les confirmations vagues (« Valider », « OK », « Cliquez ici »).',
   'Pour une action destructive, nommer l\'objet (« Supprimer la ressource ») et confirmer avec un message qui reprend les mêmes mots (« Ressource supprimée »). La couleur ne suffit pas à signaler le danger.',
