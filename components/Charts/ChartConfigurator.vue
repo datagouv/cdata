@@ -153,13 +153,8 @@
               :aria-describedby="publishBlockedBy"
               @click="saveChart"
             >
-              {{ published ? $t('Publier les modifications') : $t('Publier la visualisation') }}
+              {{ assistantBusy ? $t('L’assistant répond…') : published ? $t('Publier les modifications') : $t('Publier la visualisation') }}
             </BrandedButton>
-            <span
-              v-if="assistantBusy"
-              :id="assistantBusyId"
-              class="sr-only"
-            >{{ $t('L’assistant est en train de répondre.') }}</span>
           </div>
           <div
             v-if="showPublish && (mixedSeries || missingFieldsWarning)"
@@ -884,13 +879,13 @@ const showPublish = computed(() => !!selectedResource.value && isAdmin)
 const canPublish = computed(() => hasChart.value && !mixedSeries.value && !assistantBusy.value)
 const missingFieldsWarning = computed(() => saveBlocked.value && hasChart.value && missingFields.value.length > 0)
 const sourceStatusId = useId()
-const assistantBusyId = useId()
 const mixedSeriesId = useId()
 const emptyStateId = useId()
 const publishBlockedBy = computed(() => {
   if (canPublish.value) return undefined
   if (mixedSeries.value) return mixedSeriesId
-  if (assistantBusy.value) return assistantBusyId
+  // The button's own text gives this reason.
+  if (assistantBusy.value) return undefined
   if (!resourceColumns.value.length) return sourceStatusId
   return emptyStateId
 })

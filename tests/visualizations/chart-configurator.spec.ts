@@ -409,13 +409,15 @@ test('publishing waits for the assistant to answer', async ({ page }) => {
   })
   await setupChart(page)
   await page.getByRole('tab', { name: 'Assistant' }).click()
-  const publish = page.getByRole('button', { name: 'Publier la visualisation' })
+  const visualization = page.getByRole('region', { name: 'Visualisation' })
+  const publish = visualization.getByRole('button', { name: 'Publier la visualisation' })
   await expect(publish).toBeEnabled()
 
   await sendAssistantMessage(page, 'Un histogramme des logements')
   try {
-    await expect(publish).toBeDisabled()
-    await expect(publish).toHaveAccessibleDescription('L’assistant est en train de répondre.')
+    const waiting = visualization.getByRole('button', { name: 'L’assistant répond…' })
+    await expect(waiting).toBeDisabled()
+    await expect(waiting).not.toHaveAttribute('aria-describedby')
   }
   finally {
     releaseAnswer()
