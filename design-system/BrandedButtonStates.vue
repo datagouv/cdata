@@ -1,5 +1,141 @@
 <template>
   <div class="space-y-12">
+    <section
+      data-capture="rules"
+      class="space-y-6 max-w-4xl"
+    >
+      <h2 class="text-xl font-bold mb-4">
+        Règles d'usage
+      </h2>
+
+      <div>
+        <h3 class="text-base font-bold mb-2">
+          Couleurs
+        </h3>
+        <ul class="space-y-1 text-sm">
+          <li><code>primary</code> : l'action principale d'un groupe, une seule par groupe.</li>
+          <li><code>secondary</code> : une action alternative, encadrée en noir.</li>
+          <li><code>tertiary</code> : une action de moindre importance, sans bordure, en noir.</li>
+          <li><code>danger</code> : une action destructive, nommée explicitement (la couleur ne suffit pas).</li>
+          <li><code>warning</code> : une action d'administration, pour l'instant.</li>
+          <li><code>white-flat</code> : un bouton sur fond foncé ou illustré.</li>
+          <li>
+            À ne plus utiliser (conservés pour compatibilité) : <code>tertiary-blue</code>,
+            <code>brown-illustration</code>, <code>green-illustration</code> et la taille <code>xl</code>.
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-base font-bold mb-2">
+          Tailles
+        </h3>
+        <div class="overflow-x-auto">
+          <table class="text-sm border-collapse">
+            <thead>
+              <tr class="text-left text-gray-medium whitespace-nowrap">
+                <th class="font-normal pr-6 pb-1">
+                  Taille
+                </th>
+                <th class="font-normal pr-6 pb-1">
+                  Hauteur min.
+                </th>
+                <th class="font-normal pr-6 pb-1">
+                  Texte
+                </th>
+                <th class="font-normal pr-6 pb-1">
+                  Padding texte / icône
+                </th>
+                <th class="font-normal pr-6 pb-1">
+                  Icône
+                </th>
+                <th class="font-normal pb-1">
+                  Usage
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="row in sizeRules"
+                :key="row.size"
+                class="border-t border-gray-default"
+              >
+                <td class="pr-6 py-1 whitespace-nowrap">
+                  <code>{{ row.size }}</code>
+                </td>
+                <td class="pr-6 py-1 whitespace-nowrap">
+                  {{ row.height }}
+                </td>
+                <td class="pr-6 py-1 whitespace-nowrap">
+                  {{ row.text }}
+                </td>
+                <td class="pr-6 py-1 whitespace-nowrap">
+                  {{ row.padding }}
+                </td>
+                <td class="pr-6 py-1 whitespace-nowrap">
+                  {{ row.icon }}
+                </td>
+                <td class="py-1 min-w-56">
+                  {{ row.usage }}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="text-sm mt-2">
+          Les hauteurs sont des minimums : un libellé long revient à la ligne, entre les mots.
+          Sur écran tactile, une zone invisible de 44 px entoure le bouton sans changer sa taille.
+          Angles droits, comme les boutons du DSFR.
+        </p>
+      </div>
+
+      <div>
+        <h3 class="text-base font-bold mb-2">
+          Icônes
+        </h3>
+        <ul class="space-y-1 text-sm">
+          <li>À gauche, l'icône d'une action : ajouter, télécharger, modifier, plein écran.</li>
+          <li>
+            À droite (<code>icon-right</code>), l'icône d'une destination : flèche vers une autre page,
+            chevron d'un menu, croix de fermeture.
+          </li>
+          <li>Un lien externe utilise <code>new-tab</code>, qui ajoute l'icône et la mention « nouvel onglet ».</li>
+          <li>
+            Un bouton iconique est carré, à la hauteur de sa taille. Son libellé (slot) reste lu par
+            les technologies d'assistance ; le <code>title</code> ne sert que s'il n'y a pas de slot.
+          </li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-base font-bold mb-2">
+          États
+        </h3>
+        <ul class="space-y-1 text-sm">
+          <li>
+            Chargement : le libellé reste, <code>aria-busy</code> est posé, les clics et la soumission
+            du formulaire sont bloqués. Le bouton reste focalisable.
+          </li>
+          <li>
+            Désactivé : même gris pour toutes les couleurs, le bouton reste focalisable. Expliquer la
+            condition de déblocage dans le contenu voisin.
+          </li>
+          <li>Lien désactivé : rendu sans lien, hors de la tabulation.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h3 class="text-base font-bold mb-2">
+          Alignement
+        </h3>
+        <p class="text-sm">
+          Un bouton tertiaire n'a pas de marges négatives. Pour aligner son texte sur le bord du
+          contenu, le parent ajoute un décalage égal au padding du côté concerné, par exemple
+          <code>-ms-4</code> côté texte en <code>sm</code> ou <code>-ms-3</code> côté icône.
+        </p>
+      </div>
+    </section>
+
     <section data-capture="sizes">
       <h2 class="text-xl font-bold mb-4">
         Couleurs recommandées × tailles
@@ -357,6 +493,13 @@ const submitCount = ref(0)
 
 const colors = ['primary', 'secondary', 'tertiary', 'danger', 'warning', 'white-flat'] as const
 const sizes = ['2xs', 'xs', 'sm', 'lg'] as const
+const sizeRules = [
+  { size: '2xs', height: '28 px', text: '12 px', padding: '8 / 4 px', icon: '16 px', usage: 'barres d\'outils et menus denses (explorateur tabulaire)' },
+  { size: 'xs', height: '32 px', text: '14 px', padding: '12 / 8 px', icon: '16 px', usage: 'actions secondaires, admin, BannerAction' },
+  { size: 'sm', height: '40 px', text: '14 px', padding: '16 / 12 px', icon: '16 px', usage: 'standard, alignée sur les champs de formulaire' },
+  { size: 'lg', height: '48 px', text: '16 px', padding: '20 / 16 px', icon: '20 px', usage: 'menu mobile, recherche, page d\'erreur' },
+]
+
 // Kept for backward compatibility only
 const legacyColors = ['tertiary-blue', 'brown-illustration', 'green-illustration'] as const
 
