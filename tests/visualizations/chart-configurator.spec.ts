@@ -372,11 +372,15 @@ test('publishing from the assistant tab creates the chart, even with a decimal y
   }
 })
 
+function holdImageUpload(page: Page) {
+  return holdRequests(page, url => /^\/api\/1\/visualizations\/[^/]+\/image\/$/.test(url.pathname), 'POST')
+}
+
 test('the label stays « Publier la visualisation » until the first publication completes', async ({ page }) => {
   await setupChart(page)
   await page.getByLabel('Description').fill('Publiée une première fois')
   await expect(page.locator('canvas').first()).toBeVisible()
-  const upload = await holdRequests(page, url => /^\/api\/1\/visualizations\/[^/]+\/image\/$/.test(url.pathname), 'POST')
+  const upload = await holdImageUpload(page)
   const visualization = page.getByRole('region', { name: 'Visualisation' })
 
   const responsePromise = page.waitForResponse(response => new URL(response.url()).pathname === '/api/1/visualizations/' && response.request().method() === 'POST')
@@ -417,13 +421,45 @@ test('publishing waits for the assistant to answer', async ({ page }) => {
   try {
     const waiting = visualization.getByRole('button', { name: 'L’assistant répond…' })
     await expect(waiting).toBeDisabled()
-    await expect(waiting).not.toHaveAttribute('aria-describedby')
+    await expect(waiting).toHaveAccessibleDescription('')
   }
   finally {
     releaseAnswer()
   }
   await expect(page.getByTestId('assistant-panel').locator('article').last()).toContainText('Graphique créé.')
   await expect(publish).toBeEnabled()
+})
+
+test('the assistant cannot be written to while the visualization is published', async ({ page }) => {
+  await setupChart(page)
+  await page.getByLabel('Description').fill('Publiée pendant que l’assistant est verrouillé')
+  await expect(page.locator('canvas').first()).toBeVisible()
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+  // A message ready to send: only the lock keeps the button disabled.
+  const composer = page.getByLabel('Votre demande')
+  await composer.fill('Passe en courbe')
+  const send = page.getByRole('button', { name: 'Envoyer' })
+  await expect(send).toBeEnabled()
+  const upload = await holdImageUpload(page)
+
+  const responsePromise = page.waitForResponse(response => new URL(response.url()).pathname === '/api/1/visualizations/' && response.request().method() === 'POST')
+  await page.getByRole('region', { name: 'Visualisation' }).getByRole('button', { name: 'Publier la visualisation' }).click()
+  const chart = await (await responsePromise).json() as Chart
+  try {
+    await expect.poll(upload.held).toBe(1)
+    await expect(composer).toBeDisabled()
+    await expect(send).toBeDisabled()
+
+    upload.release()
+    await expect(page.getByText('Visualisation publiée !')).toBeVisible()
+    await expect(composer).toBeEnabled()
+    await expect(composer).toHaveValue('Passe en courbe')
+    await expect(send).toBeEnabled()
+  }
+  finally {
+    upload.release()
+    await deleteChart(page.request, chart.id)
+  }
 })
 
 test('publishing a draft makes it public', async ({ page }) => {

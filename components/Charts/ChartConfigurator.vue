@@ -318,6 +318,7 @@
                     :visualization="visualization"
                     :columns="resourceColumns"
                     :resource="activeResource"
+                    :locked="saving"
                     @chart-result="onChartResult"
                   />
                 </ClientOnly>

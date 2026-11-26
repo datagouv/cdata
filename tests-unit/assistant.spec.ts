@@ -665,6 +665,23 @@ describe('ChatPanel', () => {
     expect(sendMessageMock).toHaveBeenCalledWith({ text: 'Bonjour' })
   })
 
+  it('cannot send while locked by its host, and sends again once unlocked', async () => {
+    const wrapper = mountPanel('resource-1')
+    await wrapper.find('textarea#assistant-input').setValue('Passe en courbe')
+
+    await wrapper.setProps({ locked: true })
+    expect(wrapper.find('textarea#assistant-input').attributes('disabled')).toBeDefined()
+    expect(wrapper.find('button[aria-label="Envoyer"]').attributes('disabled')).toBeDefined()
+    // What the form does on Enter, which the disabled textarea no longer lets through.
+    await wrapper.find('form').trigger('submit')
+    expect(sendMessageMock).not.toHaveBeenCalled()
+
+    await wrapper.setProps({ locked: false })
+    expect(wrapper.find('textarea#assistant-input').attributes('disabled')).toBeUndefined()
+    await wrapper.find('form').trigger('submit')
+    expect(sendMessageMock).toHaveBeenCalledWith({ text: 'Passe en courbe' })
+  })
+
   it('caps the composer at 4000 characters', () => {
     const wrapper = mountPanel('resource-1')
 
