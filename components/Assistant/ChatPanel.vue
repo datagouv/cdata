@@ -428,4 +428,6 @@ function handleEnter(event: KeyboardEvent) {
   event.preventDefault()
   submit()
 }
+
+defineExpose({ busy })
 </script>

@@ -1,10 +1,11 @@
 import type { Chart } from '@datagouv/components-next'
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { clickOutside } from '../helpers'
+import { clickOutside, holdRequests } from '../helpers'
 import { ASSISTANT_CHAT_PATH, assistantChatStream, createChartOutput, createChartStream, errorStream, routeAssistantStream } from '../assistantApi'
-import { API_BASE_URL, createChart, deleteChart, mockTabular, RESOURCE_ID, sendAssistantMessage, setupChart } from './fixtures'
+import { API_BASE_URL, chooseResource, createChart, deleteChart, mockTabular, RESOURCE_ID, sendAssistantMessage, setupChart } from './fixtures'
 import data from './data.json' with { type: 'json' }
+import profile from './profile.json' with { type: 'json' }
 
 /**
  * The fixture dataset has a single tabular resource: mark its JSON export as
@@ -325,7 +326,7 @@ function trackChartCreations(page: Page) {
 test('the publish button stays above the preview in both tabs', async ({ page }) => {
   await page.route('**/assistant/chat/**', route => route.abort())
   await setupChart(page)
-  const publish = page.getByRole('button', { name: 'Publier la visualisation' })
+  const publish = page.getByRole('region', { name: 'Visualisation' }).getByRole('button', { name: 'Publier la visualisation' })
 
   await page.getByRole('tab', { name: 'Assistant' }).click()
   await expect(page.getByTestId('assistant-panel')).toBeVisible()
@@ -336,19 +337,129 @@ test('the publish button stays above the preview in both tabs', async ({ page })
   await expect(publish).toBeVisible()
 })
 
-test('Enter in a field of the form publishes the chart', async ({ page }) => {
+test('Enter in a field of the form does not publish the chart', async ({ page }) => {
   await setupChart(page)
-  await page.getByLabel('Description').fill('Publiée au clavier')
-  const responsePromise = page.waitForResponse(response => new URL(response.url()).pathname === '/api/1/visualizations/' && response.request().method() === 'POST')
+  await page.getByLabel('Description').fill('Complète, mais pas publiée au clavier')
+  const posts = trackChartCreations(page)
+  // Implicit submission fires `submit` while the key is handled: checked right after the press.
+  await page.locator('#chart-form').evaluate((form) => {
+    form.addEventListener('submit', () => form.setAttribute('data-submitted', ''))
+  })
+
   await page.getByLabel('Titre').press('Enter')
-  const response = await responsePromise
-  const chart = await response.json() as Chart
+
+  await expect(page.locator('#chart-form')).not.toHaveAttribute('data-submitted')
+  expect(posts).toHaveLength(0)
+})
+
+test('publishing from the assistant tab creates the chart, even with a decimal y-axis bound', async ({ page }) => {
+  await page.route('**/assistant/chat/**', route => route.abort())
+  await setupChart(page)
+  await page.getByLabel('Description').fill('Publiée depuis l’assistant')
+  await page.getByLabel('Minimum', { exact: true }).fill('0.5')
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+
+  const responsePromise = page.waitForResponse(response => new URL(response.url()).pathname === '/api/1/visualizations/' && response.request().method() === 'POST')
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
+  const chart = await (await responsePromise).json() as Chart
   try {
-    expect(response.status()).toBe(201)
+    // The toast follows the image upload: deleting earlier would answer it with a 410.
+    await expect(page.getByText('Visualisation publiée !')).toBeVisible()
+    expect(chart.y_axis.min).toBe(0.5)
   }
   finally {
-    if (chart.id) await deleteChart(page.request, chart.id)
+    await deleteChart(page.request, chart.id)
   }
+})
+
+test('the label stays « Publier la visualisation » until the first publication completes', async ({ page }) => {
+  await setupChart(page)
+  await page.getByLabel('Description').fill('Publiée une première fois')
+  await expect(page.locator('canvas').first()).toBeVisible()
+  const upload = await holdRequests(page, url => /^\/api\/1\/visualizations\/[^/]+\/image\/$/.test(url.pathname), 'POST')
+  const visualization = page.getByRole('region', { name: 'Visualisation' })
+
+  const responsePromise = page.waitForResponse(response => new URL(response.url()).pathname === '/api/1/visualizations/' && response.request().method() === 'POST')
+  await visualization.getByRole('button', { name: 'Publier la visualisation' }).click()
+  const chart = await (await responsePromise).json() as Chart
+  try {
+    await expect.poll(upload.held).toBe(1)
+    await expect(visualization.getByRole('button', { name: 'Publier la visualisation' })).toBeVisible()
+
+    upload.release()
+    await expect(page.getByText('Visualisation publiée !')).toBeVisible()
+    await expect(visualization.getByRole('button', { name: 'Publier les modifications' })).toBeVisible()
+  }
+  finally {
+    upload.release()
+    await deleteChart(page.request, chart.id)
+  }
+})
+
+test('publishing waits for the assistant to answer', async ({ page }) => {
+  await routeAssistantStream(page, body => assistantChatStream(body))
+  let releaseAnswer = () => {}
+  const answerReleased = new Promise<void>((resolve) => {
+    releaseAnswer = resolve
+  })
+  // Registered after the stream, so it runs first: holds the answer, then hands it over.
+  await page.route(url => url.pathname === ASSISTANT_CHAT_PATH, async (route) => {
+    if (route.request().method() === 'POST') await answerReleased
+    await route.fallback()
+  })
+  await setupChart(page)
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+  const publish = page.getByRole('button', { name: 'Publier la visualisation' })
+  await expect(publish).toBeEnabled()
+
+  await sendAssistantMessage(page, 'Un histogramme des logements')
+  try {
+    await expect(publish).toBeDisabled()
+    await expect(publish).toHaveAccessibleDescription('L’assistant est en train de répondre.')
+  }
+  finally {
+    releaseAnswer()
+  }
+  await expect(page.getByTestId('assistant-panel').locator('article').last()).toContainText('Graphique créé.')
+  await expect(publish).toBeEnabled()
+})
+
+test('publishing a draft makes it public', async ({ page }) => {
+  const chart = await createChart(page.request, { title: `Chart configurator draft ${Date.now()}`, private: true })
+  try {
+    await mockTabular(page)
+    await page.goto(`/admin/beta/charts/${chart.id}`)
+    await page.waitForLoadState('networkidle')
+    await expect(page.getByLabel('Titre')).toHaveValue(chart.title)
+
+    const responsePromise = page.waitForResponse(response =>
+      response.url().includes(`/api/1/visualizations/${chart.id}/`) && response.request().method() === 'PATCH',
+    )
+    await page.getByRole('button', { name: 'Publier les modifications' }).click()
+    const response = await responsePromise
+    expect(((await response.json()) as Chart).private).toBe(false)
+    await expect(page.getByText('Visualisation mise à jour !')).toBeVisible()
+  }
+  finally {
+    await deleteChart(page.request, chart.id)
+  }
+})
+
+test('the missing-fields warning leaves with the chart', async ({ page }) => {
+  await withSecondTabularResource(page)
+  await setupChart(page)
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
+  const warning = page.getByTestId('chart-publish-warnings').getByRole('alert')
+  await expect(warning).toBeVisible()
+
+  const secondResourceId = await otherResourceId(page)
+  await page.route(url => url.pathname === `/api/resources/${secondResourceId}/profile/`, route =>
+    route.fulfill({ json: { ...profile, profile: { ...profile.profile, header: [], columns: {} } } }),
+  )
+  await page.getByLabel('Choix de la ressource').selectOption(secondResourceId)
+
+  await expect(page.getByText('Aucun graphique créé')).toBeVisible()
+  await expect(warning).toBeHidden()
 })
 
 test('saving from the assistant tab leads to the missing field', async ({ page }) => {
@@ -360,7 +471,7 @@ test('saving from the assistant tab leads to the missing field', async ({ page }
   await page.getByRole('button', { name: 'Publier la visualisation' }).click()
 
   const warning = page.getByTestId('chart-publish-warnings').getByRole('alert')
-  await expect(warning).toContainText('Le titre et la description sont obligatoires pour enregistrer le graphique.')
+  await expect(warning).toContainText('Le titre et la description sont obligatoires pour publier la visualisation.')
   await expect(page.getByTestId('form-panel')).toBeVisible()
   await expect(page.getByLabel('Description')).toBeFocused()
 
@@ -374,25 +485,18 @@ test('saving from the assistant tab leads to the missing field', async ({ page }
 test.describe('without a chart to publish', () => {
   test.use({ allowedConsoleMessages: ['status of 500', 'Failed to load columns'] })
 
-  test('the publish button waits for a chart', async ({ page }) => {
+  test('the publish button waits for a chart and names the missing columns', async ({ page }) => {
     await page.route('**/assistant/chat/**', route => route.abort())
     await mockTabular(page)
     // Without columns, the new chart has no X column, so no chart to publish.
     await page.route('**/api/resources/*/profile/', route => route.fulfill({ status: 500, body: 'down' }))
-    await page.goto('/admin/beta/chart')
-    await page.waitForLoadState('networkidle')
-    await page.getByTestId('searchable-select-avec-qui-souhaitez-vous-publier').click()
-    await page.getByRole('option', { name: 'Admin User', exact: true }).click()
-    await page.getByTestId('searchable-select-jeu-de-donn-es').click()
-    await page.getByPlaceholder('Recherchez un jeu de données...').fill('logements sociaux')
-    await page.getByRole('option', { name: 'Logements sociaux et bailleurs par région', exact: true }).click()
-    await page.getByLabel('Choix de la ressource').selectOption({ index: 1 })
+    await chooseResource(page)
     await expect(page.getByTestId('source-status')).toHaveText('Colonnes indisponibles')
 
     const publish = page.getByRole('button', { name: 'Publier la visualisation' })
     await expect(publish).toBeVisible()
     await expect(publish).toBeDisabled()
-    await expect(publish).toHaveAttribute('aria-describedby', 'chart-empty-state')
+    await expect(publish).toHaveAccessibleDescription('Colonnes indisponibles')
   })
 })
 
@@ -404,7 +508,7 @@ test('saving without a description warns above the preview and leads to the fiel
 
   const warnings = page.getByTestId('chart-publish-warnings')
   const warning = warnings.getByRole('alert')
-  await expect(warning).toContainText('Le titre et la description sont obligatoires pour enregistrer le graphique.')
+  await expect(warning).toContainText('Le titre et la description sont obligatoires pour publier la visualisation.')
   await expect(warning).toContainText('Description')
   await expect(warning).not.toContainText('Titre')
   expect(posts).toHaveLength(0)
@@ -1268,7 +1372,7 @@ test.describe('a chart whose series differ in type or filter', () => {
       await expect(banner).toBeVisible()
       const save = page.getByRole('button', { name: 'Publier les modifications' })
       await expect(save).toBeDisabled()
-      await expect(save).toHaveAttribute('aria-describedby', 'chart-mixed-series')
+      await expect(save).toHaveAccessibleDescription(await banner.innerText())
       await page.getByRole('tab', { name: 'Assistant' }).click()
       await expect(banner).toBeVisible()
     }
