@@ -41,6 +41,24 @@ test.describe('Login page', () => {
     expect(requested?.searchParams.get('next')).toBe('/oauth/authorize?client_id=abc')
   })
 
+  test('hands the next param of the login to udata when setting up the 2FA with ProConnect', async ({ page }) => {
+    let requested: URL | undefined
+    await page.route('**/api/1/proconnect/**', (route) => {
+      requested = new URL(route.request().url())
+      return route.abort()
+    })
+    // The login page keeps `next`, then leads to the setup page without it.
+    await page.goto('/login?next=%2Fdatasets%2Fsearch')
+    await page.waitForLoadState('networkidle')
+    await page.goto('/setup-two-factor')
+    await page.waitForLoadState('networkidle')
+
+    await page.getByRole('button', { name: 'Se connecter avec ProConnect' }).click()
+
+    await expect.poll(() => requested?.pathname).toBe('/api/1/proconnect/two-factor-setup/')
+    expect(requested?.searchParams.get('next')).toBe('/datasets/search')
+  })
+
   test('shows an error with a wrong password and stays on the login page', async ({ page }) => {
     await page.goto('/login')
     await page.waitForLoadState('networkidle')

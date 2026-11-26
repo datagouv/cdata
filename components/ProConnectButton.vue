@@ -28,6 +28,8 @@
 const ACTION_PATHS = {
   login: '/api/1/proconnect/login/',
   reauth: '/api/1/proconnect/reauth/',
+  // Completes the password login waiting for its 2FA setup, ProConnect's second factor required.
+  twoFactorSetup: '/api/1/proconnect/two-factor-setup/',
 } as const
 
 defineProps<{

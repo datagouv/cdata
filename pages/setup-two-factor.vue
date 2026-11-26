@@ -6,7 +6,7 @@
       </h1>
 
       <p>
-        {{ $t('En plus de votre email et mot de passe, vous allez devoir utiliser un code de double authentification.') }}
+        {{ $t('Votre compte doit être protégé par une double authentification : configurez une application d\'authentification, ou utilisez celle de ProConnect.') }}
       </p>
       <div class="space-y-6">
         <SimpleBanner
@@ -56,6 +56,17 @@
           </div>
         </form>
 
+        <Divider>{{ $t('ou') }}</Divider>
+
+        <p class="text-center">
+          {{ $t('Votre compte ProConnect doit avoir la même adresse email que ce compte.') }}
+        </p>
+        <ProConnectButton
+          :label="$t('Se connecter avec')"
+          action="twoFactorSetup"
+          :next="next"
+        />
+
         <div class="text-center text-gray-plain text-sm">
           {{ $t('Problème d’accès à votre compte ? / Appareil mobile perdu ?') }} <CdataLink to="/support">
             {{ $t('Contacter le support') }}
@@ -91,10 +102,14 @@ const {
   validateCode,
 } = useTwoFactorSetup()
 
+// The page to land back on, which the login page left in the session storage.
+const next = ref<string>()
+
 onMounted(async () => {
   if (route.query.next) {
     sessionStorage.setItem('next', route.query.next as string)
   }
+  next.value = sessionStorage.getItem('next') ?? undefined
 
   // Fetch QR code on page load
   await fetchQRCode()
@@ -105,13 +120,7 @@ const submit = async () => {
     toast.success(t('Vous êtes maintenant connecté.'))
     await loadMe(me)
 
-    const next = sessionStorage.getItem('next')
-    if (next) {
-      navigateTo(next)
-    }
-    else {
-      await navigateTo('/')
-    }
+    await navigateTo(next.value || '/')
   })
 }
 </script>
