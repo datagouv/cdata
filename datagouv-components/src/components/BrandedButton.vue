@@ -228,7 +228,8 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
   margin: 0;
   padding: var(--branded-button-padding-y) var(--branded-button-padding-x);
   border: 1px solid transparent;
-  border-radius: var(--radius-sm);
+  /* Square corners, like the DSFR buttons */
+  border-radius: 0;
   background-color: var(--color-new-primary);
   background-image: none;
   color: var(--color-white);
