@@ -353,7 +353,6 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
 .branded-button[data-size]:focus-visible {
   outline: 2px solid var(--color-new-focus);
   outline-offset: 3px;
-  box-shadow: none;
 }
 
 /* Disabled and loading, shared by every color */
@@ -369,7 +368,6 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
   cursor: wait;
 }
 
-/* Icon-only: square, as high as the size */
 /* Optical alignment: less padding on the side of an icon */
 .branded-button[data-size][data-icon-start="true"]:not([data-icon-only="true"]) {
   padding-inline-start: var(--branded-button-padding-x-icon);
@@ -379,6 +377,7 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
   padding-inline-end: var(--branded-button-padding-x-icon);
 }
 
+/* Icon-only: square, as high as the size */
 .branded-button[data-size][data-icon-only="true"] {
   min-width: var(--branded-button-height);
   min-height: var(--branded-button-height);
@@ -436,7 +435,8 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
 
 /* Same breakpoint as Tailwind's `sm` in datagouv-components */
 @media (max-width: 575.98px) {
-  .branded-button[data-size]:has(.branded-button__label--mobile-hidden) {
+  /* As specific as the optical padding rules, so that the icon stays centered */
+  .branded-button[data-size]:is([data-icon-start="true"], [data-icon-end="true"]):has(.branded-button__label--mobile-hidden) {
     min-width: var(--branded-button-height);
     padding: 0;
   }
