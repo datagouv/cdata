@@ -1,12 +1,36 @@
 <template>
-  <div class="space-y-1 py-6">
-    <h3 class="uppercase text-gray-plain text-sm font-bold">
-      {{ t('Informations') }}
-    </h3>
+  <MetadataSection :title="t('Informations')">
     <DescriptionList>
-      <div v-if="dataset.tags && dataset.tags.length">
+      <div>
+        <DescriptionListTerm>{{ t('Identifiant') }}</DescriptionListTerm>
+        <DescriptionListDetails>
+          <TechnicalValue
+            :value="dataset.id"
+            :label="t(`Copier l'identifiant`)"
+            :copied-label="t('Identifiant copié !')"
+          />
+        </DescriptionListDetails>
+      </div>
+      <div>
+        <DescriptionListTerm>{{ t('Licence') }}</DescriptionListTerm>
+        <DescriptionListDetails>
+          <TechnicalValue
+            v-if="dataset.license"
+            :value="dataset.license.title"
+            :href="dataset.license.url"
+            :copy-text="dataset.license.url || dataset.license.title"
+            :label="t('Copier la licence')"
+            :copied-label="t('Licence copiée !')"
+          />
+          <MetadataEmptyValue v-else />
+        </DescriptionListDetails>
+      </div>
+      <div>
         <DescriptionListTerm>{{ t('Mots-clés') }}</DescriptionListTerm>
-        <DescriptionListDetails class="flex flex-wrap gap-2 items-start">
+        <DescriptionListDetails
+          v-if="dataset.tags?.length"
+          class="flex flex-wrap gap-2 items-start"
+        >
           <Tag
             v-for="tag in dataset.tags"
             :key="tag"
@@ -15,29 +39,13 @@
             {{ tag }}
           </Tag>
         </DescriptionListDetails>
-      </div>
-      <div>
-        <DescriptionListTerm>{{ t('Identifiant') }}</DescriptionListTerm>
-        <DescriptionListDetails class="flex items-center gap-2">
-          {{ dataset.id }}
-          <CopyButton
-            class="!-mt-0.5"
-            :label="t(`Copier l'identifiant`)"
-            :copied-label="t('Identifiant copié !')"
-            :text="dataset.id"
-            :hide-label="true"
-          />
-        </DescriptionListDetails>
-      </div>
-      <div v-if="dataset.license">
-        <DescriptionListTerm>{{ t('Licence') }}</DescriptionListTerm>
-        <DescriptionListDetails>
-          <LicenseBadge :license="dataset.license" />
+        <DescriptionListDetails v-else>
+          <MetadataEmptyValue />
         </DescriptionListDetails>
       </div>
       <slot />
     </DescriptionList>
-  </div>
+  </MetadataSection>
 </template>
 
 <script setup lang="ts">
@@ -48,9 +56,10 @@ import type { DatasetV2WithFullObject } from '../../types/datasets'
 import DescriptionList from '../DescriptionList.vue'
 import DescriptionListTerm from '../DescriptionListTerm.vue'
 import DescriptionListDetails from '../DescriptionListDetails.vue'
-import CopyButton from '../CopyButton.vue'
-import LicenseBadge from '../LicenseBadge.vue'
+import TechnicalValue from '../TechnicalValue.vue'
 import Tag from '../Tag.vue'
+import MetadataSection from './MetadataSection.vue'
+import MetadataEmptyValue from '../MetadataEmptyValue.vue'
 
 const props = defineProps<{
   dataset: DatasetV2WithFullObject

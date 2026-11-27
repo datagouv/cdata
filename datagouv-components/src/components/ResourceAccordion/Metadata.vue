@@ -2,14 +2,15 @@
 import { computed } from 'vue'
 import { RiInformationLine } from '@remixicon/vue'
 import type { Resource } from '../../types/resources'
-import CopyButton from '../CopyButton.vue'
-import DescriptionDetails from '../DescriptionDetails.vue'
-import DescriptionTerm from '../DescriptionTerm.vue'
+import DescriptionListDetails from '../DescriptionListDetails.vue'
+import DescriptionListTerm from '../DescriptionListTerm.vue'
 import FormattedDate from '../FormattedDate.vue'
 import { filesize } from '../../functions/helpers'
-import ExtraAccordion from '../ExtraAccordion.vue'
+import MetadataExtras from '../MetadataExtras.vue'
+import TechnicalValue from '../TechnicalValue.vue'
+import MetadataEmptyValue from '../MetadataEmptyValue.vue'
 import Toggletip from '../Toggletip.vue'
-import { getResourceTitleId, getResourceLabel, getResourceFilesize } from '../../functions/resources'
+import { getResourceLabel, getResourceFilesize } from '../../functions/resources'
 import { useTranslation } from '../../composables/useTranslation'
 
 const props = defineProps<{
@@ -17,37 +18,32 @@ const props = defineProps<{
 }>()
 
 const hasExtras = computed(() => Object.keys(props.resource.extras).length)
-const resourceTitleId = computed(() => getResourceTitleId(props.resource))
 const resourceFilesize = computed(() => getResourceFilesize(props.resource))
 
 const { t } = useTranslation()
 </script>
 
 <template>
-  <div>
-    <div class="flex flex-wrap gap-12 flex-col md:flex-row overflow-hidden">
-      <dl class="flex-1 max-w-full p-0 m-0">
-        <DescriptionTerm>
-          {{ t('URL') }}
-          <CopyButton
-            :label="t(`Copier l'URL`)"
+  <div class="grid min-w-0 grid-cols-1 items-start gap-x-6 gap-y-5 sm:grid-cols-2">
+    <!-- One column per list: the two lists make the two columns of the grid. -->
+    <dl class="m-0 grid min-w-0 grid-cols-1 gap-y-5 p-0">
+      <div class="min-w-0">
+        <DescriptionListTerm>{{ t('URL') }}</DescriptionListTerm>
+        <DescriptionListDetails>
+          <TechnicalValue
+            :value="resource.url"
+            :href="resource.url"
+            :label="t('Copier le lien')"
             :copied-label="t('URL copiée !')"
-            :text="resource.url"
-            :aria-describedby="resourceTitleId"
           />
-        </DescriptionTerm>
-        <DescriptionDetails :with-ellipsis="false">
-          <code class="code truncate p-1">
-            <a :href="resource.url">
-              {{ resource.url }}
-            </a>
-          </code>
-        </DescriptionDetails>
-        <DescriptionTerm class="flex items-center">
-          {{ t('URL stable') }}
+        </DescriptionListDetails>
+      </div>
+      <div class="min-w-0">
+        <DescriptionListTerm class="flex items-center gap-1">
+          <span>{{ t('URL stable') }}</span>
           <Toggletip
             :styled-button="false"
-            button-class="ml-1 border-transparent -outline-offset-2 inline-flex items-center justify-center rounded-sm p-1 text-gray-medium hover:bg-gray-lower transition-colors"
+            button-class="border-transparent -outline-offset-2 inline-flex items-center justify-center rounded-sm p-1 text-gray-secondary hover:bg-gray-some transition-colors"
           >
             <RiInformationLine
               class="size-4"
@@ -60,95 +56,89 @@ const { t } = useTranslation()
               </p>
             </template>
           </Toggletip>
-          <CopyButton
-            :label="t(`Copier l'URL stable`)"
+        </DescriptionListTerm>
+        <DescriptionListDetails>
+          <TechnicalValue
+            :value="resource.latest"
+            :href="resource.latest"
+            :label="t('Copier le lien stable')"
             :copied-label="t('URL stable copiée !')"
-            :text="resource.latest"
-            :aria-describedby="resourceTitleId"
           />
-        </DescriptionTerm>
-        <DescriptionDetails :with-ellipsis="false">
-          <code class="code truncate p-1">
-            <a :href="resource.latest">
-              {{ resource.latest }}
-            </a>
-          </code>
-        </DescriptionDetails>
-        <DescriptionTerm>
-          {{ t('Identifiant') }}
-          <CopyButton
+        </DescriptionListDetails>
+      </div>
+      <div class="min-w-0">
+        <DescriptionListTerm>{{ t('Identifiant') }}</DescriptionListTerm>
+        <DescriptionListDetails>
+          <TechnicalValue
+            :value="resource.id"
             :label="t(`Copier l'identifiant`)"
             :copied-label="t('ID copié !')"
-            :text="resource.id"
-            :aria-describedby="resourceTitleId"
           />
-        </DescriptionTerm>
-        <DescriptionDetails :with-ellipsis="false">
-          <code class="code truncate p-1">
-            {{ resource.id }}
-          </code>
-        </DescriptionDetails>
-        <template v-if="resource.checksum">
-          <DescriptionTerm>
-            {{ resource.checksum.type }}
-            <CopyButton
-              :label="t('Copier la somme de contrôle')"
-              :copied-label="t('Somme de contrôle copiée !')"
-              :text="resource.checksum.value"
-              :aria-describedby="resourceTitleId"
-            />
-          </DescriptionTerm>
-          <DescriptionDetails :with-ellipsis="false">
-            <code class="code truncate p-1">
-              {{ resource.checksum.value }}
-            </code>
-          </DescriptionDetails>
-        </template>
-      </dl>
-      <dl
-        class="p-0 m-0 shrink-0"
-      >
-        <DescriptionTerm>{{ t('Créée le') }}</DescriptionTerm>
-        <DescriptionDetails>
+        </DescriptionListDetails>
+      </div>
+      <div class="min-w-0">
+        <DescriptionListTerm>{{ resource.checksum?.type ?? t('Somme de contrôle') }}</DescriptionListTerm>
+        <DescriptionListDetails>
+          <TechnicalValue
+            v-if="resource.checksum"
+            :value="resource.checksum.value"
+            :label="t('Copier la somme de contrôle')"
+            :copied-label="t('Somme de contrôle copiée !')"
+          />
+          <MetadataEmptyValue v-else />
+        </DescriptionListDetails>
+      </div>
+    </dl>
+    <!-- One column per list: the two lists make the two columns of the grid. -->
+    <dl class="m-0 grid min-w-0 grid-cols-1 gap-y-5 p-0">
+      <div class="min-w-0">
+        <DescriptionListTerm>{{ t('Créée le') }}</DescriptionListTerm>
+        <DescriptionListDetails>
           <FormattedDate :date="resource.created_at" />
-        </DescriptionDetails>
-        <DescriptionTerm>{{ t('Modifiée le') }}</DescriptionTerm>
-        <DescriptionDetails>
+        </DescriptionListDetails>
+      </div>
+      <div class="min-w-0">
+        <DescriptionListTerm>{{ t('Modifiée le') }}</DescriptionListTerm>
+        <DescriptionListDetails>
           <FormattedDate :date="resource.last_modified" />
-        </DescriptionDetails>
-      </dl>
-      <dl
-        class="p-0 m-0 shrink-0"
-      >
-        <template v-if="resourceFilesize">
-          <DescriptionTerm>{{ t('Taille') }}</DescriptionTerm>
-          <DescriptionDetails>
+        </DescriptionListDetails>
+      </div>
+      <div class="min-w-0">
+        <DescriptionListTerm>{{ t('Taille') }}</DescriptionListTerm>
+        <DescriptionListDetails>
+          <template v-if="resourceFilesize !== null">
             {{ filesize(resourceFilesize) }}
-          </DescriptionDetails>
-        </template>
-        <template v-if="resource.mime">
-          <DescriptionTerm>{{ t('Type') }}</DescriptionTerm>
-          <DescriptionDetails>
+          </template>
+          <MetadataEmptyValue v-else />
+        </DescriptionListDetails>
+      </div>
+      <div class="min-w-0">
+        <DescriptionListTerm>{{ t('Type') }}</DescriptionListTerm>
+        <DescriptionListDetails>
+          <template v-if="resource.type">
             {{ getResourceLabel(resource.type) }}
-          </DescriptionDetails>
-        </template>
-        <template v-if="resource.mime">
-          <DescriptionTerm>{{ t('Type MIME') }}</DescriptionTerm>
-          <DescriptionDetails>
-            <code class="code truncate">{{ resource.mime }}</code>
-          </DescriptionDetails>
-        </template>
-      </dl>
-    </div>
-    <div>
-      <ExtraAccordion
-        v-if="hasExtras"
-        class="pt-6 mt-6 border-t border-gray-default"
-        :button-text="t('Voir les extras')"
-        :title-text="t('Extras de la ressource')"
-        title-level="h5"
-        :extra="resource.extras"
-      />
-    </div>
+          </template>
+          <MetadataEmptyValue v-else />
+        </DescriptionListDetails>
+      </div>
+      <div class="min-w-0">
+        <DescriptionListTerm>{{ t('Type MIME') }}</DescriptionListTerm>
+        <DescriptionListDetails>
+          <code
+            v-if="resource.mime"
+            class="font-mono text-[13px]/[18px]"
+          >{{ resource.mime }}</code>
+          <MetadataEmptyValue v-else />
+        </DescriptionListDetails>
+      </div>
+    </dl>
+    <MetadataExtras
+      v-if="hasExtras"
+      class="border-y border-gray-default py-4 sm:col-span-2"
+      :button-text="t('Voir les extras')"
+      :title-text="t('Extras de la ressource')"
+      title-level="h5"
+      :extra="resource.extras"
+    />
   </div>
 </template>

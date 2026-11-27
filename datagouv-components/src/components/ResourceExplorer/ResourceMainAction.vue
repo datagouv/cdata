@@ -94,7 +94,7 @@
                 :label="t('Copier le lien')"
                 :copied-label="t('Lien copié !')"
                 :text="item.url"
-                icon-only
+                variant="icon"
                 class="mr-1.5 shrink-0 opacity-0 transition-opacity focus-visible:opacity-100 group-hover/dl:opacity-100"
               />
             </div>

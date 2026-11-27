@@ -1,32 +1,41 @@
 <template>
-  <div
-    v-if="dataset.spatial"
-    class="space-y-1 py-6"
+  <MetadataSection
+    v-if="hasValue"
+    :title="t('Couverture spatiale')"
   >
-    <h3 class="uppercase text-gray-plain text-sm font-bold">
-      {{ t('Couverture spatiale') }}
-    </h3>
     <DescriptionList>
-      <div v-if="dataset.spatial.zones && dataset.spatial.zones.length">
+      <div>
         <DescriptionListTerm>{{ t('Zones') }}</DescriptionListTerm>
-        <DescriptionListDetails>{{ zonesDisplay }}</DescriptionListDetails>
+        <DescriptionListDetails>
+          <template v-if="dataset.spatial?.zones?.length">
+            {{ zonesDisplay }}
+          </template>
+          <MetadataEmptyValue v-else />
+        </DescriptionListDetails>
       </div>
-      <div v-if="dataset.spatial.geom">
+      <div>
         <DescriptionListTerm>{{ t('Couverture géographique') }}</DescriptionListTerm>
         <DescriptionListDetails>
           <slot
+            v-if="dataset.spatial?.geom"
             name="map"
             :geojson="dataset.spatial.geom"
           />
+          <MetadataEmptyValue v-else />
         </DescriptionListDetails>
       </div>
-      <div v-if="dataset.spatial.granularity">
+      <div>
         <DescriptionListTerm>{{ t('Granularité de la couverture territoriale') }}</DescriptionListTerm>
-        <DescriptionListDetails>{{ dataset.spatial.granularity.name }}</DescriptionListDetails>
+        <DescriptionListDetails>
+          <template v-if="dataset.spatial?.granularity">
+            {{ dataset.spatial.granularity.name }}
+          </template>
+          <MetadataEmptyValue v-else />
+        </DescriptionListDetails>
       </div>
       <slot />
     </DescriptionList>
-  </div>
+  </MetadataSection>
 </template>
 
 <script setup lang="ts">
@@ -37,12 +46,17 @@ import type { DatasetV2WithFullObject } from '../../types/datasets'
 import DescriptionList from '../DescriptionList.vue'
 import DescriptionListTerm from '../DescriptionListTerm.vue'
 import DescriptionListDetails from '../DescriptionListDetails.vue'
+import MetadataSection from './MetadataSection.vue'
+import MetadataEmptyValue from '../MetadataEmptyValue.vue'
 
 const props = defineProps<{
   dataset: DatasetV2WithFullObject
 }>()
 
 const { t } = useTranslation()
+
+// A category with no filled metadata at all is not shown.
+const hasValue = computed(() => Boolean(props.dataset.spatial?.zones?.length || props.dataset.spatial?.geom || props.dataset.spatial?.granularity))
 
 const zonesDisplay = computed(() => {
   if (!props.dataset.spatial?.zones?.length) return ''

@@ -185,107 +185,18 @@
         </div>
       </div>
     </SectionCollapse>
-    <SectionCollapse
-      :title="$t('Informations techniques')"
-      :button-text="$t('Voir les informations techniques')"
-    >
-      <DescriptionList class="mb-2">
-        <div>
-          <DescriptionListTerm>{{ $t('Dernière mise à jour') }}</DescriptionListTerm>
-          <DescriptionListDetails>
-            <FormattedDate :date="organization.last_modified" />
-          </DescriptionListDetails>
-        </div>
-        <div>
-          <DescriptionListTerm>{{ $t('Identifiant') }}</DescriptionListTerm>
-          <DescriptionListDetails class="flex items-center gap-2">
-            {{ organization.id }}
-            <CopyButton
-              class="!-mt-0.5"
-              :label="$t(`Copier l'identifiant de l'organisation`)"
-              :copied-label="$t(`Identifiant de l'organisation copié !`)"
-              :text="organization.id"
-              :hide-label="true"
-            />
-          </DescriptionListDetails>
-        </div>
-      </DescriptionList>
-      <DescriptionList>
-        <div>
-          <DescriptionListTerm>{{ $t('Date de création') }}</DescriptionListTerm>
-          <DescriptionListDetails>
-            <FormattedDate :date="organization.created_at" />
-          </DescriptionListDetails>
-        </div>
-      </DescriptionList>
-    </SectionCollapse>
-    <SectionCollapse
-      :title="$t('Intégrer sur votre site')"
-      :button-text="$t('Voir les oembeds')"
-    >
-      <h3 class="subtitle mb-1">
-        {{ $t('La recherche de jeux de données de l\'organisation') }}
-        <CopyButton
-          :hide-label="true"
-          :label="$t(`Copier l'intégration`)"
-          :copied-label="$t('Intégration copiée !')"
-          class="fr-my-1w fr-mr-1w"
-          :text="getOrganizationOEmbedHtml('search-dataset', organization.id)"
-        />
-      </h3>
-      <div class="embed-wrapper">
-        <textarea
-          ref="textAreaRef1"
-          :value="getOrganizationOEmbedHtml('search-dataset', organization.id)"
-          readonly="true"
-          rows="1"
-        />
-      </div>
-      <h3 class="subtitle mb-1">
-        {{ $t('La recherche des API de l\'organisation') }}
-        <CopyButton
-          :hide-label="true"
-          :label="$t(`Copier l'intégration`)"
-          :copied-label="$t('Intégration copiée !')"
-          class="fr-my-1w fr-mr-1w"
-          :text="getOrganizationOEmbedHtml('search-dataservice', organization.id)"
-        />
-      </h3>
-      <div class="embed-wrapper">
-        <textarea
-          ref="textAreaRef2"
-          :value="getOrganizationOEmbedHtml('search-dataservice', organization.id)"
-          readonly="true"
-          rows="1"
-        />
-      </div>
-      <h3 class="subtitle mb-1">
-        {{ $t('La liste des réutilisations de l\'organisation') }}
-        <CopyButton
-          :hide-label="true"
-          :label="$t(`Copier l'intégration`)"
-          :copied-label="$t('Intégration copiée !')"
-          class="fr-my-1w fr-mr-1w"
-          :text="getOrganizationOEmbedHtml('list-reuse', organization.id)"
-        />
-      </h3>
-      <div class="embed-wrapper">
-        <textarea
-          ref="textAreaRef3"
-          :value="getOrganizationOEmbedHtml('list-reuse', organization.id)"
-          readonly="true"
-          rows="1"
-        />
-      </div>
-    </SectionCollapse>
+    <OrganizationTechnicalSection :organization />
+    <OrganizationEmbedSection :organization />
   </div>
 </template>
 
 <script setup lang="ts">
-import { Avatar, BrandedButton, CopyButton, FormattedDate, OrganizationLogo, OrganizationNameWithCertificate, StatBox, getOrganizationOEmbedHtml, type Organization, toast } from '@datagouv/components-next'
+import { Avatar, BrandedButton, OrganizationLogo, OrganizationNameWithCertificate, StatBox, type Organization, toast } from '@datagouv/components-next'
 import { RiCheckLine, RiDownloadLine, RiTeamLine } from '@remixicon/vue'
 import Divider from '~/components/Divider.vue'
 import MemberRoleBadge from '~/components/Organization/MemberRoleBadge.vue'
+import OrganizationEmbedSection from '~/components/Organization/OrganizationEmbedSection.vue'
+import OrganizationTechnicalSection from '~/components/Organization/OrganizationTechnicalSection.vue'
 import type { MembershipRequest, PendingMembershipRequest } from '~/types/types'
 
 const props = defineProps<{

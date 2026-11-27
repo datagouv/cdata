@@ -34,7 +34,7 @@
       :title="$t('Informations techniques')"
       :button-text="$t('Voir les informations techniques')"
     >
-      <DescriptionList class="mb-2">
+      <DescriptionList>
         <div>
           <DescriptionListTerm>{{ $t('Dernière mise à jour') }}</DescriptionListTerm>
           <DescriptionListDetails>
@@ -43,19 +43,14 @@
         </div>
         <div>
           <DescriptionListTerm>{{ $t('Identifiant') }}</DescriptionListTerm>
-          <DescriptionListDetails class="flex items-center gap-2">
-            {{ dataservice.id }}
-            <CopyButton
-              class="!-mt-0.5"
+          <DescriptionListDetails>
+            <TechnicalValue
+              :value="dataservice.id"
               :label="$t(`Copier l'identifiant`)"
               :copied-label="$t('Identifiant copié !')"
-              :text="dataservice.id"
-              :hide-label="true"
             />
           </DescriptionListDetails>
         </div>
-      </DescriptionList>
-      <DescriptionList>
         <div>
           <DescriptionListTerm>{{ $t('Date de création') }}</DescriptionListTerm>
           <DescriptionListDetails>
@@ -68,7 +63,7 @@
 </template>
 
 <script setup lang="ts">
-import { CopyButton, FormattedDate, Pagination, type Dataservice, type DatasetV2 } from '@datagouv/components-next'
+import { FormattedDate, Pagination, TechnicalValue, type Dataservice, type DatasetV2 } from '@datagouv/components-next'
 import type { PaginatedArray } from '~/types/types'
 
 const props = defineProps<{ dataservice: Dataservice }>()

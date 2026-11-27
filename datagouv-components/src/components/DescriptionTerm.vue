@@ -1,8 +1,5 @@
 <template>
-  <dt class="fr-text--sm fr-my-0 fr-text--bold">
+  <dt class="m-0 p-0 text-sm/5 font-normal text-gray-secondary">
     <slot />
   </dt>
 </template>
-
-<script setup lang="ts">
-</script>

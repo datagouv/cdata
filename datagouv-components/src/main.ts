@@ -104,6 +104,10 @@ import SchemaCard from './components/SchemaCard.vue'
 import SimpleBanner from './components/SimpleBanner.vue'
 import StatBox from './components/StatBox.vue'
 import Tab from './components/Tabs/Tab.vue'
+import TechnicalValue from './components/TechnicalValue.vue'
+import MetadataEmptyValue from './components/MetadataEmptyValue.vue'
+import CodeBlock from './components/CodeBlock.vue'
+import MetadataExtras from './components/MetadataExtras.vue'
 import TabGroup from './components/Tabs/TabGroup.vue'
 import TabList from './components/Tabs/TabList.vue'
 import TabPanel from './components/Tabs/TabPanel.vue'
@@ -131,6 +135,7 @@ import { ofetch } from 'ofetch'
 import { useTranslation } from './composables/useTranslation'
 
 export type { SegmentedControlOption } from './components/SegmentedControl.vue'
+export type { CopyButtonVariant } from './components/CopyButton.vue'
 
 // Same name as the Badge component on purpose: as a type, `Badge` is the udata badge (spd, hvd, certified…)
 export type Badge = BadgeObject
@@ -449,6 +454,10 @@ export {
   StatBox,
   OpenApiViewer,
   Tab,
+  TechnicalValue,
+  MetadataEmptyValue,
+  CodeBlock,
+  MetadataExtras,
   TabGroup,
   TabList,
   TabPanel,

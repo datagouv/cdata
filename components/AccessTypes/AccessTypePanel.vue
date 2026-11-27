@@ -1,12 +1,12 @@
 <template>
-  <div class="space-y-1">
-    <dt
-      class="text-gray-plain font-bold"
-      :class="{ 'sr-only': hideAccessLabel }"
-    >
+  <!-- Two items of the parent description list, not a block of their own: they get the same
+       spacing as the other metadata. The access request button is placed by the parent, at the
+       end of the side metadata (see AccessRequestButton). -->
+  <div>
+    <DescriptionListTerm :class="{ 'sr-only': hideAccessLabel }">
       {{ $t('Accès') }}
-    </dt>
-    <dd class="p-0">
+    </DescriptionListTerm>
+    <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
       <AccessTypeBadge
         v-if="object.access_type"
         :access-type="object.access_type"
@@ -15,50 +15,33 @@
         {{ $t('Non spécifié') }}
       </template>
     </dd>
-    <template v-if="object.access_type === 'restricted'">
-      <dt class="text-gray-plain font-bold mt-2.5">
-        {{ $t('Publics éligibles') }}
-      </dt>
-      <dd
-        class="p-0"
+  </div>
+  <div v-if="object.access_type === 'restricted'">
+    <DescriptionListTerm>
+      {{ $t('Publics éligibles') }}
+    </DescriptionListTerm>
+    <dd class="m-0 p-0 text-sm/[22px] text-gray-title">
+      <ul
+        v-if="accessAudiences.length"
+        class="m-0 list-none space-y-1 p-0"
       >
-        <ul
-          v-if="accessAudiences.length"
-          class="list-none p-0 space-y-1 m-0"
-        >
-          <template
-            v-for="audience in accessAudiences"
-            :key="`${audience.role}-${audience.condition}`"
-          >
-            <DataservicesAccessAudienceCondition
-              :condition="audience.condition"
-              :audience="audience.role"
-            />
-          </template>
-        </ul>
-        <template v-else>
-          {{ $t('Non spécifiés') }}
-        </template>
-      </dd>
-    </template>
-    <div
-      v-if="object.authorization_request_url"
-      class="mt-2.5"
-    >
-      <BrandedButton
-        color="primary"
-        size="sm"
-        :href="object.authorization_request_url"
-        new-tab
-      >
-        {{ $t("Demander un accès") }}
-      </BrandedButton>
-    </div>
+        <DataservicesAccessAudienceCondition
+          v-for="audience in accessAudiences"
+          :key="`${audience.role}-${audience.condition}`"
+          :condition="audience.condition"
+          :audience="audience.role"
+        />
+      </ul>
+      <template v-else>
+        {{ $t('Non spécifiés') }}
+      </template>
+    </dd>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, type AccessAudience, type AccessAudienceType, type WithAccessType, AccessTypeBadge } from '@datagouv/components-next'
+import { AccessTypeBadge, type AccessAudience, type AccessAudienceType, type WithAccessType } from '@datagouv/components-next'
+import DescriptionListTerm from '~/components/DescriptionList/DescriptionListTerm.vue'
 
 const props = withDefaults(defineProps<{
   object: WithAccessType

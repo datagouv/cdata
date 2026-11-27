@@ -52,7 +52,7 @@
         :label="t('Copier le lien')"
         :copied-label="t('Lien copié !')"
         :text="externalUrl"
-        icon-only
+        variant="icon"
         class="hidden shrink-0 md:inline-flex"
       />
     </div>

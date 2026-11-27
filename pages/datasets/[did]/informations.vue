@@ -4,24 +4,13 @@
       <!-- A dataset that cannot get a DOI offers no request at all rather than sending the support a demand refused in advance. -->
       <div v-if="doi || !doiBlockedReason(dataset)">
         <DescriptionListTerm>{{ $t('DOI') }}</DescriptionListTerm>
-        <DescriptionListDetails
-          v-if="doi"
-          class="flex items-center gap-2"
-        >
-          <a
+        <DescriptionListDetails v-if="doi">
+          <TechnicalValue
+            :value="doi"
             :href="`https://doi.org/${doi}`"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="link"
-          >
-            {{ doi }}
-          </a>
-          <CopyButton
-            class="!-mt-0.5"
-            :label="$t('Copier le DOI')"
+            :copy-text="`https://doi.org/${doi}`"
+            :label="$t('Copier le lien du DOI')"
             :copied-label="$t('DOI copié !')"
-            :text="doi"
-            :hide-label="true"
           />
         </DescriptionListDetails>
         <DescriptionListDetails
@@ -44,16 +33,16 @@
     <DatasetSchemaSection :dataset="dataset" />
     <DatasetEmbedSection :dataset="dataset" />
     <div>
-      <ExtraAccordion
-        v-if="dataset.extras && Object.keys(dataset.extras).length"
-        class="pt-6"
+      <MetadataExtras
+        class="border-b border-gray-default py-4"
         :button-text="$t('Voir les extras')"
-        :title-text="$t('Extras')"
+        :title-text="$t('Extras du jeu de données')"
         :extra="dataset.extras"
         title-level="h3"
       />
-      <ExtraAccordion
+      <MetadataExtras
         v-if="dataset.harvest"
+        class="border-b border-gray-default py-4"
         :button-text="$t('Voir les extras du moissonnage')"
         :title-text="$t('Moissonnage')"
         :extra="dataset.harvest"
@@ -70,13 +59,13 @@
             {{ $t('Voir la source du moissonnage') }}
           </BrandedButton>
         </template>
-      </ExtraAccordion>
+      </MetadataExtras>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { BrandedButton, CopyButton, DatasetInformationSection, DatasetTemporalitySection, DatasetSpatialSection, DatasetSchemaSection, DatasetEmbedSection, DescriptionListDetails, DescriptionListTerm, ExtraAccordion, LeafletMap, type DatasetV2WithFullObject } from '@datagouv/components-next'
+import { BrandedButton, DatasetInformationSection, DatasetTemporalitySection, DatasetSpatialSection, DatasetSchemaSection, DatasetEmbedSection, DescriptionListDetails, DescriptionListTerm, MetadataExtras, TechnicalValue, LeafletMap, type DatasetV2WithFullObject } from '@datagouv/components-next'
 import { RiServerLine } from '@remixicon/vue'
 import DoiRequestModal from '~/components/Datasets/DoiRequestModal.vue'
 
