@@ -74,6 +74,7 @@
             </div>
           </div>
           <p
+            :id="sourceStatusId"
             class="mb-0 flex shrink-0 items-center gap-1.5 text-[10px]"
             :class="!sourceLoading && selectedResource && !resourceColumns.length ? 'text-new-warning' : 'text-new-gray-medium'"
             role="status"
@@ -130,16 +131,64 @@
           class="min-w-0 lg:col-span-7 lg:flex lg:min-h-0 lg:flex-col"
           aria-labelledby="visualization-heading"
         >
-          <div class="shrink-0 bg-gray-some py-2 px-6 shadow-[inset_0_-1px_0_var(--color-gray-default)]">
-            <h2
-              id="visualization-heading"
-              class="mb-0 text-xs font-bold"
+          <div class="flex shrink-0 items-center gap-3 bg-gray-some py-2 px-6 shadow-[inset_0_-1px_0_var(--color-gray-default)]">
+            <div class="min-w-0 flex-1">
+              <h2
+                id="visualization-heading"
+                class="mb-0 text-xs font-bold"
+              >
+                {{ $t('Visualisation') }}
+              </h2>
+              <p class="mb-0 mt-0.5 text-[11px] leading-4 text-new-gray-medium">
+                {{ $t('Prévisualisation et données source') }}
+              </p>
+            </div>
+            <BrandedButton
+              v-if="showPublish"
+              size="xs"
+              class="shrink-0"
+              :icon="RiSendPlaneLine"
+              :loading="saving"
+              :disabled="!canPublish"
+              :aria-describedby="publishBlockedBy"
+              @click="saveChart"
             >
-              {{ $t('Visualisation') }}
-            </h2>
-            <p class="mb-0 mt-0.5 text-[11px] leading-4 text-new-gray-medium">
-              {{ $t('Prévisualisation et données source') }}
-            </p>
+              {{ assistantBusy ? $t('L’assistant répond…') : published ? $t('Publier les modifications') : $t('Publier la visualisation') }}
+            </BrandedButton>
+          </div>
+          <div
+            v-if="showPublish && (mixedSeries || missingFieldsWarning)"
+            class="shrink-0 space-y-3 border-b border-gray-default py-3 px-6"
+            data-testid="chart-publish-warnings"
+          >
+            <SimpleBanner
+              v-if="mixedSeries"
+              :id="mixedSeriesId"
+              type="warning"
+              data-testid="chart-mixed-series"
+            >
+              <p class="mb-0 text-xs">
+                {{ $t('Les séries de ce graphique n’ont pas toutes le même type ou le même filtre : le formulaire, qui applique un type et un filtre à toutes les séries, ne peut pas le publier sans les écraser.') }}
+              </p>
+            </SimpleBanner>
+            <SimpleBanner
+              v-if="missingFieldsWarning"
+              type="warning"
+              role="alert"
+              class="flex flex-wrap items-center gap-x-3 gap-y-2"
+            >
+              <p class="mb-0 flex-1 text-xs">
+                {{ $t('Le titre et la description sont obligatoires pour publier la visualisation.') }}
+                {{ $t('À compléter : {fields}.', { fields: humanJoin(missingFields.map(field => field.label)) }) }}
+              </p>
+              <BrandedButton
+                size="xs"
+                color="secondary"
+                @click="focusFirstMissingField"
+              >
+                {{ $t('Compléter') }}
+              </BrandedButton>
+            </SimpleBanner>
           </div>
           <div class="space-y-4 py-4 px-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
             <div
@@ -168,7 +217,10 @@
                     aria-hidden="true"
                   />
                 </span>
-                <p class="text-new-gray-dark font-medium mb-0 mt-4">
+                <p
+                  :id="emptyStateId"
+                  class="text-new-gray-dark font-medium mb-0 mt-4"
+                >
                   {{ $t('Aucun graphique créé') }}
                 </p>
                 <p class="text-new-gray-medium text-sm mt-1.5 text-center">
@@ -261,10 +313,12 @@
               >
                 <ClientOnly>
                   <ChatPanel
+                    ref="chatPanelRef"
                     :resource-id="selectedResource || null"
                     :visualization="visualization"
                     :columns="resourceColumns"
                     :resource="activeResource"
+                    :locked="saving"
                     @chart-result="onChartResult"
                   />
                 </ClientOnly>
@@ -275,11 +329,12 @@
                 class="flex flex-col focus-visible:outline focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-new-primary lg:min-h-0 lg:flex-1"
                 data-testid="form-panel"
               >
-                <!-- The save button of the footer, outside the tab panel, submits it with form="chart-form". -->
+                <!-- Publishing belongs to the header button: Enter in a field submits nothing. -->
                 <form
                   id="chart-form"
                   class="space-y-6 py-6 px-6 lg:min-h-0 lg:flex-1 lg:overflow-y-auto"
-                  @submit.prevent="saveChart"
+                  novalidate
+                  @submit.prevent
                 >
                   <template v-if="selectedResource">
                     <RequiredExplanation />
@@ -347,7 +402,7 @@
                             for="chart-title"
                             class="font-bold fr-label"
                           >{{ $t('Titre') }} <Required :required="true" /></label>
-                          <!-- aria-required, not required: the native bubble would replace the inline errors and the footer warning of useForm. -->
+                          <!-- aria-required, not required: the native bubble would replace the inline errors and the publish warning of useForm. -->
                           <input
                             id="chart-title"
                             ref="titleInput"
@@ -632,6 +687,7 @@
                               id="y-axis-min"
                               v-model.number="form.y_axis.min"
                               type="number"
+                              step="any"
                               class="w-full fr-input"
                             >
                           </div>
@@ -644,6 +700,7 @@
                               id="y-axis-max"
                               v-model.number="form.y_axis.max"
                               type="number"
+                              step="any"
                               class="w-full fr-input"
                             >
                           </div>
@@ -707,55 +764,6 @@
                 </form>
               </TabPanel>
             </TabPanels>
-
-            <!-- Only in the manual tab, where the title and description are filled; kept out of its scroll area. -->
-            <div
-              v-if="selectedResource && isAdmin && selectedTab === 'manual'"
-              class="shrink-0 border-t border-gray-default bg-white py-3 px-6"
-              data-testid="chart-save-footer"
-            >
-              <SimpleBanner
-                v-if="mixedSeries"
-                id="chart-mixed-series"
-                type="warning"
-                class="mb-3"
-                data-testid="chart-mixed-series"
-              >
-                <p class="mb-0 text-xs">
-                  {{ $t('Les séries de ce graphique n’ont pas toutes le même type ou le même filtre : le formulaire, qui applique un type et un filtre à toutes les séries, ne peut pas l’enregistrer sans les écraser.') }}
-                </p>
-              </SimpleBanner>
-              <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
-                <BrandedButton
-                  type="submit"
-                  form="chart-form"
-                  class="shrink-0"
-                  :loading="saving"
-                  :disabled="mixedSeries"
-                  :aria-describedby="mixedSeries ? 'chart-mixed-series' : undefined"
-                >
-                  {{ $t('Sauvegarder le graphique') }}
-                </BrandedButton>
-                <SimpleBanner
-                  v-if="saveBlocked && missingFields.length"
-                  type="warning"
-                  role="alert"
-                  class="flex flex-wrap items-center gap-x-3 gap-y-2"
-                >
-                  <p class="mb-0 flex-1 text-xs">
-                    {{ $t('Le titre et la description sont obligatoires pour enregistrer le graphique.') }}
-                    {{ $t('À compléter : {fields}.', { fields: humanJoin(missingFields.map(field => field.label)) }) }}
-                  </p>
-                  <BrandedButton
-                    size="xs"
-                    color="secondary"
-                    @click="focusFirstMissingField"
-                  >
-                    {{ $t('Compléter') }}
-                  </BrandedButton>
-                </SimpleBanner>
-              </div>
-            </div>
           </TabGroup>
         </section>
       </div>
@@ -767,9 +775,9 @@
 import type { Resource, PaginatedArray, ChartForm, Chart, Filter, ColumnType, ColumnDefinition, DataSeriesType, FilterCondition, CombinedSort, Owned, XAxisType } from '@datagouv/components-next'
 import { CHART_PAGE_SIZE, buildTypeConfig, buildColumnsFromProfile, defaultXColumn, fitsInChart, useGetProfile, useHasTabularData, toast, BrandedButton, toChartApi, hasMixedSeries, humanJoin, SearchableSelect, SimpleBanner, Listbox, Tab, TabGroup, TabList, TabPanel, TabPanels, useTranslation } from '@datagouv/components-next'
 import type { Component } from 'vue'
-import { computed, defineAsyncComponent, nextTick, reactive, ref, useTemplateRef, watch } from 'vue'
+import { computed, defineAsyncComponent, nextTick, reactive, ref, useId, useTemplateRef, watch } from 'vue'
 import { Disclosure, DisclosureButton, DisclosurePanel } from '@headlessui/vue'
-import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartBoxLine, RiBarChartLine, RiErrorWarningLine, RiInformationLine, RiLineChartLine, RiLoader4Line, RiSettings3Line, RiSparklingLine, RiText } from '@remixicon/vue'
+import { RiAddLine, RiArrowDownLine, RiArrowDownSLine, RiArrowUpLine, RiBarChartBoxLine, RiBarChartLine, RiErrorWarningLine, RiInformationLine, RiLineChartLine, RiLoader4Line, RiSendPlaneLine, RiSettings3Line, RiSparklingLine, RiText } from '@remixicon/vue'
 import { isMeAdmin } from '~/utils/auth'
 import { applySerieCalculation, getSerieCalculation, getSerieColumnYOptions, keepValidSortCombined } from '~/utils/charts'
 import type { SerieCalculation } from '~/utils/charts'
@@ -836,6 +844,8 @@ const dataset = ref<DatasetSuggest | null>(null)
 const savedResources = reactive<Record<string, Resource>>({})
 const selectedResource = ref<string>('')
 const chartViewerWrapperRef = ref<InstanceType<typeof ChartViewerWrapper> | null>(null)
+const chatPanelRef = ref<InstanceType<typeof ChatPanel> | null>(null)
+const assistantBusy = computed(() => chatPanelRef.value?.busy ?? false)
 const datasetLoading = ref(false)
 const selectedProfile = computed(() => selectedResource.value ? profiles.value[selectedResource.value] : undefined)
 const columnsLoading = computed(() => !!selectedResource.value && (selectedProfile.value?.status ?? 'pending') === 'pending')
@@ -860,11 +870,26 @@ const requiredFields = computed(() => [
   { key: 'description', label: t('Description'), input: descriptionInput.value },
 ] as const)
 const missingFields = computed(() => requiredFields.value.filter(field => getFirstError(field.key)))
-// The footer warning only follows a refused save, not the inline errors of a blurred field.
+// The publish warning only follows a refused save, not the inline errors of a blurred field.
 const saveBlocked = ref(false)
 const saving = ref(false)
 // A chart created through the API may have them; the assistant gives every series one type and one filter.
 const mixedSeries = computed(() => hasMixedSeries(form.value))
+const showPublish = computed(() => !!selectedResource.value && isAdmin)
+// The chart the assistant may send meanwhile would replace the preview whose image is uploaded.
+const canPublish = computed(() => hasChart.value && !mixedSeries.value && !assistantBusy.value)
+const missingFieldsWarning = computed(() => saveBlocked.value && hasChart.value && missingFields.value.length > 0)
+const sourceStatusId = useId()
+const mixedSeriesId = useId()
+const emptyStateId = useId()
+const publishBlockedBy = computed(() => {
+  if (canPublish.value) return undefined
+  if (mixedSeries.value) return mixedSeriesId
+  // The button's own text gives this reason.
+  if (assistantBusy.value) return undefined
+  if (!resourceColumns.value.length) return sourceStatusId
+  return emptyStateId
+})
 // Cleared on the values, not on the errors: touch() empties a field's errors while it revalidates.
 watch(() => requiredFields.value.map(field => form.value[field.key]), async () => {
   if (saveBlocked.value && await validate()) saveBlocked.value = false
@@ -885,6 +910,8 @@ watch(producer, (newProducer) => {
   }
 }, { immediate: true })
 const savedChart = ref<Chart | null>(null)
+// Not savedChart: it is set by the creation, before the image upload ends the first publication.
+const published = ref(!!props.initialChart)
 
 const chartForViewer = ref(toChartApi(form.value))
 // What the assistant sees of the chart, read when a message is sent; nothing without a chart.
@@ -1174,7 +1201,12 @@ async function initializeFromChart(data: Chart) {
   }
 }
 
-function focusFirstMissingField() {
+/** The fields live in the manual tab: open it first when the assistant is shown. */
+async function focusFirstMissingField() {
+  if (selectedTab.value !== 'manual') {
+    selectedTab.value = 'manual'
+    await nextTick()
+  }
   missingFields.value[0]?.input?.focus()
 }
 
@@ -1193,17 +1225,17 @@ async function captureChartImage(): Promise<Blob | null> {
 async function saveChart() {
   // Set before the first await: a second click while validating would pass the guard
   // too, and create a second chart.
-  if (saving.value || mixedSeries.value) return
+  if (saving.value || !canPublish.value) return
   saving.value = true
   try {
     if (!await validate()) {
       saveBlocked.value = true
-      focusFirstMissingField()
+      await focusFirstMissingField()
       return
     }
     saveBlocked.value = false
 
-    const chartForApi = toChartApi(form.value)
+    const chartForApi = { ...toChartApi(form.value), private: false }
     const update = savedChart.value?.id
     try {
       savedChart.value = update
@@ -1227,9 +1259,10 @@ async function saveChart() {
       }
     }
     else {
-      toast.warning(t('Le graphique est enregistré sans image : son aperçu n’a pas pu être capturé.'))
+      toast.warning(t('La visualisation est publiée sans image : son aperçu n’a pas pu être capturé.'))
     }
-    toast.success(update ? t('Graphique mis à jour !') : t('Graphique sauvegardé !'))
+    published.value = true
+    toast.success(update ? t('Visualisation mise à jour !') : t('Visualisation publiée !'))
   }
   finally {
     saving.value = false

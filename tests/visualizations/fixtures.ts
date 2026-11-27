@@ -27,12 +27,10 @@ export async function mockTabular(page: Page) {
 }
 
 /**
- * Sets up the chart configurator with the shared test resource, described by
- * the recorded profile.
- * Selects "Admin User" as producer, the fixture dataset, and its first resource.
+ * Opens a new chart, then selects "Admin User" as producer, the fixture dataset and
+ * its first resource, waiting for the profile request whatever its answer.
  */
-export async function setupChart(page: Page) {
-  await mockTabular(page)
+export async function chooseResource(page: Page) {
   await page.goto('/admin/beta/chart')
   await page.waitForLoadState('networkidle')
 
@@ -58,6 +56,15 @@ export async function setupChart(page: Page) {
   await resourceSelect.selectOption({ index: 1 })
 
   await resourceProfilePromise
+}
+
+/**
+ * Sets up the chart configurator with the shared test resource, described by
+ * the recorded profile, and opens the manual tab.
+ */
+export async function setupChart(page: Page) {
+  await mockTabular(page)
+  await chooseResource(page)
   await page.waitForTimeout(300) // necessary to wait for the watch, no real async to check
 
   // The assistant is the default panel: most specs drive the form.
@@ -103,7 +110,7 @@ export async function setupAndSaveChart(page: Page, options: SetupAndSaveChartOp
     { timeout: 30000 },
   )
 
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
   const saveResponse = await saveResponsePromise
   const chartData = (await saveResponse.json()) as Chart
   await imageResponsePromise

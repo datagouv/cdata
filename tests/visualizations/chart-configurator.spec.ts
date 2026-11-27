@@ -1,10 +1,11 @@
 import type { Chart } from '@datagouv/components-next'
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { clickOutside } from '../helpers'
+import { clickOutside, holdRequests } from '../helpers'
 import { ASSISTANT_CHAT_PATH, assistantChatStream, createChartOutput, createChartStream, errorStream, routeAssistantStream } from '../assistantApi'
-import { API_BASE_URL, createChart, deleteChart, mockTabular, RESOURCE_ID, sendAssistantMessage, setupChart } from './fixtures'
+import { API_BASE_URL, chooseResource, createChart, deleteChart, mockTabular, RESOURCE_ID, sendAssistantMessage, setupChart } from './fixtures'
 import data from './data.json' with { type: 'json' }
+import profile from './profile.json' with { type: 'json' }
 
 /**
  * The fixture dataset has a single tabular resource: mark its JSON export as
@@ -301,7 +302,7 @@ test.describe('when the API rejects the chart', () => {
     // Filled so that the request passes the form validation and reaches the API.
     await page.getByLabel('Description').fill('Description')
 
-    await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+    await page.getByRole('button', { name: 'Publier la visualisation' }).click()
     await expect(page.getByText(/Le formulaire contient des erreurs/)).toBeVisible()
   })
 })
@@ -322,27 +323,230 @@ function trackChartCreations(page: Page) {
   return posts
 }
 
-test('the save action is only offered in the manual tab', async ({ page }) => {
+test('the publish button stays above the preview in both tabs', async ({ page }) => {
   await page.route('**/assistant/chat/**', route => route.abort())
   await setupChart(page)
+  const publish = page.getByRole('region', { name: 'Visualisation' }).getByRole('button', { name: 'Publier la visualisation' })
 
   await page.getByRole('tab', { name: 'Assistant' }).click()
   await expect(page.getByTestId('assistant-panel')).toBeVisible()
-  await expect(page.getByTestId('chart-save-footer')).toBeHidden()
+  await expect(publish).toBeVisible()
+  await expect(publish).toBeEnabled()
 
   await page.getByRole('tab', { name: 'Édition manuelle' }).click()
-  await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeVisible()
+  await expect(publish).toBeVisible()
 })
 
-test('saving without a description warns in the footer and leads to the field', async ({ page }) => {
+test('Enter in a field of the form does not publish the chart', async ({ page }) => {
+  await setupChart(page)
+  await page.getByLabel('Description').fill('Complète, mais pas publiée au clavier')
+  const posts = trackChartCreations(page)
+  // Implicit submission fires `submit` while the key is handled: checked right after the press.
+  await page.locator('#chart-form').evaluate((form) => {
+    form.addEventListener('submit', () => form.setAttribute('data-submitted', ''))
+  })
+
+  await page.getByLabel('Titre').press('Enter')
+
+  await expect(page.locator('#chart-form')).not.toHaveAttribute('data-submitted')
+  expect(posts).toHaveLength(0)
+})
+
+test('publishing from the assistant tab creates the chart, even with a decimal y-axis bound', async ({ page }) => {
+  await page.route('**/assistant/chat/**', route => route.abort())
+  await setupChart(page)
+  await page.getByLabel('Description').fill('Publiée depuis l’assistant')
+  await page.getByLabel('Minimum', { exact: true }).fill('0.5')
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+
+  const responsePromise = page.waitForResponse(response => new URL(response.url()).pathname === '/api/1/visualizations/' && response.request().method() === 'POST')
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
+  const chart = await (await responsePromise).json() as Chart
+  try {
+    // The toast follows the image upload: deleting earlier would answer it with a 410.
+    await expect(page.getByText('Visualisation publiée !')).toBeVisible()
+    expect(chart.y_axis.min).toBe(0.5)
+  }
+  finally {
+    await deleteChart(page.request, chart.id)
+  }
+})
+
+function holdImageUpload(page: Page) {
+  return holdRequests(page, url => /^\/api\/1\/visualizations\/[^/]+\/image\/$/.test(url.pathname), 'POST')
+}
+
+test('the label stays « Publier la visualisation » until the first publication completes', async ({ page }) => {
+  await setupChart(page)
+  await page.getByLabel('Description').fill('Publiée une première fois')
+  await expect(page.locator('canvas').first()).toBeVisible()
+  const upload = await holdImageUpload(page)
+  const visualization = page.getByRole('region', { name: 'Visualisation' })
+
+  const responsePromise = page.waitForResponse(response => new URL(response.url()).pathname === '/api/1/visualizations/' && response.request().method() === 'POST')
+  await visualization.getByRole('button', { name: 'Publier la visualisation' }).click()
+  const chart = await (await responsePromise).json() as Chart
+  try {
+    await expect.poll(upload.held).toBe(1)
+    await expect(visualization.getByRole('button', { name: 'Publier la visualisation' })).toBeVisible()
+
+    upload.release()
+    await expect(page.getByText('Visualisation publiée !')).toBeVisible()
+    await expect(visualization.getByRole('button', { name: 'Publier les modifications' })).toBeVisible()
+  }
+  finally {
+    upload.release()
+    await deleteChart(page.request, chart.id)
+  }
+})
+
+test('publishing waits for the assistant to answer', async ({ page }) => {
+  await routeAssistantStream(page, body => assistantChatStream(body))
+  let releaseAnswer = () => {}
+  const answerReleased = new Promise<void>((resolve) => {
+    releaseAnswer = resolve
+  })
+  // Registered after the stream, so it runs first: holds the answer, then hands it over.
+  await page.route(url => url.pathname === ASSISTANT_CHAT_PATH, async (route) => {
+    if (route.request().method() === 'POST') await answerReleased
+    await route.fallback()
+  })
+  await setupChart(page)
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+  const visualization = page.getByRole('region', { name: 'Visualisation' })
+  const publish = visualization.getByRole('button', { name: 'Publier la visualisation' })
+  await expect(publish).toBeEnabled()
+
+  await sendAssistantMessage(page, 'Un histogramme des logements')
+  try {
+    const waiting = visualization.getByRole('button', { name: 'L’assistant répond…' })
+    await expect(waiting).toBeDisabled()
+    await expect(waiting).toHaveAccessibleDescription('')
+  }
+  finally {
+    releaseAnswer()
+  }
+  await expect(page.getByTestId('assistant-panel').locator('article').last()).toContainText('Graphique créé.')
+  await expect(publish).toBeEnabled()
+})
+
+test('the assistant cannot be written to while the visualization is published', async ({ page }) => {
+  await setupChart(page)
+  await page.getByLabel('Description').fill('Publiée pendant que l’assistant est verrouillé')
+  await expect(page.locator('canvas').first()).toBeVisible()
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+  // A message ready to send: only the lock keeps the button disabled.
+  const composer = page.getByLabel('Votre demande')
+  await composer.fill('Passe en courbe')
+  const send = page.getByRole('button', { name: 'Envoyer' })
+  await expect(send).toBeEnabled()
+  const upload = await holdImageUpload(page)
+
+  const responsePromise = page.waitForResponse(response => new URL(response.url()).pathname === '/api/1/visualizations/' && response.request().method() === 'POST')
+  await page.getByRole('region', { name: 'Visualisation' }).getByRole('button', { name: 'Publier la visualisation' }).click()
+  const chart = await (await responsePromise).json() as Chart
+  try {
+    await expect.poll(upload.held).toBe(1)
+    await expect(composer).toBeDisabled()
+    await expect(send).toBeDisabled()
+
+    upload.release()
+    await expect(page.getByText('Visualisation publiée !')).toBeVisible()
+    await expect(composer).toBeEnabled()
+    await expect(composer).toHaveValue('Passe en courbe')
+    await expect(send).toBeEnabled()
+  }
+  finally {
+    upload.release()
+    await deleteChart(page.request, chart.id)
+  }
+})
+
+test('publishing a draft makes it public', async ({ page }) => {
+  const chart = await createChart(page.request, { title: `Chart configurator draft ${Date.now()}`, private: true })
+  try {
+    await mockTabular(page)
+    await page.goto(`/admin/beta/charts/${chart.id}`)
+    await page.waitForLoadState('networkidle')
+    await expect(page.getByLabel('Titre')).toHaveValue(chart.title)
+
+    const responsePromise = page.waitForResponse(response =>
+      response.url().includes(`/api/1/visualizations/${chart.id}/`) && response.request().method() === 'PATCH',
+    )
+    await page.getByRole('button', { name: 'Publier les modifications' }).click()
+    const response = await responsePromise
+    expect(((await response.json()) as Chart).private).toBe(false)
+    await expect(page.getByText('Visualisation mise à jour !')).toBeVisible()
+  }
+  finally {
+    await deleteChart(page.request, chart.id)
+  }
+})
+
+test('the missing-fields warning leaves with the chart', async ({ page }) => {
+  await withSecondTabularResource(page)
+  await setupChart(page)
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
+  const warning = page.getByTestId('chart-publish-warnings').getByRole('alert')
+  await expect(warning).toBeVisible()
+
+  const secondResourceId = await otherResourceId(page)
+  await page.route(`**/api/resources/${secondResourceId}/profile/`, route =>
+    route.fulfill({ json: { ...profile, profile: { ...profile.profile, header: [], columns: {} } } }),
+  )
+  await page.getByLabel('Choix de la ressource').selectOption(secondResourceId)
+
+  await expect(page.getByText('Aucun graphique créé')).toBeVisible()
+  await expect(warning).toBeHidden()
+})
+
+test('saving from the assistant tab leads to the missing field', async ({ page }) => {
+  await page.route('**/assistant/chat/**', route => route.abort())
   await setupChart(page)
   const posts = trackChartCreations(page)
 
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
 
-  const footer = page.getByTestId('chart-save-footer')
-  const warning = footer.getByRole('alert')
-  await expect(warning).toContainText('Le titre et la description sont obligatoires pour enregistrer le graphique.')
+  const warning = page.getByTestId('chart-publish-warnings').getByRole('alert')
+  await expect(warning).toContainText('Le titre et la description sont obligatoires pour publier la visualisation.')
+  await expect(page.getByTestId('form-panel')).toBeVisible()
+  await expect(page.getByLabel('Description')).toBeFocused()
+
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+  await warning.getByRole('button', { name: 'Compléter' }).click()
+  await expect(page.getByTestId('form-panel')).toBeVisible()
+  await expect(page.getByLabel('Description')).toBeFocused()
+  expect(posts).toHaveLength(0)
+})
+
+test.describe('without a chart to publish', () => {
+  test.use({ allowedConsoleMessages: ['status of 500', 'Failed to load columns'] })
+
+  test('the publish button waits for a chart and names the missing columns', async ({ page }) => {
+    await page.route('**/assistant/chat/**', route => route.abort())
+    await mockTabular(page)
+    // Without columns, the new chart has no X column, so no chart to publish.
+    await page.route('**/api/resources/*/profile/', route => route.fulfill({ status: 500, body: 'down' }))
+    await chooseResource(page)
+    await expect(page.getByTestId('source-status')).toHaveText('Colonnes indisponibles')
+
+    const publish = page.getByRole('button', { name: 'Publier la visualisation' })
+    await expect(publish).toBeVisible()
+    await expect(publish).toBeDisabled()
+    await expect(publish).toHaveAccessibleDescription('Colonnes indisponibles')
+  })
+})
+
+test('saving without a description warns above the preview and leads to the field', async ({ page }) => {
+  await setupChart(page)
+  const posts = trackChartCreations(page)
+
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
+
+  const warnings = page.getByTestId('chart-publish-warnings')
+  const warning = warnings.getByRole('alert')
+  await expect(warning).toContainText('Le titre et la description sont obligatoires pour publier la visualisation.')
   await expect(warning).toContainText('Description')
   await expect(warning).not.toContainText('Titre')
   expect(posts).toHaveLength(0)
@@ -357,11 +561,11 @@ test('saving without a description warns in the footer and leads to the field', 
   await expect(page.getByLabel('Description')).not.toHaveAttribute('aria-invalid', 'true')
   // Once complete, emptying a field again does not bring the warning back before a new save
   await page.getByLabel('Description').fill('')
-  await expect(footer.getByRole('alert')).toBeHidden()
+  await expect(warnings.getByRole('alert')).toBeHidden()
   await page.getByLabel('Description').fill('Description complétée')
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
   const response = await responsePromise
   const saved = (await response.json()) as Chart
   try {
@@ -378,7 +582,7 @@ test('saving with empty required fields shows their errors and focuses the first
   const posts = trackChartCreations(page)
 
   await page.getByLabel('Titre').fill('')
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
 
   for (const label of ['Titre', 'Description']) {
     const field = page.getByLabel(label)
@@ -400,7 +604,7 @@ test('saving chart sends correct data to API', async ({ page }) => {
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
 
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
   const response = await responsePromise
   const responseBody = (await response.json()) as Chart
 
@@ -416,13 +620,13 @@ test('saving chart shows success message', async ({ page }) => {
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
 
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
   const response = await responsePromise
   const responseBody = (await response.json()) as Chart
 
   await page.waitForTimeout(300)
 
-  await expect(page.getByText('Graphique sauvegardé !')).toBeVisible()
+  await expect(page.getByText('Visualisation publiée !')).toBeVisible()
 
   await page.request.delete(`${API_BASE_URL}/api/1/visualizations/${responseBody!.id}/`)
 })
@@ -455,12 +659,12 @@ test('complete chart configuration flow', async ({ page }) => {
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
 
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
   const response = await responsePromise
   const responseBody = (await response.json()) as Chart
 
   await page.waitForTimeout(300)
-  await expect(page.getByText('Graphique sauvegardé !')).toBeVisible()
+  await expect(page.getByText('Visualisation publiée !')).toBeVisible()
 
   expect(responseBody!.title).toBe('Graphique complet')
   expect(responseBody.series[0]).toMatchObject({ aggregate_y: 'avg', column_y: 'Taux de logements vacants* (en %)' })
@@ -523,7 +727,7 @@ test('y-axis columns should not be empty after selecting resource from loaded ch
     response => response.url().includes('/image/') && response.request().method() === 'POST',
     { timeout: 30000 },
   )
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
   const saveResponse = await saveResponsePromise
   const chartData = (await saveResponse.json()) as Chart
   await imageResponsePromise
@@ -569,7 +773,7 @@ test('x-axis dropdown should show columns from all chart resources after loading
   // and no image upload happens.
   await expect(page.locator('canvas').first()).toBeVisible()
 
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
   const saveResponse = await saveResponsePromise
   const chartData = (await saveResponse.json()) as Chart
   await imageResponsePromise
@@ -802,7 +1006,7 @@ test('value limit input is bounded to 50, and empty means no limit', async ({ pa
   await limitInput.fill('')
 
   const responsePromise = page.waitForResponse(response => response.url().includes('/api/1/visualizations/') && response.request().method() === 'POST')
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+  await page.getByRole('button', { name: 'Publier la visualisation' }).click()
   const response = await responsePromise
   const body = response.request().postDataJSON() as { x_axis: { limit: number | null } }
   expect(body.x_axis.limit).toBeNull()
@@ -823,13 +1027,13 @@ test('editing a chart PATCHes the value limit with the x axis', async ({ page })
     const responsePromise = page.waitForResponse(response =>
       response.url().includes(`/api/1/visualizations/${chart.id}/`) && response.request().method() === 'PATCH',
     )
-    await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+    await page.getByRole('button', { name: 'Publier les modifications' }).click()
     const response = await responsePromise
     expect(response.status()).toBe(200)
     const body = response.request().postDataJSON() as { x_axis: { limit: number | null, column_x: string } }
     expect(body.x_axis.limit).toBe(5)
     expect(((await response.json()) as Chart).x_axis.limit).toBe(5)
-    await expect(page.getByText('Graphique mis à jour !')).toBeVisible()
+    await expect(page.getByText('Visualisation mise à jour !')).toBeVisible()
   }
   finally {
     await deleteChart(page.request, chart.id)
@@ -856,7 +1060,7 @@ test('changing the x column moves every count series to it', async ({ page }) =>
     const responsePromise = page.waitForResponse(response =>
       response.url().includes(`/api/1/visualizations/${chart.id}/`) && response.request().method() === 'PATCH',
     )
-    await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+    await page.getByRole('button', { name: 'Publier les modifications' }).click()
     const response = await responsePromise
     const body = response.request().postDataJSON() as { series: Array<{ column_y: string, aggregate_y: string }> }
     expect(body.series.map(s => [s.column_y, s.aggregate_y])).toEqual([['nom_region', 'count'], ['nom_region', 'count']])
@@ -970,7 +1174,7 @@ test.describe('when a resource profile cannot be read', () => {
       })
       await page.goto(`/admin/beta/charts/${chart.id}`)
       await expect(page.getByTestId('source-status')).toHaveText('Colonnes indisponibles')
-      await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+      await page.getByRole('button', { name: 'Publier les modifications' }).click()
       await expect.poll(() => saved).not.toBeNull()
       expect(saved!.x_axis.column_x).toBe('region')
       expect(saved!.series[0]!.column_y).toBe('valeur')
@@ -1108,7 +1312,7 @@ test('chat message is sent with the selected resource and the conversation survi
   await expect(page.getByTestId('assistant-panel')).toBeVisible()
   await expect(page.getByTestId('form-panel')).toBeHidden()
   await expect(page.locator('#resource-select')).toBeVisible()
-  await expect(page.getByRole('button', { name: 'Sauvegarder le graphique' })).toBeHidden()
+  await expect(page.getByRole('button', { name: 'Publier la visualisation' })).toBeVisible()
 
   const request = await sendAssistantMessage(page, 'Logements par région en histogramme')
   const body = request.postDataJSON() as { resource_id: string, visualization: Record<string, unknown>, messages: Array<{ role: string }> }
@@ -1202,10 +1406,13 @@ test.describe('a chart whose series differ in type or filter', () => {
     try {
       await mockTabular(page)
       await page.goto(`/admin/beta/charts/${chart.id}`)
-      await expect(page.getByTestId('chart-mixed-series')).toBeVisible()
-      const save = page.getByRole('button', { name: 'Sauvegarder le graphique' })
+      const banner = page.getByTestId('chart-publish-warnings').getByTestId('chart-mixed-series')
+      await expect(banner).toBeVisible()
+      const save = page.getByRole('button', { name: 'Publier les modifications' })
       await expect(save).toBeDisabled()
-      await expect(save).toHaveAttribute('aria-describedby', 'chart-mixed-series')
+      await expect(save).toHaveAccessibleDescription(await banner.innerText())
+      await page.getByRole('tab', { name: 'Assistant' }).click()
+      await expect(banner).toBeVisible()
     }
     finally {
       await deleteChart(page.request, chart.id)
@@ -1231,9 +1438,9 @@ test('a double click on save creates one chart, with its image', async ({ page }
       createdIds.push(response.json().then((chart: { id: string }) => chart.id))
     }
   })
-  await page.getByRole('button', { name: 'Sauvegarder le graphique' }).dblclick()
+  await page.getByRole('button', { name: 'Publier la visualisation' }).dblclick()
   try {
-    await expect(page.getByText('Graphique sauvegardé !')).toBeVisible()
+    await expect(page.getByText('Visualisation publiée !')).toBeVisible()
     expect(posts).toHaveLength(1)
     expect(images).toHaveLength(1)
   }
@@ -1266,7 +1473,7 @@ test.describe('when a chart of several series changes resource', () => {
         await route.fulfill({ status: 400, json: { message: 'Not saved by this test' } })
       })
       await page.goto(`/admin/beta/charts/${chart.id}`)
-      const save = page.getByRole('button', { name: 'Sauvegarder le graphique' })
+      const save = page.getByRole('button', { name: 'Publier les modifications' })
       await expect(save).toBeEnabled()
       await save.click()
       await expect.poll(() => saved).not.toBeNull()
@@ -1298,7 +1505,7 @@ test.describe('when a chart of several series changes resource', () => {
       saved = route.request().postDataJSON()
       await route.fulfill({ status: 400, json: { message: 'Not saved by this test' } })
     })
-    await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+    await page.getByRole('button', { name: 'Publier la visualisation' }).click()
     await expect.poll(() => saved).not.toBeNull()
     expect(saved!.series.map(serie => serie.resource_id)).toEqual([secondResourceId, secondResourceId])
   })
@@ -1329,7 +1536,7 @@ test.describe('when a chart of several series changes resource', () => {
       saved = route.request().postDataJSON()
       await route.fulfill({ status: 400, json: { message: 'Not saved by this test' } })
     })
-    await page.getByRole('button', { name: 'Sauvegarder le graphique' }).click()
+    await page.getByRole('button', { name: 'Publier la visualisation' }).click()
     await expect.poll(() => saved).not.toBeNull()
     expect(saved!.series.map(serie => serie.resource_id)).toEqual([secondResourceId])
   })

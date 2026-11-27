@@ -190,7 +190,7 @@
             class="min-h-0 w-full flex-1 resize-none border-0 bg-transparent text-[11px] leading-5 text-new-gray-dark outline-none placeholder:text-gray-medium"
             :aria-label="$t('Votre demande')"
             :aria-describedby="input.length >= COUNTER_THRESHOLD ? 'assistant-input-counter' : undefined"
-            :disabled="waiting || busy"
+            :disabled="composerDisabled"
             :placeholder="$t('Décrivez le graphique souhaité…')"
             @keydown.enter="handleEnter"
           />
@@ -225,7 +225,7 @@
               type="submit"
               :aria-label="$t('Envoyer')"
               class="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-new-primary text-white hover:bg-new-primary-hover disabled:cursor-not-allowed disabled:bg-new-gray-medium-clic"
-              :disabled="waiting || !input.trim()"
+              :disabled="composerDisabled || !input.trim()"
             >
               <RiArrowUpLine
                 class="size-4"
@@ -261,13 +261,15 @@ import { useChatDisplayItems, type ChatDisplayItem } from './useChatDisplayItems
 import { useStarterQuestions } from './useStarterQuestions'
 import type { AssistantVisualization, ChartToolResult } from '~/utils/assistant'
 
-const props = defineProps<{
+const props = withDefaults(defineProps<{
   resourceId: string | null
   /** Sent with each message when not null: the context block mentions it. */
   visualization: AssistantVisualization | null
   columns: Array<ColumnDefinition>
   resource: { title: string, format: string | null } | null
-}>()
+  /** The host is publishing the visualization: an answer would change what it publishes. */
+  locked?: boolean
+}>(), { locked: false })
 
 const emit = defineEmits<{
   (e: 'chart-result', result: ChartToolResult): void
@@ -356,6 +358,7 @@ const waiting = computed(() => !props.resourceId)
 // 'error' is not busy: a failed request leaves the status on 'error' until the
 // next one starts, and the composer must stay usable so the user can retry.
 const busy = computed(() => status.value === 'submitted' || status.value === 'streaming')
+const composerDisabled = computed(() => waiting.value || busy.value || props.locked)
 const assistantErrorMessage = useAssistantErrorMessage()
 const errorMessage = computed(() => (error.value ? assistantErrorMessage(error.value) : null))
 const conversationUnreadable = computed(() => (error.value as { statusCode?: unknown } | undefined)?.statusCode === 409)
@@ -388,7 +391,7 @@ function applySuggestion(suggestion: string) {
 // A double click or a repeated Enter finds the composer already emptied.
 function submit() {
   const text = input.value.trim()
-  if (!text || waiting.value || busy.value) return
+  if (!text || composerDisabled.value) return
   lastSentText = text
   sendMessage({ text })
   input.value = ''
@@ -428,4 +431,6 @@ function handleEnter(event: KeyboardEvent) {
   event.preventDefault()
   submit()
 }
+
+defineExpose({ busy })
 </script>
