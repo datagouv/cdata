@@ -36,7 +36,7 @@
           rel="ugc nofollow noopener"
           @click="trackEvent('Jeux de données', 'Télécharger un fichier', `Bouton : format ${resource.format}`)"
         >
-          <span>{{ t('Format {format}', { format: resource.format }) }}<span v-if="resourceFilesize"> - {{ filesize(resourceFilesize) }}</span></span>
+          <span>{{ resource.format ? t('Format {format}', { format: resource.format }) : t('Fichier') }}<span v-if="resourceFilesize"> - {{ filesize(resourceFilesize) }}</span></span>
         </a>
       </span>
       <CopyButton

@@ -71,7 +71,10 @@ export function useResourceCapabilities(
     return wfsMetadata?.detected_layer?.default_crs ?? null
   })
 
-  const isResourceUrl = computed(() => URL_FORMATS.includes(toValue(resource).format))
+  const isResourceUrl = computed(() => {
+    const format = toValue(resource).format
+    return !!format && URL_FORMATS.includes(format)
+  })
 
   // A dedicated preview always wins over the interactive table: a PDF that also
   // carries a parsing table is a PDF first.

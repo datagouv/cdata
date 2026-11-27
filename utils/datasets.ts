@@ -15,8 +15,9 @@ export function useResourceForm(file: MaybeRef<ResourceForm | CommunityResourceF
     type: [required()],
     owned: [required()],
     url: [ruleIf(isRemote, required())],
-    format: [ruleIf(isRemote, required())],
   }, {
+    // The API accepts remote resources without format (harvested ones often lack it): recommend it without blocking unrelated edits
+    format: [ruleIf(isRemote, required(t('Il est recommandé de renseigner le format du fichier.')))],
     description: [minLength(DESCRIPTION_MIN_LENGTH, t(`Il est recommandé d'avoir une {property} d'au moins {min} caractères.`, { property: t('description'), min: DESCRIPTION_MIN_LENGTH }))],
     title: [testNotAllowed(config.public.demoServer?.name)],
   })
@@ -215,12 +216,11 @@ export function resourceToApi(form: ResourceForm | CommunityResourceForm): NewRe
     throw new Error('Cannot convert to API a ResourceForm without filetype information')
   }
   else if (form.filetype === 'remote') {
-    if (!form.format) throw new Error('`format` is required for remote Resource')
-
     resource = {
       ...resource,
       url: form.url,
-      format: form.format,
+      // udata stores an empty format as no format
+      format: form.format ?? '',
       mime: form.mime?.text || '',
     }
   }

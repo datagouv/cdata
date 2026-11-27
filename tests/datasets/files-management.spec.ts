@@ -1,6 +1,6 @@
 import type { APIRequestContext } from '@playwright/test'
 import { test, expect } from '../base'
-import { API_BASE, createDataset, createDatasetWithRemoteResources, deleteDatasets } from '../helpers'
+import { API_BASE, createDataset, createDatasetWithRemoteResources, createRemoteResource, deleteDatasets, gotoHydrated } from '../helpers'
 
 const createdDatasets: Array<string> = []
 
@@ -66,6 +66,29 @@ test.describe('Dataset files management', () => {
 
     await expect(page.getByText('Fichier mis à jour !')).toBeVisible()
     await expect(page.locator('tbody tr').first()).toContainText(`Ressource renommée ${uniqueId}`)
+  })
+
+  test('can edit a remote file that has no format', async ({ page, request }) => {
+    const dataset = await createDataset(request, `Test files management ${Date.now()}`, 'Dataset de test E2E')
+    createdDatasets.push(dataset.id)
+    // The API accepts remote resources without format, as harvesters create them
+    const resource = await createRemoteResource(request, dataset.id, 'Ressource sans format', { format: '' })
+
+    const pageErrors: Array<Error> = []
+    page.on('pageerror', error => pageErrors.push(error))
+
+    await gotoHydrated(page, `/admin/datasets/${dataset.id}/files`)
+
+    await page.getByRole('button', { name: 'Éditer le fichier' }).click()
+    const dialog = page.getByRole('dialog')
+    await dialog.getByLabel('Titre *', { exact: true }).fill('Ressource renommée')
+    await dialog.getByRole('button', { name: 'Valider' }).click()
+
+    await expect(page.getByText('Fichier mis à jour !')).toBeVisible()
+    const saved = await (await request.get(`${API_BASE}/api/1/datasets/${dataset.id}/resources/${resource.id}/`)).json()
+    expect(saved.title).toBe('Ressource renommée')
+    expect(saved.format).toBeNull()
+    expect(pageErrors).toEqual([])
   })
 
   test('can delete a file', async ({ page, request }) => {

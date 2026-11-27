@@ -422,7 +422,7 @@ const editDisabledReason = computed(() => {
   return isGeopfSynced(props.resource) ? t('Vous ne pouvez pas modifier cette ressource car elle est synchronisée avec cartes.gouv.fr') : null
 })
 
-const format = computed(() => getResourceFormatIcon(props.resource.format) ? props.resource.format : t('Fichier'))
+const format = computed(() => props.resource.format && getResourceFormatIcon(props.resource.format) ? props.resource.format : t('Fichier'))
 
 const open = ref(props.expandedOnMount)
 const toggle = () => {
