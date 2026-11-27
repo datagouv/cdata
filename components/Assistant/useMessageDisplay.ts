@@ -1,6 +1,8 @@
 import { humanJoin, isRecord, useTranslation } from '@datagouv/components-next'
 import type { TranslationFunction } from '@datagouv/components-next'
 import { capitalizeFirstLetter } from '~/utils/helpers'
+import { displayedToolCalls, nonBlankTexts, queryRowCount, toolCalls, type ToolCall } from './toolCalls'
+import { useTurnReasoning } from './useTurnReasoning'
 
 export type ToolTrace = {
   label: string
@@ -10,10 +12,12 @@ export type ToolTrace = {
   output: string | null
 }
 
-export type ChatDisplayItem
-  = | { kind: 'text', text: string }
-    | { kind: 'thinking', text: string }
-    | { kind: 'trace', trace: ToolTrace }
+export type ChatMessageDisplay = {
+  texts: string[]
+  traces: ToolTrace[]
+  toolsRunning: boolean
+  reasoning: string[]
+}
 
 // Label and generic summary are translated when shown; buildSummary returns null when the generic one applies.
 type ToolDisplay = {
@@ -44,15 +48,9 @@ const PATCH_FIELDS: PatchField[] = [
   { label: t => t('bornes'), feminine: true, plural: true, changed: patch => isRecord(patch.y_axis) && ('min' in patch.y_axis || 'max' in patch.y_axis) },
 ]
 
-/**
- * Turns a message's parts into display items: text parts pass through,
- * consecutive reasoning parts (AI SDK type 'reasoning') are grouped into one
- * thinking item, and each tool part becomes its own trace — the AI SDK emits
- * one part per tool call (keyed by toolCallId) and mutates its state in place,
- * so no merging is ever needed.
- */
-export function useChatDisplayItems() {
+export function useMessageDisplay() {
   const { t, locale } = useTranslation()
+  const buildReasoning = useTurnReasoning()
 
   function formatRowCount(count: number): string {
     return t('Aucune ligne | 1 ligne | {rows} lignes', { n: count, rows: count.toLocaleString(locale) })
@@ -65,15 +63,13 @@ export function useChatDisplayItems() {
     return errors.length ? errors.join(' ; ') : t('Échec de l’opération')
   }
 
-  // `total` is the exact row count, known only without an aggregate; `rows` is
-  // what the table shows.
   function buildQuerySummary(part: Record<string, unknown>): string | null {
     if (part.state !== 'output-available') return t('Exécution en cours')
     const output = part.output
     if (!isRecord(output)) return null
     if (output.status === 'error') return t('Requête non exécutée')
-    const count = typeof output.total === 'number' ? output.total : output.rows
-    if (output.status !== 'ok' || typeof count !== 'number') return null
+    const count = queryRowCount(output)
+    if (output.status !== 'ok' || count === null) return null
     const rows = formatRowCount(count)
     return output.more_groups === true ? t('{rows}, plus de 50 valeurs', { rows }) : rows
   }
@@ -131,10 +127,11 @@ export function useChatDisplayItems() {
     summary: () => t('Je poursuis l’analyse'),
   }
 
-  function buildToolTrace(type: string, part: Record<string, unknown>): ToolTrace {
+  function buildToolTrace({ type, part, status }: ToolCall): ToolTrace {
     const tool = tools[type] ?? otherTool
-    const error = part.state === 'output-error'
-    const errorText = error
+    // A tool refusal is a failure too, but its summary already carries the errors: only the SDK's own error has an errorText.
+    const error = status === 'failed'
+    const errorText = part.state === 'output-error'
       ? (typeof part.errorText === 'string' && part.errorText ? part.errorText : t('Échec de l’opération'))
       : null
 
@@ -147,31 +144,15 @@ export function useChatDisplayItems() {
     }
   }
 
-  return function buildChatDisplayItems(parts: unknown[]): ChatDisplayItem[] {
-    const items: ChatDisplayItem[] = []
-
-    for (const part of parts) {
-      if (!isRecord(part) || typeof part.type !== 'string') continue
-
-      if (part.type === 'text') {
-        if (typeof part.text === 'string' && part.text) items.push({ kind: 'text', text: part.text })
-        continue
-      }
-      if (part.type === 'reasoning') {
-        if (typeof part.text !== 'string' || !part.text) continue
-        const last = items[items.length - 1]
-        if (last?.kind === 'thinking') {
-          last.text += part.text
-          continue
-        }
-        items.push({ kind: 'thinking', text: part.text })
-        continue
-      }
-      if (!part.type.startsWith('tool-')) continue
-
-      items.push({ kind: 'trace', trace: buildToolTrace(part.type, part) })
+  // The AI SDK 'reasoning' parts, the model's own reasoning, are never read: the reasoning block is built from the tool calls.
+  return function buildMessageDisplay(parts: unknown[]): ChatMessageDisplay {
+    const calls = displayedToolCalls(toolCalls(parts))
+    return {
+      texts: nonBlankTexts(parts),
+      // The AI SDK emits one part per tool call and updates it in place: no merging is needed.
+      traces: calls.map(buildToolTrace),
+      toolsRunning: calls.some(call => call.status === 'running'),
+      reasoning: buildReasoning(parts),
     }
-
-    return items
   }
 }

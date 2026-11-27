@@ -1,6 +1,7 @@
 <template>
   <CollapsibleTrace
     :icon="RiWrenchLine"
+    card
     class="tool-trace bg-white"
   >
     <template #header>
@@ -37,7 +38,7 @@
 <script setup lang="ts">
 import { RiErrorWarningLine, RiWrenchLine } from '@remixicon/vue'
 import CollapsibleTrace from './CollapsibleTrace.vue'
-import type { ToolTrace } from './useChatDisplayItems'
+import type { ToolTrace } from './useMessageDisplay'
 
 defineProps<{
   trace: ToolTrace
