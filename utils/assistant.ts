@@ -86,3 +86,27 @@ export function chartToolResults(messages: unknown[]): ChartToolResult[] {
 
   return results
 }
+
+/** Tokens a turn consumed, named after the AI SDK's `LanguageModelUsage` as udata sends them. */
+export type TokenUsage = { inputTokens: number, outputTokens: number, totalTokens: number }
+
+function isCount(value: unknown): value is number {
+  return typeof value === 'number' && Number.isInteger(value) && value >= 0
+}
+
+/** The `usage` of a message's metadata, null unless it holds three counts: the counter then says "unavailable". */
+export function messageUsage(metadata: unknown): TokenUsage | null {
+  if (!isRecord(metadata) || !isRecord(metadata.usage)) return null
+  const { inputTokens, outputTokens, totalTokens } = metadata.usage
+  if (!isCount(inputTokens) || !isCount(outputTokens) || !isCount(totalTokens)) return null
+  return { inputTokens, outputTokens, totalTokens }
+}
+
+export function addUsage(total: TokenUsage | undefined, usage: TokenUsage): TokenUsage {
+  if (!total) return usage
+  return {
+    inputTokens: total.inputTokens + usage.inputTokens,
+    outputTokens: total.outputTokens + usage.outputTokens,
+    totalTokens: total.totalTokens + usage.totalTokens,
+  }
+}

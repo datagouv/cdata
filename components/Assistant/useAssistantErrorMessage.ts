@@ -12,8 +12,8 @@ export function useAssistantErrorMessage() {
   return (error: unknown): string => {
     const statusCode = (error as { statusCode?: unknown } | null)?.statusCode
     if (statusCode === 401) return t('Veuillez vous reconnecter pour utiliser l’assistant.')
-    // udata can no longer read the conversation it stored: only a new one helps.
-    if (statusCode === 409) return t('Cette conversation ne peut plus être lue.')
+    // udata closes the conversation (stored history unreadable, or kept for another model): only a new one helps.
+    if (statusCode === 409) return t('Cette conversation ne peut pas continuer.')
     if (statusCode === 413) return t('Votre message est trop long.')
     if (statusCode === 429) return t('Trop de demandes, réessayez dans un instant.')
     if (statusCode === 503) return t('Assistant indisponible pour le moment.')

@@ -1,19 +1,19 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { ASSISTANT_CHAT_PATH, assistantChatStream, createChartOutput, createChartStream, routeAssistantStream } from '../assistantApi'
-import type { AssistantChatBody } from '../assistantApi'
+import { ASSISTANT_CHAT_PATH, assistantChatStream, createChartOutput, createChartStream, routeAssistantModels, routeAssistantStream } from '../assistantApi'
+import type { AssistantChatBody, AssistantUsage } from '../assistantApi'
 import { RESOURCE_ID, sendAssistantMessage, setupChart } from './fixtures'
 
 const X_COLUMN = 'nom_region'
 const Y_COLUMN = 'Nombre de logements'
 
 /** The scripted chart, on columns of the fixture profile: regions by max number of dwellings, top 5. */
-function scriptedCreateStream(body: AssistantChatBody) {
+function scriptedCreateStream(body: AssistantChatBody, usage?: AssistantUsage) {
   const output = createChartOutput(body.resource_id ?? RESOURCE_ID)
   output.chart.title = 'Logements par région'
   output.chart.x_axis = { ...output.chart.x_axis, column_x: X_COLUMN }
   output.chart.series = [{ ...output.chart.series[0]!, column_y: Y_COLUMN, aggregate_y: 'max' }]
-  return createChartStream(output.chart.series[0]!.resource_id, output)
+  return createChartStream(output.chart.series[0]!.resource_id, output, usage)
 }
 
 function lastReply(page: Page) {
@@ -97,4 +97,52 @@ test('the assistant shows its progress while it answers, then its reasoning', as
   await expect(lastReply(page)).toContainText('Graphique créé.')
   await expect(timeline).toHaveCount(0)
   await expect(lastReply(page).getByRole('button', { name: 'Raisonnement' })).toBeVisible()
+})
+
+test('the assistant answers with the chosen model, in a new conversation', async ({ page }) => {
+  await routeAssistantModels(page)
+  await routeAssistantStream(page, body => assistantChatStream(body, scriptedCreateStream))
+  await setupChart(page)
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+  const first = await sendAssistantMessage(page, 'Logements par région, top 5')
+  expect(first.postDataJSON()).toMatchObject({ model: null })
+  await expect(lastReply(page)).toContainText('Graphique créé.')
+
+  const selector = page.getByRole('button', { name: /Modèle de l’assistant/ })
+  await expect(selector).toContainText('GPT-OSS-120B')
+  const dialogPromise = page.waitForEvent('dialog')
+  await selector.click()
+  // The confirm blocks the page until it is answered: the click is not awaited.
+  const pick = page.getByRole('option', { name: 'Mistral Medium 3.5' }).click()
+  const dialog = await dialogPromise
+  expect(dialog.message()).toContain('nouvelle conversation')
+  await dialog.accept()
+  await pick
+  await expect(page.getByTestId('assistant-empty-state')).toBeVisible()
+  await expect(selector).toContainText('Mistral Medium 3.5')
+
+  const second = await sendAssistantMessage(page, 'Logements par région, top 5')
+  expect(second.postDataJSON()).toMatchObject({ model: 'mistral-medium-3-5' })
+  expect(second.postDataJSON().id).not.toBe(first.postDataJSON().id)
+})
+
+test('the assistant tells how many tokens the last request used', async ({ page }) => {
+  // Under 1 000: no thousands separator (a narrow no-break space in French) in the expected numbers.
+  const usage = { inputTokens: 812, outputTokens: 96, totalTokens: 908 }
+  await routeAssistantModels(page)
+  await routeAssistantStream(page, body => assistantChatStream(body, body => scriptedCreateStream(body, usage)))
+  await setupChart(page)
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+  await expect(page.getByTestId('assistant-token-usage')).toHaveCount(0)
+
+  await sendAssistantMessage(page, 'Logements par région, top 5')
+  await expect(lastReply(page)).toContainText('Graphique créé.')
+
+  await page.getByRole('button', { name: '908 tokens utilisés' }).click()
+  // The panel is teleported out of the usage button, into #tooltips.
+  const panel = page.locator('#tooltips')
+  await expect(panel.getByText('Nombre de tokens utilisés', { exact: true })).toBeVisible()
+  await expect(panel.getByText('Entrée', { exact: true }).locator('..')).toHaveText(/Entrée\s*812/)
+  await expect(panel.getByText('Réponse', { exact: true }).locator('..')).toHaveText(/Réponse\s*96/)
+  await expect(panel.getByText('Total', { exact: true }).locator('..')).toHaveText(/Total\s*908/)
 })

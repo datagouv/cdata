@@ -134,7 +134,7 @@
     >
       {{ errorMessage }}
       <button
-        v-if="conversationUnreadable"
+        v-if="conversationClosed"
         type="button"
         class="ml-1 underline hover:no-underline"
         @click="startNewConversation"
@@ -202,14 +202,28 @@
             :placeholder="$t('Décrivez le graphique souhaité…')"
             @keydown.enter="handleEnter"
           />
-          <footer class="flex items-center justify-end gap-2">
-            <!-- Read with the field it describes. -->
-            <span
-              v-if="input.length >= COUNTER_THRESHOLD"
-              id="assistant-input-counter"
-              class="mr-auto text-[11px] tabular-nums"
-              :class="input.length >= MAX_INPUT_LENGTH ? 'text-new-error' : 'text-new-gray-medium'"
-            >{{ input.length.toLocaleString(locale) }} / {{ MAX_INPUT_LENGTH.toLocaleString(locale) }}<span class="sr-only"> {{ $t('caractères') }}</span></span>
+          <footer class="flex items-center gap-2">
+            <div class="mr-auto flex min-w-0 items-center gap-1">
+              <ModelSelector
+                v-if="models.length > 1"
+                :models
+                :model-value="currentModelId"
+                :disabled="busy"
+                @update:model-value="changeModel"
+              />
+              <!-- After the selector, so that it does not move when the usage appears. -->
+              <TokenUsage
+                v-if="usage !== undefined"
+                :usage
+              />
+              <!-- Read with the field it describes. -->
+              <span
+                v-if="input.length >= COUNTER_THRESHOLD"
+                id="assistant-input-counter"
+                class="text-[11px] tabular-nums"
+                :class="input.length >= MAX_INPUT_LENGTH ? 'text-new-error' : 'text-new-gray-medium'"
+              >{{ input.length.toLocaleString(locale) }} / {{ MAX_INPUT_LENGTH.toLocaleString(locale) }}<span class="sr-only"> {{ $t('caractères') }}</span></span>
+            </div>
             <!-- RGAA 7.5: announced when a threshold is first crossed, not on every keystroke. -->
             <span
               class="sr-only"
@@ -260,9 +274,12 @@ import { RiAddLine, RiArrowUpLine, RiFocus3Line, RiStopMiniLine, RiTableLine } f
 import { computed, nextTick, ref, toRef, watch } from 'vue'
 import { MarkdownViewer, Tag, useTranslation, type ColumnDefinition } from '@datagouv/components-next'
 import AssistantTimeline from './AssistantTimeline.vue'
+import ModelSelector from './ModelSelector.vue'
 import ReasoningBlock from './ReasoningBlock.vue'
+import TokenUsage from './TokenUsage.vue'
 import ToolsBlock from './ToolsBlock.vue'
 import { useAssistantChat } from './useAssistantChat'
+import { useAssistantModels } from './useAssistantModels'
 import { chartToolResults, isNearChatBottom } from '~/utils/assistant'
 import { useAssistantErrorMessage } from './useAssistantErrorMessage'
 import { useMessageDisplay, type ChatMessageDisplay } from './useMessageDisplay'
@@ -283,7 +300,8 @@ const emit = defineEmits<{
 }>()
 
 const config = useRuntimeConfig()
-const { error, messages, newConversation, sendMessage, status, stop } = useAssistantChat(toRef(props, 'resourceId'), () => props.visualization)
+const { error, messages, modelId, newConversation, selectModel, sendMessage, status, stop, usage } = useAssistantChat(toRef(props, 'resourceId'), () => props.visualization)
+const { models } = useAssistantModels()
 
 // Bound, not literal: the asset stays a plain public URL instead of being inlined by the build.
 const ASSISTANT_LOGO = '/nuxt_images/assistant/assistant-logo.svg'
@@ -369,7 +387,7 @@ const waiting = computed(() => !props.resourceId)
 const busy = computed(() => status.value === 'submitted' || status.value === 'streaming')
 const assistantErrorMessage = useAssistantErrorMessage()
 const errorMessage = computed(() => (error.value ? assistantErrorMessage(error.value) : null))
-const conversationUnreadable = computed(() => (error.value as { statusCode?: unknown } | undefined)?.statusCode === 409)
+const conversationClosed = computed(() => (error.value as { statusCode?: unknown } | undefined)?.statusCode === 409)
 // The message the turn is being written in, once the SDK has created it.
 const liveMessage = computed(() => {
   const last = messages.value.at(-1)
@@ -399,6 +417,16 @@ async function startNewConversation() {
   newConversation()
   await nextTick()
   textareaRef.value?.focus()
+}
+
+// The server runs its default model while none is chosen.
+const currentModelId = computed(() => modelId.value ?? models.value.find(model => model.default)?.id ?? null)
+
+// Switching starts a new conversation (the stored history never mixes two models): ask before dropping one.
+function changeModel(id: string) {
+  if (id === currentModelId.value) return
+  if (messages.value.length && !window.confirm(t('Changer de modèle démarre une nouvelle conversation : la conversation en cours sera effacée. Continuer ?'))) return
+  selectModel(id)
 }
 
 // A suggestion only fills the composer: the user reviews it before sending.

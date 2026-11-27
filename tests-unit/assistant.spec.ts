@@ -1,17 +1,19 @@
 // @vitest-environment happy-dom
-import { flushPromises, mount } from '@vue/test-utils'
+import { config, flushPromises, mount } from '@vue/test-utils'
 import { nextTick } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { useTranslation } from '@datagouv/components-next'
 import { RiCheckLine, RiErrorWarningLine } from '@remixicon/vue'
 import type { ChartForApi, ColumnDefinition } from '@datagouv/components-next'
 import ChatPanel from '~/components/Assistant/ChatPanel.vue'
+import ModelSelector from '~/components/Assistant/ModelSelector.vue'
+import TokenUsage from '~/components/Assistant/TokenUsage.vue'
 import AssistantSpinner from '~/components/Assistant/AssistantSpinner.vue'
 import ToolTrace from '~/components/Assistant/ToolTrace.vue'
 import AssistantTimeline from '~/components/Assistant/AssistantTimeline.vue'
 import ReasoningBlock from '~/components/Assistant/ReasoningBlock.vue'
 import ToolsBlock from '~/components/Assistant/ToolsBlock.vue'
-import { chartToolResults, isNearChatBottom, toAssistantVisualization } from '~/utils/assistant'
+import { addUsage, chartToolResults, isNearChatBottom, messageUsage, toAssistantVisualization } from '~/utils/assistant'
 import { useAssistantErrorMessage } from '~/components/Assistant/useAssistantErrorMessage'
 import { useMessageDisplay, type ToolTrace as ToolTraceModel } from '~/components/Assistant/useMessageDisplay'
 import { useStarterQuestions } from '~/components/Assistant/useStarterQuestions'
@@ -22,6 +24,7 @@ const { locale } = useTranslation()
 const sendMessageMock = vi.hoisted(() => vi.fn())
 const stopMock = vi.hoisted(() => vi.fn())
 const newConversationMock = vi.hoisted(() => vi.fn())
+const selectModelMock = vi.hoisted(() => vi.fn())
 
 // The real builder, spied on to check which messages are rebuilt on each chunk.
 const buildSpy = vi.hoisted(() => vi.fn())
@@ -45,6 +48,11 @@ const chatState = vi.hoisted(() => ({} as {
   messages: import('vue').Ref<Array<{ id: string, role: string, parts: Array<Record<string, unknown>> }>>
   status: import('vue').Ref<string>
   error: import('vue').Ref<unknown>
+  modelId: import('vue').Ref<string | null>
+  usage: import('vue').Ref<{ inputTokens: number, outputTokens: number, totalTokens: number } | null | undefined>
+}))
+const modelsState = vi.hoisted(() => ({} as {
+  value: import('vue').ShallowRef<Array<{ id: string, label: string, default: boolean }>>
 }))
 
 vi.mock('~/components/Assistant/useAssistantChat', async () => {
@@ -53,10 +61,30 @@ vi.mock('~/components/Assistant/useAssistantChat', async () => {
   chatState.messages = shallowRef([])
   chatState.status = ref('ready')
   chatState.error = ref(null)
+  chatState.modelId = ref(null)
+  chatState.usage = ref(undefined)
   return {
-    useAssistantChat: () => ({ ...chatState, sendMessage: sendMessageMock, stop: stopMock, newConversation: newConversationMock }),
+    useAssistantChat: () => ({ ...chatState, sendMessage: sendMessageMock, stop: stopMock, newConversation: newConversationMock, selectModel: selectModelMock }),
   }
 })
+
+vi.mock('~/components/Assistant/useAssistantModels', async () => {
+  const { shallowRef } = await import('vue')
+  modelsState.value = shallowRef([])
+  return { useAssistantModels: () => ({ models: modelsState.value }) }
+})
+
+// The real Toggletip teleports its panel to #tooltips and needs the Nuxt injections.
+const ToggletipStub = {
+  props: ['buttonProps'],
+  template: '<div><button v-bind="buttonProps"><slot /></button><slot name="toggletip" :close="() => {}" /></div>',
+}
+
+// File-wide: panels mounted by earlier tests are never unmounted and re-render when a later test changes the shared state.
+config.global.stubs = { Toggletip: ToggletipStub }
+
+const GPT = { id: 'gpt-oss-120b', label: 'GPT-OSS-120B', default: true }
+const MISTRAL = { id: 'mistral-medium-3-5', label: 'Mistral Medium 3.5', default: false }
 
 function assistantTextMessage(text: string) {
   return {
@@ -431,7 +459,7 @@ describe('useAssistantErrorMessage', () => {
   const errorMessage = useAssistantErrorMessage()
   it('maps status codes and falls back', () => {
     expect(errorMessage(Object.assign(new Error('x'), { statusCode: 401 }))).toContain('Veuillez vous reconnecter')
-    expect(errorMessage(Object.assign(new Error('x'), { statusCode: 409 }))).toBe('Cette conversation ne peut plus être lue.')
+    expect(errorMessage(Object.assign(new Error('x'), { statusCode: 409 }))).toBe('Cette conversation ne peut pas continuer.')
     expect(errorMessage(Object.assign(new Error('x'), { statusCode: 413 }))).toBe('Votre message est trop long.')
     expect(errorMessage(Object.assign(new Error('x'), { statusCode: 429 }))).toContain('Trop de demandes, réessayez dans un instant.')
     expect(errorMessage(Object.assign(new Error('x'), { statusCode: 503 }))).toContain('Assistant indisponible')
@@ -729,6 +757,9 @@ describe('ChatPanel', () => {
     chatState.messages.value = []
     chatState.status.value = 'ready'
     chatState.error.value = null
+    chatState.modelId.value = null
+    chatState.usage.value = undefined
+    modelsState.value.value = []
   })
 
   afterEach(() => {
@@ -1357,7 +1388,7 @@ describe('ChatPanel', () => {
     await flushPromises()
 
     const alert = wrapper.find('[role="alert"]')
-    expect(alert.text()).toContain('Cette conversation ne peut plus être lue.')
+    expect(alert.text()).toContain('Cette conversation ne peut pas continuer.')
     const restart = alert.find('button')
     expect(restart.text()).toBe('Commencer une nouvelle conversation')
     await restart.trigger('click')
@@ -1546,5 +1577,228 @@ describe('ChatPanel', () => {
 
       expect(wrapper.emitted('chart-result')!.at(-1)![0]).toMatchObject({ toolCallId: 'c2', kind: 'update' })
     })
+  })
+
+  describe('model selector and token usage', () => {
+    const TWO_MODELS = [GPT, MISTRAL]
+    const pill = (wrapper: ReturnType<typeof mountPanel>) => wrapper.find('[data-testid="assistant-model-selector"] button')
+
+    async function pick(wrapper: ReturnType<typeof mountPanel>, label: string) {
+      await pill(wrapper).trigger('click')
+      const option = wrapper.findAll('[role="option"]').find(candidate => candidate.text().includes(label))!
+      await option.trigger('click')
+    }
+
+    // happy-dom has no confirm(): the panel's window.confirm is a stub, answered per test.
+    function stubConfirm(answer?: boolean) {
+      const confirm = vi.fn((_message?: string) => answer)
+      vi.stubGlobal('confirm', confirm)
+      return confirm
+    }
+
+    afterEach(() => {
+      vi.unstubAllGlobals()
+    })
+
+    it('hides the model selector with fewer than two models', () => {
+      modelsState.value.value = []
+      expect(mountPanel('resource-1').find('[data-testid="assistant-model-selector"]').exists()).toBe(false)
+
+      modelsState.value.value = [GPT]
+      expect(mountPanel('resource-1').find('[data-testid="assistant-model-selector"]').exists()).toBe(false)
+    })
+
+    it('shows the default model until one is chosen', () => {
+      modelsState.value.value = TWO_MODELS
+      expect(pill(mountPanel('resource-1')).text()).toContain('GPT-OSS-120B')
+
+      chatState.modelId.value = 'mistral-medium-3-5'
+      expect(pill(mountPanel('resource-1')).text()).toContain('Mistral Medium 3.5')
+    })
+
+    it('changes the model of an empty conversation without asking', async () => {
+      const confirm = stubConfirm()
+      modelsState.value.value = TWO_MODELS
+      const wrapper = mountPanel('resource-1')
+
+      await pick(wrapper, 'Mistral Medium 3.5')
+
+      expect(confirm).not.toHaveBeenCalled()
+      expect(selectModelMock).toHaveBeenCalledExactlyOnceWith('mistral-medium-3-5')
+    })
+
+    it('does nothing when the current model is picked again', async () => {
+      const confirm = stubConfirm()
+      chatState.messages.value = [assistantTextMessage('Bonjour')]
+      modelsState.value.value = TWO_MODELS
+      const wrapper = mountPanel('resource-1')
+
+      await pick(wrapper, 'GPT-OSS-120B')
+
+      expect(confirm).not.toHaveBeenCalled()
+      expect(selectModelMock).not.toHaveBeenCalled()
+    })
+
+    it('warns before a model change drops the conversation', async () => {
+      const confirm = stubConfirm(true)
+      chatState.messages.value = [assistantTextMessage('Bonjour')]
+      modelsState.value.value = TWO_MODELS
+      const wrapper = mountPanel('resource-1')
+
+      await pick(wrapper, 'Mistral Medium 3.5')
+
+      expect(confirm).toHaveBeenCalledTimes(1)
+      expect(confirm.mock.calls[0]![0]).toContain('nouvelle conversation')
+      expect(selectModelMock).toHaveBeenCalledExactlyOnceWith('mistral-medium-3-5')
+    })
+
+    it('keeps the conversation and the model when the change is cancelled', async () => {
+      stubConfirm(false)
+      chatState.messages.value = [assistantTextMessage('Bonjour')]
+      modelsState.value.value = TWO_MODELS
+      const wrapper = mountPanel('resource-1')
+
+      await pick(wrapper, 'Mistral Medium 3.5')
+
+      expect(selectModelMock).not.toHaveBeenCalled()
+      expect(newConversationMock).not.toHaveBeenCalled()
+      expect(pill(wrapper).text()).toContain('GPT-OSS-120B')
+    })
+
+    it('disables the model selector while responding', async () => {
+      modelsState.value.value = TWO_MODELS
+      chatState.status.value = 'streaming'
+      const wrapper = mountPanel('resource-1')
+
+      expect(pill(wrapper).attributes('disabled')).toBeDefined()
+      await pill(wrapper).trigger('click')
+      expect(wrapper.findAll('[role="option"]')).toHaveLength(0)
+    })
+
+    it('shows the token usage once a turn has ended', async () => {
+      const usageNode = (wrapper: ReturnType<typeof mountPanel>) => wrapper.find('[data-testid="assistant-token-usage"]')
+
+      chatState.usage.value = undefined
+      expect(usageNode(mountPanel('resource-1')).exists()).toBe(false)
+
+      chatState.usage.value = null
+      const unavailable = usageNode(mountPanel('resource-1'))
+      expect(unavailable.exists()).toBe(true)
+      expect(unavailable.find('button').attributes('aria-label')).toBe('Nombre de tokens utilisés indisponible')
+
+      chatState.usage.value = { inputTokens: 1200, outputTokens: 300, totalTokens: 1500 }
+      const shown = usageNode(mountPanel('resource-1'))
+      expect(shown.exists()).toBe(true)
+      expect(shown.find('button').attributes('aria-label')).toContain((1500).toLocaleString(locale))
+    })
+  })
+})
+
+describe('messageUsage', () => {
+  it('reads the usage of the message metadata', () => {
+    const usage = { inputTokens: 1, outputTokens: 2, totalTokens: 3 }
+
+    expect(messageUsage({ usage })).toEqual(usage)
+  })
+
+  it.each([
+    ['no metadata', undefined],
+    ['metadata without usage', {}],
+    ['a string count', { usage: { inputTokens: '1', outputTokens: 2, totalTokens: 3 } }],
+    ['a negative count', { usage: { inputTokens: -1, outputTokens: 2, totalTokens: 3 } }],
+    ['a fractional count', { usage: { inputTokens: 1.5, outputTokens: 2, totalTokens: 3 } }],
+    ['a missing count', { usage: { inputTokens: 1, outputTokens: 2 } }],
+  ])('is null for %s', (_name, metadata) => {
+    expect(messageUsage(metadata)).toBeNull()
+  })
+})
+
+describe('addUsage', () => {
+  it('starts from the usage given when there is no total yet', () => {
+    const usage = { inputTokens: 1, outputTokens: 2, totalTokens: 3 }
+
+    expect(addUsage(undefined, usage)).toEqual(usage)
+  })
+
+  it('adds each count', () => {
+    expect(addUsage({ inputTokens: 1, outputTokens: 2, totalTokens: 3 }, { inputTokens: 10, outputTokens: 20, totalTokens: 30 }))
+      .toEqual({ inputTokens: 11, outputTokens: 22, totalTokens: 33 })
+  })
+})
+
+describe('TokenUsage', () => {
+  const mountUsage = (usage: { inputTokens: number, outputTokens: number, totalTokens: number } | null) => mount(TokenUsage, {
+    props: { usage },
+  })
+
+  it('details the input, output and total tokens', () => {
+    const wrapper = mountUsage({ inputTokens: 1200, outputTokens: 300, totalTokens: 1500 })
+
+    const text = wrapper.text()
+    expect(text).toContain('Nombre de tokens utilisés')
+    expect(text).toContain('Entrée')
+    expect(text).toContain((1200).toLocaleString(locale))
+    expect(text).toContain('Réponse')
+    expect(text).toContain((300).toLocaleString(locale))
+    expect(text).toContain('Total')
+    expect(text).toContain((1500).toLocaleString(locale))
+    expect(wrapper.find('button').attributes('aria-label')).toBe(`${(1500).toLocaleString(locale)} tokens utilisés`)
+  })
+
+  it('says when the count is unavailable', () => {
+    const wrapper = mountUsage(null)
+
+    expect(wrapper.text()).toBe('Nombre de tokens utilisés indisponible')
+    expect(wrapper.find('button').attributes('aria-label')).toBe('Nombre de tokens utilisés indisponible')
+  })
+})
+
+describe('ModelSelector', () => {
+  const mounted: Array<ReturnType<typeof mount>> = []
+  const mountSelector = (props: { modelValue?: string | null, disabled?: boolean } = {}) => {
+    const wrapper = mount(ModelSelector, {
+      props: { models: [GPT, MISTRAL], modelValue: GPT.id, disabled: false, ...props },
+      attachTo: document.body,
+    })
+    mounted.push(wrapper)
+    return wrapper
+  }
+
+  afterEach(() => {
+    mounted.splice(0).forEach(wrapper => wrapper.unmount())
+  })
+
+  it('shows the active model and lists the others', async () => {
+    const wrapper = mountSelector()
+
+    await nextTick()
+    const button = wrapper.find('button')
+    // The accessible name is the label plus the active model, both read through aria-labelledby.
+    const name = button.attributes('aria-labelledby')!.split(' ').map(id => document.getElementById(id)!.textContent!.trim()).join(' ')
+    expect(name).toBe('Modèle de l’assistant GPT-OSS-120B')
+    await button.trigger('click')
+
+    const options = wrapper.findAll('[role="option"]')
+    expect(options).toHaveLength(2)
+    expect(options.find(option => option.text().includes('GPT-OSS-120B'))!.attributes('aria-selected')).toBe('true')
+    expect(options.find(option => option.text().includes('Mistral Medium 3.5'))!.attributes('aria-selected')).toBe('false')
+  })
+
+  it('emits the picked model', async () => {
+    const wrapper = mountSelector()
+
+    await wrapper.find('button').trigger('click')
+    await wrapper.findAll('[role="option"]').find(option => option.text().includes('Mistral Medium 3.5'))!.trigger('click')
+
+    expect(wrapper.emitted('update:modelValue')).toEqual([['mistral-medium-3-5']])
+  })
+
+  it('is disabled while the assistant answers', async () => {
+    const wrapper = mountSelector({ disabled: true })
+
+    const button = wrapper.find('button')
+    expect(button.attributes('disabled')).toBeDefined()
+    await button.trigger('click')
+    expect(wrapper.findAll('[role="option"]')).toHaveLength(0)
   })
 })
