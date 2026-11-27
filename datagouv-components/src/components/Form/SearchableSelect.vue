@@ -153,7 +153,7 @@
 </template>
 
 <script setup lang="ts" generic="T extends string | number | object, Multiple extends true | false">
-import { ref, computed, onMounted, useId, toValue, useTemplateRef } from 'vue'
+import { ref, computed, onMounted, useId, toValue, useTemplateRef, watch } from 'vue'
 import { useFloating, autoUpdate, autoPlacement } from '@floating-ui/vue'
 import { watchDebounced } from '@vueuse/core'
 import {
@@ -188,6 +188,12 @@ const props = withDefaults(defineProps<{
   options?: Array<T>
   suggest?: (query: string) => Promise<Array<T>>
   allowNewOption?: (query: string) => T
+  /**
+   * Reloads the suggestions whenever it changes, for callers whose `suggest` depends
+   * on something else than the query typed here, e.g. an option list derived from the
+   * search results. Compared by value, so a stable string keeps it to actual changes.
+   */
+  refreshKey?: string
 
   required?: boolean
   multiple: Multiple
@@ -272,6 +278,12 @@ onMounted(async () => {
 watchDebounced(query, async () => {
   await fetchSuggests()
 }, { debounce: 400, maxWait: 800 })
+
+// The suggestions may also change without the user typing here, so they are refetched
+// when `refreshKey` changes rather than only on mount and on a local query change.
+watch(() => props.refreshKey, async () => {
+  await fetchSuggests()
+})
 
 const filteredOptions = computed<Array<T>>(() => {
   if (props.suggest) {
