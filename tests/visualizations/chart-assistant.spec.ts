@@ -1,6 +1,6 @@
 import type { Page } from '@playwright/test'
 import { test, expect } from '../base'
-import { ASSISTANT_CHAT_PATH, assistantChatStream, createChartOutput, createChartStream, routeAssistantModels, routeAssistantStream } from '../assistantApi'
+import { ASSISTANT_CHAT_PATH, assistantChatStream, createChartOutput, createChartStream, routeAssistantModels, routeAssistantRefusal, routeAssistantStream } from '../assistantApi'
 import type { AssistantChatBody, AssistantUsage } from '../assistantApi'
 import { RESOURCE_ID, sendAssistantMessage, setupChart } from './fixtures'
 
@@ -128,12 +128,12 @@ test('the assistant answers with the chosen model, in a new conversation', async
 
 test('the assistant tells how many tokens the last request used', async ({ page }) => {
   // Under 1 000: no thousands separator (a narrow no-break space in French) in the expected numbers.
-  const usage = { inputTokens: 812, outputTokens: 96, totalTokens: 908 }
+  const usage = { inputTokens: 812, outputTokens: 96 }
   await routeAssistantModels(page)
   await routeAssistantStream(page, body => assistantChatStream(body, body => scriptedCreateStream(body, usage)))
   await setupChart(page)
   await page.getByRole('tab', { name: 'Assistant' }).click()
-  await expect(page.getByTestId('assistant-token-usage')).toHaveCount(0)
+  await expect(page.getByRole('button', { name: 'Tokens indisponibles' })).toBeVisible()
 
   await sendAssistantMessage(page, 'Logements par région, top 5')
   await expect(lastReply(page)).toContainText('Graphique créé.')
@@ -145,4 +145,88 @@ test('the assistant tells how many tokens the last request used', async ({ page 
   await expect(panel.getByText('Entrée', { exact: true }).locator('..')).toHaveText(/Entrée\s*812/)
   await expect(panel.getByText('Réponse', { exact: true }).locator('..')).toHaveText(/Réponse\s*96/)
   await expect(panel.getByText('Total', { exact: true }).locator('..')).toHaveText(/Total\s*908/)
+})
+
+test('the token panel stays inside a phone screen', async ({ page }) => {
+  await routeAssistantModels(page)
+  await routeAssistantStream(page, body => assistantChatStream(body, body => scriptedCreateStream(body, { inputTokens: 812, outputTokens: 96 })))
+  await setupChart(page)
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+  await sendAssistantMessage(page, 'Logements par région, top 5')
+  await expect(lastReply(page)).toContainText('Graphique créé.')
+  // Narrowed once the chart is set up: setupChart drives the wide layout.
+  await page.setViewportSize({ width: 390, height: 844 })
+
+  await page.getByRole('button', { name: '908 tokens utilisés' }).click()
+  const total = page.locator('#tooltips').getByText('Total', { exact: true }).locator('..')
+  await expect(total).toBeVisible()
+  const box = (await total.boundingBox())!
+  expect(box.x).toBeGreaterThanOrEqual(0)
+  expect(box.x + box.width).toBeLessThanOrEqual(390)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(390)
+})
+
+test('every model of a long list can be picked, even above the short composer without a resource', async ({ page }) => {
+  const models = [
+    { id: 'gpt-oss-120b', label: 'GPT-OSS-120B' },
+    { id: 'mistral-medium-3-5', label: 'Mistral Medium 3.5' },
+    { id: 'llama-4-scout', label: 'Llama 4 Scout' },
+    { id: 'qwen-3-coder', label: 'Qwen 3 Coder' },
+  ]
+  await routeAssistantModels(page, models)
+  await page.goto('/admin/beta/chart')
+  await page.getByRole('tab', { name: 'Assistant' }).click()
+
+  await page.getByRole('button', { name: /Modèle de l’assistant/ }).click()
+  const options = page.getByTestId('assistant-model-selector').getByRole('option')
+  await expect(options).toHaveCount(models.length)
+  for (const option of await options.all()) {
+    // The option, not a box clipping it, receives a click at its center.
+    const reachable = await option.evaluate((element) => {
+      const { x, y, width, height } = element.getBoundingClientRect()
+      return element.contains(document.elementFromPoint(x + width / 2, y + height / 2))
+    })
+    expect(reachable, await option.textContent() ?? '').toBe(true)
+  }
+})
+
+test.describe('when udata refuses an unknown model', () => {
+  test.use({ allowedConsoleMessages: ['the server responded with a status of 400'] })
+
+  test('the default model takes its place', async ({ page }) => {
+    await routeAssistantModels(page)
+    await setupChart(page)
+    await page.getByRole('tab', { name: 'Assistant' }).click()
+    const selector = page.getByRole('button', { name: /Modèle de l’assistant/ })
+    await selector.click()
+    await page.getByRole('option', { name: 'Mistral Medium 3.5' }).click()
+    await expect(selector).toContainText('Mistral Medium 3.5')
+
+    // Registered last, so they answer first: the model is gone from udata's list.
+    await routeAssistantModels(page, [{ id: 'gpt-oss-120b', label: 'GPT-OSS-120B' }, { id: 'llama-4-scout', label: 'Llama 4 Scout' }])
+    await routeAssistantRefusal(page, 400, 'Modèle de l’assistant inconnu.')
+    await page.getByLabel('Votre demande').fill('Logements par région, top 5')
+    await page.getByRole('button', { name: 'Envoyer' }).click()
+
+    await expect(page.getByTestId('assistant-panel').getByRole('alert')).toHaveText('Modèle de l’assistant inconnu.')
+    await expect(selector).toContainText('GPT-OSS-120B')
+    await expect(page.getByLabel('Votre demande')).toHaveValue('Logements par région, top 5')
+  })
+})
+
+test.describe('when udata closes the conversation', () => {
+  test.use({ allowedConsoleMessages: ['the server responded with a status of 409'] })
+
+  test('its message shows, with a way out', async ({ page }) => {
+    await routeAssistantRefusal(page, 409, 'Cette conversation utilise un modèle qui n’est plus proposé. Commencez-en une nouvelle.')
+    await setupChart(page)
+    await page.getByRole('tab', { name: 'Assistant' }).click()
+    await page.getByLabel('Votre demande').fill('Logements par région, top 5')
+    await page.getByRole('button', { name: 'Envoyer' }).click()
+
+    const alert = page.getByTestId('assistant-panel').getByRole('alert')
+    await expect(alert).toContainText('Cette conversation utilise un modèle qui n’est plus proposé. Commencez-en une nouvelle.')
+    await expect(alert.getByRole('button', { name: 'Commencer une nouvelle conversation' })).toBeVisible()
+    await expect(page.getByLabel('Votre demande')).toBeFocused()
+  })
 })

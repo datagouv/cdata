@@ -2,16 +2,18 @@
   <Toggletip
     data-testid="assistant-token-usage"
     no-margin
+    placement="top-start"
     button-class="border-transparent -outline-offset-2 inline-flex h-6 w-6 items-center justify-center rounded-md hover:bg-gray-some"
     :button-props="{ 'aria-label': buttonLabel }"
   >
     <RiDashboard2Line
       class="size-4"
+      :class="total !== null ? 'text-new-gray-medium' : 'text-gray-medium'"
       aria-hidden="true"
     />
     <template #toggletip>
       <div class="p-2 text-[11px] leading-4 text-new-gray-medium">
-        <template v-if="usage">
+        <template v-if="usage && total !== null">
           <p class="m-0 mb-1 text-[11px] leading-4 font-medium text-new-gray-dark">
             {{ t('Nombre de tokens utilisés') }}
           </p>
@@ -25,7 +27,7 @@
           </div>
           <div class="mt-2 flex items-center justify-between gap-4 border-t border-gray-default pt-1 font-medium text-new-gray-dark">
             <span>{{ t('Total') }}</span>
-            <span class="tabular-nums">{{ usage.totalTokens.toLocaleString(locale) }}</span>
+            <span class="tabular-nums">{{ total.toLocaleString(locale) }}</span>
           </div>
         </template>
         <p
@@ -43,16 +45,18 @@
 import { RiDashboard2Line } from '@remixicon/vue'
 import { computed } from 'vue'
 import { Toggletip, useTranslation } from '@datagouv/components-next'
-import type { TokenUsage } from '~/utils/assistant'
+import type { AssistantTokenUsage } from '~/utils/assistant'
 
 const props = defineProps<{
-  /** null when the turn gave no usable count. */
-  usage: TokenUsage | null
+  /** null when the count is unknown. */
+  usage: AssistantTokenUsage | null
 }>()
 
 const { t, locale } = useTranslation()
 
-const buttonLabel = computed(() => props.usage
-  ? t('{n} tokens utilisés', { n: props.usage.totalTokens.toLocaleString(locale) })
-  : t('Nombre de tokens utilisés indisponible'))
+const total = computed(() => props.usage ? props.usage.inputTokens + props.usage.outputTokens : null)
+
+const buttonLabel = computed(() => total.value !== null
+  ? t('{n} tokens utilisés', { n: total.value.toLocaleString(locale) })
+  : t('Tokens indisponibles'))
 </script>

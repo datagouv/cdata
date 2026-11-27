@@ -149,7 +149,7 @@
       @submit.prevent="submit"
     >
       <div
-        class="overflow-hidden rounded-md border border-gray-default bg-white transition-[border-color,box-shadow] focus-within:border-new-primary focus-within:shadow-[0_0_0_2px_var(--color-blue-light)]"
+        class="rounded-md border border-gray-default bg-white transition-[border-color,box-shadow] focus-within:border-new-primary focus-within:shadow-[0_0_0_2px_var(--color-blue-light)]"
       >
         <div
           v-if="resource"
@@ -197,13 +197,22 @@
             :maxlength="MAX_INPUT_LENGTH"
             class="min-h-0 w-full flex-1 resize-none border-0 bg-transparent text-[11px] leading-5 text-new-gray-dark outline-none placeholder:text-gray-medium"
             :aria-label="$t('Votre demande')"
-            :aria-describedby="input.length >= COUNTER_THRESHOLD ? 'assistant-input-counter' : undefined"
+            :aria-describedby="input.length >= COUNTER_THRESHOLD ? counterId : undefined"
             :disabled="waiting || busy"
             :placeholder="$t('Décrivez le graphique souhaité…')"
             @keydown.enter="handleEnter"
           />
           <footer class="flex items-center gap-2">
             <div class="mr-auto flex min-w-0 items-center gap-1">
+              <!-- Read with the field it describes. -->
+              <span
+                v-if="input.length >= COUNTER_THRESHOLD"
+                :id="counterId"
+                data-testid="assistant-input-counter"
+                class="mr-1 text-[11px] tabular-nums"
+                :class="input.length >= MAX_INPUT_LENGTH ? 'text-new-error' : 'text-new-gray-medium'"
+              >{{ input.length.toLocaleString(locale) }} / {{ MAX_INPUT_LENGTH.toLocaleString(locale) }}<span class="sr-only"> {{ $t('caractères') }}</span></span>
+              <TokenUsage :usage />
               <ModelSelector
                 v-if="models.length > 1"
                 :models
@@ -211,18 +220,6 @@
                 :disabled="busy"
                 @update:model-value="changeModel"
               />
-              <!-- After the selector, so that it does not move when the usage appears. -->
-              <TokenUsage
-                v-if="usage !== undefined"
-                :usage
-              />
-              <!-- Read with the field it describes. -->
-              <span
-                v-if="input.length >= COUNTER_THRESHOLD"
-                id="assistant-input-counter"
-                class="text-[11px] tabular-nums"
-                :class="input.length >= MAX_INPUT_LENGTH ? 'text-new-error' : 'text-new-gray-medium'"
-              >{{ input.length.toLocaleString(locale) }} / {{ MAX_INPUT_LENGTH.toLocaleString(locale) }}<span class="sr-only"> {{ $t('caractères') }}</span></span>
             </div>
             <!-- RGAA 7.5: announced when a threshold is first crossed, not on every keystroke. -->
             <span
@@ -271,7 +268,7 @@
 
 <script setup lang="ts">
 import { RiAddLine, RiArrowUpLine, RiFocus3Line, RiStopMiniLine, RiTableLine } from '@remixicon/vue'
-import { computed, nextTick, ref, toRef, watch } from 'vue'
+import { computed, nextTick, ref, toRef, useId, watch } from 'vue'
 import { MarkdownViewer, Tag, useTranslation, type ColumnDefinition } from '@datagouv/components-next'
 import AssistantTimeline from './AssistantTimeline.vue'
 import ModelSelector from './ModelSelector.vue'
@@ -281,7 +278,7 @@ import ToolsBlock from './ToolsBlock.vue'
 import { useAssistantChat } from './useAssistantChat'
 import { useAssistantModels } from './useAssistantModels'
 import { chartToolResults, isNearChatBottom } from '~/utils/assistant'
-import { useAssistantErrorMessage } from './useAssistantErrorMessage'
+import { errorStatusCode, useAssistantErrorMessage } from './useAssistantErrorMessage'
 import { useMessageDisplay, type ChatMessageDisplay } from './useMessageDisplay'
 import { useStarterQuestions } from './useStarterQuestions'
 import { useTurnTimeline, type TurnTimeline } from './useTurnTimeline'
@@ -300,8 +297,8 @@ const emit = defineEmits<{
 }>()
 
 const config = useRuntimeConfig()
-const { error, messages, modelId, newConversation, selectModel, sendMessage, status, stop, usage } = useAssistantChat(toRef(props, 'resourceId'), () => props.visualization)
-const { models } = useAssistantModels()
+const { error, messages, modelId, newConversation, resetModel, selectModel, sendMessage, status, stop, usage } = useAssistantChat(toRef(props, 'resourceId'), () => props.visualization)
+const { models, reload: reloadModels } = useAssistantModels()
 
 // Bound, not literal: the asset stays a plain public URL instead of being inlined by the build.
 const ASSISTANT_LOGO = '/nuxt_images/assistant/assistant-logo.svg'
@@ -311,6 +308,7 @@ const MAX_INPUT_LENGTH = 4000
 const COUNTER_THRESHOLD = 3600
 
 const input = ref('')
+const counterId = useId()
 // 0 below the counter threshold, 1 past it, 2 at the limit.
 const lengthLevel = computed(() => input.value.length >= MAX_INPUT_LENGTH ? 2 : input.value.length >= COUNTER_THRESHOLD ? 1 : 0)
 // Changed only when a higher level is reached: editing at the limit would otherwise
@@ -387,7 +385,7 @@ const waiting = computed(() => !props.resourceId)
 const busy = computed(() => status.value === 'submitted' || status.value === 'streaming')
 const assistantErrorMessage = useAssistantErrorMessage()
 const errorMessage = computed(() => (error.value ? assistantErrorMessage(error.value) : null))
-const conversationClosed = computed(() => (error.value as { statusCode?: unknown } | undefined)?.statusCode === 409)
+const conversationClosed = computed(() => errorStatusCode(error.value) === 409)
 // The message the turn is being written in, once the SDK has created it.
 const liveMessage = computed(() => {
   const last = messages.value.at(-1)
@@ -419,8 +417,16 @@ async function startNewConversation() {
   textareaRef.value?.focus()
 }
 
-// The server runs its default model while none is chosen.
-const currentModelId = computed(() => modelId.value ?? models.value.find(model => model.default)?.id ?? null)
+// The server runs its default model, the first of the list, while none is chosen.
+const currentModelId = computed(() => modelId.value ?? models.value[0]?.id ?? null)
+
+// udata refuses a model it no longer offers with a 400: the selector must not keep it.
+watch(error, async (value) => {
+  const chosen = modelId.value
+  if (errorStatusCode(value) !== 400 || chosen === null) return
+  await reloadModels()
+  if (modelId.value === chosen && !models.value.some(model => model.id === chosen)) resetModel()
+})
 
 // Switching starts a new conversation (the stored history never mixes two models): ask before dropping one.
 function changeModel(id: string) {
@@ -440,6 +446,7 @@ function submit() {
   const text = input.value.trim()
   if (!text || waiting.value || busy.value) return
   lastSentText = text
+  refocusOnSettle = true
   sendMessage({ text })
   input.value = ''
 }
@@ -447,6 +454,8 @@ function submit() {
 // Text of the in-flight request, restored in the composer if it fails so a
 // network error never loses the user's message.
 let lastSentText: string | null = null
+// Not tied to the status alone: clearError() also turns 'error' into 'ready', and the focus must stay where the user acted.
+let refocusOnSettle = false
 
 // udata does not keep a failed or stopped turn: the screen must not show it either.
 function dropLastTurn(text: string) {
@@ -469,6 +478,8 @@ watch(status, async (value) => {
   if (value !== 'ready' && value !== 'error') return
   if (value === 'error' && lastSentText !== null) dropLastTurn(lastSentText)
   lastSentText = null
+  if (!refocusOnSettle) return
+  refocusOnSettle = false
   await nextTick()
   textareaRef.value?.focus()
 })

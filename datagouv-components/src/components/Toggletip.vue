@@ -48,18 +48,20 @@
 </template>
 
 <script setup lang="ts">
-import { autoPlacement, autoUpdate, offset, shift, useFloating } from '@floating-ui/vue'
+import { autoPlacement, autoUpdate, flip, offset, shift, useFloating, type Placement } from '@floating-ui/vue'
 import { Popover, PopoverButton, PopoverPanel } from '@headlessui/vue'
-import { nextTick, useTemplateRef } from 'vue'
+import { computed, nextTick, toRef, useTemplateRef } from 'vue'
 import { RiInformationLine } from '@remixicon/vue'
 import ClientOnly from './ClientOnly.vue'
 import ValueWatcher from './ValueWatcher.vue'
 
-withDefaults(defineProps<{
+const props = withDefaults(defineProps<{
   buttonProps?: object
   buttonClass?: string
   noMargin?: boolean
   styledButton?: boolean
+  /** Kept unless it lacks room, instead of the side with the most room. */
+  placement?: Placement
 }>(), {
   styledButton: true,
 })
@@ -72,14 +74,17 @@ const popoverRef = useTemplateRef<InstanceType<typeof Popover>>('popover')
 const panelRef = useTemplateRef<InstanceType<typeof PopoverPanel>>('panel')
 
 const { floatingStyles, update } = useFloating(popoverRef, panelRef, {
-  middleware: [
+  placement: toRef(props, 'placement'),
+  middleware: computed(() => [
     offset(8),
-    autoPlacement({
-      alignment: 'end',
-      crossAxis: true,
-    }),
+    props.placement
+      ? flip()
+      : autoPlacement({
+          alignment: 'end',
+          crossAxis: true,
+        }),
     shift({ padding: 16 }),
-  ],
+  ]),
   whileElementsMounted: autoUpdate,
 })
 

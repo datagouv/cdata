@@ -23,6 +23,7 @@ type TransportInit = {
 }
 
 type ChatInit = {
+  onError: (error: Error) => void
   onFinish: (event: { message: { metadata?: unknown }, isAbort?: boolean, isError?: boolean }) => void
 }
 
@@ -30,8 +31,9 @@ function capturedInit() {
   return vi.mocked(useChat).mock.calls[0]![0] as unknown as ChatInit
 }
 
-const USAGE = { inputTokens: 900, outputTokens: 100, totalTokens: 1000 }
-const finished = { message: { metadata: { usage: USAGE } }, isAbort: false, isError: false }
+const USAGE = { inputTokens: 900, outputTokens: 100 }
+// The metadata of udata's end-of-turn chunk: pydantic-ai's own key next to the usage.
+const finished = { message: { metadata: { pydantic_ai: { timestamp: '2026-11-27T09:00:00Z' }, usage: USAGE } }, isAbort: false, isError: false }
 
 function capturedTransport() {
   expect(useChat).toHaveBeenCalledOnce()
@@ -184,26 +186,31 @@ describe('useAssistantChat wire contract', () => {
     expect(await sentId()).not.toBe(first)
   })
 
+  it('goes back to the default model without starting a new conversation', async () => {
+    const chat = useAssistantChat(ref(null), () => null)
+    const transport = capturedTransport()
+    chat.selectModel('mistral-medium-3-5')
+    chat.messages.value = [...MESSAGES] as typeof chat.messages.value
+    vi.mocked(chat.stop).mockClear()
+
+    chat.resetModel()
+
+    expect(chat.modelId.value).toBeNull()
+    expect(chat.messages.value).toEqual(MESSAGES)
+    expect(chat.stop).not.toHaveBeenCalled()
+    expect((await transport.prepareSendMessagesRequest({ messages: MESSAGES, id: 'c', trigger: 'submit-message' as const, messageId: undefined })).body).toMatchObject({ model: null })
+  })
+
   describe('usage', () => {
     it('records the usage of the finished turn', () => {
       const chat = useAssistantChat(ref(null), () => null)
 
       chat.sendMessage({ text: 'Q' })
       expect(vi.mocked(useChat).mock.results[0]!.value.sendMessage).toHaveBeenCalledWith({ text: 'Q' })
-      expect(chat.usage.value).toBeUndefined()
+      expect(chat.usage.value).toBeNull()
 
       capturedInit().onFinish(finished)
       expect(chat.usage.value).toEqual(USAGE)
-    })
-
-    it('adds up the finished streams of one question', () => {
-      const chat = useAssistantChat(ref(null), () => null)
-
-      chat.sendMessage({ text: 'Q' })
-      capturedInit().onFinish(finished)
-      capturedInit().onFinish(finished)
-
-      expect(chat.usage.value).toEqual({ inputTokens: 1800, outputTokens: 200, totalTokens: 2000 })
     })
 
     it('resets the usage on a new question', () => {
@@ -213,41 +220,46 @@ describe('useAssistantChat wire contract', () => {
 
       chat.sendMessage({ text: 'Q2' })
 
-      expect(chat.usage.value).toBeUndefined()
+      expect(chat.usage.value).toBeNull()
     })
 
     it.each([
-      ['an error', { message: { metadata: { usage: USAGE } }, isError: true }],
+      ['an error of the stream', { message: { metadata: { usage: USAGE } }, isError: true }],
       ['an abort', { message: { metadata: { usage: USAGE } }, isAbort: true }],
-      ['a reply without usage', { message: { metadata: { pydantic_ai: {} } }, isAbort: false, isError: false }],
+      ['a reply without usage', { message: { metadata: { pydantic_ai: {}, usage: null } }, isAbort: false, isError: false }],
     ])('marks the usage unavailable after %s', (_name, event) => {
       const chat = useAssistantChat(ref(null), () => null)
       chat.sendMessage({ text: 'Q' })
+      capturedInit().onFinish(finished)
+      chat.sendMessage({ text: 'Q2' })
 
       capturedInit().onFinish(event)
-      expect(chat.usage.value).toBeNull()
 
-      // A later good stream of the same question cannot turn a partial total into a total.
-      capturedInit().onFinish(finished)
       expect(chat.usage.value).toBeNull()
+    })
+
+    it('keeps the usage of the previous turn when udata refuses the request', () => {
+      const chat = useAssistantChat(ref(null), () => null)
+      chat.sendMessage({ text: 'Q' })
+      capturedInit().onFinish(finished)
+      chat.sendMessage({ text: 'Q2' })
+
+      capturedInit().onError(Object.assign(new Error('{"message": "Modèle inconnu."}'), { statusCode: 400 }))
+      capturedInit().onFinish({ message: { metadata: undefined }, isError: true })
+
+      expect(chat.usage.value).toEqual(USAGE)
     })
 
     it('ignores the finish of a turn cut by a new conversation', () => {
       const chat = useAssistantChat(ref(null), () => null)
       chat.sendMessage({ text: 'Q' })
+      capturedInit().onFinish(finished)
+      chat.sendMessage({ text: 'Q2' })
 
       chat.newConversation()
-      capturedInit().onFinish({ message: { metadata: undefined }, isAbort: true })
-
-      expect(chat.usage.value).toBeUndefined()
-    })
-
-    it('ignores a finish received before any question', () => {
-      const chat = useAssistantChat(ref(null), () => null)
-
       capturedInit().onFinish(finished)
 
-      expect(chat.usage.value).toBeUndefined()
+      expect(chat.usage.value).toBeNull()
     })
 
     it('forgets the usage when the conversation is renewed', () => {
@@ -257,15 +269,15 @@ describe('useAssistantChat wire contract', () => {
 
       chat.newConversation()
 
-      expect(chat.usage.value).toBeUndefined()
+      expect(chat.usage.value).toBeNull()
     })
   })
 })
 
 describe('useAssistantModels', () => {
   const MODELS = [
-    { id: 'gpt-oss-120b', label: 'GPT-OSS-120B', default: true },
-    { id: 'mistral-medium-3-5', label: 'Mistral Medium 3.5', default: false },
+    { id: 'gpt-oss-120b', label: 'GPT-OSS-120B' },
+    { id: 'mistral-medium-3-5', label: 'Mistral Medium 3.5' },
   ]
 
   beforeEach(() => {
@@ -296,6 +308,29 @@ describe('useAssistantModels', () => {
     await flushPromises()
 
     expect(models.value).toEqual([])
+  })
+
+  it('reloads the list on demand', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(MODELS).mockResolvedValueOnce([MODELS[0]])
+    vi.stubGlobal('$fetch', fetchMock)
+    const { models, reload } = useAssistantModels()
+    await flushPromises()
+
+    await reload()
+
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(models.value).toEqual([MODELS[0]])
+  })
+
+  it('keeps the current list when a reload fails', async () => {
+    const fetchMock = vi.fn().mockResolvedValueOnce(MODELS).mockRejectedValueOnce(new Error('503'))
+    vi.stubGlobal('$fetch', fetchMock)
+    const { models, reload } = useAssistantModels()
+    await flushPromises()
+
+    await reload()
+
+    expect(models.value).toEqual(MODELS)
   })
 
   it('drops malformed entries', async () => {

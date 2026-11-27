@@ -4,10 +4,12 @@ import { randomUUID } from 'node:crypto'
 export const ASSISTANT_CHAT_PATH = '/api/1/assistant/chat/'
 const ASSISTANT_MODELS_PATH = '/api/1/assistant/models/'
 
+export type AssistantModelEntry = { id: string, label: string }
+
 /** What `GET /assistant/models/` answers: the first model is the default one. */
-const ASSISTANT_MODELS = [
-  { id: 'gpt-oss-120b', label: 'GPT-OSS-120B', default: true },
-  { id: 'mistral-medium-3-5', label: 'Mistral Medium 3.5', default: false },
+const ASSISTANT_MODELS: Array<AssistantModelEntry> = [
+  { id: 'gpt-oss-120b', label: 'GPT-OSS-120B' },
+  { id: 'mistral-medium-3-5', label: 'Mistral Medium 3.5' },
 ]
 
 /** Fields of the chat request body the fake assistant reads. */
@@ -21,7 +23,7 @@ export type AssistantChatBody = {
 type Chunk = Record<string, unknown>
 
 /** Tokens spent by a turn, as the `usage` of the `message-metadata` chunk. */
-export type AssistantUsage = { inputTokens: number, outputTokens: number, totalTokens: number }
+export type AssistantUsage = { inputTokens: number, outputTokens: number }
 
 /** `create_chart` output: departments by max `n_cum_dose1`, top 5. */
 export function createChartOutput(resourceId: string) {
@@ -60,8 +62,9 @@ function toolCallChunks(toolName: string, input: unknown, output: unknown, text:
     { type: 'text-start', id: textId },
     { type: 'text-delta', id: textId, delta: text },
     { type: 'text-end', id: textId },
+    // As udata sends it: pydantic-ai's end-of-run chunk, before the last step closes, with a null usage when unknown.
+    { type: 'message-metadata', messageMetadata: { pydantic_ai: { timestamp: new Date().toISOString() }, usage: usage ?? null } },
     { type: 'finish-step' },
-    ...(usage ? [{ type: 'message-metadata', messageMetadata: { usage } }] : []),
     { type: 'finish', finishReason: 'stop' },
   ]
 }
@@ -135,14 +138,26 @@ export async function routeAssistantStream(page: Page, stream: string | ((body: 
   })
 }
 
-/** Answers the models list of `page` with `ASSISTANT_MODELS`. */
-export async function routeAssistantModels(page: Page) {
+/** Refuses the chat request of `page` as udata does, with a `status` and its localized `message`. */
+export async function routeAssistantRefusal(page: Page, status: number, message: string) {
+  await page.route(url => url.pathname === ASSISTANT_CHAT_PATH, async (route) => {
+    const cors = corsHeaders(route, 'POST, OPTIONS')
+    if (route.request().method() === 'OPTIONS') {
+      await route.fulfill({ status: 204, headers: cors })
+      return
+    }
+    await route.fulfill({ status, headers: cors, json: { message, status } })
+  })
+}
+
+/** Answers the models list of `page` with `models`. */
+export async function routeAssistantModels(page: Page, models: Array<AssistantModelEntry> = ASSISTANT_MODELS) {
   await page.route(url => url.pathname === ASSISTANT_MODELS_PATH, async (route) => {
     const cors = corsHeaders(route, 'GET, OPTIONS')
     if (route.request().method() === 'OPTIONS') {
       await route.fulfill({ status: 204, headers: cors })
       return
     }
-    await route.fulfill({ status: 200, headers: cors, json: ASSISTANT_MODELS })
+    await route.fulfill({ status: 200, headers: cors, json: models })
   })
 }

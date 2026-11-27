@@ -13,7 +13,7 @@ import ToolTrace from '~/components/Assistant/ToolTrace.vue'
 import AssistantTimeline from '~/components/Assistant/AssistantTimeline.vue'
 import ReasoningBlock from '~/components/Assistant/ReasoningBlock.vue'
 import ToolsBlock from '~/components/Assistant/ToolsBlock.vue'
-import { addUsage, chartToolResults, isNearChatBottom, messageUsage, toAssistantVisualization } from '~/utils/assistant'
+import { chartToolResults, isNearChatBottom, messageUsage, toAssistantVisualization } from '~/utils/assistant'
 import { useAssistantErrorMessage } from '~/components/Assistant/useAssistantErrorMessage'
 import { useMessageDisplay, type ToolTrace as ToolTraceModel } from '~/components/Assistant/useMessageDisplay'
 import { useStarterQuestions } from '~/components/Assistant/useStarterQuestions'
@@ -25,6 +25,8 @@ const sendMessageMock = vi.hoisted(() => vi.fn())
 const stopMock = vi.hoisted(() => vi.fn())
 const newConversationMock = vi.hoisted(() => vi.fn())
 const selectModelMock = vi.hoisted(() => vi.fn())
+const resetModelMock = vi.hoisted(() => vi.fn())
+const reloadModelsMock = vi.hoisted(() => vi.fn())
 
 // The real builder, spied on to check which messages are rebuilt on each chunk.
 const buildSpy = vi.hoisted(() => vi.fn())
@@ -49,10 +51,10 @@ const chatState = vi.hoisted(() => ({} as {
   status: import('vue').Ref<string>
   error: import('vue').Ref<unknown>
   modelId: import('vue').Ref<string | null>
-  usage: import('vue').Ref<{ inputTokens: number, outputTokens: number, totalTokens: number } | null | undefined>
+  usage: import('vue').Ref<{ inputTokens: number, outputTokens: number } | null>
 }))
 const modelsState = vi.hoisted(() => ({} as {
-  value: import('vue').ShallowRef<Array<{ id: string, label: string, default: boolean }>>
+  value: import('vue').ShallowRef<Array<{ id: string, label: string }>>
 }))
 
 vi.mock('~/components/Assistant/useAssistantChat', async () => {
@@ -62,16 +64,16 @@ vi.mock('~/components/Assistant/useAssistantChat', async () => {
   chatState.status = ref('ready')
   chatState.error = ref(null)
   chatState.modelId = ref(null)
-  chatState.usage = ref(undefined)
+  chatState.usage = ref(null)
   return {
-    useAssistantChat: () => ({ ...chatState, sendMessage: sendMessageMock, stop: stopMock, newConversation: newConversationMock, selectModel: selectModelMock }),
+    useAssistantChat: () => ({ ...chatState, sendMessage: sendMessageMock, stop: stopMock, newConversation: newConversationMock, selectModel: selectModelMock, resetModel: resetModelMock }),
   }
 })
 
 vi.mock('~/components/Assistant/useAssistantModels', async () => {
   const { shallowRef } = await import('vue')
   modelsState.value = shallowRef([])
-  return { useAssistantModels: () => ({ models: modelsState.value }) }
+  return { useAssistantModels: () => ({ models: modelsState.value, reload: reloadModelsMock }) }
 })
 
 // The real Toggletip teleports its panel to #tooltips and needs the Nuxt injections.
@@ -80,11 +82,11 @@ const ToggletipStub = {
   template: '<div><button v-bind="buttonProps"><slot /></button><slot name="toggletip" :close="() => {}" /></div>',
 }
 
-// File-wide: panels mounted by earlier tests are never unmounted and re-render when a later test changes the shared state.
+// File-wide rather than per mount: the TokenUsage tests mount the real component too, not only the panels.
 config.global.stubs = { Toggletip: ToggletipStub }
 
-const GPT = { id: 'gpt-oss-120b', label: 'GPT-OSS-120B', default: true }
-const MISTRAL = { id: 'mistral-medium-3-5', label: 'Mistral Medium 3.5', default: false }
+const GPT = { id: 'gpt-oss-120b', label: 'GPT-OSS-120B' }
+const MISTRAL = { id: 'mistral-medium-3-5', label: 'Mistral Medium 3.5' }
 
 function assistantTextMessage(text: string) {
   return {
@@ -98,19 +100,24 @@ type PanelResource = { title: string, format: string | null }
 
 const GUIDE_URL = 'https://guides.example/assistant-mistakes'
 
+// Unmounted after each test: a panel left mounted keeps watching the shared chat state.
+const mountedPanels: Array<ReturnType<typeof mount>> = []
+
 function mountPanel(
   resourceId: string | null,
   visualization: AssistantVisualization | null = null,
   { columns = [], resource = resourceId ? { title: 'Table parquet A', format: 'parquet' } : null }: { columns?: Array<ColumnDefinition>, resource?: PanelResource | null } = {},
 ) {
   vi.stubGlobal('useRuntimeConfig', () => ({ public: { guidesAssistantMistakes: GUIDE_URL } }))
-  return mount(ChatPanel, {
+  const wrapper = mount(ChatPanel, {
     props: { resourceId, visualization, columns, resource },
     attachTo: document.body,
     global: {
       mocks: { $t: (key: string) => key },
     },
   })
+  mountedPanels.push(wrapper)
+  return wrapper
 }
 
 const CHART = {
@@ -466,6 +473,28 @@ describe('useAssistantErrorMessage', () => {
     expect(errorMessage(new TypeError('fetch failed'))).toContain('Une erreur est survenue')
   })
 
+  const refused = (statusCode: number, responseBody: string) => Object.assign(new Error(responseBody), { name: 'AI_APICallError', statusCode, responseBody })
+
+  it('shows udata\'s localized message for a 4xx that has one', () => {
+    expect(errorMessage(refused(400, '{"message": "Modèle de l’assistant inconnu."}'))).toBe('Modèle de l’assistant inconnu.')
+    expect(errorMessage(refused(409, '{"message": "Cette conversation utilise un autre modèle. Commencez-en une nouvelle."}')))
+      .toBe('Cette conversation utilise un autre modèle. Commencez-en une nouvelle.')
+  })
+
+  it('keeps its own text where udata answers werkzeug\'s English default', () => {
+    expect(errorMessage(refused(401, '{"message": "The server could not verify that you are authorized."}'))).toContain('Veuillez vous reconnecter')
+    expect(errorMessage(refused(413, '{"message": "The data value transmitted exceeds the capacity limit."}'))).toBe('Votre message est trop long.')
+  })
+
+  it.each([
+    ['an HTML page', '<html><body>Bad Request</body></html>'],
+    ['JSON without a message', '{"status": 409}'],
+    ['an empty body', ''],
+  ])('falls back to its own text for a 4xx body that is %s', (_name, body) => {
+    expect(errorMessage(refused(409, body))).toBe('Cette conversation ne peut pas continuer.')
+    expect(errorMessage(refused(400, body))).toContain('Une erreur est survenue')
+  })
+
   // useChat turns an error event into `new Error(errorText)`.
   it('shows the localized text of an error event of the stream', () => {
     const text = 'Le service d’IA reçoit trop de demandes. Réessayez dans quelques instants.'
@@ -758,11 +787,12 @@ describe('ChatPanel', () => {
     chatState.status.value = 'ready'
     chatState.error.value = null
     chatState.modelId.value = null
-    chatState.usage.value = undefined
+    chatState.usage.value = null
     modelsState.value.value = []
   })
 
   afterEach(() => {
+    mountedPanels.splice(0).forEach(wrapper => wrapper.unmount())
     vi.clearAllMocks()
   })
 
@@ -950,8 +980,10 @@ describe('ChatPanel', () => {
 
     expect(textarea.attributes('aria-describedby')).toBeUndefined()
     await textarea.setValue('a'.repeat(3601))
-    expect(textarea.attributes('aria-describedby')).toBe('assistant-input-counter')
-    expect(wrapper.find('#assistant-input-counter').text()).toContain('caractères')
+    const counter = wrapper.find('[data-testid="assistant-input-counter"]')
+    expect(counter.attributes('id')).toBeTruthy()
+    expect(textarea.attributes('aria-describedby')).toBe(counter.attributes('id'))
+    expect(counter.text()).toContain('caractères')
     expect(notice()).toBe(`Votre demande approche de la limite de ${max} caractères.`)
 
     await textarea.setValue('a'.repeat(4000))
@@ -1581,7 +1613,7 @@ describe('ChatPanel', () => {
 
   describe('model selector and token usage', () => {
     const TWO_MODELS = [GPT, MISTRAL]
-    const pill = (wrapper: ReturnType<typeof mountPanel>) => wrapper.find('[data-testid="assistant-model-selector"] button')
+    const pill = (wrapper: ReturnType<typeof mountPanel>) => wrapper.find<HTMLButtonElement>('[data-testid="assistant-model-selector"] button')
 
     async function pick(wrapper: ReturnType<typeof mountPanel>, label: string) {
       await pill(wrapper).trigger('click')
@@ -1675,64 +1707,126 @@ describe('ChatPanel', () => {
       expect(wrapper.findAll('[role="option"]')).toHaveLength(0)
     })
 
-    it('shows the token usage once a turn has ended', async () => {
-      const usageNode = (wrapper: ReturnType<typeof mountPanel>) => wrapper.find('[data-testid="assistant-token-usage"]')
-
-      chatState.usage.value = undefined
-      expect(usageNode(mountPanel('resource-1')).exists()).toBe(false)
+    it('always shows the token usage, unavailable until a turn gives a count', () => {
+      const usageButton = (wrapper: ReturnType<typeof mountPanel>) => wrapper.find('[data-testid="assistant-token-usage"] button')
 
       chatState.usage.value = null
-      const unavailable = usageNode(mountPanel('resource-1'))
-      expect(unavailable.exists()).toBe(true)
-      expect(unavailable.find('button').attributes('aria-label')).toBe('Nombre de tokens utilisés indisponible')
+      expect(usageButton(mountPanel('resource-1')).attributes('aria-label')).toBe('Tokens indisponibles')
 
-      chatState.usage.value = { inputTokens: 1200, outputTokens: 300, totalTokens: 1500 }
-      const shown = usageNode(mountPanel('resource-1'))
-      expect(shown.exists()).toBe(true)
-      expect(shown.find('button').attributes('aria-label')).toContain((1500).toLocaleString(locale))
+      chatState.usage.value = { inputTokens: 1200, outputTokens: 300 }
+      expect(usageButton(mountPanel('resource-1')).attributes('aria-label')).toBe(`${(1500).toLocaleString(locale)} tokens utilisés`)
+    })
+
+    it('keeps the token usage enabled while responding', () => {
+      chatState.status.value = 'streaming'
+
+      expect(mountPanel('resource-1').find('[data-testid="assistant-token-usage"] button').attributes('disabled')).toBeUndefined()
+    })
+
+    it('lays out the character counter, then the token usage, then the model', async () => {
+      modelsState.value.value = TWO_MODELS
+      const wrapper = mountPanel('resource-1')
+      await wrapper.find('textarea').setValue('a'.repeat(3600))
+
+      const footer = wrapper.find('footer').element
+      const order = ['[data-testid="assistant-input-counter"]', '[data-testid="assistant-token-usage"]', '[data-testid="assistant-model-selector"]']
+        .map(selector => Array.from(footer.querySelectorAll('*')).indexOf(footer.querySelector(selector)!))
+      expect(order.every(index => index !== -1)).toBe(true)
+      expect(order).toEqual([...order].sort((a, b) => a - b))
+    })
+
+    it('reloads the models after a 400 and goes back to the default when the chosen one is gone', async () => {
+      modelsState.value.value = TWO_MODELS
+      chatState.modelId.value = MISTRAL.id
+      reloadModelsMock.mockImplementationOnce(async () => {
+        modelsState.value.value = [GPT]
+      })
+      mountPanel('resource-1')
+
+      chatState.error.value = Object.assign(new Error('{"message": "Modèle inconnu."}'), { statusCode: 400 })
+      await flushPromises()
+
+      expect(reloadModelsMock).toHaveBeenCalledOnce()
+      expect(resetModelMock).toHaveBeenCalledOnce()
+    })
+
+    it('keeps the chosen model after a 400 when udata still offers it', async () => {
+      modelsState.value.value = TWO_MODELS
+      chatState.modelId.value = MISTRAL.id
+      reloadModelsMock.mockResolvedValueOnce(undefined)
+      mountPanel('resource-1')
+
+      chatState.error.value = Object.assign(new Error('{"message": "Contexte de visualisation invalide."}'), { statusCode: 400 })
+      await flushPromises()
+
+      expect(reloadModelsMock).toHaveBeenCalledOnce()
+      expect(resetModelMock).not.toHaveBeenCalled()
+    })
+
+    it('reloads nothing after a 400 on the default model or another error', async () => {
+      modelsState.value.value = TWO_MODELS
+      mountPanel('resource-1')
+      chatState.error.value = Object.assign(new Error('x'), { statusCode: 400 })
+      await flushPromises()
+
+      chatState.modelId.value = MISTRAL.id
+      chatState.error.value = Object.assign(new Error('x'), { statusCode: 409 })
+      await flushPromises()
+
+      expect(reloadModelsMock).not.toHaveBeenCalled()
+    })
+
+    // clearError() turns 'error' into 'ready' without a request in between.
+    it('leaves the focus on the selector when a model is picked after an error', async () => {
+      stubConfirm(true)
+      modelsState.value.value = TWO_MODELS
+      chatState.status.value = 'error'
+      chatState.error.value = Object.assign(new Error('fetch failed'), {})
+      selectModelMock.mockImplementationOnce(() => {
+        chatState.error.value = null
+        chatState.status.value = 'ready'
+      })
+      const wrapper = mountPanel('resource-1')
+      await flushPromises()
+
+      pill(wrapper).element.focus()
+      await pick(wrapper, 'Mistral Medium 3.5')
+      await flushPromises()
+      await nextTick()
+
+      expect(selectModelMock).toHaveBeenCalledOnce()
+      expect(document.activeElement).toBe(pill(wrapper).element)
     })
   })
 })
 
 describe('messageUsage', () => {
-  it('reads the usage of the message metadata', () => {
-    const usage = { inputTokens: 1, outputTokens: 2, totalTokens: 3 }
+  it('reads the usage of udata\'s message metadata', () => {
+    const usage = { inputTokens: 1, outputTokens: 2 }
 
-    expect(messageUsage({ usage })).toEqual(usage)
+    expect(messageUsage({ pydantic_ai: { timestamp: '2026-11-27T09:00:00Z' }, usage })).toEqual(usage)
   })
 
   it.each([
     ['no metadata', undefined],
-    ['metadata without usage', {}],
-    ['a string count', { usage: { inputTokens: '1', outputTokens: 2, totalTokens: 3 } }],
-    ['a negative count', { usage: { inputTokens: -1, outputTokens: 2, totalTokens: 3 } }],
-    ['a fractional count', { usage: { inputTokens: 1.5, outputTokens: 2, totalTokens: 3 } }],
-    ['a missing count', { usage: { inputTokens: 1, outputTokens: 2 } }],
+    ['metadata without usage', { pydantic_ai: {} }],
+    ['a null usage', { usage: null }],
+    ['a string count', { usage: { inputTokens: '1', outputTokens: 2 } }],
+    ['a negative count', { usage: { inputTokens: -1, outputTokens: 2 } }],
+    ['a fractional count', { usage: { inputTokens: 1.5, outputTokens: 2 } }],
+    ['a missing count', { usage: { inputTokens: 1 } }],
   ])('is null for %s', (_name, metadata) => {
     expect(messageUsage(metadata)).toBeNull()
   })
 })
 
-describe('addUsage', () => {
-  it('starts from the usage given when there is no total yet', () => {
-    const usage = { inputTokens: 1, outputTokens: 2, totalTokens: 3 }
-
-    expect(addUsage(undefined, usage)).toEqual(usage)
-  })
-
-  it('adds each count', () => {
-    expect(addUsage({ inputTokens: 1, outputTokens: 2, totalTokens: 3 }, { inputTokens: 10, outputTokens: 20, totalTokens: 30 }))
-      .toEqual({ inputTokens: 11, outputTokens: 22, totalTokens: 33 })
-  })
-})
-
 describe('TokenUsage', () => {
-  const mountUsage = (usage: { inputTokens: number, outputTokens: number, totalTokens: number } | null) => mount(TokenUsage, {
+  const mountUsage = (usage: { inputTokens: number, outputTokens: number } | null) => mount(TokenUsage, {
     props: { usage },
   })
 
   it('details the input, output and total tokens', () => {
-    const wrapper = mountUsage({ inputTokens: 1200, outputTokens: 300, totalTokens: 1500 })
+    const wrapper = mountUsage({ inputTokens: 1200, outputTokens: 300 })
 
     const text = wrapper.text()
     expect(text).toContain('Nombre de tokens utilisés')
@@ -1743,13 +1837,15 @@ describe('TokenUsage', () => {
     expect(text).toContain('Total')
     expect(text).toContain((1500).toLocaleString(locale))
     expect(wrapper.find('button').attributes('aria-label')).toBe(`${(1500).toLocaleString(locale)} tokens utilisés`)
+    expect(wrapper.find('svg').classes()).toContain('text-new-gray-medium')
   })
 
-  it('says when the count is unavailable', () => {
+  it('says when the count is unavailable, with a dimmed icon', () => {
     const wrapper = mountUsage(null)
 
     expect(wrapper.text()).toBe('Nombre de tokens utilisés indisponible')
-    expect(wrapper.find('button').attributes('aria-label')).toBe('Nombre de tokens utilisés indisponible')
+    expect(wrapper.find('button').attributes('aria-label')).toBe('Tokens indisponibles')
+    expect(wrapper.find('svg').classes()).toContain('text-gray-medium')
   })
 })
 
