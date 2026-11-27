@@ -4,7 +4,7 @@
     class="tools-block"
   >
     <template #header>
-      <span class="block truncate text-[11px] font-medium leading-4 text-new-gray-medium">{{ title }}</span>
+      <span class="block truncate">{{ title }}</span>
     </template>
     <ol class="m-0 list-none space-y-2 p-0">
       <li

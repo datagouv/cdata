@@ -92,34 +92,31 @@
           {{ userMessageText(message.parts) }}
         </div>
         <template v-else>
+          <div
+            v-if="hasTurnBlocks(message)"
+            class="mb-2 space-y-0.5"
+            data-testid="assistant-turn-blocks"
+          >
+            <AssistantTimeline
+              v-if="liveTimelineOf(message)"
+              :timeline="liveTimelineOf(message)!"
+            />
+            <ReasoningBlock
+              v-else-if="messageDisplay(message).reasoning.length"
+              :sentences="messageDisplay(message).reasoning"
+            />
+            <ToolsBlock
+              v-if="messageDisplay(message).traces.length"
+              :traces="messageDisplay(message).traces"
+              :running="message === liveMessage && messageDisplay(message).toolsRunning"
+            />
+          </div>
           <MarkdownViewer
-            v-for="(text, index) in messageDisplay(message).textsAbove"
-            :key="`above-${index}`"
+            v-for="(text, index) in messageDisplay(message).texts"
+            :key="index"
             :content="text"
             generated
-            class="mb-2"
-          />
-          <AssistantTimeline
-            v-if="message === liveMessage && liveTimeline"
-            :timeline="liveTimeline"
-            class="mb-2"
-          />
-          <ReasoningBlock
-            v-else-if="messageDisplay(message).reasoning.length"
-            :sentences="messageDisplay(message).reasoning"
-            class="mb-2"
-          />
-          <ToolsBlock
-            v-if="messageDisplay(message).traces.length"
-            :traces="messageDisplay(message).traces"
-            :running="message === liveMessage && messageDisplay(message).toolsRunning"
-            class="mb-2"
-          />
-          <MarkdownViewer
-            v-for="(text, index) in messageDisplay(message).textsBelow"
-            :key="`below-${index}`"
-            :content="text"
-            generated
+            class="not-last:mb-2"
           />
         </template>
       </article>
@@ -270,7 +267,7 @@ import { chartToolResults, isNearChatBottom } from '~/utils/assistant'
 import { useAssistantErrorMessage } from './useAssistantErrorMessage'
 import { useMessageDisplay, type ChatMessageDisplay } from './useMessageDisplay'
 import { useStarterQuestions } from './useStarterQuestions'
-import { useTurnTimeline } from './useTurnTimeline'
+import { useTurnTimeline, type TurnTimeline } from './useTurnTimeline'
 import type { AssistantVisualization, ChartToolResult } from '~/utils/assistant'
 
 const props = defineProps<{
@@ -379,6 +376,15 @@ const liveMessage = computed(() => {
   return busy.value && last?.role === 'assistant' ? last : null
 })
 const liveTimeline = computed(() => (busy.value ? buildTimeline(liveMessage.value?.parts ?? []) : null))
+
+function liveTimelineOf(message: ChatMessage): TurnTimeline | null {
+  return message === liveMessage.value ? liveTimeline.value : null
+}
+
+function hasTurnBlocks(message: ChatMessage): boolean {
+  const display = messageDisplay(message)
+  return liveTimelineOf(message) !== null || display.reasoning.length > 0 || display.traces.length > 0
+}
 
 // User input is plain text, not markdown: render it as-is.
 function userMessageText(parts: Array<{ type: string, text?: unknown }>): string {

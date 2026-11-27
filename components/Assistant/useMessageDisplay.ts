@@ -1,7 +1,7 @@
 import { humanJoin, isRecord, useTranslation } from '@datagouv/components-next'
 import type { TranslationFunction } from '@datagouv/components-next'
 import { capitalizeFirstLetter } from '~/utils/helpers'
-import { displayedToolCalls, messageTexts, queryRowCount, toolCalls, type ToolCall } from './toolCalls'
+import { displayedToolCalls, nonBlankTexts, queryRowCount, toolCalls, type ToolCall } from './toolCalls'
 import { useTurnReasoning } from './useTurnReasoning'
 
 export type ToolTrace = {
@@ -13,8 +13,7 @@ export type ToolTrace = {
 }
 
 export type ChatMessageDisplay = {
-  textsAbove: string[]
-  textsBelow: string[]
+  texts: string[]
   traces: ToolTrace[]
   toolsRunning: boolean
   reasoning: string[]
@@ -148,11 +147,8 @@ export function useMessageDisplay() {
   // The AI SDK 'reasoning' parts, the model's own reasoning, are never read: the reasoning block is built from the tool calls.
   return function buildMessageDisplay(parts: unknown[]): ChatMessageDisplay {
     const calls = displayedToolCalls(toolCalls(parts))
-    const { planTexts, answerTexts } = messageTexts(parts)
     return {
-      // Until a tool call arrives, a text may yet turn out to be the plan: kept above so it does not jump.
-      textsAbove: calls.length ? planTexts : answerTexts,
-      textsBelow: calls.length ? answerTexts : [],
+      texts: nonBlankTexts(parts),
       // The AI SDK emits one part per tool call and updates it in place: no merging is needed.
       traces: calls.map(buildToolTrace),
       toolsRunning: calls.some(call => call.status === 'running'),

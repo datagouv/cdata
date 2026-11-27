@@ -46,17 +46,13 @@ export function queryRowCount(output: Record<string, unknown>): number | null {
   return typeof output.rows === 'number' ? output.rows : null
 }
 
-function nonBlankTexts(parts: unknown[]): string[] {
+export function nonBlankTexts(parts: unknown[]): string[] {
   return parts.flatMap(part =>
     isRecord(part) && part.type === 'text' && typeof part.text === 'string' && part.text.trim() !== '' ? [part.text] : [],
   )
 }
 
 // Text written before the last tool call is the model announcing its plan, not the answer.
-export function messageTexts(parts: unknown[]): { planTexts: string[], answerTexts: string[] } {
-  const lastToolIndex = parts.findLastIndex(isToolPart)
-  return {
-    planTexts: nonBlankTexts(parts.slice(0, lastToolIndex + 1)),
-    answerTexts: nonBlankTexts(parts.slice(lastToolIndex + 1)),
-  }
+export function answerTexts(parts: unknown[]): string[] {
+  return nonBlankTexts(parts.slice(parts.findLastIndex(isToolPart) + 1))
 }

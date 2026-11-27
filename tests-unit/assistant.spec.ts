@@ -192,22 +192,16 @@ describe('chartToolResults', () => {
 })
 
 describe('useMessageDisplay', () => {
-  it('puts the plan above the blocks and the answer below them, and drops the raw reasoning', () => {
+  it('keeps every non-blank text in its order, those before the tools included, and drops the raw reasoning', () => {
     const display = buildMessageDisplay([
       { type: 'reasoning', text: 'The user wants a chart' },
       { type: 'text', text: 'Bonjour' },
       { type: 'tool-query_data', state: 'output-available', input: {}, output: { status: 'ok', table: 'n\n1', rows: 1, total: 1, more_groups: false } },
+      { type: 'text', text: ' ' },
       { type: 'text', text: 'Voici' },
     ])
-    expect(display.textsAbove).toEqual(['Bonjour'])
-    expect(display.textsBelow).toEqual(['Voici'])
+    expect(display.texts).toEqual(['Bonjour', 'Voici'])
     expect(JSON.stringify(display)).not.toContain('The user wants')
-  })
-
-  it('puts every text above the blocks while the message has no tool call', () => {
-    const display = buildMessageDisplay([{ type: 'step-start' }, { type: 'text', text: 'Je vais vérifier les données.' }])
-    expect(display.textsAbove).toEqual(['Je vais vérifier les données.'])
-    expect(display.textsBelow).toEqual([])
   })
 
   it('gives the trace and the reasoning the same row count: the rows the query matches', () => {
@@ -551,6 +545,10 @@ describe('ToolTrace', () => {
     expect(blocks[0]!.text()).toBe('col1 | col2\nval1 | val2')
   })
 
+  it('draws the trace as a bordered card, unlike the reasoning and tools blocks', () => {
+    expect(mountTrace().find('section').classes()).toContain('border')
+  })
+
   it('renders no output block when the trace output is null', async () => {
     const wrapper = mountTrace()
     await wrapper.find('button').trigger('click')
@@ -624,6 +622,8 @@ describe('AssistantTimeline', () => {
 describe('ReasoningBlock', () => {
   const mountBlock = (sentences: string[]) => mount(ReasoningBlock, { props: { sentences }, global: { mocks: { $t: (key: string) => key } } })
 
+  const cells = (wrapper: ReturnType<typeof mountBlock>) => wrapper.findAll('li').map(li => li.findAll('span').map(span => span.text()))
+
   it('lists the sentences, collapsed, under « Raisonnement »', async () => {
     const wrapper = mountBlock(['Première.', 'Seconde.'])
     await nextTick()
@@ -632,23 +632,79 @@ describe('ReasoningBlock', () => {
     expect(button.attributes('aria-label')).toBeUndefined()
     expect(button.attributes('aria-expanded')).toBe('false')
     expect(panelOf(wrapper).attributes('inert')).toBeDefined()
-    expect(wrapper.findAll('li').map(li => li.text())).toEqual(['Première.', 'Seconde.'])
+    expect(cells(wrapper).map(row => row.at(-1))).toEqual(['Première.', 'Seconde.'])
   })
 
-  it('numbers several sentences but not a single one', () => {
-    expect(mountBlock(['Première.', 'Seconde.']).find('ol').classes()).toContain('list-decimal')
-    expect(mountBlock(['Seule.']).find('ol').classes()).not.toContain('list-decimal')
+  it('writes the number of each sentence in a column beside it when there are several, hidden from screen readers', () => {
+    const wrapper = mountBlock(['Première.', 'Seconde.'])
+    expect(cells(wrapper)).toEqual([['1.', 'Première.'], ['2.', 'Seconde.']])
+    expect(wrapper.findAll('li').every(li => li.classes('grid'))).toBe(true)
+    expect(wrapper.findAll('li').map(li => li.find('span').attributes('aria-hidden'))).toEqual(['true', 'true'])
+    expect(wrapper.findAll('li').every(li => li.find('span').classes('text-gray-medium'))).toBe(true)
+  })
+
+  it('writes no number for a single sentence', () => {
+    expect(cells(mountBlock(['Seule.']))).toEqual([['Seule.']])
   })
 
   // DSFR draws its own counter on every ol > li::marker: only content: none removes it.
-  it('removes the DSFR marker of a single sentence, keeps it for several', () => {
+  it('removes the DSFR marker of every sentence', () => {
     expect(mountBlock(['Seule.']).find('li').classes()).toContain('marker:content-none')
-    expect(mountBlock(['Première.', 'Seconde.']).find('li').classes()).not.toContain('marker:content-none')
+    expect(mountBlock(['Première.', 'Seconde.']).findAll('li').every(li => li.classes('marker:content-none'))).toBe(true)
+  })
+})
+
+const USED_TRACE: ToolTraceModel = { label: 'Interrogation des données', summary: '1 ligne', error: false, errorText: null, output: null }
+
+describe('CollapsibleTrace', () => {
+  const blocks = [
+    ['ReasoningBlock', () => mount(ReasoningBlock, { props: { sentences: ['Seule.'] }, global: { mocks: { $t: (key: string) => key } } })],
+    ['ToolsBlock', () => mount(ToolsBlock, { props: { traces: [USED_TRACE], running: false } })],
+  ] as const
+  const chevronOf = (wrapper: ReturnType<typeof mount>) => wrapper.find('button [data-testid="trace-chevron"]')
+  const contentOf = (wrapper: ReturnType<typeof mount>) => panelOf(wrapper).find('div')
+
+  it.each(blocks)('draws %s without a box', (_name, mountBlock) => {
+    const section = mountBlock().find('section').classes()
+    expect(section).not.toContain('border')
+    expect(section).not.toContain('rounded-md')
+    expect(section).not.toContain('overflow-hidden')
+  })
+
+  it.each(blocks)('writes the header of %s in the medium grey', (_name, mountBlock) => {
+    expect(mountBlock().find('section').classes()).toContain('text-gray-medium')
+  })
+
+  it.each(blocks)('darkens the header text of %s on hover, without the DSFR tint', (_name, mountBlock) => {
+    expect(mountBlock().find('button').classes()).toEqual(expect.arrayContaining(['hover:bg-transparent', 'hover:text-new-gray-dark']))
+  })
+
+  it.each(blocks)('flips the chevron of %s when opened', async (_name, mountBlock) => {
+    const wrapper = mountBlock()
+    expect(chevronOf(wrapper).classes()).not.toContain('-scale-y-100')
+    await wrapper.find('button').trigger('click')
+    expect(chevronOf(wrapper).classes()).toContain('-scale-y-100')
+  })
+
+  it.each(blocks)('fades the content of %s in when opened', async (_name, mountBlock) => {
+    const wrapper = mountBlock()
+    await nextTick()
+    expect(contentOf(wrapper).classes()).toContain('opacity-0')
+    await wrapper.find('button').trigger('click')
+    expect(contentOf(wrapper).classes()).toContain('opacity-100')
+  })
+
+  it.each(blocks)('turns every transition of %s off under reduced motion', async (_name, mountBlock) => {
+    const wrapper = mountBlock()
+    await nextTick()
+    for (const element of [wrapper.find('button'), chevronOf(wrapper), panelOf(wrapper), contentOf(wrapper)]) {
+      expect(element.classes()).toContain('motion-reduce:transition-none')
+    }
   })
 })
 
 describe('ToolsBlock', () => {
-  const trace: ToolTraceModel = { label: 'Interrogation des données', summary: '1 ligne', error: false, errorText: null, output: null }
+  const trace = USED_TRACE
 
   it('groups the traces, collapsed, under their count', async () => {
     const wrapper = mount(ToolsBlock, { props: { traces: [trace, trace], running: false } })
@@ -936,7 +992,7 @@ describe('ChatPanel', () => {
       expect(wrapper.find('.tools-block button').text()).toBe('Outils utilisés · 1')
     })
 
-    it('shows the plan text above the reasoning and tools blocks, the answer below them', () => {
+    it('shows the reasoning and tools blocks first, then every text of the message in its order', () => {
       chatState.messages.value = [question, { id: 'a1', role: 'assistant', parts: [
         { type: 'text', text: 'Je vais vérifier les données.' },
         okQuery({ purpose: 'Compter les logements' }),
@@ -945,26 +1001,26 @@ describe('ChatPanel', () => {
       const wrapper = mountPanel('resource-1')
       const blocks = wrapper.find('article[data-message-role="assistant"]').findAll('.prose, .reasoning-block, .tools-block')
       expect(blocks.map(block => block.classes().find(name => name.endsWith('-block')) ?? block.text())).toEqual([
-        'Je vais vérifier les données.',
         'reasoning-block',
         'tools-block',
+        'Je vais vérifier les données.',
         'Il y a 1 logement.',
       ])
     })
 
-    it('keeps the plan text above the live timeline', () => {
+    it('shows a text written before the tools below the live timeline', () => {
       chatState.status.value = 'streaming'
       chatState.messages.value = [question, { id: 'a1', role: 'assistant', parts: [{ type: 'text', text: 'Je vais vérifier les données.' }, okQuery()] }]
       const wrapper = mountPanel('resource-1')
       const blocks = wrapper.find('article[data-message-role="assistant"]').findAll('.prose, [data-testid="assistant-timeline"], .tools-block')
       expect(blocks.map(block => block.attributes('data-testid') ?? block.classes().find(name => name.endsWith('-block')) ?? block.text())).toEqual([
-        'Je vais vérifier les données.',
         'assistant-timeline',
         'tools-block',
+        'Je vais vérifier les données.',
       ])
     })
 
-    it('keeps a text written before any tool in its place, and its element, when a tool call arrives', async () => {
+    it('keeps a text written before any tool below the timeline, and its element, when a tool call arrives', async () => {
       chatState.status.value = 'streaming'
       const plan = { type: 'text', text: 'Je vais vérifier les données.' }
       chatState.messages.value = [question, { id: 'a1', role: 'assistant', parts: [plan] }]
@@ -972,12 +1028,12 @@ describe('ChatPanel', () => {
       const reply = () => wrapper.find('article[data-message-role="assistant"]')
       const order = () => reply().findAll('.prose, [data-testid="assistant-timeline"], .tools-block')
         .map(block => block.attributes('data-testid') ?? block.classes().find(name => name.endsWith('-block')) ?? block.text())
-      expect(order()).toEqual(['Je vais vérifier les données.', 'assistant-timeline'])
+      expect(order()).toEqual(['assistant-timeline', 'Je vais vérifier les données.'])
       const textElement = reply().find('.prose').element
 
       chatState.messages.value = [question, { id: 'a1', role: 'assistant', parts: [plan, { type: 'tool-query_data', toolCallId: 'q1', state: 'input-available', input: {} }] }]
       await nextTick()
-      expect(order()).toEqual(['Je vais vérifier les données.', 'assistant-timeline', 'tools-block'])
+      expect(order()).toEqual(['assistant-timeline', 'tools-block', 'Je vais vérifier les données.'])
       expect(reply().find('.prose').element).toBe(textElement)
     })
 
@@ -987,6 +1043,19 @@ describe('ChatPanel', () => {
       expect(wrapper.find('.reasoning-block').exists()).toBe(false)
       expect(wrapper.find('.tools-block').exists()).toBe(false)
       expect(timelines(wrapper)).toHaveLength(0)
+    })
+
+    it('renders no turn-blocks container for a reply without tools', () => {
+      chatState.messages.value = [question, assistantTextMessage('Bonjour')]
+      const wrapper = mountPanel('resource-1')
+      expect(wrapper.find('[data-testid="assistant-turn-blocks"]').exists()).toBe(false)
+      expect(wrapper.find('article[data-message-role="assistant"]').text()).toContain('Bonjour')
+    })
+
+    it('renders the turn-blocks container while the turn has a live timeline', () => {
+      chatState.status.value = 'streaming'
+      chatState.messages.value = [question, { id: 'a1', role: 'assistant', parts: [{ type: 'step-start' }] }]
+      expect(mountPanel('resource-1').find('article[data-message-role="assistant"] [data-testid="assistant-turn-blocks"]').exists()).toBe(true)
     })
   })
 

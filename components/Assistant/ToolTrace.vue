@@ -1,6 +1,7 @@
 <template>
   <CollapsibleTrace
     :icon="RiWrenchLine"
+    card
     class="tool-trace bg-white"
   >
     <template #header>

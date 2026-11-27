@@ -1,6 +1,6 @@
 import { useTranslation } from '@datagouv/components-next'
 import type { TranslationFunction } from '@datagouv/components-next'
-import { displayedToolCalls, messageTexts, toolCalls } from './toolCalls'
+import { answerTexts, displayedToolCalls, toolCalls } from './toolCalls'
 import type { ToolCall } from './toolCalls'
 
 type TimelineStep = { label: string, status: 'active' | 'complete' | 'failed' }
@@ -47,7 +47,7 @@ export function useTurnTimeline() {
 
   return function buildTurnTimeline(parts: unknown[]): TurnTimeline {
     const calls = displayedToolCalls(toolCalls(parts))
-    const answering = messageTexts(parts).answerTexts.length > 0
+    const answering = answerTexts(parts).length > 0
 
     if (!calls.length && !answering) {
       return { title: t('Analyse en cours'), steps: [{ label: t('Planification de la réponse…'), status: 'active' }] }

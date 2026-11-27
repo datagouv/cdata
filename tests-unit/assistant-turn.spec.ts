@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { displayedToolCalls, messageTexts, toolCalls } from '~/components/Assistant/toolCalls'
+import { answerTexts, displayedToolCalls, toolCalls } from '~/components/Assistant/toolCalls'
 import { useTurnReasoning } from '~/components/Assistant/useTurnReasoning'
 import { useTurnTimeline } from '~/components/Assistant/useTurnTimeline'
 
@@ -127,16 +127,16 @@ describe('toolCalls', () => {
     expect(displayedToolCalls(calls)).toEqual(calls)
   })
 
-  it('splits the non-blank texts at the last tool call into plan and answer', () => {
+  it('takes the non-blank texts after the last tool call for the answer', () => {
     const done = tool('query_data', 'output-available', OK_QUERY)
-    expect(messageTexts([text('Je vais vérifier.'), done, text('Puis.'), done, text('  \n'), text('Voici'), text('la réponse.')]))
-      .toEqual({ planTexts: ['Je vais vérifier.', 'Puis.'], answerTexts: ['Voici', 'la réponse.'] })
-    expect(messageTexts([text('Avant'), done])).toEqual({ planTexts: ['Avant'], answerTexts: [] })
+    expect(answerTexts([text('Je vais vérifier.'), done, text('Puis.'), done, text('  \n'), text('Voici'), text('la réponse.')]))
+      .toEqual(['Voici', 'la réponse.'])
+    expect(answerTexts([text('Avant'), done])).toEqual([])
   })
 
   it('takes every text of a message without tools for the answer', () => {
-    expect(messageTexts([{ type: 'step-start' }, text('Bonjour')])).toEqual({ planTexts: [], answerTexts: ['Bonjour'] })
-    expect(messageTexts([{ type: 'step-start' }, { type: 'text', text: 42 }])).toEqual({ planTexts: [], answerTexts: [] })
+    expect(answerTexts([{ type: 'step-start' }, text('Bonjour')])).toEqual(['Bonjour'])
+    expect(answerTexts([{ type: 'step-start' }, { type: 'text', text: 42 }])).toEqual([])
   })
 })
 
