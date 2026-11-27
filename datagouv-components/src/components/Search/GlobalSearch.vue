@@ -340,7 +340,6 @@
                         color="tertiary"
                         :href="componentsConfig.forumUrl"
                         :icon="RiLightbulbLine"
-                        keep-margins-even-without-borders
                       >
                         {{ t("Voir le forum") }}
                       </BrandedButton>

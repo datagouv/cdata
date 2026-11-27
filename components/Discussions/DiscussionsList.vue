@@ -15,7 +15,6 @@
         </p>
         <BrandedButton
           color="tertiary"
-          keep-margins-even-without-borders
           :icon="RiCloseCircleLine"
           :href="hrefWithoutDiscussionId"
         >

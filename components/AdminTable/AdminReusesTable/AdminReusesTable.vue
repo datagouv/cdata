@@ -82,7 +82,6 @@
             :icon="RiEyeLine"
             :title="$t('Voir la page publique')"
             icon-only
-            keep-margins-even-without-borders
           />
           <BrandedButton
             v-if="reuse.permissions.edit"
@@ -92,7 +91,6 @@
             :icon="RiPencilLine"
             :title="$t('Modifier')"
             icon-only
-            keep-margins-even-without-borders
           />
           <slot
             name="actions"

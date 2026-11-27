@@ -113,7 +113,6 @@
               :title="$t('Voir la discussion')"
               :aria-label="$t('Voir la discussion {title}', { title: discussion.title })"
               icon-only
-              keep-margins-even-without-borders
             />
 
             <BrandedButton
@@ -124,7 +123,6 @@
               :title="$t('Répondre à la discussion')"
               :aria-label="$t('Répondre à la discussion {title}', { title: discussion.title })"
               icon-only
-              keep-margins-even-without-borders
               @click="openedThread = discussion"
             />
           </div>

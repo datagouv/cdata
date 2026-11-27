@@ -22,6 +22,9 @@
         </p>
         <p>{{ $t("Tous les contenus publiés en votre nom resteront en ligne, aux mêmes URL, mais sous forme anonyme, c'est-à-dire sans être rattachés à un producteur de données.") }}</p>
         <p>{{ $t("Si vous souhaitez aussi supprimer les contenus publiées que vous avez publiés, commencez par supprimer les contenus avant de supprimer votre compte.") }}</p>
+        <p v-if="isAdmin && user.id !== me.id">
+          {{ $t("Supprimer comme spam : aucun mail n'est envoyé et les discussions de l'utilisateur sont supprimées.") }}
+        </p>
 
         <div
           v-if="showMailOptions"
@@ -55,7 +58,7 @@
       </template>
     </template>
     <template #footer>
-      <div class="w-full flex justify-end space-x-4">
+      <div class="w-full flex flex-wrap justify-end gap-4">
         <template v-if="!deleted">
           <div v-if="isAdmin && user.id !== me.id">
             <BrandedButton
@@ -63,7 +66,7 @@
               :disabled="loading || (!!showMailOptions && !mailOption)"
               @click="() => deleteUser({ spam: true })"
             >
-              {{ $t("Supprimer comme spam (pas d'envoi de mail et suppression des discussions)") }}
+              {{ $t("Supprimer comme spam") }}
             </BrandedButton>
           </div>
           <div>

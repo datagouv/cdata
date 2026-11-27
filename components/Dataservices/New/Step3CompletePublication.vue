@@ -23,12 +23,13 @@
     <div class="fr-grid-row justify-between">
       <BrandedButton
         v-if="config.public.publishingDataserviceFeedbackUrl"
+        class="-ms-3"
         :href="config.public.publishingDataserviceFeedbackUrl"
         :icon="RiLightbulbLine"
         color="tertiary"
         new-tab
       >
-        {{ $t('Donnez-nous votre avis sur le parcours de publication') }}
+        {{ $t('Donner votre avis') }}
       </BrandedButton>
       <div class="fr-grid-row fr-grid-row--right">
         <BrandedButton

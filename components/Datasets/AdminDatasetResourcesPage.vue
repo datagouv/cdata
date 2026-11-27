@@ -136,7 +136,6 @@
                 <BrandedButton
                   :icon="RiArrowUpLine"
                   color="tertiary"
-                  keep-margins-even-without-borders
                   :disabled="index === 0"
                   icon-only
                   :title="$t('Déplacer vers le haut')"
@@ -146,7 +145,6 @@
                 <BrandedButton
                   :icon="RiArrowDownLine"
                   color="tertiary"
-                  keep-margins-even-without-borders
                   :disabled="index === files.length - 1"
                   icon-only
                   :title="$t('Déplacer vers le bas')"

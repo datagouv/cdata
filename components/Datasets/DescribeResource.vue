@@ -136,7 +136,7 @@
         v-if="! showChecksum"
         color="tertiary"
         :icon="RiAddLine"
-        class="-mt-6 mb-6"
+        class="-mt-6 mb-6 -ms-3"
         @click="addChecksum = true"
       >
         {{ $t('Ajouter une somme de contrôle') }}
@@ -149,7 +149,7 @@
         <template #legendAside>
           <BrandedButton
             color="secondary"
-            size="2xs"
+            size="xs"
             @click="form.checksum_value = null; addChecksum = false"
           >
             {{ $t('Supprimer') }}

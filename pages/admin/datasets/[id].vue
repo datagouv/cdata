@@ -31,7 +31,7 @@
             size="xs"
             :icon="RiEyeLine"
           >
-            {{ t('Voir la page publique du jeu de données') }}
+            {{ t('Voir la page publique') }}
           </BrandedButton>
         </div>
 

@@ -62,7 +62,6 @@
                 icon-only
                 size="xs"
                 :title="$t('Modifier')"
-                keep-margins-even-without-borders
                 v-bind="attrs"
                 v-on="listeners"
               />

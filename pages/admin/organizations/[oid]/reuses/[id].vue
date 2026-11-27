@@ -17,7 +17,7 @@
           size="xs"
           :icon="RiEyeLine"
         >
-          {{ t('Voir la page publique de la réutilisation') }}
+          {{ t('Voir la page publique') }}
         </BrandedButton>
       </div>
 

@@ -371,7 +371,7 @@
                         <BrandedButton
                           v-if="totalRules === 0"
                           size="sm"
-                          color="tertiary-blue"
+                          color="tertiary"
                           :icon="RiAddLine"
                           @click="addGroup"
                         >
@@ -380,7 +380,7 @@
                         <BrandedButton
                           v-if="totalRules > 1"
                           size="sm"
-                          color="tertiary-blue"
+                          color="tertiary"
                           :icon="RiAddLine"
                           @click="addGroup"
                         >

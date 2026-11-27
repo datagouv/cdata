@@ -176,7 +176,7 @@
                   <div class="flex-1 flex justify-end space-x-4">
                     <BrandedButton
                       color="secondary"
-                      :loading="isLoading"
+                      :disabled="isLoading"
                       @click="close"
                     >
                       {{ $t('Annuler') }}

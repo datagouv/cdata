@@ -61,7 +61,7 @@
         href="/admin/reuses/new"
         color="primary"
       >
-        {{ $t("Publiez une réutilisation") }}
+        {{ $t("Publier une réutilisation") }}
       </BrandedButton>
       <BrandedButton
         href="/admin/datasets/new"

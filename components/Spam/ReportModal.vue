@@ -79,7 +79,7 @@
         <BrandedButton
           v-if="! reported"
           color="secondary"
-          :loading
+          :disabled="loading"
           @click="close"
         >
           {{ $t('Annuler') }}

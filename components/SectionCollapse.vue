@@ -14,7 +14,6 @@
         <DisclosureButton
           :as="BrandedButton"
           color="tertiary"
-          keep-margins-even-without-borders
           :icon="RiArrowDownSLine"
           :icon-attrs="{ class: open ? 'rotate-180 transform' : '' }"
         >

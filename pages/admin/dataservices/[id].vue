@@ -30,7 +30,7 @@
           size="xs"
           :icon="RiEyeLine"
         >
-          {{ t("Voir la page publique de l'API") }}
+          {{ t("Voir la page publique") }}
         </BrandedButton>
       </div>
 

@@ -22,12 +22,13 @@
     <div class="flex justify-between">
       <BrandedButton
         v-if="config.public.publishingHarvesterFeedbackUrl"
+        class="-ms-3"
         :href="config.public.publishingHarvesterFeedbackUrl"
         color="tertiary"
         :icon="RiLightbulbLine"
         new-tab
       >
-        {{ $t('Donnez-nous votre avis sur le parcours de publication') }}
+        {{ $t('Donner votre avis') }}
       </BrandedButton>
       <div class="fr-grid-row fr-grid-row--right">
         <BrandedButton

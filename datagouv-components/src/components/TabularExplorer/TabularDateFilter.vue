@@ -196,7 +196,6 @@
         color="tertiary"
         size="2xs"
         type="button"
-        keep-margins-even-without-borders
         data-testid="clear-date-filter"
         @click="clear"
       >

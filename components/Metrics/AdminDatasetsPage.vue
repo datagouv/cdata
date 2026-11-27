@@ -165,7 +165,6 @@
                   :icon="RiDownloadLine"
                   icon-only
                   external
-                  keep-margins-even-without-borders
                   :title="$t('Télécharger les statistiques du jeu de données')"
                 />
               </td>

@@ -44,7 +44,7 @@
             type="submit"
             :loading="loading"
           >
-            {{ $t('Renvoyer les instructions de confirmation') }}
+            {{ $t('Renvoyer l\'e-mail de confirmation') }}
           </BrandedButton>
         </div>
       </form>

@@ -119,7 +119,6 @@
                   :icon="RiDownloadLine"
                   icon-only
                   external
-                  keep-margins-even-without-borders
                   :title="$t(`Télécharger les statistiques de l'API`)"
                 />
               </td>

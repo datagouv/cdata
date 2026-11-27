@@ -30,8 +30,7 @@
           <BrandedButton
             v-if="exploreHref"
             :href="exploreHref"
-            :icon="newExplorerEnabled ? RiFullscreenLine : RiExternalLinkFill"
-            icon-right
+            :icon="newExplorerEnabled ? RiFullscreenLine : undefined"
             size="xs"
             :new-tab="!newExplorerEnabled"
             @click="$matomo.trackEvent('Jeux de données', 'Explorer les données', 'Bouton : explorer les données')"
@@ -461,7 +460,6 @@
 <script setup lang="ts">
 import { ReadMore, AvatarWithName, type DatasetV2WithFullObject, SimpleBanner, DatasetQuality, isOrganizationCertified, LoadingBlock, BrandedButton, FormattedDate, StatBox, Toggletip, type TranslatedBadge, LabelTag, LicenseBadge, AppLink, MarkdownViewer, useMetrics, TranslationT, getDescriptionShort, type Resource, RESOURCE_EXPLORER_PAGE_SIZE, AccessTypeBadge, DatasetBadge, getDatasetStatus } from '@datagouv/components-next'
 import {
-  RiExternalLinkFill,
   RiExternalLinkLine,
   RiFullscreenLine,
 } from '@remixicon/vue'

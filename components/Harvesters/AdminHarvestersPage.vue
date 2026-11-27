@@ -127,7 +127,6 @@
                   :href="getHarvesterAdminUrl(harvester)"
                   :icon="RiPencilLine"
                   icon-only
-                  keep-margins-even-without-borders
                   :title="$t('Modifier')"
                 />
               </td>

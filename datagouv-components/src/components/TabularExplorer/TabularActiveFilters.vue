@@ -32,7 +32,7 @@
       />
     </div>
 
-    <div class="flex shrink-0 items-center gap-1">
+    <div class="flex shrink-0 items-center -me-2">
       <!-- A sort alone narrows nothing: the file would be the whole resource, which
            the resource's own download already gives. And with no matching row, the
            API answers an empty file, without even the header. -->

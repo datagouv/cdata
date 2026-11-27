@@ -53,7 +53,7 @@
         <BrandedButton
           color="secondary"
           size="xs"
-          :loading
+          :disabled="loading"
           @click="close"
         >
           {{ t("Annuler") }}

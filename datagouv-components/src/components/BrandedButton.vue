@@ -1,38 +1,64 @@
 <template>
-  <!-- 46 42 32 -->
   <component
-    :is="href ? AppLink: 'button'"
-    class="inline-flex items-center justify-center font-marianne font-medium border !bg-none !no-underline after:content-none outline-none focus-visible:ring-2 focus-visible:ring-new-focus focus-visible:ring-offset-2"
-    :class="[colors, sizes, removePaddingsIfNoBorders, isDisabled && color !== 'primary' && color !== 'secondary' ? '!opacity-50' : '', iconRight && !newTab ? 'flex-row-reverse space-x-reverse' : '']"
-    :disabled="isDisabled"
-    :aria-disabled="isDisabled"
-    :role="href ? 'link' : ''"
-    :to="isDisabled ? undefined : href"
-    :target="newTab ? '_blank' : undefined"
-    :type
+    :is="href ? (isDisabled ? 'span' : AppLink) : 'button'"
+    v-bind="$attrs"
+    class="branded-button"
+    :data-size="size"
+    :data-color="color"
+    :data-loading="loading ? 'true' : undefined"
+    :data-loading-overlay="isLoadingOverlay ? 'true' : undefined"
+    :data-icon-only="isIconOnly ? 'true' : undefined"
+    :data-icon-right="iconRight ? 'true' : undefined"
+    :data-icon-start="hasStartIcon ? 'true' : undefined"
+    :data-icon-end="hasEndIcon ? 'true' : undefined"
+    :to="href && !isDisabled ? href : undefined"
+    :type="href ? undefined : (type || 'button')"
+    :role="href && isDisabled ? 'link' : undefined"
+    :tabindex="href && isDisabled ? -1 : undefined"
+    :aria-disabled="isDisabled ? 'true' : undefined"
+    :aria-busy="loading ? 'true' : undefined"
+    :aria-label="ariaLabel"
+    :target="href && newTab ? '_blank' : undefined"
+    :rel="href && newTab ? 'noopener noreferrer' : undefined"
+    @click.capture="preventWhenDisabled"
   >
-    <AnimatedLoader
-      v-if="loading"
-      size="16"
-      :color="color === 'primary' ? 'white' : 'primary'"
-    />
-    <component
-      :is="icon"
-      v-else-if="icon"
-      :class="iconSize"
-      v-bind="iconAttrs"
-      aria-hidden="true"
-    />
     <span
-      v-if="hasText"
-      class="whitespace-nowrap"
-      :class="{ 'sr-only': iconOnly, 'sr-only sm:not-sr-only': iconOnlyOnMobile }"
+      v-if="icon || loading"
+      class="branded-button__symbol"
+    >
+      <RiLoader4Line
+        v-if="loading"
+        class="branded-button__icon branded-button__spinner"
+        aria-hidden="true"
+        focusable="false"
+      />
+      <component
+        :is="icon"
+        v-else
+        v-bind="iconAttrs"
+        class="branded-button__icon"
+        aria-hidden="true"
+        focusable="false"
+      />
+    </span>
+    <span
+      v-if="hasLabel"
+      class="branded-button__label"
+      :class="{
+        'sr-only': iconOnly,
+        'branded-button__label--mobile-hidden': iconOnlyOnMobile && !!icon,
+      }"
     ><slot /></span>
     <RiExternalLinkLine
-      v-if="newTab"
+      v-if="href && newTab && !isIconOnly"
+      class="branded-button__icon"
       aria-hidden="true"
-      :class="iconSize"
+      focusable="false"
     />
+    <span
+      v-if="href && newTab"
+      class="sr-only"
+    > ({{ t('nouvel onglet') }})</span>
   </component>
 </template>
 
@@ -47,17 +73,37 @@ import {
   computed,
   inject,
   Text,
+  useAttrs,
   useSlots,
 } from 'vue'
-import { RiExternalLinkLine } from '@remixicon/vue'
+import { RiExternalLinkLine, RiLoader4Line } from '@remixicon/vue'
 import type { RouteLocationRaw } from 'vue-router'
 import AppLink from './AppLink.vue'
 import { bannerActionTypeKey } from './BannerAction.vue'
-import AnimatedLoader from './AnimatedLoader.vue'
+import { useTranslation } from '../composables/useTranslation'
 
+/**
+ * Recommended colors:
+ * - `primary`: the main action of a group;
+ * - `secondary`: an alternative action;
+ * - `tertiary`: a low-emphasis action;
+ * - `danger`: a destructive action;
+ * - `warning`: an admin action, for now;
+ * - `white-flat`: a button on a dark or illustrated background.
+ *
+ * Editorial page colors, in place of `primary` on these pages only:
+ * - `brown-illustration`: the dataservices (API) pages;
+ * - `green-illustration`: the reuses pages.
+ *
+ * Kept for backward compatibility, not to be used in new code:
+ * - `tertiary-blue`: a blue `tertiary`, use `tertiary`.
+ */
 export type ColorType = 'primary' | 'secondary' | 'tertiary' | 'tertiary-blue' | 'warning' | 'danger' | 'brown-illustration' | 'green-illustration' | 'white-flat'
 
+defineOptions({ inheritAttrs: false })
+
 const props = withDefaults(defineProps<{
+  /** `xl` is kept for backward compatibility, use `lg` in new code. */
   size?: '2xs' | 'xs' | 'sm' | 'lg' | 'xl'
   color?: ColorType
   disabled?: boolean
@@ -69,6 +115,11 @@ const props = withDefaults(defineProps<{
   iconOnly?: boolean
   iconOnlyOnMobile?: boolean
   iconRight?: boolean
+  /**
+   * @deprecated Tertiary buttons no longer have negative margins, so this prop has no effect.
+   * It is kept so that existing code keeps compiling.
+   */
+  // eslint-disable-next-line vue/no-unused-properties -- kept for backward compatibility of the public API
   keepMarginsEvenWithoutBorders?: boolean
   type?: 'submit' | 'button'
 }>(), {
@@ -79,13 +130,9 @@ const props = withDefaults(defineProps<{
 })
 
 const slots = useSlots()
+const { t } = useTranslation()
 
-const type = computed(() => {
-  if (props.type) return props.type
-  if (props.href) return undefined
-
-  return 'button'
-})
+const bannerActionType = inject(bannerActionTypeKey, null)
 
 const size = computed(() => {
   if (props.size) return props.size
@@ -105,68 +152,43 @@ const color = computed<ColorType>(() => {
   return 'primary'
 })
 
-const hasText = computed(() => {
-  return hasSlotContent(slots.default) && !props.iconOnly
-})
-const bannerActionType = inject(bannerActionTypeKey, null)
-
 const isDisabled = computed(() => props.disabled || props.loading)
 
-const colors = computed(() => {
-  return {
-    'primary': isDisabled.value
-      ? 'text-new-disabled-text bg-new-disabled-background !border-new-disabled-background'
-      : 'text-white bg-new-primary !border-new-primary hover:!bg-new-primary-hover hover:!border-new-primary-hover',
-    'secondary': isDisabled.value
-      ? 'text-new-disabled-text bg-white !border-new-disabled-background'
-      : 'text-new-gray-dark bg-white !border-new-gray-dark [&&]:hover:!bg-gray-some',
-    'tertiary': `text-gray-plain !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'tertiary-blue': `text-new-primary !border-transparent ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'warning': `text-new-warning bg-white !border-new-warning ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'danger': `!text-new-error bg-white !border-new-error ${!isDisabled.value ? '[&&]:hover:!bg-gray-some' : ''}`,
-    'brown-illustration': `!border-none bg-new-brown-illustration text-white ${!isDisabled.value ? '[&&]:hover:!bg-new-brown-illustration/90' : ''}`,
-    'green-illustration': `!border-none bg-new-green-illustration text-white ${!isDisabled.value ? '[&&]:hover:!bg-new-green-illustration/90' : ''}`,
-    'blue-illustration': `!border-none bg-new-blue-illustration text-white ${!isDisabled.value ? '[&&]:hover:!bg-new-blue-illustration/90' : ''}`,
-    'white-flat': `!border-none bg-white ${!isDisabled.value ? '[&&]:hover:!bg-white/90' : ''}`,
-  }[color.value]
+const hasLabel = computed(() => hasSlotContent(slots.default))
+
+// A button without a visible label is square, like an icon-only button.
+const isIconOnly = computed(() => props.iconOnly || !hasLabel.value)
+
+// Without an icon to replace, the spinner is centered over the hidden label, so that
+// the button keeps its size while loading.
+const isLoadingOverlay = computed(() => props.loading && !props.icon && !isIconOnly.value)
+
+// Sides that have an icon next to the label, for the optical padding.
+const hasSymbol = computed(() => !!props.icon || (props.loading && isIconOnly.value))
+const hasStartIcon = computed(() => hasSymbol.value && !props.iconRight)
+const hasEndIcon = computed(() => (hasSymbol.value && props.iconRight) || (!!props.href && props.newTab && !isIconOnly.value))
+
+// The slot (visible or sr-only) is the accessible name. The `title` is only a fallback
+// when there is no slot at all, so that it does not replace a more precise label. An
+// explicit `aria-label` replaces the content, so it gets the new-tab mention too.
+const attrs = useAttrs()
+const ariaLabel = computed(() => {
+  const label = (attrs['aria-label'] ?? attrs.ariaLabel) as string | undefined
+  if (label) return props.href && props.newTab ? `${label} (${t('nouvel onglet')})` : label
+  if (!hasLabel.value) return attrs.title as string | undefined
+  return undefined
 })
 
-const sizes = computed(() => {
-  return {
-    'xl': `text-xl h-16 ${hasText.value ? 'px-4 gap-x-2' : 'w-16 px-3'}`,
-    'lg': `text-lg h-12 ${hasText.value ? 'px-4 gap-x-2' : 'w-12 px-3'}`,
-    'sm': `text-sm h-10 leading-none ${hasText.value ? 'px-4 gap-x-1' : 'w-10 px-2.5'}`,
-    'xs': `text-xs h-8 leading-[0.875rem] ${hasText.value ? 'px-4 gap-x-1' : 'w-8 px-2'}`,
-    '2xs': `text-xs leading-[0.875rem] p-1 gap-x-1`,
-  }[size.value]
-})
-
-const hasBorders = computed(() => {
-  return props.color !== 'tertiary' && props.color !== 'tertiary-blue'
-})
-
-const removePaddingsIfNoBorders = computed(() => {
-  if (hasBorders.value) return ''
-  if (props.keepMarginsEvenWithoutBorders) return ''
-
-  return {
-    'xl': hasText.value ? '-mx-4' : '-mx-3',
-    'lg': hasText.value ? '-mx-4' : '-mx-3',
-    'sm': hasText.value ? '-mx-4' : '-mx-2.5',
-    'xs': hasText.value ? '-mx-4' : '-mx-2',
-    '2xs': '-m-1',
-  }[size.value]
-})
-
-const iconSize = computed(() => {
-  return {
-    'xl': (hasBorders.value || hasText.value) ? 'size-8' : 'size-10',
-    'lg': (hasBorders.value || hasText.value) ? 'size-6' : 'size-8',
-    'sm': (hasBorders.value || hasText.value) ? 'size-4' : 'size-6',
-    'xs': (hasBorders.value || hasText.value) ? 'size-3' : 'size-5',
-    '2xs': (hasBorders.value || hasText.value) ? 'size-3' : 'size-4',
-  }[size.value]
-})
+// A disabled or loading button only gets `aria-disabled`, not the `disabled`
+// attribute: it stays focusable, so keyboard and screen reader users keep their
+// place while it loads and can still reach it to read why it is disabled.
+// Its activation (and form submission for `type="submit"`) is blocked here,
+// before the listeners set by the parent. A disabled link is rendered as a `<span>`.
+function preventWhenDisabled(event: Event) {
+  if (!isDisabled.value) return
+  event.preventDefault()
+  event.stopImmediatePropagation()
+}
 
 function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
   if (!slot) return false
@@ -183,3 +205,306 @@ function hasSlotContent(slot: Slot | undefined, slotProps = {}): boolean {
   })
 }
 </script>
+
+<style>
+/*
+ * Unlayered and without `!important` on purpose:
+ * - the `[data-size]` / `[data-color]` qualifiers outweigh the global DSFR rules on `a`, `[href]`
+ *   and `button` (at most one class and one element, or two pseudo-classes and one element for
+ *   `:hover` / `:active`);
+ * - Tailwind runs in `important` mode, so the utility classes a parent sets on the button
+ *   (margins, width, display, radius, text color…) still take precedence.
+ */
+.branded-button[data-size] {
+  --branded-button-height: calc(var(--spacing) * 10);
+  --branded-button-padding-x: calc(var(--spacing) * 4);
+  /* Smaller on the icon side: the icon's own inner space makes that side look wider */
+  --branded-button-padding-x-icon: calc(var(--spacing) * 3);
+  --branded-button-padding-y: calc(var(--spacing) * 1.5);
+  --branded-button-font-size: var(--text-sm);
+  --branded-button-line-height: calc(var(--spacing) * 5);
+  --branded-button-icon: calc(var(--spacing) * 4);
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: calc(var(--spacing) * 2);
+  box-sizing: border-box;
+  min-height: var(--branded-button-height);
+  max-width: 100%;
+  margin: 0;
+  padding: var(--branded-button-padding-y) var(--branded-button-padding-x);
+  border: 1px solid transparent;
+  /* Square corners, like the DSFR buttons */
+  border-radius: 0;
+  background-color: var(--color-new-primary);
+  background-image: none;
+  color: var(--color-white);
+  font-family: var(--font-marianne);
+  font-size: var(--branded-button-font-size);
+  font-weight: var(--font-weight-medium);
+  line-height: var(--branded-button-line-height);
+  text-align: center;
+  text-decoration: none;
+  white-space: normal;
+  cursor: pointer;
+}
+
+.branded-button[data-size]::after {
+  display: none;
+  content: none;
+}
+
+/* Sizes */
+.branded-button[data-size="xs"] {
+  --branded-button-height: calc(var(--spacing) * 8);
+  --branded-button-padding-x: calc(var(--spacing) * 3);
+  --branded-button-padding-x-icon: calc(var(--spacing) * 2);
+  --branded-button-padding-y: calc(var(--spacing) * 1);
+}
+
+.branded-button[data-size="2xs"] {
+  --branded-button-height: calc(var(--spacing) * 7);
+  --branded-button-padding-x: calc(var(--spacing) * 2);
+  --branded-button-padding-x-icon: calc(var(--spacing) * 1);
+  --branded-button-padding-y: calc(var(--spacing) * 0.5);
+  --branded-button-font-size: var(--text-xs);
+  --branded-button-line-height: calc(var(--spacing) * 4.5);
+}
+
+.branded-button[data-size="lg"] {
+  --branded-button-height: calc(var(--spacing) * 12);
+  --branded-button-padding-x: calc(var(--spacing) * 5);
+  --branded-button-padding-x-icon: calc(var(--spacing) * 4);
+  --branded-button-font-size: var(--text-base);
+  --branded-button-line-height: calc(var(--spacing) * 6);
+  --branded-button-icon: calc(var(--spacing) * 5);
+}
+
+.branded-button[data-size="xl"] {
+  --branded-button-height: calc(var(--spacing) * 16);
+  --branded-button-padding-x: calc(var(--spacing) * 6);
+  --branded-button-padding-x-icon: calc(var(--spacing) * 5);
+  --branded-button-font-size: var(--text-lg);
+  --branded-button-line-height: calc(var(--spacing) * 6);
+  --branded-button-icon: calc(var(--spacing) * 5);
+}
+
+/* Colors */
+.branded-button[data-color="secondary"] {
+  border-color: var(--color-new-gray-dark);
+  background-color: var(--color-white);
+  color: var(--color-new-gray-dark);
+}
+
+.branded-button[data-color="tertiary"] {
+  background-color: transparent;
+  color: var(--color-new-gray-dark);
+}
+
+.branded-button[data-color="tertiary-blue"] {
+  background-color: transparent;
+  color: var(--color-new-primary);
+}
+
+.branded-button[data-color="warning"] {
+  border-color: var(--color-new-warning);
+  background-color: var(--color-white);
+  color: var(--color-new-warning);
+}
+
+.branded-button[data-color="danger"] {
+  border-color: var(--color-new-error);
+  background-color: var(--color-white);
+  color: var(--color-new-error);
+}
+
+.branded-button[data-color="white-flat"] {
+  background-color: var(--color-white);
+  color: var(--color-new-primary);
+}
+
+.branded-button[data-color="brown-illustration"] {
+  background-color: var(--color-new-brown-illustration);
+}
+
+.branded-button[data-color="green-illustration"] {
+  background-color: var(--color-new-green-illustration);
+}
+
+/*
+ * Hover and press, without moving the control. Hover only on devices that can hover: a touch
+ * screen keeps `:hover` on the last tapped element, which would leave the button highlighted.
+ */
+@media (hover: hover) {
+  .branded-button[data-color="primary"]:not([aria-disabled="true"]):hover {
+    background-color: var(--color-new-primary-hover);
+  }
+
+  .branded-button:is([data-color="secondary"], [data-color="tertiary"], [data-color="tertiary-blue"], [data-color="warning"], [data-color="danger"], [data-color="white-flat"]):not([aria-disabled="true"]):hover {
+    background-color: var(--color-gray-some);
+  }
+
+  .branded-button:is([data-color="brown-illustration"], [data-color="green-illustration"]):not([aria-disabled="true"]):hover {
+    filter: brightness(0.95);
+  }
+}
+
+.branded-button[data-color="primary"]:not([aria-disabled="true"]):active {
+  background-color: var(--color-new-primary-clic);
+}
+
+.branded-button:is([data-color="secondary"], [data-color="tertiary"], [data-color="tertiary-blue"], [data-color="warning"], [data-color="danger"], [data-color="white-flat"]):not([aria-disabled="true"]):active {
+  background-color: var(--color-gray-active);
+}
+
+.branded-button:is([data-color="brown-illustration"], [data-color="green-illustration"]):not([aria-disabled="true"]):active {
+  filter: brightness(0.9);
+}
+
+.branded-button[data-size]:focus-visible {
+  outline: 2px solid var(--color-new-focus);
+  outline-offset: 3px;
+}
+
+/* Disabled and loading, shared by every color */
+.branded-button[data-size][aria-disabled="true"] {
+  border-color: var(--color-gray-default);
+  background-color: var(--color-gray-some);
+  color: var(--color-new-gray-medium-clic);
+  opacity: 1;
+  cursor: default;
+}
+
+.branded-button[data-size][data-loading="true"] {
+  cursor: wait;
+}
+
+/* Optical alignment: less padding on the side of an icon */
+.branded-button[data-size][data-icon-start="true"]:not([data-icon-only="true"]) {
+  padding-inline-start: var(--branded-button-padding-x-icon);
+}
+
+.branded-button[data-size][data-icon-end="true"]:not([data-icon-only="true"]) {
+  padding-inline-end: var(--branded-button-padding-x-icon);
+}
+
+/* Icon-only: square, as high as the size */
+.branded-button[data-size][data-icon-only="true"] {
+  min-width: var(--branded-button-height);
+  min-height: var(--branded-button-height);
+  padding: 0;
+}
+
+/*
+ * Long labels may wrap, between words only: a button squeezed by a flex or table parent
+ * never gets narrower than its longest word (no `min-width: 0`, and `break-word` rather
+ * than `anywhere`). The label inherits `white-space` from the button, so a parent can
+ * still keep it on one line with `whitespace-nowrap`.
+ */
+.branded-button__label {
+  overflow-wrap: break-word;
+}
+
+/*
+ * Optical alignment: Marianne sits low in its line box (the cap-height center is
+ * 1.1 to 1.4px below the line center at every size), so the label is raised by 1px
+ * to be centered in the button and level with the icon.
+ */
+.branded-button__label:not(.sr-only) {
+  position: relative;
+  top: calc(var(--spacing) * -0.25);
+}
+
+.branded-button__symbol {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--branded-button-icon);
+  min-height: var(--branded-button-icon);
+}
+
+.branded-button[data-icon-right="true"] .branded-button__symbol {
+  order: 1;
+}
+
+.branded-button__icon {
+  flex: none;
+  width: var(--branded-button-icon);
+  height: var(--branded-button-icon);
+}
+
+/*
+ * Loading without an icon: the label stays in the flow to keep the button's size, but
+ * is transparent (still the accessible name), and the spinner is centered over it.
+ */
+.branded-button[data-loading-overlay="true"] .branded-button__symbol {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.branded-button[data-loading-overlay="true"] .branded-button__label {
+  color: transparent;
+}
+
+.branded-button[data-loading-overlay="true"] .branded-button__icon:not(.branded-button__spinner) {
+  visibility: hidden;
+}
+
+.branded-button__spinner {
+  animation: branded-button-spin 1000ms linear infinite;
+}
+
+@keyframes branded-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Same breakpoint as Tailwind's `sm` in datagouv-components */
+@media (max-width: 575.98px) {
+  /* As specific as the optical padding rules, so that the icon stays centered */
+  .branded-button[data-size]:is([data-icon-start="true"], [data-icon-end="true"]):has(.branded-button__label--mobile-hidden) {
+    min-width: var(--branded-button-height);
+    padding: 0;
+  }
+
+  .branded-button .branded-button__label--mobile-hidden {
+    position: absolute;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+  }
+}
+
+/*
+ * Touch targets: an invisible 44px hit area centered on the button, so that
+ * compact buttons keep their visual size and the layout does not change.
+ */
+@media (pointer: coarse) {
+  .branded-button[data-size]::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, calc(var(--spacing) * 11));
+    height: max(100%, calc(var(--spacing) * 11));
+    transform: translate(-50%, -50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .branded-button__spinner {
+    animation: none;
+  }
+}
+</style>

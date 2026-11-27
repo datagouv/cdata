@@ -12,7 +12,7 @@
           v-bind="attrs"
           v-on="listeners"
         >
-          {{ $t('Ajoutez des fichiers') }}
+          {{ $t('Ajouter des fichiers') }}
         </BrandedButton>
         <p
           v-if="errorText"

@@ -23,7 +23,7 @@
               :icon="RiAddLine"
               :href="`/admin/community-resources/new?dataset_id=${dataset.id}`"
             >
-              {{ t("Partagez vos ressources") }}
+              {{ t("Partager vos ressources") }}
             </BrandedButton>
           </div>
         </div>
@@ -64,7 +64,7 @@
         color="primary"
         :href="`/admin/community-resources/new?dataset_id=${dataset.id}`"
       >
-        {{ $t('Partagez vos ressources') }}
+        {{ $t('Partager vos ressources') }}
       </BrandedButton>
       <BrandedButton
         color="secondary"

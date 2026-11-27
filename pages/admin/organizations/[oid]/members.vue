@@ -260,7 +260,6 @@
                   :icon="RiEyeLine"
                   size="xs"
                   icon-only
-                  keep-margins-even-without-borders
                   :title="$t('Voir la page publique')"
                 />
                 <ModalWithButton
@@ -275,7 +274,6 @@
                       :icon="RiPencilLine"
                       icon-only
                       size="xs"
-                      keep-margins-even-without-borders
                       :title="t('Modifier')"
                       v-bind="attrs"
                       v-on="listeners"

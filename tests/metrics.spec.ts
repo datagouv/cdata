@@ -92,7 +92,7 @@ test.describe('aggregated statistics download', () => {
     await page.goto(`/organizations/${organization.id}/information`)
     await page.getByRole('button', { name: 'Voir les statistiques' }).click()
 
-    await expectAggregatedStatsDownload(page, 'Télécharger les statistiques au format CSV', organization.slug)
+    await expectAggregatedStatsDownload(page, 'Télécharger en CSV', organization.slug)
   })
 
   test('downloads the CSV from the organization admin metrics page', async ({ page, request }) => {
