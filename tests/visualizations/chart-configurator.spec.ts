@@ -491,7 +491,7 @@ test('the missing-fields warning leaves with the chart', async ({ page }) => {
   await expect(warning).toBeVisible()
 
   const secondResourceId = await otherResourceId(page)
-  await page.route(url => url.pathname === `/api/resources/${secondResourceId}/profile/`, route =>
+  await page.route(`**/api/resources/${secondResourceId}/profile/`, route =>
     route.fulfill({ json: { ...profile, profile: { ...profile.profile, header: [], columns: {} } } }),
   )
   await page.getByLabel('Choix de la ressource').selectOption(secondResourceId)
